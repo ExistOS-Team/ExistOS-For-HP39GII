@@ -20,6 +20,8 @@ all: firmware.sb
 rom.elf: $(OBJECTS)
 	$(LINKER) $(LFLAGS) $(OBJECTS) -o rom.elf $(LIBS)
 
+updater: rom.elf
+	$(ELF2ROM) -z -c ./build_updater.bd -o updater.sb rom.elf
 
 firmware.sb: rom.elf
 	$(ELF2ROM) -z -c ./build_fw.bd -o firmware.sb rom.elf
@@ -30,3 +32,4 @@ clean:
 	@$(DEL_FILE) *.tmp
 	@$(DEL_FILE) rom.elf
 	@$(DEL_FILE) firmware.sb
+	@$(DEL_FILE) updater.sb
