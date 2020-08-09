@@ -1,0 +1,22 @@
+options {
+
+flags = 0x0; 
+
+buildNumber = 0x1;
+
+productVersion = "1.00.00";
+
+componentVersion = "1.00.00";
+
+}
+
+sources {
+
+inputFile = extern(0);	//第0个输入文件
+
+}
+
+section (0x0) {
+	load inputFile;
+	call inputFile;
+}
