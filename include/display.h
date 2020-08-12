@@ -20,6 +20,7 @@
 
 #ifndef _DISPLAY_H
 #define _DISPLAY_H
+#include <stdint.h>
 
 #define 	VRAM_BASE	0x00001000		//显存基址
 
@@ -162,6 +163,27 @@ void LCD_dma_flush_buffer(void);
 ===========================================================================*/
 void LCD_set_pix_format(hw_lcdif_DmaCommand pix_format);
 
+/*===========================================================================
+\brief		显示字符串
+
+\param[in]		x,y:起点坐标
+\param[in]		width,height:区域大小  
+\param[in]		size:字体大小
+\param[in]		color:字体颜色
+\param[in]		*p:字符串起始地址		
+===========================================================================*/  
+void LCD_ShowString(uint16_t x,uint16_t y,uint16_t width,uint16_t height,uint8_t size,uint8_t color,uint8_t *p);
+
+
+/*===========================================================================
+\brief		在指定位置显示一个字符
+
+\param[in]		x,y:起始坐标
+\param[in]		num:要显示的字符:" "--->"~"
+\param[in]		size:字体大小 12/16/24
+\param[in]		size:字体大小
+===========================================================================*/  
+void LCD_ShowChar(uint16_t x,uint16_t y,uint8_t num,uint8_t size,uint8_t color);
 
 #endif
 

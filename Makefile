@@ -1,4 +1,5 @@
 CC            = ..\tools\gcc-arm\bin\arm-none-eabi-gcc
+AS            = ..\tools\gcc-arm\bin\arm-none-eabi-as
 CFLAGS        = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O1 -pipe
 INCPATH       = -I. -I..\tools\gcc-arm\arm-none-eabi\include -Iinclude -Iinclude\registers
 LINKER        = ..\tools\gcc-arm\bin\arm-none-eabi-gcc

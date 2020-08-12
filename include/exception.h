@@ -18,12 +18,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
  
-#ifndef _IRQ_H
-#define _IRQ_H
-
-void irq_init();
+#ifndef _EXCEPTION_H
+#define _EXCEPTION_H
 
 
+
+typedef enum exception_type{
+	EXCEPTION_RESET = 0,
+	EXCEPTION_UND,
+	EXCEPTION_SWI,
+	EXCEPTION_PABORT,
+	EXCEPTION_DABORT,
+	EXCEPTION_RESERVED,
+	EXCEPTION_IRQ,
+	EXCEPTION_FIQ
+}exception_type;
+
+void exception_init();
+void exception_install(exception_type type, unsigned int *exception_handler_addr);
 
 #endif
 

@@ -24,7 +24,7 @@
 #define MMU_SECTION_ROM(a) (((a)&0xfff00000)| 0x01e)	//1MB PAGE
 #define MMU_SECTION_DEV(a) (((a)&0xfff00000)| 0xc12)	//1MB PAGE
 
-#define MMU_PAGES_RAM(a)   (((a)&0xfffffc00)| 0x011)	//0 - 3FF (0x400 * N)
+#define MMU_PAGES_RAM(a)   (((a)&0xfffffc00)| 0x011)	//3FF (0x400 * N)
 
 #define MMU_PAGE(a)			      (((a)&0xfffff000)|0xffe)	//4K
 #define MMU_PAGE_NOT_IN_MEMORY(a) (((a)&0xfffff000)|0x00e)	//4K

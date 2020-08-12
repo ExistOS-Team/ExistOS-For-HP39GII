@@ -23,6 +23,7 @@
 #include "regsapbh.h"
 #include "display.h"
 #include "utils.h"
+#include "FONT.H"
 
 hw_lcdif_DmaDesc screen_buffer_dma_desc;
 
@@ -158,6 +159,64 @@ void LCD_write_pix(unsigned int x,unsigned int y,unsigned char color)
 		}
 
 }
+
+
+//在指定位置显示一个字符
+//x,y:起始坐标
+//num:要显示的字符:" "--->"~"
+//size:字体大小 12/16/24
+//mode:叠加方式(1)还是非叠加方式(0)
+void LCD_ShowChar(uint16_t x,uint16_t y,uint8_t num,uint8_t size,uint8_t color)
+{  							  
+    uint8_t temp,t1,t;
+	uint16_t y0=y;
+	uint8_t csize=(size/8+((size%8)?1:0))*(size/2);		//得到字体一个字符对应点阵集所占的字节数	
+ 	num=num-' ';//得到偏移后的值（ASCII字库是从空格开始取模，所以-' '就是对应字符的字库）
+	for(t=0;t<csize;t++)
+	{   
+		if(size==12)
+			temp=asc2_1206[num][t]; 	 			//调用1206字体
+		else if(size==16)temp=asc2_1608[num][t];	//调用1608字体
+		else if(size==24)temp=asc2_2412[num][t];	//调用2412字体
+		else return;								//没有的字库
+		for(t1=0;t1<8;t1++)
+		{			    
+			if(temp&0x80)LCD_write_pix(x,y,color);
+			//else if(mode==0)LCD_point(x,y,1);
+			temp<<=1;
+			y++;
+			if(y>=128)return;		//超区域了
+			if((y-y0)==size)
+			{
+				y=y0;
+				x++;
+				if(x>=256)return;	//超区域了
+				break;
+			}
+		}  	 
+	}  	    	   	 	  
+}   
+
+//显示字符串
+//x,y:起点坐标
+//width,height:区域大小  
+//size:字体大小
+//*p:字符串起始地址		  
+void LCD_ShowString(uint16_t x,uint16_t y,uint16_t width,uint16_t height,uint8_t size,uint8_t color,uint8_t *p)
+{         
+	uint8_t x0=x;
+	width+=x;
+	height+=y;
+    while((*p<='~')&&(*p>=' '))//判断是不是非法字符!
+    {       
+        if(x>=width){x=x0;y+=size;}
+        if(y>=height)break;//退出
+        LCD_ShowChar(x,y,*p,size,color);
+        x+=size/2;
+        p++;
+    }  
+}
+
 
 void LCD_dma_channel_reset(void)
 {

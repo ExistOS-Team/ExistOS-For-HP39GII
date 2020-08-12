@@ -20,8 +20,9 @@
  
  
 #include "regsicoll.h"
+#include "exception.h"
 
-unsigned int irq_table[0xFF];
+unsigned int *irq_table_base = (unsigned int *)0x00000100;
  
 void irq_empty(void)
 {
@@ -29,8 +30,8 @@ void irq_empty(void)
 }
  
 
-void irq_service() __attribute__ ((naked));
-void irq_service()
+void __irq_service() __attribute__ ((naked));
+void __irq_service()
 {
 	
 	   asm volatile ("sub lr,pc,#4");                     //计算中断处理完毕后的返回地址
@@ -90,7 +91,7 @@ void irq_install(){
 		irq_set_irq_n(i,0);
 	
 	for(unsigned int i=0;i<0xFF;i++){
-		irq_table[i] = (unsigned int)&irq_empty;
+		irq_table_base[i] = (unsigned int)&irq_empty;
 	}
 	BF_CS1(ICOLL_VBASE,TABLE_ADDRESS,0x00000100);
 	
@@ -102,6 +103,13 @@ void irq_install(){
 	HW_ICOLL_CTRL_SET(//BM_ICOLL_CTRL_FIQ_FINAL_ENABLE |
                       BM_ICOLL_CTRL_IRQ_FINAL_ENABLE |
                       BM_ICOLL_CTRL_ARM_RSE_MODE);
+	
+}
+
+void irq_init(){
+	irq_install();
+	exception_install(EXCEPTION_IRQ,(unsigned int*)__irq_service);
+	
 	
 }
 
