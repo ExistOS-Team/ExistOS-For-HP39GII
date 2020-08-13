@@ -21,6 +21,7 @@
 #include <stdarg.h>
 #include "regsuartdbg.h"
 #include "utils.h"
+#include "mmu.h"
 
 void uartdbg_putc(char ch)
 {
@@ -116,16 +117,20 @@ void uartdbg_printf(char *fmt, ...)
 	va_end(args);
 }
 
+
 void uartdbg_print_regs(){
 	unsigned int regs[16];
 	unsigned int cp[15];
+	unsigned int mode;
 	
+	mode = get_mode();
+	/*
 	asm volatile ("mrc p15, 0, r0, c0, c0, 0");
 	asm volatile ("str r0,%0" :"=m"(cp[0]));
 	asm volatile ("mrc p15, 0, r0, c1, c0, 0");
 	asm volatile ("str r0,%0" :"=m"(cp[1]));
 	asm volatile ("mrc p15, 0, r0, c2, c0, 0");
-	asm volatile ("str r0,%0" :"=m"(cp[2]));
+	asm volatile ("str r0,%0" :"=m"(cp[2]));*/
 	
 	asm volatile ("str r0,%0" :"=m"(regs[0]));
 	asm volatile ("str r1,%0" :"=m"(regs[1]));
@@ -143,7 +148,18 @@ void uartdbg_print_regs(){
 	asm volatile ("str r13,%0" :"=m"(regs[13]));
 	asm volatile ("str r14,%0" :"=m"(regs[14]));
 	asm volatile ("str r15,%0" :"=m"(regs[15]));
+	
+	
 	uartdbg_printf("PC: (R15) = %X\n",regs[15]);
+	switch(mode){
+		case 	USER_MODE:uartdbg_printf("MODE= USER_MODE\n");break;
+		case     FIQ_MODE:uartdbg_printf("MODE= FIQ_MODE\n");break;
+		case     IRQ_MODE:uartdbg_printf("MODE= IRQ_MODE\n");break;
+		case     SVC_MODE:uartdbg_printf("MODE= SVC_MODE\n");break;
+		case     ABT_MODE:uartdbg_printf("MODE= ABT_MODE\n");break;
+		case     UND_MODE:uartdbg_printf("MODE= UND_MODE\n");break;
+		case     SYS_MODE:uartdbg_printf("MODE= SYS_MODE\n");break;
+	}
 	uartdbg_printf("CP0: = %X, CP1: = %X,  CP2= %X\n",cp[0],cp[1],cp[2]);
 	uartdbg_printf("R0  =%X,  R1 =%X, R2  =%X, R3  =%X\n",regs[0],regs[1],regs[2],regs[3]);
 	uartdbg_printf("R4  =%X,  R5 =%X, R6  =%X, R7  =%X\n",regs[4],regs[5],regs[6],regs[7]);

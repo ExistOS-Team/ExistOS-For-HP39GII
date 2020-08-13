@@ -23,11 +23,11 @@
 
 void set_row_line(int row_line);
 unsigned int read_col_line(int col_line);
+
+
 void keyboard_init();
 unsigned int is_key_ON_down();
 void key_scan();
-
-
 
 #endif
 

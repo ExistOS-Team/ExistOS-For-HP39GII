@@ -81,7 +81,7 @@ void exception_init(){
 	
 	
 	asm volatile ("mrc p15, 0, r0, c1, c0, 0");
-	asm volatile ("bic r0,r0,#0x2000"); 				//设置使用低端向量表
+	asm volatile ("bic r0,r0,#0x2000"); 				//设置使用底端向量表
 	asm volatile ("mcr p15, 0, r0, c1, c0, 0");
 	
 }
