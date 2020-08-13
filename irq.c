@@ -91,7 +91,7 @@ void volatile __irq_service() {
 	
 	BF_SETV(ICOLL_VECTOR, IRQVECTOR, BF_RD(ICOLL_VECTOR, IRQVECTOR));							//通知中断控制器已经响应当前中断	
 	current_irq_number = BF_RD(ICOLL_STAT, VECTOR_NUMBER);										//获取当前发生的中断号
-	irq_set_enable(current_irq_number , 0);													//关闭当前发生的中断，在对应的中断服务程序中再打开	
+	irq_set_enable(current_irq_number , 0);														//关闭当前发生的中断，在对应的中断服务程序中再打开	
 	if(current_irq_number < 63)																	//判断是有效的中断
 		(*(void(*)())((unsigned int)irq_vector_table_base[current_irq_number])) ();				//调用对应的中断服务程序
 	BF_SETV(ICOLL_LEVELACK, IRQLEVELACK, 1<<(irq_get_irq_priority(current_irq_number)));		//通知中断优先级控制器已经响应当前中断	
@@ -100,7 +100,7 @@ void volatile __irq_service() {
     asm volatile ("bic r1, r1, #0xd");
     asm volatile ("msr cpsr_all, r1");  		//切换回中断模式
 	
-	enable_interrupts();						//运行中断
+	enable_interrupts();						//允许中断
     asm volatile ("ldmia sp!, {r0-r12, pc}^");  //中断返回，^表示将spsr的值复制到cpsr
 }
 

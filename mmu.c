@@ -83,17 +83,15 @@ static void __disable_mmu(){
 	asm volatile ("bic r0,r0,#1000"); 			// disable INSTRUCTION CACHE
 	asm volatile ("bic r0,r0,#4"); 				// disable DATA CACHE
 	asm volatile ("mcr p15, 0, r0, c1, c0, 0");
-	
+
 	asm volatile ("mov r0,r0"); 	
 	asm volatile ("mov r0,r0");	
 	
 }
 
-void __enable_mmu()
+void __enable_mmu(unsigned int base)
 {
-
-	asm volatile ("mov r0,#0x80000000");
-	asm volatile ("add r0,r0,#0xC0000");
+	//r0 = base
 	asm volatile ("mcr p15,0,r0,c2,c0,0");      // WRITE MMU BASE REGISTER, ALL CACHES SHOULD'VE BEEN CLEARED BEFORE
 
 	asm volatile ("mvn r0,#0");
@@ -153,8 +151,7 @@ void enable_mmu()
 	__flush_Dcache();
 	__flush_Icache();
 	__flush_TLB();
-
-	__enable_mmu();
+	__enable_mmu(FIRST_LEVEL_PAGE_TABLE_FOR_KERNEL);
 
 }
 
