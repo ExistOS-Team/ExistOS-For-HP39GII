@@ -21,7 +21,7 @@
 #ifndef _EXCEPTION_H
 #define _EXCEPTION_H
 
-
+#define EXCEPTION_VECTOR_TABLE_BASE_ADDR	0x00000000
 
 typedef enum exception_type{
 	EXCEPTION_RESET = 0,

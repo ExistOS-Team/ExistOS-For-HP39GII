@@ -19,39 +19,19 @@
  */
  
 #include <regsdigctl.h>
+#include <mmu.h>
 
-#define MMU_SECTION_RAM(a) (((a)&0xfff00000)| 0xc1e)	//1MB PAGE
-#define MMU_SECTION_ROM(a) (((a)&0xfff00000)| 0x01e)	//1MB PAGE
-#define MMU_SECTION_DEV(a) (((a)&0xfff00000)| 0xc12)	//1MB PAGE
 
-#define MMU_PAGES_RAM(a)   (((a)&0xfffffc00)| 0x011)	//3FF (0x400 * N)
-
-#define MMU_PAGE(a)			      (((a)&0xfffff000)|0xffe)	//4K
-#define MMU_PAGE_NOT_IN_MEMORY(a) (((a)&0xfffff000)|0x00e)	//4K
-
-#define MMU_LEVEL1_INDEX(virt) (((virt)>>20)&0xfff)
-#define MMU_LEVEL2_INDEX(virt) (((virt)>>12)&0xff)
-
-#define MMU_MAP_SECTION_ROM(phys,virt) (mmu_base[MMU_LEVEL1_INDEX(virt)]=MMU_SECTION_ROM(phys))
-#define MMU_MAP_SECTION_RAM(phys,virt) (mmu_base[MMU_LEVEL1_INDEX(virt)]=MMU_SECTION_RAM(phys))
-#define MMU_MAP_SECTION_DEV(phys,virt) (mmu_base[MMU_LEVEL1_INDEX(virt)]=MMU_SECTION_DEV(phys))
-#define MMU_MAP_COARSE_RAM(phys,virt)  (mmu_base[MMU_LEVEL1_INDEX(virt)]=MMU_PAGES_RAM(phys))
-
-#define MMU_MAP_PAGE_IN_MEMORY(phys,virt) 	  ( ( (unsigned int *)(mmu_base[MMU_LEVEL1_INDEX(virt)]&0xfffffc00))[MMU_LEVEL2_INDEX(virt)]=MMU_PAGE(phys))	//4K PAGE
-#define MMU_MAP_PAGE_NOT_IN_MEMORY(phys,virt) ( ( (unsigned int *)(mmu_base[MMU_LEVEL1_INDEX(virt)]&0xfffffc00))[MMU_LEVEL2_INDEX(virt)]=MMU_PAGE_NOT_IN_MEMORY(phys))	//4K PAGE
-
-#define SECOUNDRY_PAGE_TABLE_FOR_KERNEL		0x00000400
 
 void DFLTP_init(){
-	unsigned int *mmu_base=(unsigned int *)0x800C0000;		//一级页表基地址
+	unsigned int *mmu_base=(unsigned int *)FIRST_LEVEL_PAGE_TABLE_FOR_KERNEL;	//一级页表基地址
 	
-	for(unsigned char *ptr = (unsigned char*)(SECOUNDRY_PAGE_TABLE_FOR_KERNEL);ptr < (unsigned char *)(SECOUNDRY_PAGE_TABLE_FOR_KERNEL + 0x800);ptr++)
+	for(unsigned char *ptr = (unsigned char*)(SECOUND_LEVEL_PAGE_TABLE_FOR_KERNEL);ptr < (unsigned char *)(SECOUND_LEVEL_PAGE_TABLE_FOR_KERNEL + 0x800);ptr++) {	//清空二级页表
 		*ptr = 0;
+	}
 	
-	
-	BF_WRn(DIGCTL_MPTEn_LOC,0,LOC,0x0);					//内存开头1MB映射
-	BF_WRn(DIGCTL_MPTEn_LOC,1,LOC,0x90000000 >> 20);	//0x90000000处
-	
+	BF_WRn(DIGCTL_MPTEn_LOC,0,LOC,0x0);											//SoC内部自带的硬件一级页表
+	BF_WRn(DIGCTL_MPTEn_LOC,1,LOC,KERNEL_ADDR_BASE >> 20);	
 	BF_WRn(DIGCTL_MPTEn_LOC,2,LOC,0x2);
 	BF_WRn(DIGCTL_MPTEn_LOC,3,LOC,0x3);
 	BF_WRn(DIGCTL_MPTEn_LOC,4,LOC,0x4);
@@ -59,14 +39,22 @@ void DFLTP_init(){
 	BF_WRn(DIGCTL_MPTEn_LOC,6,LOC,0x6);
 	BF_WRn(DIGCTL_MPTEn_LOC,7,LOC,0x7);
 	
-	MMU_MAP_SECTION_DEV(0x00000000,0x00000000);
-	MMU_MAP_COARSE_RAM(SECOUNDRY_PAGE_TABLE_FOR_KERNEL,0x90000000);
+	MMU_MAP_SECTION_DEV(0x00000000,0x00000000);										//内存开头1MB映射
+	MMU_MAP_COARSE_RAM(SECOUND_LEVEL_PAGE_TABLE_FOR_KERNEL,KERNEL_ADDR_BASE);		//0x90000000处的内核内存
 	
-	for(unsigned int i = 0;i<384*1024;i+=4*1024)
-		MMU_MAP_PAGE_IN_MEMORY(0x00020000 + i,0x90000000 + i);	//384个页，每个页4KB
+	for(unsigned int i = 0;i<384*1024;i+=4*1024)									//填写二级页表
+		MMU_MAP_PAGE_IN_MEMORY(0x00020000 + i,KERNEL_ADDR_BASE + i);				//384个页，每个页4KB
 } 
 
-void switch_mode(int mode) __attribute__ ((naked));
+//设置栈指针
+void set_stack(unsigned int *newstackptr)
+{
+	asm volatile ("mov sp,r0");
+	asm volatile ("bx lr");
+}
+
+
+//设置运行模式
 void switch_mode(int mode)
 {
 	asm volatile ("and r0,r0,#0x1f");
@@ -78,21 +66,7 @@ void switch_mode(int mode)
 	asm volatile ("bx r0");
 }
 
-void enable_interrupts()
-{
-	asm volatile ("mrs r1,cpsr_all");
-	asm volatile ("bic r1,r1,#0xc0");
-	asm volatile ("msr cpsr_all,r1");
-}
-
-
-void disable_interrupts()
-{
-	asm volatile ("mrs r1,cpsr_all");
-	asm volatile ("orr r1,r1,#0xc0");
-	asm volatile ("msr cpsr_all,r1");
-}
-
+//获取运行模式
 unsigned int get_mode()
 {
 	register unsigned int cpsr;
@@ -109,17 +83,15 @@ static void __disable_mmu(){
 	asm volatile ("bic r0,r0,#1000"); 			// disable INSTRUCTION CACHE
 	asm volatile ("bic r0,r0,#4"); 				// disable DATA CACHE
 	asm volatile ("mcr p15, 0, r0, c1, c0, 0");
-	
+
 	asm volatile ("mov r0,r0"); 	
 	asm volatile ("mov r0,r0");	
 	
 }
 
-void __enable_mmu()
+void __enable_mmu(unsigned int base)
 {
-
-	asm volatile ("mov r0,#0x80000000");
-	asm volatile ("add r0,r0,#0xC0000");
+	//r0 = base
 	asm volatile ("mcr p15,0,r0,c2,c0,0");      // WRITE MMU BASE REGISTER, ALL CACHES SHOULD'VE BEEN CLEARED BEFORE
 
 	asm volatile ("mvn r0,#0");
@@ -151,7 +123,6 @@ static void __flush_Dcache(void)
 			cacheaddr=((counter>>1)&0xe0) | ((counter&63)<<26);
 			// CLEAN AND INVALIDATE ENTRY USING INDEX
 			asm volatile ("mcr p15, 0, %0, c7, c14, 2" : : "r" (cacheaddr));
-
 			++counter;
 		}
 
@@ -160,50 +131,58 @@ static void __flush_Dcache(void)
 static void __flush_Icache(void)
 {
 	// CLEAN AND INVALIDATE ENTRY USING INDEX
-
 	register unsigned int value;
-
 	value=0;
 	asm volatile ("mcr p15, 0, %0, c7, c5, 0" : : "r" (value));
-
 }
 
 static void __flush_TLB(void)
 {
 	// CLEAN AND INVALIDATE ENTRY USING INDEX
-
 	register unsigned int value;
-
 	value=0;
 	asm volatile ("mcr p15, 0, %0, c8, c7, 0" : : "r" (value));
 
 }
 
-void mmu_flush_DIT(){
-	__flush_Dcache();
-	__flush_Icache();
-	__flush_TLB();
-}
-
 void enable_mmu()
 {
 
-	// WE MUST BE IN SUPERVISOR MODE ALREADY
-
 	__flush_Dcache();
 	__flush_Icache();
 	__flush_TLB();
-
-	__enable_mmu();
+	__enable_mmu(FIRST_LEVEL_PAGE_TABLE_FOR_KERNEL);
 
 }
+
+
+void stack_init(){
+		
+    switch_mode(ABT_MODE);
+    set_stack((unsigned int *)0x0007FD00);
+    
+	switch_mode(UND_MODE);
+    set_stack((unsigned int *)0x0007FB00);
+    
+	switch_mode(FIQ_MODE);
+    set_stack((unsigned int *)0x0007F900);
+	
+    switch_mode(IRQ_MODE);
+    set_stack((unsigned int *)0x0007F500);
+    
+	switch_mode(SYS_MODE);
+	set_stack((unsigned int *)0x0007F700);
+	
+	switch_mode(SVC_MODE);
+    asm volatile ("nop");       
+    
+}
+
 
 void disable_mmu(){
 	__flush_Dcache();
 	__flush_Icache();
 	__flush_TLB();
-	
 	__disable_mmu();
-	
 }
 

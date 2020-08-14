@@ -71,11 +71,12 @@ typedef struct _hw_lcdif_DmaDesc	//用于LCD屏幕控制器的DMA描述符
     };
     void *p_DMABuffer;
     hw_lcdif_ctrl_t PioWord;
-    hw_lcdif_ctrl1_t PioWord2;
 
 } hw_lcdif_DmaDesc;
 
 
+void LCD_dma_flush_auto_buffer_stop(void);
+void LCD_dma_flush_auto_buffer_start(void);
 
 
 /*===========================================================================
@@ -129,7 +130,7 @@ void LCD_setxy(unsigned int x, unsigned int y);
 \param[in]	 cmd  		命令值    
 \param[in]	 cmd_size 	命令长度（字节，范围0~4）
 ===========================================================================*/
-void LCD_writeCmd(unsigned int cmd, unsigned int cmd_size);	
+void LCD_write_cmd(unsigned int cmd, unsigned int cmd_size);	
 
 
 /*===========================================================================
@@ -138,7 +139,7 @@ void LCD_writeCmd(unsigned int cmd, unsigned int cmd_size);
 \param[in]	 cmd  		数据    
 \param[in]	 dat_size 	数据长度（字节，范围0~4）
 ===========================================================================*/
-void LCD_writeDat(unsigned int dat, unsigned int dat_size);	
+void LCD_write_dat(unsigned int dat, unsigned int dat_size);	
 
 /*===========================================================================
 \brief       LCDIF初始化以及屏幕初始化
@@ -161,7 +162,7 @@ void LCD_dma_flush_buffer(void);
 
 \param[in]	 pix_format  PIX_FORMAT_GRAYn
 ===========================================================================*/
-void LCD_set_pix_format(hw_lcdif_DmaCommand pix_format);
+void LCD_set_pix_format(lcd_pix_format pix_format);
 
 /*===========================================================================
 \brief		显示字符串
@@ -172,7 +173,7 @@ void LCD_set_pix_format(hw_lcdif_DmaCommand pix_format);
 \param[in]		color:字体颜色
 \param[in]		*p:字符串起始地址		
 ===========================================================================*/  
-void LCD_ShowString(uint16_t x,uint16_t y,uint16_t width,uint16_t height,uint8_t size,uint8_t color,uint8_t *p);
+void LCD_show_string(uint16_t x,uint16_t y,uint16_t width,uint16_t height,uint8_t size,uint8_t color,uint8_t *p);
 
 
 /*===========================================================================
@@ -183,7 +184,12 @@ void LCD_ShowString(uint16_t x,uint16_t y,uint16_t width,uint16_t height,uint8_t
 \param[in]		size:字体大小 12/16/24
 \param[in]		size:字体大小
 ===========================================================================*/  
-void LCD_ShowChar(uint16_t x,uint16_t y,uint8_t num,uint8_t size,uint8_t color);
+void LCD_show_char(uint16_t x,uint16_t y,uint8_t num,uint8_t size,uint8_t color);
+
+/*===========================================================================
+\brief       往LCD上输出文字信息
+===========================================================================*/
+void LCD_print(uint8_t *p);
 
 #endif
 

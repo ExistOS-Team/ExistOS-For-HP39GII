@@ -33,6 +33,5 @@ void delay_us(unsigned int us)
 	while (cur < start+us) {
 		cur = HW_DIGCTL_MICROSECONDS_RD();
 	}
-
 }
 
