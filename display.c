@@ -31,6 +31,7 @@
 hw_lcdif_DmaDesc screen_buffer_dma_desc;
 
 unsigned char *screen_buffer = (unsigned char *)VRAM_BASE; //显存
+unsigned int pos_y = 0; //屏幕信息位置
 
 unsigned int LCD_is_busy()
 {
@@ -216,6 +217,16 @@ void LCD_show_string(uint16_t x, uint16_t y, uint16_t width, uint16_t height, ui
         x+=size/2;
         p++;
     }  
+}
+
+void LCD_print(uint8_t *p)
+{
+	if (pos_y >= 127 - 12) {
+		LCD_clear_buffer();
+		pos_y = 0;
+	}
+	LCD_show_string(0, pos_y, 255, 24, 12, 255, p);
+	pos_y += 12;
 }
 
 void LCD_dma_irq_handle(){

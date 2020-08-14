@@ -186,5 +186,10 @@ void LCD_show_string(uint16_t x,uint16_t y,uint16_t width,uint16_t height,uint8_
 ===========================================================================*/  
 void LCD_show_char(uint16_t x,uint16_t y,uint8_t num,uint8_t size,uint8_t color);
 
+/*===========================================================================
+\brief       往LCD上输出文字信息
+===========================================================================*/
+void LCD_print(uint8_t *p);
+
 #endif
 
