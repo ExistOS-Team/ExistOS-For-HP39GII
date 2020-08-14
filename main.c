@@ -72,6 +72,9 @@ void _boot()
 			LCD_show_string(1,25,24*12,24,16,255,"Hello World!");
 			LCD_show_string(1,40,24*12,24,12,255,"Hello World!");
 			delay_us(1000000);
+			LCD_clear_buffer();
+			LCD_print("Hello, world!");
+			delay_us(1000000);
 			LCD_clear_buffer();		//清显存
 			//显示图片 256x128
 			for(int y=0; y<127; y++)
