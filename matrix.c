@@ -2,7 +2,7 @@
 //  matrix.c
 //  
 //
-//  Created by vega64 on 2020/8/13.
+//  Created by rollingQP on 2020/8/13.
 //
 
 #include "matrix.h"
