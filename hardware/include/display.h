@@ -22,9 +22,16 @@
 #define _DISPLAY_H
 #include <stdint.h>
 #include "regslcdif.h"
-#define 	VRAM_BASE	0x00001000		//显存基址
+
+#define 	VRAM_BASE						0x00001000		//显存基址
+#define 	LCD_TIMOUT_US					100000		//数据超时时间
+
+#define		LCD_COMMANDE_BUFFER_SIZE		4			//命令缓冲区大小
+#define		LCD_PARAMETER_BUFFER_SIZE		32			//命令参数缓冲区大小
 
 unsigned int pix_format;
+
+
 
 typedef enum lcd_pix_format	//LCD灰度模式
 {
@@ -33,6 +40,14 @@ typedef enum lcd_pix_format	//LCD灰度模式
 } lcd_pix_format;
 
 
+
+typedef enum lcdSendStatus
+{
+    NORMAL_S1 		= 0,
+    NORMAL_S2 	,
+    COMMAND	,	 
+    PARAMETER  
+} lcdSendStatus;
 
 typedef enum hw_lcdif_DmaCommand
 {
@@ -77,6 +92,10 @@ typedef struct _hw_lcdif_DmaDesc	//用于LCD屏幕控制器的DMA描述符
 
 void LCD_dma_flush_auto_buffer_stop(void);
 void LCD_dma_flush_auto_buffer_start(void);
+void LCD_scroll_reset();
+void LCD_scroll_on();
+void LCD_scroll_up(unsigned int pixs);
+void LCD_scroll_down(unsigned int pixs);
 
 
 /*===========================================================================
@@ -131,7 +150,6 @@ void LCD_setxy(unsigned int x, unsigned int y);
 \param[in]	 cmd_size 	命令长度（字节，范围0~4）
 ===========================================================================*/
 void LCD_write_cmd(unsigned int cmd, unsigned int cmd_size);	
-
 
 /*===========================================================================
 \brief       向LCD发送数据，一次发送最大大小为4字节

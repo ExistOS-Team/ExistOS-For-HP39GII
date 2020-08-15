@@ -61,7 +61,7 @@ void _boot()
 	
 	main();
 	
-	
+
 	while(1)
 		{
 
@@ -79,7 +79,7 @@ void _boot()
 			delay_us(1000000);
 			LCD_clear_buffer();
 			//显示图片 256x128
-			for(int y=0; y<127; y++)
+			for(int y=0; y<127; y++) 
 				{
 					for(int x=0; x<255; x++)
 						{
