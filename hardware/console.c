@@ -23,14 +23,19 @@
 #include "uart_debug.h"
 
 unsigned char consoleBuffer[CONSOLE_BUFFER_SIZE];
-console_position_info cursorPosition;
+console_position_info currentWritePosition;
 console_position_info currentFlushPosition;
 
 
 void console_flush_newline(){
+	unsigned int offset = currentFlushPosition.y * CONSOlE_DEFAULT_MAX_WIDTH;
+	LCD_clear_area(0,currentFlushPosition.y,255,currentFlushPosition.y + CONSOlE_DEFAULT_FONT_SIZE);
+	/*
+	for(int x=0; x<CONSOlE_DEFAULT_MAX_WIDTH ;x++){
+		LCD_show_char(x*(CONSOlE_DEFAULT_FONT_SIZE/2),currentFlushPosition.y,consoleBuffer[offset]);
+	}*/
 	
-	
-	
+	currentFlushPosition.y = ((currentFlushPosition.y + CONSOlE_DEFAULT_FONT_SIZE) % (CONSOlE_DEFAULT_FONT_SIZE)) % CONSOlE_DEFAULT_FONT_SIZE;
 }
 
 unsigned int i;
@@ -42,25 +47,25 @@ void console_puts(unsigned char s){
 	switch(s){
 		case '\r':
 		case '\n':
-			cursorPosition.x = 0;
-			cursorPosition.y++;
+			currentWritePosition.x = 0;
+			currentWritePosition.y++;
 		break;
 		
 		default:
-			consoleBuffer[cursorPosition.x + cursorPosition.y * CONSOlE_DEFAULT_MAX_WIDTH] = s;
-			cursorPosition.x++;
+			consoleBuffer[currentWritePosition.x + currentWritePosition.y * CONSOlE_DEFAULT_MAX_WIDTH] = s;
+			currentWritePosition.x++;
 		break;
 	}
 	
-	if(cursorPosition.x >= CONSOlE_DEFAULT_MAX_WIDTH) {
-		cursorPosition.x = 0;
-		cursorPosition.y++;
+	if(currentWritePosition.x >= CONSOlE_DEFAULT_MAX_WIDTH) {
+		currentWritePosition.x = 0;
+		currentWritePosition.y++;
 		
 		//console_flash_to_screen(currentFlushPosition);
 	}
 	
-	if(cursorPosition.y >= CONSOLE_BUFFER_SIZE / CONSOlE_DEFAULT_MAX_WIDTH) {
-		cursorPosition.y = 0;
+	if(currentWritePosition.y >= CONSOLE_BUFFER_SIZE / CONSOlE_DEFAULT_MAX_WIDTH) {
+		currentWritePosition.y = 0;
 	}
 	
 
@@ -76,8 +81,8 @@ void console_init(){
 	}
 	
 	
-	cursorPosition.x = 0;
-	cursorPosition.y = 0;
+	currentWritePosition.x = 0;
+	currentWritePosition.y = 0;
 	currentFlushPosition.x = 0;
 	currentFlushPosition.y = 0;
 	
