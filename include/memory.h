@@ -1,3 +1,5 @@
+#ifdef MICRO_MALLOC
+
 #ifndef _MEMORY_H
 #define _MEMORY_H
 
@@ -18,3 +20,5 @@ void* malloc(unsigned int size);
 void free(void* printer);
 
 #endif
+#endif
+

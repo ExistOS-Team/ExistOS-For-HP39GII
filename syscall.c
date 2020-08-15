@@ -5,13 +5,32 @@
 #include <stdarg.h>
 
 #include "regsuartdbg.h"
+#include "console.h"
 
 #undef errno
 extern int errno;
 int _end asm("end");
 
+//extern int  __HEAP_START;
+
+
+//malloc和sprintf等函数要用到
+caddr_t _sbrk ( int incr ){
+  static unsigned char *heap = NULL;
+  unsigned char *prev_heap;
+  if (heap == NULL) {
+    heap = (unsigned char *)(0x90000000);
+  }
+  prev_heap = heap;
+  heap += incr;
+  return (caddr_t) prev_heap;
+}
+
+
+/*
 caddr_t _sbrk ( int incr )
 {
+	return 0;
 	static unsigned char *heap = NULL;
 	unsigned char *prev_heap;
 
@@ -23,8 +42,10 @@ caddr_t _sbrk ( int incr )
 
 	heap += incr;
 
+
 	return (caddr_t) prev_heap;
-}
+	
+}*/
 
 int link(char *old, char *new)
 {
@@ -68,6 +89,10 @@ void _open(){
 	
 }
 
+void __sync_synchronize(){
+	
+	
+}
 
 void abort(void)
 {
@@ -80,23 +105,30 @@ int fputc(int ch, FILE *f)
 	while(1);
 }
 
-int _write(int file, char *ptr, int len)
+int _write(int fd, char *ptr, int len)
 {
-	uint16_t todo;
+    int i = 0;
 
-	int loop = 0;
-	for(todo = 0; todo < len; todo++)
-		{
-			while (HW_UARTDBGFR_RD()&BM_UARTDBGFR_TXFF)
-				{
-					loop++;
-					if (loop > 10000)
-						break;
-				};
+    /*
+     * write "len" of char from "ptr" to file id "fd"
+     * Return number of char written.
+     *
+    * Only work for STDOUT, STDIN, and STDERR
+     */
+    if (fd > 2)
+    {
+        return -1;
+    }
 
-			if(!(HW_UARTDBGFR_RD() &BM_UARTDBGFR_TXFF))
-				HW_UARTDBGDR_WR(*ptr++);
-		}
+    while (*ptr && (i < len))
+    {
 
-	return *ptr;
+		console_puts(*ptr);
+		
+        i++;
+        ptr++;
+    }
+
+    return i;
 }
+

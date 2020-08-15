@@ -20,16 +20,21 @@
  
 #include "main.h"
 #include <stdio.h>
+
 #include <string.h>
 #include <Screen.h>
 #include <cstring>
+#include <vector>
 
+#include "memory.h"
+using namespace std;
 Screen sc;
+vector<int> vec;
 
 int main(){
-	sc.write_pix(12,34,255);
-	strlen("asdasd");
-	//printf("asd");
+	//sc.write_pix(12,34,255);
+ 
+	printf("asd");
 	
 	return 0;
 }

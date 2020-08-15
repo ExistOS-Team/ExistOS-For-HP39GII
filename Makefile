@@ -11,7 +11,8 @@ AS            = ..\tools\gcc-arm\bin\arm-none-eabi-as
 CFLAGS        = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -Os -pipe
 
 LINKER        = ..\tools\gcc-arm\bin\arm-none-eabi-gcc
-LIBS          = -L..\tools\gcc-arm\lib\gcc\arm-none-eabi\9.3.1 -lgcc -lc
+LIBS          = -L..\tools\gcc-arm\lib\gcc\arm-none-eabi\9.3.1 -lgcc -lstdc++
+#-lc -lstdc++ -lm
 LFLAGS        = -T$(LDSCRIPT) 
 #-nodefaultlibs -nostdlib 
 DEL_FILE      = del /Q /S
