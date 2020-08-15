@@ -23,27 +23,16 @@
 #include "uart_debug.h"
 
 unsigned char consoleBuffer[CONSOLE_BUFFER_SIZE];
-unsigned char consoleBuffer2[CONSOLE_BUFFER_SIZE];
 console_position_info cursorPosition;
 console_position_info currentFlushPosition;
 
-void console_flash_to_screen(console_position_info startFlushBufferPosition){
-	unsigned int offset = startFlushBufferPosition.x + startFlushBufferPosition.y * CONSOlE_DEFAULT_MAX_WIDTH;
-	for(unsigned int y=0; y <= CONSOlE_DEFAULT_MAX_HEIGHT; y++) {
-		for(unsigned int x=0; x < CONSOlE_DEFAULT_MAX_WIDTH; x++) {
-			if(offset>CONSOLE_BUFFER_SIZE){
-				offset=0;
-			}
-			if(consoleBuffer2[offset] == consoleBuffer[offset]){
-				continue;
-			}
-			consoleBuffer2[offset] = consoleBuffer[offset];
-			LCD_show_char(x*(CONSOlE_DEFAULT_FONT_SIZE/2),y*CONSOlE_DEFAULT_FONT_SIZE,consoleBuffer[offset],CONSOlE_DEFAULT_FONT_SIZE,CONSOlE_DEFAULT_FONT_COLOR,0);
-			offset++;
-			
-		}
-	}	
+
+void console_flush_newline(){
+	
+	
+	
 }
+
 unsigned int i;
 
 void console_puts(unsigned char s){
@@ -55,7 +44,6 @@ void console_puts(unsigned char s){
 		case '\n':
 			cursorPosition.x = 0;
 			cursorPosition.y++;
-			//LCD_clear_buffer();
 		break;
 		
 		default:
@@ -68,28 +56,19 @@ void console_puts(unsigned char s){
 		cursorPosition.x = 0;
 		cursorPosition.y++;
 		
-		console_flash_to_screen(currentFlushPosition);
+		//console_flash_to_screen(currentFlushPosition);
 	}
 	
 	if(cursorPosition.y >= CONSOLE_BUFFER_SIZE / CONSOlE_DEFAULT_MAX_WIDTH) {
 		cursorPosition.y = 0;
 	}
 	
-	if((cursorPosition.y - CONSOlE_DEFAULT_MAX_HEIGHT) < 0){
-		currentFlushPosition.y = (CONSOLE_BUFFER_SIZE / CONSOlE_DEFAULT_MAX_WIDTH) - CONSOlE_DEFAULT_MAX_HEIGHT;
-		currentFlushPosition.x = 0;
-	}else{
-		currentFlushPosition.y = (cursorPosition.y - CONSOlE_DEFAULT_MAX_HEIGHT);
-		currentFlushPosition.x = 0;
-	}
+
 	
-	console_flash_to_screen(currentFlushPosition);
+	//console_flash_to_screen(currentFlushPosition);
 }
 
-void console_flush(){
-	LCD_clear_buffer();
-	console_flash_to_screen(currentFlushPosition);
-}
+
 
 void console_init(){
 	for(unsigned int i=0;i<CONSOLE_BUFFER_SIZE;i++){
@@ -101,5 +80,8 @@ void console_init(){
 	cursorPosition.y = 0;
 	currentFlushPosition.x = 0;
 	currentFlushPosition.y = 0;
+	
+	LCD_scroll_on();
+	
 }
 
