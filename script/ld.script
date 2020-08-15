@@ -1,0 +1,17 @@
+OUTPUT_ARCH(arm)
+ENTRY(_boot)
+SECTIONS
+{
+	. = 0x00009200;
+	.text : { *(.text) }
+	.data : { *(.data) }
+	
+	__bss_start__ = .;
+	.bss  : { *(.bss) }
+	__bss_end__ = .;
+	
+	__exidx_start = .;
+
+
+	__exidx_end = .;
+}
