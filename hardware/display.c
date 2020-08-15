@@ -216,6 +216,15 @@ void LCD_write_pix(unsigned int x, unsigned int y, unsigned char color)
 
 }
 
+void LCD_clear_area(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2){
+	unsigned int x,y;
+	for(x=x1; x<x2; x++){
+		for(y=y1; y<y2; y++){
+			LCD_write_pix(x,y,0);
+		}
+	}
+}
+
 
 //在指定位置显示一个字符
 //x, y:起始坐标

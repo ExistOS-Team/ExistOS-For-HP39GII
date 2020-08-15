@@ -97,6 +97,8 @@ void LCD_scroll_on();
 void LCD_scroll_up(unsigned int pixs);
 void LCD_scroll_down(unsigned int pixs);
 
+void LCD_clear_area(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
+
 
 /*===========================================================================
 \brief       从LCD中读取数据

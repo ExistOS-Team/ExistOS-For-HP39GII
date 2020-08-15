@@ -58,8 +58,23 @@ void _boot()
 	enable_interrupts();					//打开中断
 	LCD_clear_buffer();						//清屏缓存
 	LCD_dma_flush_auto_buffer_start();		//开启自动刷屏
+	malloc_init();
+	
+	unsigned int *p[8];
+	unsigned int i;
+	
+	for(i=0; i<7; i++){
+		p[i] = malloc(i*0x1000);
+		uartdbg_printf("线程%x:申请大小：%x bytes ,返回地址：%x \n",i,i*0x500,p[i]);
+	}
+
+	for(i=0; i<7; i++){
+		free(p[i]);
+		uartdbg_printf("线程%x:释放地址：%x \n",i,p[i]);
+	}	
 	
 	main();
+	
 	
 
 	while(1)
@@ -86,7 +101,8 @@ void _boot()
 							LCD_write_pix(x,y,255-test_picture[x+y*256]);	//将屏幕测试图片像素写入到显存中
 						}
 				}
-			delay_us(1000000);
+			
+			delay_us(2000000);
 		}
 }
 
