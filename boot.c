@@ -35,7 +35,9 @@
 #include "irq.h"
 #include "hw_irq.h"
 #include "memory.h"
+#include "console.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 
 extern const unsigned char test_picture[32768];	//128*256 4阶灰度图片
@@ -58,30 +60,24 @@ void _boot()
 	enable_interrupts();					//打开中断
 	LCD_clear_buffer();						//清屏缓存
 	LCD_dma_flush_auto_buffer_start();		//开启自动刷屏
-	malloc_init();
+	//malloc_init();
+	console_init();
 	
-	unsigned int *p[8];
-	unsigned int i;
-	
-	for(i=0; i<7; i++){
-		p[i] = malloc(i*0x1000);
-		uartdbg_printf("线程%x:申请大小：%x bytes ,返回地址：%x \n",i,i*0x500,p[i]);
-	}
-
-	for(i=0; i<7; i++){
-		free(p[i]);
-		uartdbg_printf("线程%x:释放地址：%x \n",i,p[i]);
-	}	
-	
+	printf("malloc1. %x \n",malloc(0x100));
+	printf("malloc2. %x \n",malloc(0x1));
+	printf("malloc3. %x \n",malloc(0x300));
+	fflush(stdout);
 	main();
-	
-	
-
+	/*console_puts('A');
+	console_puts(' ');
+	console_puts('C');
+	console_puts('P');
+	*/
 	while(1)
 		{
 
 
-			
+			/*
 			uartdbg_printf("time: %d CPUID:%x\n",HW_DIGCTL_MICROSECONDS_RD(),read_cpuid());//串口输出启动时间、CPU和寄存器信息
 			uartdbg_print_regs();
 
@@ -91,7 +87,7 @@ void _boot()
 			LCD_show_string(1,25,24*12,24,16,255,"Hello World!");
 			LCD_show_string(1,40,24*12,24,12,255,"Hello World!");
 
-			delay_us(1000000);
+			delay_us(10000);
 			LCD_clear_buffer();
 			//显示图片 256x128
 			for(int y=0; y<127; y++) 
@@ -101,8 +97,13 @@ void _boot()
 							LCD_write_pix(x,y,255-test_picture[x+y*256]);	//将屏幕测试图片像素写入到显存中
 						}
 				}
+				while(1)
+				{	
+					LCD_scroll_up(1);
+				delay_us(20000);
+				}*/
 			
-			delay_us(2000000);
+			//delay_us(20000);
 		}
 }
 

@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
  
-#include "display.h"
+  
 #include "console.h" 
 #include "uart_debug.h"
 
@@ -42,44 +42,49 @@ unsigned int i;
 
 void console_puts(unsigned char s){
 	
-	
-	
 	switch(s){
-		case '\r':
+		//case '\r':
 		case '\n':
 			currentWritePosition.x = 0;
 			currentWritePosition.y++;
-		break;
+		LCD_scroll_up((LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT));
+		LCD_clear_area(0, (currentWritePosition.y*(LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT)) ,255, (currentWritePosition.y*(LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT) + (LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT))+1);			
+		break; 
 		
 		default:
 			consoleBuffer[currentWritePosition.x + currentWritePosition.y * CONSOlE_DEFAULT_MAX_WIDTH] = s;
+			LCD_show_char((currentWritePosition.x*(CONSOlE_DEFAULT_FONT_SIZE/2))%LCD_L , (currentWritePosition.y*((LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT)))%LCD_H,s,CONSOlE_DEFAULT_FONT_SIZE,255,1);	
 			currentWritePosition.x++;
 		break;
 	}
+	 
 	
 	if(currentWritePosition.x >= CONSOlE_DEFAULT_MAX_WIDTH) {
 		currentWritePosition.x = 0;
 		currentWritePosition.y++;
-		
+		LCD_scroll_up((LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT));
+		LCD_clear_area(0, (currentWritePosition.y*(LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT)) ,255, (currentWritePosition.y*(LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT) + (LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT))+1);
 		//console_flash_to_screen(currentFlushPosition);
 	}
 	
-	if(currentWritePosition.y >= CONSOLE_BUFFER_SIZE / CONSOlE_DEFAULT_MAX_WIDTH) {
-		currentWritePosition.y = 0;
+	if(currentWritePosition.y >= CONSOlE_DEFAULT_MAX_HEIGHT) {
+		currentWritePosition.y  = 0;
+		LCD_clear_area(0, (currentWritePosition.y*(LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT)) ,255, (currentWritePosition.y*(LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT) + (LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT))+1);
+		//currentWritePosition.y = currentWritePosition.y % (CONSOlE_DEFAULT_MAX_HEIGHT);
+		//currentWritePosition.x = 0;
+		//LCD_scroll_reset();
+		//LCD_scroll_up(CONSOlE_DEFAULT_FONT_SIZE);
+		//LCD_clear_area(0,currentWritePosition.y*(CONSOlE_DEFAULT_FONT_SIZE),255,currentWritePosition.y*(CONSOlE_DEFAULT_FONT_SIZE) + CONSOlE_DEFAULT_FONT_SIZE);
 	}
-	
 
-	
-	//console_flash_to_screen(currentFlushPosition);
 }
-
+ 
 
 
 void console_init(){
 	for(unsigned int i=0;i<CONSOLE_BUFFER_SIZE;i++){
 		consoleBuffer[i] = ' ';
 	}
-	
 	
 	currentWritePosition.x = 0;
 	currentWritePosition.y = 0;
@@ -88,5 +93,6 @@ void console_init(){
 	
 	LCD_scroll_on();
 	
+	LCD_scroll_up((LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT));
 }
 

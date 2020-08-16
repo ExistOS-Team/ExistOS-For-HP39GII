@@ -1,6 +1,8 @@
 #include "memory.h"
 #include "uart_debug.h"
 
+#ifdef MICRO_MALLOC
+
 void malloc_init() {
     MemoryBlockInfo* p;
     p = (MemoryBlockInfo*)MEM_MIN;
@@ -104,3 +106,6 @@ void free(void* ptr) {
         uartdbg_printf("[Malloc]Warning: Freeing aborted.");
     }
 }
+
+#endif
+
