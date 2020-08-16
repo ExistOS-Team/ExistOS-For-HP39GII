@@ -14,7 +14,7 @@
 
 1. 使用任意方法把本项目源码下载到您的电脑上的任意位置。
 
-2. 前往[待补充地址](https://www.baidu.com)下载编译工具链。
+2. 前往[https://github.com/Repeerc/LibreCalc-For-HP39GII/releases/tag/0.0.1](https://github.com/Repeerc/LibreCalc-For-HP39GII/releases/tag/0.0.1)下载编译工具链。
 
 3. 使本项目源码文件夹和编译工具链文件夹处于同级。如下所示
 
