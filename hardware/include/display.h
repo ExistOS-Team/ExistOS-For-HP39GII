@@ -26,6 +26,9 @@
 #define 	VRAM_BASE						0x00001000		//显存基址
 #define 	LCD_TIMOUT_US					100000		//数据超时时间
 
+#define 	LCD_H	128
+#define 	LCD_L	256
+
 #define		LCD_COMMANDE_BUFFER_SIZE		4			//命令缓冲区大小
 #define		LCD_PARAMETER_BUFFER_SIZE		32			//命令参数缓冲区大小
 
@@ -97,6 +100,7 @@ void LCD_scroll_on();
 void LCD_scroll_up(unsigned int pixs);
 void LCD_scroll_down(unsigned int pixs);
 
+void LCD_clear_area(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2);
 
 /*===========================================================================
 \brief       从LCD中读取数据

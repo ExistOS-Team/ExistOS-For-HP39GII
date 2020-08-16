@@ -186,6 +186,11 @@ void LCD_clear_buffer(void)
 void LCD_write_pix(unsigned int x, unsigned int y, unsigned char color)
 {
 	unsigned char tmp;
+	//if(x>256 || y>128)return;
+	x = (x%LCD_L);
+	y = (y%LCD_H);
+
+
 	switch(pix_format)
 		{
 		case PIX_FORMAT_GRAY4:
@@ -214,6 +219,34 @@ void LCD_write_pix(unsigned int x, unsigned int y, unsigned char color)
 			break;
 		}
 
+}
+
+void LCD_clear_area(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2)
+{
+	unsigned char x,y;
+
+	switch(pix_format)
+		{
+		case PIX_FORMAT_GRAY4:
+			for(x=(x1); x<(x2); x++)
+				{
+					for(y=(y1); y<(y2); y++)
+						{
+							LCD_write_pix(x,y,0);
+						}
+				}
+			break;
+
+
+		case PIX_FORMAT_GRAY256:
+			for(x=(x1); x<(x2); x++)
+				{
+					for(y=(y1); y<(y2); y++)
+						{
+							screen_buffer[(x%LCD_L)+258*((y%LCD_H))]=0;
+						}
+				}
+		}
 }
 
 
@@ -253,12 +286,12 @@ void LCD_show_char(uint16_t x, uint16_t y, uint8_t num, uint8_t size, uint8_t co
 					else if(mode==0)LCD_write_pix(x, y, 0);
 					temp<<=1;
 					y++;
-					if(y>=128)return;		//超区域了
+					//if(y>=128)return;		//超区域了
 					if((y-y0)==size)
 						{
 							y=y0;
 							x++;
-							if(x>=256)return;	//超区域了
+							//if(x>=256)return;	//超区域了
 							break;
 						}
 				}
@@ -451,12 +484,12 @@ void LCD_scroll_up(unsigned int pixs)
 
 void LCD_scroll_down(unsigned int pixs)
 {
-	lcdScrollUpPix = (lcdScrollUpPix - (pixs % (161-8-27))) % (161-8-27);
+	lcdScrollUpPix = (lcdScrollUpPix - (pixs % (161-9-27))) % (161-9-27);
 	if(isAutoSend)
 		{
 			LCD_dma_flush_auto_buffer_stop();
 			LCD_write_cmd(0x37,1);
-			LCD_write_dat(lcdScrollUpPix+8,1);
+			LCD_write_dat(lcdScrollUpPix+9,1);
 			LCD_dma_flush_auto_buffer_start();
 		}
 }
@@ -468,8 +501,8 @@ void LCD_scroll_reset()
 		{
 			LCD_dma_flush_auto_buffer_stop();
 			LCD_write_cmd(0x37,1);
-			LCD_write_dat(0,1);
-			LCD_write_cmd(0x13,1);
+			LCD_write_dat(8,1);
+			//LCD_write_cmd(0x13,1);
 			LCD_dma_flush_auto_buffer_start();
 		}
 }

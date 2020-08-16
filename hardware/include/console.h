@@ -21,6 +21,8 @@
 #ifndef __CONSOLE_H
 #define __CONSOLE_H
 
+#include "display.h"
+
 typedef struct {
 	unsigned int x;
 	unsigned int y;
@@ -31,15 +33,15 @@ typedef struct {
 #define CONSOlE_DEFAULT_FONT_SIZE	12
 #define CONSOlE_DEFAULT_FONT_COLOR	255
 
-#define CONSOlE_DEFAULT_MAX_WIDTH		41
-#define CONSOlE_DEFAULT_MAX_HEIGHT		9
+#define CONSOlE_DEFAULT_MAX_WIDTH		(LCD_L / (CONSOlE_DEFAULT_FONT_SIZE / 2) - 1) 
+#define CONSOlE_DEFAULT_MAX_HEIGHT		((LCD_H / CONSOlE_DEFAULT_FONT_SIZE) - 1)
 
-#define CONSOLE_BUFFER_SIZE	(CONSOlE_DEFAULT_MAX_HEIGHT * CONSOlE_DEFAULT_MAX_WIDTH * 11)
+#define CONSOLE_BUFFER_SIZE	(CONSOlE_DEFAULT_MAX_HEIGHT * CONSOlE_DEFAULT_MAX_WIDTH)
 
 void console_puts(unsigned char s);
 void console_init();
 void console_flush();
-
+void console_init();
 
 #endif
 

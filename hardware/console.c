@@ -18,56 +18,67 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
  
-#include "display.h"
+  
 #include "console.h" 
 #include "uart_debug.h"
 
 unsigned char consoleBuffer[CONSOLE_BUFFER_SIZE];
-console_position_info cursorPosition;
+console_position_info currentWritePosition;
 console_position_info currentFlushPosition;
 
 
 void console_flush_newline(){
+	unsigned int offset = currentFlushPosition.y * CONSOlE_DEFAULT_MAX_WIDTH;
+	LCD_clear_area(0,currentFlushPosition.y,255,currentFlushPosition.y + CONSOlE_DEFAULT_FONT_SIZE);
+	/*
+	for(int x=0; x<CONSOlE_DEFAULT_MAX_WIDTH ;x++){
+		LCD_show_char(x*(CONSOlE_DEFAULT_FONT_SIZE/2),currentFlushPosition.y,consoleBuffer[offset]);
+	}*/
 	
-	
-	
+	currentFlushPosition.y = ((currentFlushPosition.y + CONSOlE_DEFAULT_FONT_SIZE) % (CONSOlE_DEFAULT_FONT_SIZE)) % CONSOlE_DEFAULT_FONT_SIZE;
 }
 
 unsigned int i;
 
 void console_puts(unsigned char s){
 	
-	
-	
 	switch(s){
-		case '\r':
+		//case '\r':
 		case '\n':
-			cursorPosition.x = 0;
-			cursorPosition.y++;
-		break;
+			currentWritePosition.x = 0;
+			currentWritePosition.y++;
+		LCD_scroll_up((LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT));
+		LCD_clear_area(0, (currentWritePosition.y*(LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT)) ,255, (currentWritePosition.y*(LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT) + (LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT))+1);			
+		break; 
 		
 		default:
-			consoleBuffer[cursorPosition.x + cursorPosition.y * CONSOlE_DEFAULT_MAX_WIDTH] = s;
-			cursorPosition.x++;
+			consoleBuffer[currentWritePosition.x + currentWritePosition.y * CONSOlE_DEFAULT_MAX_WIDTH] = s;
+			LCD_show_char((currentWritePosition.x*(CONSOlE_DEFAULT_FONT_SIZE/2))%LCD_L , (currentWritePosition.y*((LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT)))%LCD_H,s,CONSOlE_DEFAULT_FONT_SIZE,255,1);	
+			currentWritePosition.x++;
 		break;
 	}
+	 
 	
-	if(cursorPosition.x >= CONSOlE_DEFAULT_MAX_WIDTH) {
-		cursorPosition.x = 0;
-		cursorPosition.y++;
-		
+	if(currentWritePosition.x >= CONSOlE_DEFAULT_MAX_WIDTH) {
+		currentWritePosition.x = 0;
+		currentWritePosition.y++;
+		LCD_scroll_up((LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT));
+		LCD_clear_area(0, (currentWritePosition.y*(LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT)) ,255, (currentWritePosition.y*(LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT) + (LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT))+1);
 		//console_flash_to_screen(currentFlushPosition);
 	}
 	
-	if(cursorPosition.y >= CONSOLE_BUFFER_SIZE / CONSOlE_DEFAULT_MAX_WIDTH) {
-		cursorPosition.y = 0;
+	if(currentWritePosition.y >= CONSOlE_DEFAULT_MAX_HEIGHT) {
+		currentWritePosition.y  = 0;
+		LCD_clear_area(0, (currentWritePosition.y*(LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT)) ,255, (currentWritePosition.y*(LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT) + (LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT))+1);
+		//currentWritePosition.y = currentWritePosition.y % (CONSOlE_DEFAULT_MAX_HEIGHT);
+		//currentWritePosition.x = 0;
+		//LCD_scroll_reset();
+		//LCD_scroll_up(CONSOlE_DEFAULT_FONT_SIZE);
+		//LCD_clear_area(0,currentWritePosition.y*(CONSOlE_DEFAULT_FONT_SIZE),255,currentWritePosition.y*(CONSOlE_DEFAULT_FONT_SIZE) + CONSOlE_DEFAULT_FONT_SIZE);
 	}
-	
 
-	
-	//console_flash_to_screen(currentFlushPosition);
 }
-
+ 
 
 
 void console_init(){
@@ -75,13 +86,13 @@ void console_init(){
 		consoleBuffer[i] = ' ';
 	}
 	
-	
-	cursorPosition.x = 0;
-	cursorPosition.y = 0;
+	currentWritePosition.x = 0;
+	currentWritePosition.y = 0;
 	currentFlushPosition.x = 0;
 	currentFlushPosition.y = 0;
 	
 	LCD_scroll_on();
 	
+	LCD_scroll_up((LCD_H/CONSOlE_DEFAULT_MAX_HEIGHT));
 }
 

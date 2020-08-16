@@ -1,5 +1,7 @@
-#include "include/memory.h"
-#include "include/uart_debug.h"
+#include "memory.h"
+#include "uart_debug.h"
+
+#ifdef MICRO_MALLOC
 
 void malloc_init() {
     MemoryBlockInfo* p;
@@ -24,7 +26,7 @@ void* malloc(unsigned int size) {
         previous = p;
         p = p->pointer;
         if (p == 0x0) { // No block available
-            printf("Malloc: Block not found. Alloc aborted.\n");
+            //printf("Malloc: Block not found. Alloc aborted.\n");
             return 0x0;
         }
     }
@@ -104,3 +106,6 @@ void free(void* ptr) {
         uartdbg_printf("[Malloc]Warning: Freeing aborted.");
     }
 }
+
+#endif
+
