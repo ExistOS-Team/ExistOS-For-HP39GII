@@ -24,7 +24,7 @@
 
 
 void DFLTP_init(){
-	unsigned int *mmu_base=(unsigned int *)FIRST_LEVEL_PAGE_TABLE_FOR_KERNEL;	//一级页表基地址
+	unsigned int *mmu_base=(unsigned int *)FIRST_LEVEL_PAGE_TABLE_BASE;	//一级页表基地址
 	
 	for(unsigned char *ptr = (unsigned char*)(SECOUND_LEVEL_PAGE_TABLE_FOR_KERNEL);ptr < (unsigned char *)(SECOUND_LEVEL_PAGE_TABLE_FOR_KERNEL + 0x800);ptr++) {	//清空二级页表
 		*ptr = 0;
@@ -151,7 +151,7 @@ void enable_mmu()
 	__flush_Dcache();
 	__flush_Icache();
 	__flush_TLB();
-	__enable_mmu(FIRST_LEVEL_PAGE_TABLE_FOR_KERNEL);
+	__enable_mmu(FIRST_LEVEL_PAGE_TABLE_BASE);
 
 }
 
@@ -159,19 +159,19 @@ void enable_mmu()
 void stack_init(){
 		
     switch_mode(ABT_MODE);
-    set_stack((unsigned int *)0x0007FD00);
+    set_stack((unsigned int *)0x0007FF00);
     
 	switch_mode(UND_MODE);
-    set_stack((unsigned int *)0x0007FB00);
+    set_stack((unsigned int *)0x0007F000);
     
 	switch_mode(FIQ_MODE);
-    set_stack((unsigned int *)0x0007F900);
+    set_stack((unsigned int *)0x0007E000);
 	
     switch_mode(IRQ_MODE);
-    set_stack((unsigned int *)0x0007F500);
+    set_stack((unsigned int *)0x0007D000);
     
 	switch_mode(SYS_MODE);
-	set_stack((unsigned int *)0x0007F700);
+	set_stack((unsigned int *)0x0007C000);
 	
 	switch_mode(SVC_MODE);
     asm volatile ("nop");       

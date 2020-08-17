@@ -34,7 +34,7 @@ vector<int> vec;
 int main(){
 	//sc.write_pix(12,34,255);
  
-	printf("asd");
+	printf("Main function.\n");
 	
 	return 0;
 }
