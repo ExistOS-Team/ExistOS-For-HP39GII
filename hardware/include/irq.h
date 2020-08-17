@@ -29,7 +29,7 @@
 
 void irq_init();
 void irq_set_enable(unsigned int irq_n, unsigned int enable);
-void irq_install_serveice(unsigned int irq_n,unsigned int *service_program);
+void irq_install_service(unsigned int irq_n,unsigned int *service_program);
 
 void enable_interrupts();
 void disable_interrupts();

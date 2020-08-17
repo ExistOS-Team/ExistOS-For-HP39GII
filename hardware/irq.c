@@ -72,7 +72,7 @@ void irq_set_enable(unsigned int irq_n, unsigned int enable) {
 
 }
 
-void irq_install_serveice(unsigned int irq_n, unsigned int *service_program) {
+void irq_install_service(unsigned int irq_n, unsigned int *service_program) {
 	irq_vector_table_base[irq_n] = (unsigned int )service_program;
 }
 
@@ -112,7 +112,7 @@ void irq_init() {		//中断系统的初始化
 	}
 
 	for(unsigned int i=0;i<0x64;i++) {	//将所有的中断服务函数指向预置函数
-		irq_install_serveice(i, (unsigned int *)irq_dummy);
+		irq_install_service(i, (unsigned int *)irq_dummy);
 	}
 	exception_install(EXCEPTION_IRQ, (unsigned int*)__irq_service);
 	exception_install(EXCEPTION_FIQ, (unsigned int*)__fiq_service);
