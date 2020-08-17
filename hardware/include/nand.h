@@ -27,6 +27,16 @@
 
 #define NAND_MAX_ID_LEN 8
 
+typedef enum OperationStatus{
+	operationDone = 0,
+	deviceBusy,
+	deviceTimeout
+}OperationStatus;
+
+
+
+
+
 /*
  * A helper for defining older NAND chips where the second ID byte fully
  * defined the chip, including the geometry (chip size, eraseblock size, page

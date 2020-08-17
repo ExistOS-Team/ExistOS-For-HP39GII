@@ -90,7 +90,7 @@ struct nand_flash_dev foundChip;
 
 volatile GPMI_DMA_GENERIC_DESCRIPTOR chains[10];
 
-BootBlockStruct_t bootBlockInfo;
+BootBlockStruct_t *bootBlockInfo;
 
 
 
@@ -211,7 +211,7 @@ void GPMI_send_cmd(unsigned int command, unsigned int address, unsigned int addr
 
 
 void GPMI_read_block_with_ecc8(unsigned char set_read_command,unsigned char start_read_command,
-                               unsigned char *address_data, unsigned int address_data_size_bytes )
+                               unsigned char *address_data, unsigned int *buffer, unsigned int address_data_size_bytes )
 {
 	unsigned int i;
 	eccOperationCompleted = 0;
@@ -369,7 +369,7 @@ void GPMI_read_block_with_ecc8(unsigned char set_read_command,unsigned char star
 
 	//chains[4].gpmi_ecccount = BF_GPMI_ECCCOUNT_COUNT(8*(512+18)+(65+9));            // 4K PAGE SIZE specify number of bytes read fromNAND
 	chains[4].gpmi_ecccount = BF_GPMI_ECCCOUNT_COUNT(4*(512+9)+(19+9));               // 2K PAGE SIZE specify number of bytes read fromNAND
-	chains[4].gpmi_data_ptr = (unsigned int)&__DMA_NAND_PALLOAD_BUFFER;               // pointer for the 4K byte data area
+	chains[4].gpmi_data_ptr = (unsigned int)buffer;               // pointer for the 4K byte data area
 	chains[4].gpmi_aux_ptr = (unsigned int)&__DMA_NAND_AUXILIARY_BUFFER;              // pointer for the 65 byte aux area + parity and syndrome bytes \
 	for both data and aux blocks.
 
@@ -481,13 +481,13 @@ void ecc8_completion_irq_handle()
 
 	eccOperationCompleted = 1;
 
-
+/*
 	printf("ECC8:finish. Error Level:%1x %1x %1x %1x\n",
 	       BF_RD(ECC8_STATUS1,STATUS_PAYLOAD0),
 	       BF_RD(ECC8_STATUS1,STATUS_PAYLOAD1),
 	       BF_RD(ECC8_STATUS1,STATUS_PAYLOAD2),
 	       BF_RD(ECC8_STATUS1,STATUS_PAYLOAD3)
-	      );
+	      );*/
 
 	HW_ECC8_STATUS0_RD();
 	HW_ECC8_STATUS1_RD();
@@ -576,14 +576,60 @@ void set_page_address_data(unsigned int pageNumber)
 
 
 
-void get_boot_block_info(){
-	
-	
-	
+void get_boot_block_info()
+{
+
+
+
 }
 
-unsigned int read_nand_pages(unsigned int start_page, unsigned int pages, unsigned int *buffer, unsigned timeout_us) {
-	
+/*
+ *	return:
+ *	0 done
+ *  1 device busy
+ *  2 read timeout
+ */
+unsigned int read_nand_pages(unsigned int start_page, unsigned int pages, unsigned int *buffer, unsigned int timeout_ms)
+{
+	unsigned int cnt1, cnt2, pgcnt = 0;
+	if(timeout_ms)
+		{
+			cnt1 = timeout_ms * 10;
+		}
+	else
+		{
+			cnt1 = 10000 * 10;
+		}
+
+	cnt2 = cnt1;
+
+	if(!dmaOperationCompleted || !eccOperationCompleted)
+		{
+			return deviceBusy;
+		}
+
+	while(pgcnt < pages)
+		{
+			set_page_address_data(start_page);
+			GPMI_read_block_with_ecc8(NAND_CMD_READ0,NAND_CMD_READSTART,address_page_data,buffer,4);
+
+			while((!dmaOperationCompleted || !eccOperationCompleted))
+				{
+					delay_us(100);
+					cnt2--;
+					if(cnt2 == 0)
+						{
+							return deviceTimeout;
+						}
+				}
+
+			cnt2 = cnt1;
+			pgcnt++;
+			start_page++;
+			buffer += foundChip.pagesize;
+
+		}
+
 
 }
 
@@ -676,7 +722,8 @@ void NAND_init()
 	while(BF_RD(GPMI_CTRL0,CLKGATE));
 
 	ecc8_init();
-
+	eccOperationCompleted = 1;
+	
 	HW_GPMI_CTRL1_WR(
 	    BF_GPMI_CTRL1_DEV_RESET(BV_GPMI_CTRL1_DEV_RESET__DISABLED) |
 	    BF_GPMI_CTRL1_ATA_IRQRDY_POLARITY(BV_GPMI_CTRL1_ATA_IRQRDY_POLARITY__ACTIVEHIGH) |
@@ -722,6 +769,11 @@ void NAND_init()
 
 	foundChip.mfr_id = id[0];
 	foundChip.dev_id = id[1];
+
+	foundChip.pagesize = 2048;		//todo 解析pagesize
+
+
+
 	unsigned int i = 0;
 	while(nand_manuf_ids[i].name != NULL)
 		{
@@ -746,25 +798,42 @@ void NAND_init()
 	//printf("GPMI DEBUG:%04x \n",*((unsigned int *)0x8000C0C0));
 	printf("HW_APBH_CH4_SEMA:%04x \n",*((unsigned int *)0x80004240));
 	//printf("DMACTRL1:%04x \n",*((unsigned int *)0x8000C060));
-	printf("PIO 0:%04x \n",*((unsigned int *)0x8000C000)); 
+	printf("PIO 0:%04x \n",*((unsigned int *)0x8000C000));
 
-	for(unsigned int i = &__DMA_NAND_PALLOAD_BUFFER; i < (&__DMA_NAND_PALLOAD_BUFFER + 0x2000/4); i+=4)
+
+
+	read_nand_pages(0,1,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),0);
+	bootBlockInfo = ((BootBlockStruct_t *)(&__DMA_NAND_PALLOAD_BUFFER));
+	printf("Finger Print1 %x\n",bootBlockInfo->m_u32FingerPrint1);
+	printf("PG size: %d\n",bootBlockInfo->NCB_Block1.m_u32DataPageSize);
+	
+	
+	printf("1st FW Image: %d\n",bootBlockInfo->LDLB_Block2.m_u32Firmware_startingSector);
+	printf("2st FW Image: %d\n",bootBlockInfo->LDLB_Block2.m_u32Firmware_startingSector2);
+	printf("1st FW Size: %d\n",bootBlockInfo->LDLB_Block2.m_uSectorsInFirmware);
+	printf("2st FW Size: %d\n",bootBlockInfo->LDLB_Block2.m_uSectorsInFirmware2);
+	
+	
+	read_nand_pages(bootBlockInfo->LDLB_Block2.m_u32Firmware_startingSector,1,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),0);
+	//read_nand_pages(1000,1,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),0);
+	for(unsigned int i = &__DMA_NAND_PALLOAD_BUFFER; i < (&__DMA_NAND_PALLOAD_BUFFER + 0x800/4); i+=4)
 		{
-			*((unsigned int *)i) = 0;
+			uartdbg_printf("%x ",*((unsigned int *)i));
 		}
 
-	for(int pageStart = 0; pageStart < 10 ; pageStart++)
-		{
-			set_page_address_data(pageStart);
-			GPMI_read_block_with_ecc8(NAND_CMD_READ0,NAND_CMD_READSTART,address_page_data,4);
-			while(!eccOperationCompleted);
-			uartdbg_printf("page %d:\n",pageStart);
-			for(unsigned int i = &__DMA_NAND_PALLOAD_BUFFER; i < (&__DMA_NAND_PALLOAD_BUFFER + 0x800/4); i+=4)
-				{
-					uartdbg_printf("%x ",*((unsigned int *)i));
-				}
+	/*
+		for(int pageStart = 0; pageStart < 10 ; pageStart++)
+			{
+				set_page_address_data(pageStart);
+				//GPMI_read_block_with_ecc8(NAND_CMD_READ0,NAND_CMD_READSTART,address_page_data,4);
+				while(!eccOperationCompleted);
+				uartdbg_printf("page %d:\n",pageStart);
+				for(unsigned int i = &__DMA_NAND_PALLOAD_BUFFER; i < (&__DMA_NAND_PALLOAD_BUFFER + 0x800/4); i+=4)
+					{
+						uartdbg_printf("%x ",*((unsigned int *)i));
+					}
 
-		}
+			}*/
 	//GPMI_read_block_with_ecc8('C','D',"qwert",5,"asd");
 
 }
