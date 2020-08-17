@@ -27,14 +27,29 @@
 #include <vector>
 
 #include "memory.h"
+
+extern "C"{
+	void timer_init();
+	char timer_set(char n, unsigned short count, unsigned int *callback);
+	void timer_start(char n);
+	void timer_stop(char n);
+}
+
 using namespace std;
 Screen sc;
 vector<int> vec;
 
+void callback(){
+	printf("callback.\n");
+	fflush(stdout);
+}
+
 int main(){
-	//sc.write_pix(12,34,255);
- 
-	printf("Main function.\n");
-	
+	timer_init();
+	printf("set: 0x%x.\n", timer_set(0, 32000, (unsigned int *)callback));
+	fflush(stdout);
+	timer_start(0);
 	return 0;
 }
+
+
