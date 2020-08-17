@@ -356,7 +356,7 @@ void LCD_dma_channel_reset(void)
 
 	BF_CS1(APBH_CTRL1, CH0_CMDCMPLT_IRQ_EN, 1);											//打开LCD DMA控制器完成中断请求
 	irq_set_enable(VECTOR_IRQ_LCDIF_DMA, 1);											//打开中断控制器中关于LCD DMA的中断请求
-	irq_install_serveice(VECTOR_IRQ_LCDIF_DMA, (unsigned int *)LCD_dma_irq_handle);		//注册DMA操作完成中断的处理函数
+	irq_install_service(VECTOR_IRQ_LCDIF_DMA, (unsigned int *)LCD_dma_irq_handle);		//注册DMA操作完成中断的处理函数
 
 
 	//设置LCD DMA通道命令描述符
