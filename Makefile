@@ -23,7 +23,7 @@ SBLOADER	  = ..\tools\sbtools\sb_loader.exe
 GCCINCPATH       = -I. -I..\tools\gcc-arm\arm-none-eabi\include 
 INCPATH  		= -Iinclude -Ihardware\include\registers -Ihardware\include -Ihal\include -Iinclude\freetype
 
-CSRCS 	= $(wildcard  ./*.c ./hardware/*.c)
+CSRCS 	= $(wildcard  ./*.c ./hardware/*.c ./filesystem/fatfs/*.c)
 CPPSRCS = $(wildcard ./*.cpp ./hal/*.cpp)
 
 FREETPYE_CSRCS = $(wildcard ./freetype/src/base/ftbase.c ./freetype/src/gzip/ftgzip.c ./freetype/src/base/ftinit.c ./freetype/src/lzw/ftlzw.c ./freetype/src/base/ftsystem.c ./freetype/src/sfnt/sfnt.c ./freetype/src/smooth/smooth.c ./freetype/src/truetype/truetype.c ./freetype/src/base/ftbitmap.c ./freetype/*.c)

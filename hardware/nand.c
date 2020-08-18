@@ -18,8 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
-#include "regsgpmi.h"
-#include "regsecc8.h"
+
 #include "regspinctrl.h"
 #include "regsclkctrl.h"
 #include "regsapbh.h"
@@ -28,6 +27,7 @@
 #include "hw_irq.h"
 #include "utils.h"
 #include "uart_debug.h"
+#include "nandchips.h"
 
 #include <stdio.h>
 
@@ -43,6 +43,9 @@ unsigned int DeviceTimeOut_s = 0;
 unsigned short DeviceTimeOutCycles = 0;
 volatile unsigned int dmaOperationCompleted = 0;
 volatile unsigned int eccOperationCompleted = 0;
+
+unsigned int mapping_sectorsPerblock = 64;
+unsigned int mapping_firstBlockLBA = 64;
 
 unsigned char address_page_data[5];
 
@@ -217,14 +220,14 @@ void GPMI_read_block_with_ecc8(unsigned char set_read_command,unsigned char star
 	eccOperationCompleted = 0;
 	// 设置读取模式命令（1byte） + 地址数据(一般5bytes) + 开始读取命令(1byte)
 	commandAddressBuffer[0] = set_read_command;
-	for(i=1; i < address_data_size_bytes; i++ )
+	for(i=1; i <= address_data_size_bytes; i++ )
 		{
 			commandAddressBuffer[i] = address_data[i - 1];
 		}
-	commandAddressBuffer[++i] = start_read_command;
+	commandAddressBuffer[i] = start_read_command;
 
-	for(unsigned int k = 0; k<10; k++)printf("%x ",commandAddressBuffer[k]);
-	printf("\n");
+	//for(unsigned int k = 0; k<10; k++)printf("%x ",commandAddressBuffer[k]);
+	//printf("\n");
 
 	//Reference STMP3770 datasheet P.439
 
@@ -441,7 +444,7 @@ void GPMI_dma_irq_handle()
 {
 	dma_cmplt = BF_RD(APBH_CTRL1, CH4_CMDCMPLT_IRQ);
 	dma_error = BF_RD(APBH_CTRL1, CH4_AHB_ERROR_IRQ);
-	printf("GPMI DMA IRQ CMPLT:%1d ERROR:%1d\n",dma_cmplt,dma_error);
+	//printf("GPMI DMA IRQ CMPLT:%1d ERROR:%1d\n",dma_cmplt,dma_error);
 
 	if(dma_cmplt)
 		{
@@ -467,7 +470,7 @@ void GPMI_dma_irq_handle()
 
 void GPMI_irq_handle()
 {
-	printf("GPMI IRQ DevIRQ:%1d Time out:%1d\n",BF_RD(GPMI_CTRL1,DEV_IRQ),BF_RD(GPMI_CTRL1,TIMEOUT_IRQ));
+	//printf("GPMI IRQ DevIRQ:%1d Time out:%1d\n",BF_RD(GPMI_CTRL1,DEV_IRQ),BF_RD(GPMI_CTRL1,TIMEOUT_IRQ));
 
 	BF_CS1(GPMI_CTRL1,DEV_IRQ,0);
 	BF_CS1(GPMI_CTRL1,TIMEOUT_IRQ,0);
@@ -481,13 +484,13 @@ void ecc8_completion_irq_handle()
 
 	eccOperationCompleted = 1;
 
-/*
-	printf("ECC8:finish. Error Level:%1x %1x %1x %1x\n",
-	       BF_RD(ECC8_STATUS1,STATUS_PAYLOAD0),
-	       BF_RD(ECC8_STATUS1,STATUS_PAYLOAD1),
-	       BF_RD(ECC8_STATUS1,STATUS_PAYLOAD2),
-	       BF_RD(ECC8_STATUS1,STATUS_PAYLOAD3)
-	      );*/
+	/*
+		printf("ECC8:finish. Error Level:%1x %1x %1x %1x\n",
+		       BF_RD(ECC8_STATUS1,STATUS_PAYLOAD0),
+		       BF_RD(ECC8_STATUS1,STATUS_PAYLOAD1),
+		       BF_RD(ECC8_STATUS1,STATUS_PAYLOAD2),
+		       BF_RD(ECC8_STATUS1,STATUS_PAYLOAD3)
+		      );*/
 
 	HW_ECC8_STATUS0_RD();
 	HW_ECC8_STATUS1_RD();
@@ -581,6 +584,11 @@ void get_boot_block_info()
 
 
 
+}
+
+unsigned int gpmi_is_busy()
+{
+	return(!dmaOperationCompleted || !eccOperationCompleted);
 }
 
 /*
@@ -723,7 +731,7 @@ void NAND_init()
 
 	ecc8_init();
 	eccOperationCompleted = 1;
-	
+
 	HW_GPMI_CTRL1_WR(
 	    BF_GPMI_CTRL1_DEV_RESET(BV_GPMI_CTRL1_DEV_RESET__DISABLED) |
 	    BF_GPMI_CTRL1_ATA_IRQRDY_POLARITY(BV_GPMI_CTRL1_ATA_IRQRDY_POLARITY__ACTIVEHIGH) |
@@ -805,35 +813,71 @@ void NAND_init()
 	read_nand_pages(0,1,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),0);
 	bootBlockInfo = ((BootBlockStruct_t *)(&__DMA_NAND_PALLOAD_BUFFER));
 	printf("Finger Print1 %x\n",bootBlockInfo->m_u32FingerPrint1);
-	printf("PG size: %d\n",bootBlockInfo->NCB_Block1.m_u32DataPageSize);
-	
-	
+	printf("Nand page size: %d Bytes\n",bootBlockInfo->NCB_Block1.m_u32DataPageSize);/*
 	printf("1st FW Image: %d\n",bootBlockInfo->LDLB_Block2.m_u32Firmware_startingSector);
 	printf("2st FW Image: %d\n",bootBlockInfo->LDLB_Block2.m_u32Firmware_startingSector2);
 	printf("1st FW Size: %d\n",bootBlockInfo->LDLB_Block2.m_uSectorsInFirmware);
-	printf("2st FW Size: %d\n",bootBlockInfo->LDLB_Block2.m_uSectorsInFirmware2);
-	
-	
-	read_nand_pages(bootBlockInfo->LDLB_Block2.m_u32Firmware_startingSector,1,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),0);
-	//read_nand_pages(1000,1,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),0);
-	for(unsigned int i = &__DMA_NAND_PALLOAD_BUFFER; i < (&__DMA_NAND_PALLOAD_BUFFER + 0x800/4); i+=4)
-		{
-			uartdbg_printf("%x ",*((unsigned int *)i));
-		}
+	printf("2st FW Size: %d\n",bootBlockInfo->LDLB_Block2.m_uSectorsInFirmware2);*/
+	read_nand_pages(0x300,1,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),0);
+
+	//userDataStartBlock = *((unsigned int *)((unsigned int)&__DMA_NAND_PALLOAD_BUFFER) + 13 + 4) +
+	//                     *((unsigned int *)((unsigned int)&__DMA_NAND_PALLOAD_BUFFER) + 17 + 2) ;//+ 0x300;
 
 	/*
-		for(int pageStart = 0; pageStart < 10 ; pageStart++)
+		*((unsigned char *)((unsigned int)&firstPartitionBlock) + 3) = *((unsigned char *)((unsigned int)&__DMA_NAND_PALLOAD_BUFFER) + 0x1C6 + 3);
+		*((unsigned char *)((unsigned int)&firstPartitionBlock) + 2) = *((unsigned char *)((unsigned int)&__DMA_NAND_PALLOAD_BUFFER) + 0x1C6 + 2);
+		*((unsigned char *)((unsigned int)&firstPartitionBlock) + 1) = *((unsigned char *)((unsigned int)&__DMA_NAND_PALLOAD_BUFFER) + 0x1C6 + 1);
+		*((unsigned char *)((unsigned int)&firstPartitionBlock) + 0) = *((unsigned char *)((unsigned int)&__DMA_NAND_PALLOAD_BUFFER) + 0x1C6 + 0);
+		firstPartitionBlock += userDataStartBlock;
+		printf("1st Partition blk addr: %x\n",firstPartitionBlock);
+	*/
+	//read_nand_pages(userDataStartBlock,1,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),0);
+	/*
+		for(unsigned int pageStart = firstPartitionBlock; pageStart < userDataStartBlock+100 ; pageStart++)
 			{
-				set_page_address_data(pageStart);
-				//GPMI_read_block_with_ecc8(NAND_CMD_READ0,NAND_CMD_READSTART,address_page_data,4);
-				while(!eccOperationCompleted);
-				uartdbg_printf("page %d:\n",pageStart);
-				for(unsigned int i = &__DMA_NAND_PALLOAD_BUFFER; i < (&__DMA_NAND_PALLOAD_BUFFER + 0x800/4); i+=4)
+
+				read_nand_pages(pageStart,1,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),0);
+				for(unsigned int i = &__DMA_NAND_PALLOAD_BUFFER; i < (&__DMA_NAND_PALLOAD_BUFFER + 0x800/4); i++)
 					{
-						uartdbg_printf("%x ",*((unsigned int *)i));
+						uartdbg_printf("%x ",*((unsigned char *)i));
 					}
 
 			}*/
-	//GPMI_read_block_with_ecc8('C','D',"qwert",5,"asd");
+
+	volatile unsigned int cdcd=0;
+
+	for(int pageStart = 0x3000; pageStart < 0x6000 ; pageStart++)
+		{
+			read_nand_pages(pageStart,1,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),0);
+
+			/*
+						for(unsigned int i = &__DMA_NAND_PALLOAD_BUFFER; i < (&__DMA_NAND_PALLOAD_BUFFER + 0x800/4); i++)
+							{
+								uartdbg_putc(*((unsigned char *)i));
+							}
+			*/
+
+			/*if((*((unsigned int *)&__DMA_NAND_PALLOAD_BUFFER) == 0x504D5453))
+				{
+					cdcd=4;
+				}
+
+			if((*((unsigned int *)(&__DMA_NAND_PALLOAD_BUFFER+0x200/4)) & 0xFFFF0000 == 0xAA550000))
+				{
+					cdcd=4;
+				}	*/
+			//if( (*((unsigned int *)&__DMA_NAND_PALLOAD_BUFFER) != 0xFFFFFFFF) &&  (*((unsigned int *)&__DMA_NAND_PALLOAD_BUFFER) != 0x0))
+			if( (*((unsigned int *)&__DMA_NAND_PALLOAD_BUFFER) == 0x211DEBFA))
+				//&& (*((unsigned int *)((&__DMA_NAND_PALLOAD_BUFFER)+0x200/4)) == 0xAA550000))
+				{
+					printf("endw:%x\n",*((unsigned int *)((&__DMA_NAND_PALLOAD_BUFFER+512/4-1))));
+					userDataStartBlock = pageStart;
+					firstPartitionBlock = pageStart;
+					break;
+				}
+		}
+	printf("User Disk blk addr: %x\n",userDataStartBlock);
+	read_nand_pages(userDataStartBlock,1,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),0);
+ 
 
 }
