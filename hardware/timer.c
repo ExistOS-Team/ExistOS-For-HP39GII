@@ -1,7 +1,6 @@
 #include "timer.h"
 #include "irq.h"
 #include "regstimrot.h"
-#include <stdio.h>
 
 inline void timer_init(){
     BW_TIMROT_ROTCTRL_SFTRST(0);
@@ -41,14 +40,14 @@ inline void timer_stop(char n){
         irq_set_enable(IRQ_N(n), 0);
         irq_install_service(IRQ_N(n), 0x0);
         BW_TIMROT_TIMCOUNTn_FIXED_COUNT(n, 0);
-    }    
+    }
 }
 
 inline void timer_reset(char n){
     if (n <= HW_TIMROT_TIMCTRLn_COUNT) {
         BW_TIMROT_TIMCTRLn_IRQ(n, 0);
         irq_set_enable(IRQ_N(n), 1);
-    }    
+    }
 }
 
 inline unsigned short timer_get(char n){
