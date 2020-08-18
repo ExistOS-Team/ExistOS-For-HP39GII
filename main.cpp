@@ -30,9 +30,11 @@
 
 extern "C"{
 	void timer_init();
-	char timer_set(char n, unsigned short count, unsigned int *callback);
-	void timer_start(char n);
+	char timer_set(char n, char isRepeat, char accuracy, unsigned int *callback);
+	void timer_start(char n, unsigned short count);
 	void timer_stop(char n);
+	void timer_reset(char n);
+	unsigned short timer_get(char n);
 }
 
 using namespace std;
@@ -46,9 +48,9 @@ void callback(){
 
 int main(){
 	timer_init();
-	printf("set: 0x%x.\n", timer_set(0, 32000, (unsigned int *)callback));
+	printf("set: 0x%x.\n", timer_set(0, 1, 0x8, (unsigned int *)callback));
 	fflush(stdout);
-	timer_start(0);
+	timer_start(0, 32000);
 	return 0;
 }
 
