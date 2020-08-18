@@ -29,28 +29,33 @@
 #include "memory.h"
 
 extern "C"{
-	void timer_init();
-	char timer_set(char n, char isRepeat, char accuracy, unsigned int *callback);
-	void timer_start(char n, unsigned short count);
-	void timer_stop(char n);
-	void timer_reset(char n);
-	unsigned short timer_get(char n);
+	void rtc_init();
+	void rtc_ms_set(unsigned int count);
+	unsigned int rtc_ms_get();
+	void rtc_ms_reset();
+	char rtc_sec_set(unsigned int count);
+	unsigned int rtc_sec_get();
+	char rtc_persistent_set(char n, unsigned int general);
+	unsigned int rtc_persistent_get(char n);
 }
 
 using namespace std;
 Screen sc;
 vector<int> vec;
 
-void callback(){
-	printf("callback.\n");
-	fflush(stdout);
-}
-
 int main(){
-	timer_init();
-	printf("set: 0x%x.\n", timer_set(0, 1, 0x8, (unsigned int *)callback));
-	fflush(stdout);
-	timer_start(0, 32000);
+	rtc_init();
+	rtc_ms_set(1000);
+	for (int i = 0; i < 5; i++) {
+		printf("%d\n", rtc_ms_get());
+	}
+	printf("set: 0x%x\n", rtc_sec_set(10));
+	int volatile k = 1000000;
+	while (k--)
+		;
+	printf("0x%x\n", rtc_sec_get());
+	printf("set: 0x%x\n", rtc_persistent_set(2, 0x12345678));
+	printf("0x%x\n", rtc_persistent_get(2));
 	return 0;
 }
 
