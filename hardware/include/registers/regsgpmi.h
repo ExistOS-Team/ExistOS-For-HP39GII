@@ -631,7 +631,8 @@ typedef union
         unsigned TIMEOUT_IRQ            :  1;
         unsigned DEV_IRQ                :  1;
         unsigned DMA2ECC_MODE           :  1;
-        unsigned RDN_DELAY              :  4;
+        unsigned DSAMPLE_TIME              :  4;
+		/*
         unsigned HALF_PERIOD            :  1;
         unsigned DLL_ENABLE             :  1;
         unsigned BCH_MODE               :  1;
@@ -639,8 +640,10 @@ typedef union
         unsigned CE0_SEL                :  1;
         unsigned CE1_SEL                :  1;
         unsigned CE2_SEL                :  1;
-        unsigned CE3_SEL                :  1;
-        reg8_t   RSVD2;
+        unsigned CE3_SEL                :  1;*/
+		
+        reg16_t   RSVD2;
+       // reg8_t   RSVD2;
     } B;
 } hw_gpmi_ctrl1_t;
 #endif
@@ -757,15 +760,15 @@ typedef union
 #define BW_GPMI_CTRL1_HALF_PERIOD(v)   BF_CS1(GPMI_CTRL1, HALF_PERIOD, v)
 #endif
 
-//--- Register HW_GPMI_CTRL1, field RDN_DELAY
+//--- Register HW_GPMI_CTRL1, field DSAMPLE_TIME
 
-#define BP_GPMI_CTRL1_RDN_DELAY      12
-#define BM_GPMI_CTRL1_RDN_DELAY      0x0000F000
+#define BP_GPMI_CTRL1_DSAMPLE_TIME      12
+#define BM_GPMI_CTRL1_DSAMPLE_TIME      0x0000F000
 
-#define BF_GPMI_CTRL1_RDN_DELAY(v)   (((v) << 12) & BM_GPMI_CTRL1_RDN_DELAY)
+#define BF_GPMI_CTRL1_DSAMPLE_TIME(v)   (((v) << 12) & BM_GPMI_CTRL1_DSAMPLE_TIME)
 
 #ifndef __LANGUAGE_ASM__
-#define BW_GPMI_CTRL1_RDN_DELAY(v)   BF_CS1(GPMI_CTRL1, RDN_DELAY, v)
+#define BW_GPMI_CTRL1_DSAMPLE_TIME(v)   BF_CS1(GPMI_CTRL1, DSAMPLE_TIME, v)
 #endif
 
 //--- Register HW_GPMI_CTRL1, field DMA2ECC_MODE
