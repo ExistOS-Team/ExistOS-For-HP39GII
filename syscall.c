@@ -19,7 +19,7 @@ caddr_t _sbrk ( int incr ){
   static unsigned char *heap = NULL;
   unsigned char *prev_heap;
   if (heap == NULL) {
-    heap = (unsigned char *)(0x90000000);
+    heap = (unsigned char *)(0x70000);
   }
   prev_heap = heap;
   heap += incr;

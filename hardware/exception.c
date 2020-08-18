@@ -20,13 +20,14 @@
  
 #include "uart_debug.h"
 #include "exception.h"
+#include <stdio.h>
 
 
 void __handler_und(void) __attribute__((naked));
 void __handler_und(){
 	
-	uartdbg_print_regs();
-	uartdbg_printf("Undifined abortion\n");
+
+	printf("Undifined abortion\n");
 	while(1);
 }
 
@@ -39,28 +40,55 @@ void __handler_pabort(){
 	while(1);
 }
 
-void __handler_swi(void) __attribute__((naked));
-void __handler_swi(){
-	
-	uartdbg_print_regs();
-	uartdbg_printf("Software interrupt.\n");	
-	while(1);
-}
+
+	unsigned int faultAddress;
+	unsigned int insAddress;
 
 void __handler_dabort(void) __attribute__((naked));
 void __handler_dabort(){
-	asm volatile ("stmfd sp!, {r0-r12, r14}");
+	
+
+	
+	asm volatile ("subs lr,lr,#8");		//LR-8为异常发生时的地址，如果是缺页处理完后应返回该地址
+	asm volatile ("stmfd sp!, {r0-r12, lr}");
     asm volatile ("mrs r0,cpsr");
-    asm volatile ("orr r0,r0,#0xc0");   // DISABLE ALL FIQ AND IRQ INTERRUPTS
+    asm volatile ("orr r0,r0,#0xc0");   //禁止所有中断
     asm volatile ("msr cpsr,r0");
 	
+	asm volatile ("mov r0,lr");
+	asm volatile ("str r0,%0":"=m"(insAddress));	//取出异常指令的地址
+    asm volatile ("mrc p15, 0, r0, c6, c0, 0");
+	asm volatile ("str r0,%0":"=m"(faultAddress));	//取出异常指令访问的地址
 	
-	uartdbg_print_regs();
-	uartdbg_printf("Data abort\n");
-	
+	printf("====Data Abort.==== \n");
+	printf("The instruction at 0x%04X referenced\n memory at 0x%04X. \n",insAddress,faultAddress);
+	printf("The memory could not be read.\n");
+	printf("System halt.\n");
 	while(1);
+	
+	
+	asm volatile ("ldmia sp!, {r0-r12, pc}^");
+	//uartdbg_print_regs();
+	//uartdbg_printf("Data abort\n");
+	
+	//while(1);
 }
+	
+	unsigned int swiImmed;
 
+void __handler_swi(void) __attribute__((naked));
+void __handler_swi(){
+	
+	asm volatile ("stmfd sp!, {r0-r12, lr}");
+	asm volatile ("ldr r4, [lr, #-4]");
+	asm volatile ("bic r4, r4, #0xff000000");
+	asm volatile ("str r4,%0" :"=m"(swiImmed));
+	
+	printf("Software Interrupt: %d\n",swiImmed);
+	
+	asm volatile ("ldmia sp!, {r0-r12, pc}^");
+	
+}
 
 void exception_install(exception_type type, unsigned int *exception_handler_addr){
 	unsigned int *exception_table_base = (unsigned int *)0x00000000;

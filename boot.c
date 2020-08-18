@@ -47,7 +47,7 @@ void _boot()
 {
 	disable_interrupts();					//关闭所有中断
 	switch_mode(SVC_MODE);					//切换到系统管理模式
-	asm volatile ("ldr sp,=#0x0007FF00");	//设置系统管理模式下的栈地址
+	asm volatile ("ldr sp,=#0x0007F000");	//设置系统管理模式下的栈地址
 	exception_init();						//初始化异常向量
 	irq_init();								//初始化中断
 	DFLTP_init();							//初始化页表
@@ -62,26 +62,24 @@ void _boot()
 	LCD_dma_flush_auto_buffer_start();		//开启自动刷屏
 	//malloc_init();
 	console_init();
+	NAND_init();
+
+	 
+	//main();
 	
-	printf("malloc1. %x \n",malloc(0x100));
-	printf("malloc2. %x \n",malloc(0x1));
-	printf("malloc3. %x \n",malloc(0x300));
+	//asm volatile ("swi #0x233");
+	printf("System halt.");
 	fflush(stdout);
-	main();
-	/*console_puts('A');
-	console_puts(' ');
-	console_puts('C');
-	console_puts('P');
-	*/
+	
 	while(1)
 		{
 
-
+			//LCD_dma_flush_buffer();
+			
 			/*
 			uartdbg_printf("time: %d CPUID:%x\n",HW_DIGCTL_MICROSECONDS_RD(),read_cpuid());//串口输出启动时间、CPU和寄存器信息
 			uartdbg_print_regs();
 
-			
 			LCD_clear_buffer();		//清显存
 			LCD_show_string(1,1,24*16,24,24,255,"Hello World!");
 			LCD_show_string(1,25,24*12,24,16,255,"Hello World!");

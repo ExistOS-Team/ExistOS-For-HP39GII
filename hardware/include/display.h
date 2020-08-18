@@ -23,7 +23,8 @@
 #include <stdint.h>
 #include "regslcdif.h"
 
-#define 	VRAM_BASE						0x00001000		//显存基址
+//#define 	VRAM_BASE						0x00001000		//显存基址
+
 #define 	LCD_TIMOUT_US					100000		//数据超时时间
 
 #define 	LCD_H	128
@@ -75,7 +76,7 @@ typedef struct _hw_lcdif_DmaDesc	//用于LCD屏幕控制器的DMA描述符
                     unsigned char Chain : 1;
                     unsigned char IRQOnCompletion : 1;
                     unsigned char NANDLock : 1;
-                    unsigned char NANDWaitForRead : 1;
+                    unsigned char NANDWaitForReady : 1;
                     unsigned char Semaphore : 1;
                     unsigned char WaitForEndCommand : 1;
                 } ;

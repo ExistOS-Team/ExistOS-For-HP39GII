@@ -47,14 +47,14 @@ unsigned char irq_get_irq_priority(unsigned int irq_n) {
 	return (*((unsigned int *)HW_ICOLL_PRIORITYn_ADDR(irq_n/4)) >> (8*(irq_n % 4))) & 0x03;
 }
 
-void enable_interrupts() {				//禁止中断
+void enable_interrupts() {				
 	asm volatile ("mrs r1, cpsr_all");
 	asm volatile ("bic r1, r1, #0xc0");
 	asm volatile ("msr cpsr_all, r1");
 }
 
 
-void disable_interrupts() {				//运行中断
+void disable_interrupts() {				
 
 	asm volatile ("mrs r1, cpsr_all");
 	asm volatile ("orr r1, r1, #0xc0");
@@ -82,10 +82,10 @@ void volatile __irq_service() {
 	
 	asm volatile ("subs lr, lr, #4");			//计算中断结束后应返回的地址
 	asm volatile ("stmdb sp!, {r0-r12, lr} ");	//保存现场
-	disable_interrupts();						//禁止外部中断（不支持嵌套中断）
-    asm volatile ("mrs r1, cpsr_all");
-    asm volatile ("orr r1, r1, #0x1f");
-	asm volatile ("msr cpsr_all, r1");			//切换到系统管理模式
+	//disable_interrupts();						//禁止外部中断（不支持嵌套中断，当然如果堆栈够大也不是不可以（（
+    //asm volatile ("mrs r1, cpsr_all");
+    //asm volatile ("orr r1, r1, #0x1f");
+	//asm volatile ("msr cpsr_all, r1");			//切换到系统管理模式
 
 	//调用中断服务函数
 	
@@ -96,11 +96,11 @@ void volatile __irq_service() {
 		(*(void(*)())((unsigned int)irq_vector_table_base[current_irq_number])) ();				//调用对应的中断服务程序
 	BF_SETV(ICOLL_LEVELACK, IRQLEVELACK, 1<<(irq_get_irq_priority(current_irq_number)));		//通知中断优先级控制器已经响应当前中断	
 
-	asm volatile ("mrs r1, cpsr_all");
-    asm volatile ("bic r1, r1, #0xd");
-    asm volatile ("msr cpsr_all, r1");  		//切换回中断模式
+	//asm volatile ("mrs r1, cpsr_all");
+    //asm volatile ("bic r1, r1, #0xd");
+    //asm volatile ("msr cpsr_all, r1");  		//切换回中断模式
 	
-	enable_interrupts();						//允许中断
+	//enable_interrupts();						//允许中断
     asm volatile ("ldmia sp!, {r0-r12, pc}^");  //中断返回，^表示将spsr的值复制到cpsr
 }
 
