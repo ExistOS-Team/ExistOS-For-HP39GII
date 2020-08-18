@@ -50,7 +50,7 @@ void callback(){
 int main(){
 	printf("main");
 	fflush(stdout);
-	printf("print");
+	printf("Key test mode!!Press enter or on");
 	fflush(stdout);
 	key_scan();
 	while (!is_key_down(KEY_ON)){
