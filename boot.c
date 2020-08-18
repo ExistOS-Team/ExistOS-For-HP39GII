@@ -39,7 +39,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
+extern unsigned char key_matrix[5][11];
 extern const unsigned char test_picture[32768];	//128*256 4阶灰度图片
 extern int main();
 
@@ -75,9 +75,26 @@ void _boot()
 	*/
 	while(1)
 		{
+			fflush(stdout);
+			//LCD_clear_buffer();
+			key_scan();
+			for (int i = 0; i < 5; i++)
+			{
+				for (int j = 0; j < 11; j++)
+				{
+					if(key_matrix[i][j]==1){
+						//char buf[30];
+						//snprintf(buf, 30, "pressed key:%d,%d",i,j);
+						//LCD_show_string(0,0,24*16,24,24,255,buf);
+						printf("pressed key:%d,%d",i,j);
+					};
+				};
+				
+			};
+			delay_us(100000);
 
 
-			/*
+			
 			uartdbg_printf("time: %d CPUID:%x\n",HW_DIGCTL_MICROSECONDS_RD(),read_cpuid());//串口输出启动时间、CPU和寄存器信息
 			uartdbg_print_regs();
 
@@ -87,7 +104,7 @@ void _boot()
 			LCD_show_string(1,25,24*12,24,16,255,"Hello World!");
 			LCD_show_string(1,40,24*12,24,12,255,"Hello World!");
 
-			delay_us(10000);
+			delay_us(1000000);
 			LCD_clear_buffer();
 			//显示图片 256x128
 			for(int y=0; y<127; y++) 
@@ -101,9 +118,10 @@ void _boot()
 				{	
 					LCD_scroll_up(1);
 				delay_us(20000);
-				}*/
+				}
 			
 			//delay_us(20000);
+			
 		}
 }
 

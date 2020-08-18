@@ -26,9 +26,12 @@
 #include <cstring>
 #include <vector>
 
+#include "display.h"
 #include "memory.h"
-
+#include "keyboard.h"
 extern "C"{
+	
+	#include "utils.h"
 	void timer_init();
 	char timer_set(char n, unsigned short count, unsigned int *callback);
 	void timer_start(char n);
@@ -45,9 +48,18 @@ void callback(){
 }
 
 int main(){
-	timer_init();
-	printf("set: 0x%x.\n", timer_set(0, 32000, (unsigned int *)callback));
+	printf("main");
 	fflush(stdout);
-	timer_start(0);
+	printf("print");
+	fflush(stdout);
+	key_scan();
+	while (!is_key_down(KEY_ON)){
+		fflush(stdout);
+		key_scan();
+		delay_us(500000);
+		if(is_key_down(KEY_ENTER)) printf("Enter pressed!/n");
+	};
+	
+	//delay_us(5000000);
 	return 0;
 }

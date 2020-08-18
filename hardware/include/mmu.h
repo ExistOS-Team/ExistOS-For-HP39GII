@@ -57,6 +57,9 @@
 
 #define KERNEL_ADDR_BASE						0x90000000	//内核的内存基址
 
+#ifdef __cplusplus 
+extern "C" { 
+#endif
 //一级页表初始化
 void DFLTP_init(void);
 //栈初始化
@@ -72,6 +75,8 @@ void enable_mmu(void);
 
 //设置当前模式下的栈地址（即R13寄存器）
 void set_stack(unsigned int *) __attribute__ ((naked));
-
+#ifdef __cplusplus 
+} 
+#endif
 #endif
 

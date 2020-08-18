@@ -23,6 +23,10 @@
 
 #include "display.h"
 
+#ifdef __cplusplus 
+extern "C" { 
+#endif
+
 typedef struct {
 	unsigned int x;
 	unsigned int y;
@@ -43,5 +47,8 @@ void console_init();
 void console_flush();
 void console_init();
 
+#ifdef __cplusplus 
+} 
+#endif
 #endif
 

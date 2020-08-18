@@ -21,7 +21,9 @@
 
 #ifndef __NAND_H
 #define __NAND_H
-
+#ifdef __cplusplus 
+extern "C" { 
+#endif
 struct gpmi_timing {
 	unsigned char DataSetup;
 	unsigned char DataHold;
@@ -35,9 +37,9 @@ struct gpmi_timing {
 };
 
 void NAND_init();
-
-
-
+#ifdef __cplusplus 
+} 
+#endif
 
 #endif
 

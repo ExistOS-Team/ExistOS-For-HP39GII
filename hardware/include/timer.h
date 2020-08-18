@@ -1,7 +1,9 @@
 #pragma once
 
 #include "hw_irq.h"
-
+#ifdef __cplusplus 
+extern "C" { 
+#endif
 #define IRQ_N(n) (n + HW_IRQ_TIMER0)
 
 /*Call this function to initialize.*/
@@ -33,3 +35,6 @@ P597: Selecting the ALWAYS tick causes the timer to decrement continuously at th
 P603: This bit must be cleared to 0 to enable operation of any timer or the rotary decoder. When set to 1, it forces a block-level reset and gates off the clocks to the block.
 
 */
+#ifdef __cplusplus 
+} 
+#endif
