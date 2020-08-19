@@ -6,8 +6,7 @@ inline void timer_init(){
     BW_TIMROT_ROTCTRL_SFTRST(0);
     BW_TIMROT_ROTCTRL_CLKGATE(0);
     for (int i = 0; i <= HW_TIMROT_TIMCTRLn_COUNT; i++) { // All 4 timers are available on this device.
-        BW_TIMROT_TIMCTRLn_UPDATE(i, 1);
-        BW_TIMROT_TIMCTRLn_IRQ_EN(i, 1);
+        HW_TIMROT_TIMCTRLn_SET(i, BM_TIMROT_TIMCTRL3_UPDATE | BM_TIMROT_TIMCTRLn_IRQ_EN);
     }
 }
 
