@@ -245,7 +245,7 @@ typedef union
     reg32_t  U;
     struct
     {
-        unsigned RSVD0               :  2;
+        unsigned COMPLETED_CE        :  2;
         unsigned UNCORRECTABLE       :  1;
         unsigned CORRECTED           :  1;
         unsigned ALLONES             :  1;
@@ -255,8 +255,7 @@ typedef union
         unsigned RS4ECC_ENC_PRESENT  :  1;
         unsigned RS8ECC_DEC_PRESENT  :  1;
         unsigned RS8ECC_ENC_PRESENT  :  1;
-        unsigned COMPLETED_CE        :  4;
-        unsigned HANDLE              : 12;
+        unsigned HANDLE              : 16;
     } B;
 } hw_ecc8_status0_t;
 #endif
@@ -280,21 +279,21 @@ typedef union
 
 //--- Register HW_ECC8_STATUS0, field HANDLE
 
-#define BP_ECC8_STATUS0_HANDLE      20
-#define BM_ECC8_STATUS0_HANDLE      0xFFF00000
+#define BP_ECC8_STATUS0_HANDLE      16
+#define BM_ECC8_STATUS0_HANDLE      0xFFFF0000
 
 #ifndef __LANGUAGE_ASM__
-#define BF_ECC8_STATUS0_HANDLE(v)   ((((reg32_t) v) << 20) & BM_ECC8_STATUS0_HANDLE)
+#define BF_ECC8_STATUS0_HANDLE(v)   ((((reg32_t) v) << 16) & BM_ECC8_STATUS0_HANDLE)
 #else
-#define BF_ECC8_STATUS0_HANDLE(v)   (((v) << 20) & BM_ECC8_STATUS0_HANDLE)
+#define BF_ECC8_STATUS0_HANDLE(v)   (((v) << 16) & BM_ECC8_STATUS0_HANDLE)
 #endif
 
 //--- Register HW_ECC8_STATUS0, field COMPLETED_CE
 
-#define BP_ECC8_STATUS0_COMPLETED_CE      16
-#define BM_ECC8_STATUS0_COMPLETED_CE      0x000F0000
+#define BP_ECC8_STATUS0_COMPLETED_CE      0
+#define BM_ECC8_STATUS0_COMPLETED_CE      0x00000003
 
-#define BF_ECC8_STATUS0_COMPLETED_CE(v)   (((v) << 16) & BM_ECC8_STATUS0_COMPLETED_CE)
+#define BF_ECC8_STATUS0_COMPLETED_CE(v)   (((v) << 0) & BM_ECC8_STATUS0_COMPLETED_CE)
 
 //--- Register HW_ECC8_STATUS0, field RS8ECC_ENC_PRESENT
 

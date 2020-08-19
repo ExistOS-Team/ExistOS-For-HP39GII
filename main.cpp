@@ -27,14 +27,42 @@
 #include <vector>
 
 #include "memory.h"
+
+extern "C"{
+	void rtc_init();
+	void rtc_ms_set(unsigned int count);
+	unsigned int rtc_ms_get();
+	void rtc_ms_reset();
+	char rtc_sec_set(unsigned int count);
+	unsigned int rtc_sec_get();
+	char rtc_persistent_set(char n, unsigned int general);
+	unsigned int rtc_persistent_get(char n);
+	
+	extern void fs_test_main();
+}
+
 using namespace std;
 Screen sc;
 vector<int> vec;
 
 int main(){
-	//sc.write_pix(12,34,255);
- 
-	printf("asd");
+	rtc_init();
+	rtc_ms_set(1000);
+	for (int i = 0; i < 5; i++) {
+		printf("%d\n", rtc_ms_get());
+	}
+	printf("set: 0x%x\n", rtc_sec_set(10));
+	int volatile k = 1000000;
+	while (k--)
+		;
+	printf("0x%x\n", rtc_sec_get());
+	printf("set: 0x%x\n", rtc_persistent_set(2, 0x12345678));
+	printf("0x%x\n", rtc_persistent_get(2));
+	
+	fs_test_main();
+	
 	
 	return 0;
 }
+
+

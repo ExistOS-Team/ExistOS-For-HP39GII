@@ -36,8 +36,8 @@ hw_lcdif_DmaDesc screen_parameter_dma_desc;
 
 unsigned int lcdScrollUpPix = 0;
 unsigned int isAutoSend;
-
-unsigned char *screen_buffer = (unsigned char *)VRAM_BASE; //显存
+extern char __VRAM_BASE;
+unsigned char *screen_buffer = &__VRAM_BASE; //显存
 unsigned int pos_y = 0; //屏幕信息位置
 
 unsigned int LCD_is_busy()
@@ -350,13 +350,14 @@ void LCD_dma_irq_handle()
 
 void LCD_dma_channel_reset(void)
 {
+	//todo: DMA应有DMA程序管理
 	BF_CS2(APBH_CTRL0, SFTRST, 0, CLKGATE, 0);			//重置LCD DMA通道，使能通道时钟
 	BF_CS1(APBH_CTRL0, RESET_CHANNEL, (BF_RD(APBH_CTRL0, RESET_CHANNEL)|0x01));
 	while((BF_RD(APBH_CTRL0, RESET_CHANNEL)&0x01));		//等待DMA通道重置完成
 
 	BF_CS1(APBH_CTRL1, CH0_CMDCMPLT_IRQ_EN, 1);											//打开LCD DMA控制器完成中断请求
 	irq_set_enable(VECTOR_IRQ_LCDIF_DMA, 1);											//打开中断控制器中关于LCD DMA的中断请求
-	irq_install_serveice(VECTOR_IRQ_LCDIF_DMA, (unsigned int *)LCD_dma_irq_handle);		//注册DMA操作完成中断的处理函数
+	irq_install_service(VECTOR_IRQ_LCDIF_DMA, (unsigned int *)LCD_dma_irq_handle);		//注册DMA操作完成中断的处理函数
 
 
 	//设置LCD DMA通道命令描述符

@@ -11,7 +11,7 @@
 extern int errno;
 int _end asm("end");
 
-//extern int  __HEAP_START;
+extern int  __HEAP_START;
 
 
 //malloc和sprintf等函数要用到
@@ -19,33 +19,13 @@ caddr_t _sbrk ( int incr ){
   static unsigned char *heap = NULL;
   unsigned char *prev_heap;
   if (heap == NULL) {
-    heap = (unsigned char *)(0x90000000);
+    heap = (unsigned char *)(&__HEAP_START);
   }
   prev_heap = heap;
   heap += incr;
   return (caddr_t) prev_heap;
 }
-
-
-/*
-caddr_t _sbrk ( int incr )
-{
-	return 0;
-	static unsigned char *heap = NULL;
-	unsigned char *prev_heap;
-
-	if (heap == NULL)
-		{
-			heap = (unsigned char *)&_end;
-		}
-	prev_heap = heap;
-
-	heap += incr;
-
-
-	return (caddr_t) prev_heap;
-	
-}*/
+ 
 
 int link(char *old, char *new)
 {

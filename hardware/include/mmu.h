@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
- 
+ #pragma once
 #ifndef _MMU_H
 #define _MMU_H
 
@@ -52,7 +52,7 @@
 #define UND_MODE  0x1b
 #define SYS_MODE  0x1f
 
-#define FIRST_LEVEL_PAGE_TABLE_FOR_KERNEL		0x800C0000	//一级页表基址
+#define FIRST_LEVEL_PAGE_TABLE_BASE		0x800C0000	//一级页表基址
 #define SECOUND_LEVEL_PAGE_TABLE_FOR_KERNEL		0x00000400	//存放用于内核的二级页表
 
 #define KERNEL_ADDR_BASE						0x90000000	//内核的内存基址
