@@ -37,6 +37,8 @@ extern "C"{
 	unsigned int rtc_sec_get();
 	char rtc_persistent_set(char n, unsigned int general);
 	unsigned int rtc_persistent_get(char n);
+	
+	extern void fs_test_main();
 }
 
 using namespace std;
@@ -56,6 +58,10 @@ int main(){
 	printf("0x%x\n", rtc_sec_get());
 	printf("set: 0x%x\n", rtc_persistent_set(2, 0x12345678));
 	printf("0x%x\n", rtc_persistent_get(2));
+	
+	fs_test_main();
+	
+	
 	return 0;
 }
 

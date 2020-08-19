@@ -50,6 +50,20 @@ void uartdbg_printhex(int data)
 	}
 }
 
+void uartdbg_printhex8(int data)
+{
+	int i = 0;
+	char c;
+	for (i = sizeof(char)*2-1; i >= 0; i--) {
+		c = data>>(i*4);
+		c &= 0xf;
+		if (c > 9)
+			uartdbg_putc(c-10+'A');
+		else
+			uartdbg_putc(c+'0');
+	}
+}
+
 int Pos_Div(int x,int y)
 {
     int ans = 0;
