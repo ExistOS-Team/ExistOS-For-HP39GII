@@ -1,9 +1,14 @@
 #include "rtc.h"
 #include "regsrtc.h"
 
-inline void rtc_init(){
+inline char rtc_init(){
     BW_RTC_CTRL_CLKGATE(0);
-    BW_RTC_PERSISTENT0_XTAL24MHZ_PWRUP(1);
+    if (HW_RTC_STAT_RD() & 0x100) { // Persistent register 0
+        return 0;
+    }else{
+        HW_RTC_PERSISTENT0_SET(BM_RTC_PERSISTENT0_CLOCKSOURCE | BM_RTC_PERSISTENT0_XTAL32KHZ_PWRUP); // Use the 32768 Hz Oscillator
+        return 1;     
+    }
 }
 
 inline void rtc_ms_set(unsigned int count){
@@ -19,7 +24,7 @@ inline void rtc_ms_reset(){
 }
 
 inline char rtc_sec_set(unsigned int count){
-    if (HW_RTC_STAT_RD() & 0x8000) {
+    if (HW_RTC_STAT_RD() & 0x8000) { // Persistent register 7 (second register)
         return 0;
     }else{
         HW_RTC_SECONDS_WR(count);
@@ -32,7 +37,7 @@ inline unsigned int rtc_sec_get(){
 }
 
 inline char rtc_persistent_set(char n, unsigned int general){
-    if (HW_RTC_STAT_RD() & (0x1 << n + BP_RTC_STAT_NEW_REGS)) {
+    if (HW_RTC_STAT_RD() & (0x1 << (n + BP_RTC_STAT_NEW_REGS))) { // Persistent register n
         return 0;
     }else{
         HW_RTC_PERSISTENTn_WR(n, general);
