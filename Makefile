@@ -8,7 +8,7 @@ LDSCRIPT 		= .\script\ld.script
 CC            = ..\tools\gcc-arm\bin\arm-none-eabi-gcc
 GPP            = ..\tools\gcc-arm\bin\arm-none-eabi-g++
 AS            = ..\tools\gcc-arm\bin\arm-none-eabi-as
-CFLAGS        = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O1 -pipe
+CFLAGS        = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O1 -pipe -Wstringop-overflow=0
 
 LINKER        = ..\tools\gcc-arm\bin\arm-none-eabi-gcc
 LIBS          = -L..\tools\gcc-arm\lib\gcc\arm-none-eabi\9.3.1 -lgcc -lstdc++

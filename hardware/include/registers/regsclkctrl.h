@@ -247,8 +247,7 @@ typedef union
     reg32_t  U;
     struct
     {
-        unsigned DIV_CPU           :  6;
-        unsigned RSRVD1            :  4;
+        unsigned DIV_CPU           :  10;
         unsigned DIV_CPU_FRAC_EN   :  1;
         unsigned RSRVD2            :  1;
         unsigned INTERRUPT_WAIT    :  1;
@@ -348,7 +347,7 @@ typedef union
 //--- Register HW_CLKCTRL_CPU, field DIV_CPU
 
 #define BP_CLKCTRL_CPU_DIV_CPU      0
-#define BM_CLKCTRL_CPU_DIV_CPU      0x0000003F
+#define BM_CLKCTRL_CPU_DIV_CPU      0x000003FF
 
 #define BF_CLKCTRL_CPU_DIV_CPU(v)   (((v) << 0) & BM_CLKCTRL_CPU_DIV_CPU)
 
@@ -1570,9 +1569,9 @@ typedef union
         unsigned CPUFRAC     :  6;
         unsigned CPU_STABLE  :  1;
         unsigned CLKGATECPU  :  1;
-        unsigned EMIFRAC     :  6;
-        unsigned EMI_STABLE  :  1;
-        unsigned CLKGATEEMI  :  1;
+        unsigned RSVD0     :  6;
+        unsigned RSVD1  :  1;
+        unsigned RSVD2  :  1;
         unsigned PIXFRAC     :  6;
         unsigned PIX_STABLE  :  1;
         unsigned CLKGATEPIX  :  1;
@@ -1588,10 +1587,10 @@ typedef union
 // constants & macros for entire HW_CLKCTRL_FRAC register
 //
 
-#define HW_CLKCTRL_FRAC_ADDR      (REGS_CLKCTRL_BASE + 0x000000F0)
-#define HW_CLKCTRL_FRAC_SET_ADDR  (REGS_CLKCTRL_BASE + 0x000000F4)
-#define HW_CLKCTRL_FRAC_CLR_ADDR  (REGS_CLKCTRL_BASE + 0x000000F8)
-#define HW_CLKCTRL_FRAC_TOG_ADDR  (REGS_CLKCTRL_BASE + 0x000000FC)
+#define HW_CLKCTRL_FRAC_ADDR      (REGS_CLKCTRL_BASE + 0x000000D0)
+#define HW_CLKCTRL_FRAC_SET_ADDR  (REGS_CLKCTRL_BASE + 0x000000D4)
+#define HW_CLKCTRL_FRAC_CLR_ADDR  (REGS_CLKCTRL_BASE + 0x000000D8)
+#define HW_CLKCTRL_FRAC_TOG_ADDR  (REGS_CLKCTRL_BASE + 0x000000DC)
 
 #ifndef __LANGUAGE_ASM__
 #define HW_CLKCTRL_FRAC           (*(volatile hw_clkctrl_frac_t *) HW_CLKCTRL_FRAC_ADDR)
@@ -1669,34 +1668,8 @@ typedef union
 #define BW_CLKCTRL_FRAC_PIXFRAC(v)   BF_CS1(CLKCTRL_FRAC, PIXFRAC, v)
 #endif
 
-//--- Register HW_CLKCTRL_FRAC, field CLKGATEEMI
 
-#define BP_CLKCTRL_FRAC_CLKGATEEMI      15
-#define BM_CLKCTRL_FRAC_CLKGATEEMI      0x00008000
 
-#define BF_CLKCTRL_FRAC_CLKGATEEMI(v)   (((v) << 15) & BM_CLKCTRL_FRAC_CLKGATEEMI)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_CLKCTRL_FRAC_CLKGATEEMI(v)   BF_CS1(CLKCTRL_FRAC, CLKGATEEMI, v)
-#endif
-
-//--- Register HW_CLKCTRL_FRAC, field EMI_STABLE
-
-#define BP_CLKCTRL_FRAC_EMI_STABLE      14
-#define BM_CLKCTRL_FRAC_EMI_STABLE      0x00004000
-
-#define BF_CLKCTRL_FRAC_EMI_STABLE(v)   (((v) << 14) & BM_CLKCTRL_FRAC_EMI_STABLE)
-
-//--- Register HW_CLKCTRL_FRAC, field EMIFRAC
-
-#define BP_CLKCTRL_FRAC_EMIFRAC      8
-#define BM_CLKCTRL_FRAC_EMIFRAC      0x00003F00
-
-#define BF_CLKCTRL_FRAC_EMIFRAC(v)   (((v) << 8) & BM_CLKCTRL_FRAC_EMIFRAC)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_CLKCTRL_FRAC_EMIFRAC(v)   BF_CS1(CLKCTRL_FRAC, EMIFRAC, v)
-#endif
 
 //--- Register HW_CLKCTRL_FRAC, field CLKGATECPU
 
@@ -1808,10 +1781,9 @@ typedef union
         unsigned BYPASS_IR    :  1;
         unsigned BYPASS_GPMI  :  1;
         unsigned BYPASS_SSP   :  1;
-        unsigned BYPASS_EMI   :  1;
+        unsigned RSRVD1   		:  1;
         unsigned BYPASS_CPU   :  1;
-        unsigned BYPASS_ETM   :  1;
-        unsigned RSRVD1       : 23;
+        unsigned RSRVD3       : 24;
     } B;
 } hw_clkctrl_clkseq_t;
 #endif
@@ -1821,10 +1793,10 @@ typedef union
 // constants & macros for entire HW_CLKCTRL_CLKSEQ register
 //
 
-#define HW_CLKCTRL_CLKSEQ_ADDR      (REGS_CLKCTRL_BASE + 0x00000110)
-#define HW_CLKCTRL_CLKSEQ_SET_ADDR  (REGS_CLKCTRL_BASE + 0x00000114)
-#define HW_CLKCTRL_CLKSEQ_CLR_ADDR  (REGS_CLKCTRL_BASE + 0x00000118)
-#define HW_CLKCTRL_CLKSEQ_TOG_ADDR  (REGS_CLKCTRL_BASE + 0x0000011C)
+#define HW_CLKCTRL_CLKSEQ_ADDR      (REGS_CLKCTRL_BASE + 0x000000E0)
+#define HW_CLKCTRL_CLKSEQ_SET_ADDR  (REGS_CLKCTRL_BASE + 0x000000E4)
+#define HW_CLKCTRL_CLKSEQ_CLR_ADDR  (REGS_CLKCTRL_BASE + 0x000000E8)
+#define HW_CLKCTRL_CLKSEQ_TOG_ADDR  (REGS_CLKCTRL_BASE + 0x000000EC)
 
 #ifndef __LANGUAGE_ASM__
 #define HW_CLKCTRL_CLKSEQ           (*(volatile hw_clkctrl_clkseq_t *) HW_CLKCTRL_CLKSEQ_ADDR)
@@ -1840,16 +1812,6 @@ typedef union
 // constants & macros for individual HW_CLKCTRL_CLKSEQ bitfields
 //
 
-//--- Register HW_CLKCTRL_CLKSEQ, field BYPASS_ETM
-
-#define BP_CLKCTRL_CLKSEQ_BYPASS_ETM      8
-#define BM_CLKCTRL_CLKSEQ_BYPASS_ETM      0x00000100
-
-#define BF_CLKCTRL_CLKSEQ_BYPASS_ETM(v)   (((v) << 8) & BM_CLKCTRL_CLKSEQ_BYPASS_ETM)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_CLKCTRL_CLKSEQ_BYPASS_ETM(v)   BF_CS1(CLKCTRL_CLKSEQ, BYPASS_ETM, v)
-#endif
 
 //--- Register HW_CLKCTRL_CLKSEQ, field BYPASS_CPU
 
@@ -1862,16 +1824,7 @@ typedef union
 #define BW_CLKCTRL_CLKSEQ_BYPASS_CPU(v)   BF_CS1(CLKCTRL_CLKSEQ, BYPASS_CPU, v)
 #endif
 
-//--- Register HW_CLKCTRL_CLKSEQ, field BYPASS_EMI
 
-#define BP_CLKCTRL_CLKSEQ_BYPASS_EMI      6
-#define BM_CLKCTRL_CLKSEQ_BYPASS_EMI      0x00000040
-
-#define BF_CLKCTRL_CLKSEQ_BYPASS_EMI(v)   (((v) << 6) & BM_CLKCTRL_CLKSEQ_BYPASS_EMI)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_CLKCTRL_CLKSEQ_BYPASS_EMI(v)   BF_CS1(CLKCTRL_CLKSEQ, BYPASS_EMI, v)
-#endif
 
 //--- Register HW_CLKCTRL_CLKSEQ, field BYPASS_SSP
 
