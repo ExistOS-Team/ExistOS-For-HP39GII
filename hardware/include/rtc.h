@@ -1,6 +1,9 @@
 #pragma once
 
 #include "regsrtc.h"
+#ifdef __cplusplus 
+extern "C" { 
+#endif
 
 #define HW_RTC_PERSISTENTn_ADDR(n)      (REGS_RTC_BASE + 0x00000060 + n * 0x10)
 #define HW_RTC_PERSISTENTn_SET_ADDR(n)  (REGS_RTC_BASE + 0x00000064 + n * 0x10)
@@ -52,3 +55,6 @@ char rtc_persistent_set(char n, unsigned int general);
     n: 2~5. Specify the register. 
     return value: The value of a persistent register.*/
 unsigned int rtc_persistent_get(char n);
+#ifdef __cplusplus 
+}
+#endif

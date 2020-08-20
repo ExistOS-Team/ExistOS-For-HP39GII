@@ -2,6 +2,9 @@
 
 #pragma once
 
+#ifdef __cplusplus 
+extern "C" { 
+#endif
 
 /*
  * NAND Flash Manufacturer ID Codes
@@ -228,3 +231,6 @@ struct nand_manufacturers nand_manuf_ids[] = {
 	{NAND_MFR_ATO, "ATO"},
 	{0x0, "Unknown"}
 };
+#ifdef __cplusplus 
+};
+#endif
