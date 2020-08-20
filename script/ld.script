@@ -26,4 +26,7 @@ SECTIONS
 
 
 	__exidx_end = .;
+
+	. = 0x68000;
+	__HEAP_START = .;
 }

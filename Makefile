@@ -8,7 +8,7 @@ LDSCRIPT 		= .\script\ld.script
 CC            = ..\tools\gcc-arm\bin\arm-none-eabi-gcc
 GPP            = ..\tools\gcc-arm\bin\arm-none-eabi-g++
 AS            = ..\tools\gcc-arm\bin\arm-none-eabi-as
-CFLAGS        = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O1 -pipe
+CFLAGS        = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O1 -pipe -Wstringop-overflow=0
 
 LINKER        = ..\tools\gcc-arm\bin\arm-none-eabi-gcc
 LIBS          = -L..\tools\gcc-arm\lib\gcc\arm-none-eabi\9.3.1 -lgcc -lstdc++
@@ -23,7 +23,7 @@ SBLOADER	  = ..\tools\sbtools\sb_loader.exe
 GCCINCPATH       = -I. -I..\tools\gcc-arm\arm-none-eabi\include 
 INCPATH  		= -Iinclude -Ihardware\include\registers -Ihardware\include -Ihal\include -Iinclude\freetype
 
-CSRCS 	= $(wildcard  ./*.c ./hardware/*.c)
+CSRCS 	= $(wildcard  ./*.c ./hardware/*.c ./filesystem/fatfs/*.c)
 CPPSRCS = $(wildcard ./*.cpp ./hal/*.cpp)
 
 FREETPYE_CSRCS = $(wildcard ./freetype/src/base/ftbase.c ./freetype/src/gzip/ftgzip.c ./freetype/src/base/ftinit.c ./freetype/src/lzw/ftlzw.c ./freetype/src/base/ftsystem.c ./freetype/src/sfnt/sfnt.c ./freetype/src/smooth/smooth.c ./freetype/src/truetype/truetype.c ./freetype/src/base/ftbitmap.c ./freetype/*.c)

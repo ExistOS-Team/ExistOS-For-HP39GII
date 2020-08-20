@@ -36,12 +36,20 @@
 #include "hw_irq.h"
 #include "memory.h"
 #include "console.h"
+#include "nand.h"
+#include "timer.h"
+#include "flash_mapping.h"
+#include "./filesystem/fatfs/ff.h"
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+
 
 extern unsigned char key_matrix[5][11];
-extern const unsigned char test_picture[32768];	//128*256 4阶灰度图片
+
 extern int main();
+extern void fs_test_main();
 
 void _boot()
 {
@@ -53,26 +61,42 @@ void _boot()
 	DFLTP_init();							//初始化页表
 	enable_mmu();							//开启内存映射
 	stack_init();							//栈初始化（设定异常、系统、中断等模式下的堆栈
+	enable_interrupts();					//打开中断
 
 	LCD_init();								//屏幕初始化
 	keyboard_init();						//键盘初始化
 	LCD_set_contrast(0x40);					//设置对比度
-	enable_interrupts();					//打开中断
+	
 	LCD_clear_buffer();						//清屏缓存
 	LCD_dma_flush_auto_buffer_start();		//开启自动刷屏
 	//malloc_init();
 	console_init();
 	NAND_init();
-
-	 
-	//main();
 	
-	//asm volatile ("swi #0x233");
+	
+	BF_CS1(UARTDBGIBRD,BAUD_DIVINT,1);
+	BF_CS1(UARTDBGFBRD,BAUD_DIVFRAC,36);
+	BF_CS1(UARTDBGLCR_H,FEN,1);	
+	
+	
+
+	
+	
+	
+	Flash_mapping_init();
+	
+	//fs_test_main();
+	
+	
+	//main();
+ 
 	printf("System halt.");
 	fflush(stdout);
 	
 	while(1)
 		{
+
+  /*
 			fflush(stdout);
 			//LCD_clear_buffer();
 			key_scan();
@@ -90,7 +114,7 @@ void _boot()
 				
 			};
 			delay_us(100000);
-
+*/
 			//LCD_dma_flush_buffer();
 			
 			/*
@@ -120,6 +144,7 @@ void _boot()
 			
 			//delay_us(20000);
 			*/
+
 		}
 }
 
