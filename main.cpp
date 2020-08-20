@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <Screen.h>
+#include <reboot.h>
 #include <cstring>
 #include <vector>
 
@@ -61,7 +62,8 @@ int main(){
 	
 	fs_test_main();
 	
-	
+    reboot_test(3);   //reboot to flash. 1=entire reset, 2=reset the digital sections of the chip, 3 or any number else=nothing to do
+    
 	return 0;
 }
 
