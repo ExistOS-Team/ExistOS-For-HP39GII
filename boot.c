@@ -66,7 +66,6 @@ void _boot()
 	LCD_init();								//屏幕初始化
 	keyboard_init();						//键盘初始化
 	LCD_set_contrast(0x40);					//设置对比度
-	
 	LCD_clear_buffer();						//清屏缓存
 	LCD_dma_flush_auto_buffer_start();		//开启自动刷屏
 	//malloc_init();
@@ -83,12 +82,12 @@ void _boot()
 	
 	
 	
-	Flash_mapping_init();
+	//Flash_mapping_init();
 	
 	//fs_test_main();
 	
 	
-	//main();
+	main();
  
 	printf("System halt.");
 	fflush(stdout);
