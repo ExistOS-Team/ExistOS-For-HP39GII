@@ -37,7 +37,6 @@ extern "C"{
 	char timer_set(char n, unsigned short count, unsigned int *callback);
 	void timer_start(char n);
 	void timer_stop(char n);
-//=======
 	void rtc_init();
 	void rtc_ms_set(unsigned int count);
 	unsigned int rtc_ms_get();
@@ -46,10 +45,12 @@ extern "C"{
 	unsigned int rtc_sec_get();
 	char rtc_persistent_set(char n, unsigned int general);
 	unsigned int rtc_persistent_get(char n);
-	
-	extern void fs_test_main();
+	reg8_t overclock(reg8_t isFracEnabled, reg16_t divider, reg8_t isHbusFracEnabled, reg16_t hbusDivider, reg8_t isAutoSlow);
 
-}
+	extern void fs_test_main();
+	extern void coremark_main();
+
+};
 
 using namespace std;
 Screen sc;
@@ -59,6 +60,7 @@ int main(){
 /*
 	printf("main");
 	fflush(stdout);
+	
 	printf("Key test mode!!Press enter or on");
 	fflush(stdout);
 	key_scan();
@@ -71,6 +73,7 @@ int main(){
 */
 	//delay_us(5000000);
 //=======
+	
 	rtc_init();
 	rtc_ms_set(1000);
 	for (int i = 0; i < 5; i++) {
@@ -78,18 +81,18 @@ int main(){
 	}
 	printf("set: 0x%x\n", rtc_sec_set(10));
 	int volatile k = 1000000;
-	while (k--)
-		;
+	while (k--);
 	printf("0x%x\n", rtc_sec_get());
 	printf("set: 0x%x\n", rtc_persistent_set(2, 0x12345678));
 	printf("0x%x\n", rtc_persistent_get(2));
 	
 	fs_test_main();
-	
+	overclock(0,2,0,1,1);
+	printf("Running Coremark!!\n");
+	coremark_main();
     reboot_test(3);   //reboot to flash. 1=entire reset, 2=reset the digital sections of the chip, 3 or any number else=nothing to do
     
 
 	return 0;
 }
-
 

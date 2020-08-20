@@ -9,6 +9,7 @@ CC            = ..\tools\gcc-arm\bin\arm-none-eabi-gcc
 GPP            = ..\tools\gcc-arm\bin\arm-none-eabi-g++
 AS            = ..\tools\gcc-arm\bin\arm-none-eabi-as
 CFLAGS        = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O1 -pipe -Wstringop-overflow=0
+CFLAGS_TESTING = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O3 -pipe -Wstringop-overflow=0
 
 LINKER        = ..\tools\gcc-arm\bin\arm-none-eabi-gcc
 LIBS          = -L..\tools\gcc-arm\lib\gcc\arm-none-eabi\9.3.1 -lgcc -lstdc++
@@ -24,14 +25,23 @@ GCCINCPATH       = -I. -I..\tools\gcc-arm\arm-none-eabi\include
 INCPATH  		= -Iinclude -Ihardware\include\registers -Ihardware\include -Ihal\include -Iinclude\freetype
 
 CSRCS 	= $(wildcard  ./*.c ./hardware/*.c ./filesystem/fatfs/*.c)
+CSRCS_TESTING = $(wildcard ./benchmark/*.c)
 CPPSRCS = $(wildcard ./*.cpp ./hal/*.cpp)
 
 FREETPYE_CSRCS = $(wildcard ./freetype/src/base/ftbase.c ./freetype/src/gzip/ftgzip.c ./freetype/src/base/ftinit.c ./freetype/src/lzw/ftlzw.c ./freetype/src/base/ftsystem.c ./freetype/src/sfnt/sfnt.c ./freetype/src/smooth/smooth.c ./freetype/src/truetype/truetype.c ./freetype/src/base/ftbitmap.c ./freetype/*.c)
+#LVGL_DIR = ./hal
+#LVGL_DIR_NAME = lvgl
+#include ./hal/lvgl/lvgl.mk
 
 #所有的.o文件列表 原文件中所有以.c .cpp结尾的文件替换成以.o结尾
 COBJS := $(CSRCS:.c=.o) 
+COBJS_TESTING := $(CSRCS_TESTING:.c=.o)
 CPPOBJS := $(CPPSRCS:.cpp=.o)
 #FREETPYE_OBJS := $(FREETPYE_CSRCS:.c=.o)
+
+#给coremark传递编译器设置
+CFLAGS_TMP := $(CFLAGS_TESTING)
+CFLAGS_TESTING += -D COMPILER_FLAGS="\"$(CFLAGS_TMP)\""
 
 #$(FREETPYE_OBJS) : %.o : %.c 
 #	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS) 
@@ -39,14 +49,16 @@ CPPOBJS := $(CPPSRCS:.cpp=.o)
 $(COBJS) : %.o : %.c 
 	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS) 
 
+$(COBJS_TESTING) : %.o : %.c 
+	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS_TESTING) 
 
 $(CPPOBJS) : %.o : %.cpp 
 	$(GPP) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS)
 
 all: firmware.sb updater
 
-rom.elf: $(COBJS) $(CPPOBJS) $(FREETPYE_OBJS)
-	$(LINKER) -o rom.elf $(LFLAGS) $(COBJS) $(CPPOBJS) $(LIBS)
+rom.elf: $(COBJS) $(CPPOBJS) $(COBJS_TESTING) $(FREETPYE_OBJS)
+	$(LINKER) -o rom.elf $(LFLAGS) $(COBJS) $(COBJS_TESTING) $(CPPOBJS) $(LIBS)
 
 updater: rom.elf
 	$(ELF2ROM) -z -c $(SCRIPT_DIR)\build_updater.bd -o updater.sb rom.elf

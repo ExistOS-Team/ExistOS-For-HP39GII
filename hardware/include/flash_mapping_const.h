@@ -20,6 +20,9 @@
 
 #ifndef _FLASH_MAPPING_CONST_H
 #define _FLASH_MAPPING_CONST_H
+#ifdef __cplusplus 
+extern "C" { 
+#endif
 
 
 #define STMP_FINGERPRINT    0x504d5453		//!< 'STMP'
@@ -91,5 +94,8 @@ typedef enum FMAP_RESULT{
 	RES_OK	=	0,
 	RES_FAIL
 }FMAP_RESULT;
+#ifdef __cplusplus 
+};
+#endif
 
 #endif

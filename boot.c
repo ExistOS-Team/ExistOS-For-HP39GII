@@ -40,7 +40,6 @@
 #include "timer.h"
 #include "flash_mapping.h"
 #include "./filesystem/fatfs/ff.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -51,6 +50,23 @@ extern unsigned char key_matrix[5][11];
 extern int main();
 extern void fs_test_main();
 
+// lv_disp_t * disp;
+// void lv_disp_flush_cb(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
+// {
+//     int32_t x, y;
+//     for(y = area->y1; y <= area->y2; y++) {
+//         for(x = area->x1; x <= area->x2; x++) {
+// 			printf("get pix:%d,%d,%d",x,y, color_p->full);
+//             LCD_write_pix(x, y, color_p->full);
+//             color_p++;
+//         }
+//     }
+//     /* IMPORTANT!!!
+//      * Inform the graphics library that you are ready with the flushing*/
+//     lv_disp_flush_ready(disp);
+// }
+//  static lv_color_t buf_1[10];
+ 
 void _boot()
 {
 	disable_interrupts();					//关闭所有中断
@@ -80,6 +96,41 @@ void _boot()
 	
 
 	
+	// lv_init();
+
+    // static lv_disp_buf_t disp_buf;
+   	// printf("Step");
+	// fflush(stdout);
+    // lv_disp_buf_init(&disp_buf, buf_1,NULL,10);
+	// printf("Step");
+	// fflush(stdout);
+	// lv_disp_drv_t disp_drv;                 /*A variable to hold the drivers. Can be local variable*/
+    // lv_disp_drv_init(&disp_drv);            /*Basic initialization*/
+	// printf("Step");
+	// fflush(stdout);
+    // disp_drv.buffer = &disp_buf;            /*Set an initialized buffer*/
+    // disp_drv.flush_cb = lv_disp_flush_cb;        /*Set a flush callback to draw to the display*/
+    // disp = lv_disp_drv_register(&disp_drv); /*Register the driver and save the created display objects*/
+	// printf("Step");
+	// fflush(stdout);
+	// lv_obj_t * btn = lv_btn_create(lv_scr_act(), NULL);     /*Add a button the current screen*/
+    // lv_obj_set_pos(btn, 0, 0);                            /*Set its position*/
+    // lv_obj_set_size(btn, 120, 50);                          /*Set its size*/              
+    // lv_obj_t * label = lv_label_create(btn, NULL);          /*Add a label to the button*/
+    // lv_label_set_text(label, "Button");                     /*Set the labels text*/
+	// lv_obj_t * label1 = lv_label_create(lv_scr_act(), NULL);
+	// lv_label_set_text(label1, "Hello world!"); 
+	// lv_obj_align(label1, NULL, LV_ALIGN_CENTER, 0, 0);
+	// lv_obj_align(btn, label1, LV_ALIGN_OUT_TOP_MID, 0, -10);
+	// printf("Step");
+	// fflush(stdout);
+	// while(1)
+	// {
+	// 	lv_task_handler();
+	// }
+	
+	//main();
+	
 	
 	
 	//Flash_mapping_init();
@@ -88,7 +139,6 @@ void _boot()
 	
 	
 	main();
- 
 	printf("System halt.");
 	fflush(stdout);
 	
@@ -146,4 +196,3 @@ void _boot()
 
 		}
 }
-

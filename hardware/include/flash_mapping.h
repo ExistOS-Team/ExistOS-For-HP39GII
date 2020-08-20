@@ -24,6 +24,9 @@
 #define _FLASH_MAPPING_H
 
 #include "nand.h"
+#ifdef __cplusplus 
+extern "C" { 
+#endif
 
 
 
@@ -342,5 +345,8 @@ int Flash_mapping_init();
 void mapping_read_lba_page(unsigned int lba_start_page, unsigned int *buffer, unsigned int pages);
 
 
+#ifdef __cplusplus 
+};
+#endif
 
 #endif
