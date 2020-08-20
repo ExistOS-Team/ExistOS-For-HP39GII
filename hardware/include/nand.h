@@ -21,6 +21,9 @@
 
 #ifndef __NAND_H
 #define __NAND_H
+#ifdef __cplusplus 
+extern "C" { 
+#endif
 
 #include "regsgpmi.h"
 #include "regsecc8.h"
@@ -129,10 +132,12 @@ typedef struct hw_gpmi_DmaDesc	//用于GPMI控制器的DMA描述符
 
 
 void NAND_init();
+
 unsigned int GPMI_dma_is_busy();
 void GPMI_read_dat(unsigned char *buffer_address, unsigned int dat_size);
 void GPMI_send_dat(unsigned int *dat_address, unsigned int data_size_bytes);
 void GPMI_send_cmd(unsigned int command, unsigned int address, unsigned int address_size_bytes, unsigned int readback_size_bytes, unsigned char *readback_buffer_address);
+
 
 unsigned int gpmi_is_busy();
 unsigned int read_nand_pages(unsigned int start_page, unsigned int pages, unsigned int *buffer, unsigned int timeout_ms);

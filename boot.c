@@ -46,6 +46,8 @@
 #include <math.h>
 
 
+extern unsigned char key_matrix[5][11];
+
 extern int main();
 extern void fs_test_main();
 
@@ -93,8 +95,56 @@ void _boot()
 	
 	while(1)
 		{
+
+  /*
+			fflush(stdout);
+			//LCD_clear_buffer();
+			key_scan();
+			for (int i = 0; i < 5; i++)
+			{
+				for (int j = 0; j < 11; j++)
+				{
+					if(key_matrix[i][j]==1){
+						//char buf[30];
+						//snprintf(buf, 30, "pressed key:%d,%d",i,j);
+						//LCD_show_string(0,0,24*16,24,24,255,buf);
+						printf("pressed key:%d,%d",i,j);
+					};
+				};
+				
+			};
+			delay_us(100000);
+*/
+			//LCD_dma_flush_buffer();
 			
-		//	uartdbg_printf("test \n");
+			/*
+			uartdbg_printf("time: %d CPUID:%x\n",HW_DIGCTL_MICROSECONDS_RD(),read_cpuid());//串口输出启动时间、CPU和寄存器信息
+			uartdbg_print_regs();
+
+			LCD_clear_buffer();		//清显存
+			LCD_show_string(1,1,24*16,24,24,255,"Hello World!");
+			LCD_show_string(1,25,24*12,24,16,255,"Hello World!");
+			LCD_show_string(1,40,24*12,24,12,255,"Hello World!");
+
+			delay_us(1000000);
+			LCD_clear_buffer();
+			//显示图片 256x128
+			for(int y=0; y<127; y++) 
+				{
+					for(int x=0; x<255; x++)
+						{
+							LCD_write_pix(x,y,255-test_picture[x+y*256]);	//将屏幕测试图片像素写入到显存中
+						}
+				}
+				while(1)
+				{	
+					LCD_scroll_up(1);
+				delay_us(20000);
+				}
+			
+			//delay_us(20000);
+			*/
+
 		}
 }
 

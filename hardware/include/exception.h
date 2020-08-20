@@ -20,6 +20,9 @@
  
 #ifndef _EXCEPTION_H
 #define _EXCEPTION_H
+#ifdef __cplusplus 
+extern "C" { 
+#endif
 
 #define EXCEPTION_VECTOR_TABLE_BASE_ADDR	0x00000000
 
@@ -36,6 +39,8 @@ typedef enum exception_type{
 
 void exception_init();
 void exception_install(exception_type type, unsigned int *exception_handler_addr);
-
+#ifdef __cplusplus 
+} 
+#endif
 #endif
 

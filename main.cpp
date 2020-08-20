@@ -27,9 +27,17 @@
 #include <cstring>
 #include <vector>
 
+#include "display.h"
 #include "memory.h"
-
+#include "keyboard.h"
 extern "C"{
+
+	#include "utils.h"
+	void timer_init();
+	char timer_set(char n, unsigned short count, unsigned int *callback);
+	void timer_start(char n);
+	void timer_stop(char n);
+//=======
 	void rtc_init();
 	void rtc_ms_set(unsigned int count);
 	unsigned int rtc_ms_get();
@@ -40,6 +48,7 @@ extern "C"{
 	unsigned int rtc_persistent_get(char n);
 	
 	extern void fs_test_main();
+
 }
 
 using namespace std;
@@ -47,6 +56,21 @@ Screen sc;
 vector<int> vec;
 
 int main(){
+/*
+	printf("main");
+	fflush(stdout);
+	printf("Key test mode!!Press enter or on");
+	fflush(stdout);
+	key_scan();
+	while (!is_key_down(KEY_ON)){
+		fflush(stdout);
+		key_scan();
+		delay_us(500000);
+		if(is_key_down(KEY_ENTER)) printf("Enter pressed!/n");
+	};
+*/
+	//delay_us(5000000);
+//=======
 	rtc_init();
 	rtc_ms_set(1000);
 	for (int i = 0; i < 5; i++) {
@@ -64,6 +88,7 @@ int main(){
 	
     reboot_test(3);   //reboot to flash. 1=entire reset, 2=reset the digital sections of the chip, 3 or any number else=nothing to do
     
+
 	return 0;
 }
 

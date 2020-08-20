@@ -20,7 +20,9 @@
  
 #ifndef _IRQ_H
 #define _IRQ_H
-
+#ifdef __cplusplus 
+extern "C" { 
+#endif
 
 
 
@@ -35,7 +37,9 @@ void enable_interrupts();
 void disable_interrupts();
 
 
-
+#ifdef __cplusplus 
+} 
+#endif
 
 #endif
 
