@@ -1,13 +1,11 @@
 #include "clkgen.h"
 #include "regsclkctrl.h"
-#include "rtc.h"
 #include "regs.h"
-#include <stdio.h>
 
 #include "utils.h"
 
 inline void PLL_enable(reg8_t isAble){
-    BF_SETV(CLKCTRL_PLLCTRL0, POWER, isAble);
+    BF_CS1(CLKCTRL_PLLCTRL0, POWER, isAble);
 }
 
 inline reg8_t CPUCLK_set_div(reg8_t isFracEnabled, reg16_t divider){
@@ -15,17 +13,22 @@ inline reg8_t CPUCLK_set_div(reg8_t isFracEnabled, reg16_t divider){
         return 0;
     }else{
         BF_CS1(CLKCTRL_CPU, DIV_CPU_FRAC_EN, isFracEnabled);
-        BF_SETV(CLKCTRL_CPU, DIV_CPU, divider);
+        BF_TOGV(CLKCTRL_CPU, DIV_CPU, divider ^ BF_RD(CLKCTRL_CPU, DIV_CPU));
         return 1;
     }
 }
 
 inline void CPUCLK_set_bypass(reg8_t bypass){
-    BF_CS1(CLKCTRL_CLKSEQ,BYPASS_CPU, bypass);
+    BF_CS1(CLKCTRL_CLKSEQ, BYPASS_CPU, bypass);
+    // printf("0x%x\n", HW_CLKCTRL_CLKSEQ_RD());
 }
 
 inline void CPUCLK_set_gating(reg8_t gating){
     BF_CS1(CLKCTRL_FRAC, CLKGATECPU, gating);
+}
+
+inline void CPUCLK_set_frac(reg8_t frac){
+    BF_CS1(CLKCTRL_FRAC, CPUFRAC, frac);
 }
 
 inline reg8_t HCLK_set_div(reg8_t isFracEnabled, reg16_t divider){
@@ -33,31 +36,28 @@ inline reg8_t HCLK_set_div(reg8_t isFracEnabled, reg16_t divider){
         return 0;
     }else{
         BF_CS1(CLKCTRL_HBUS, DIV_FRAC_EN, isFracEnabled);
-        BF_SETV(CLKCTRL_HBUS, DIV, divider);
+        BF_TOGV(CLKCTRL_HBUS, DIV, divider ^ BF_RD(CLKCTRL_HBUS, DIV));
         return 1;
     }
 }
 
 inline void HCLK_set_autoslow(reg8_t autoslow){
     if (autoslow) {
-        BF_SETV(CLKCTRL_HBUS, APBHDMA_AS_ENABLE, 1);
-        BF_SETV(CLKCTRL_HBUS, AUTO_SLOW_MODE, 1);
-        BF_SETV(CLKCTRL_HBUS, SLOW_DIV, 4);
+        BF_CS1(CLKCTRL_HBUS, APBHDMA_AS_ENABLE, 1);
+        BF_CS1(CLKCTRL_HBUS, AUTO_SLOW_MODE, 1);
+        BF_CS1(CLKCTRL_HBUS, SLOW_DIV, 4);
     }else{
-        BF_SETV(CLKCTRL_HBUS, APBHDMA_AS_ENABLE, 0);
-        BF_SETV(CLKCTRL_HBUS, AUTO_SLOW_MODE, 0);
-        BF_SETV(CLKCTRL_HBUS, SLOW_DIV, 0);
+        BF_CS1(CLKCTRL_HBUS, APBHDMA_AS_ENABLE, 0);
+        BF_CS1(CLKCTRL_HBUS, AUTO_SLOW_MODE, 0);
+        BF_CS1(CLKCTRL_HBUS, SLOW_DIV, 0);
     }
 }
 
-inline reg8_t overclock(reg8_t isFracEnabled, reg16_t divider, reg8_t isHbusFracEnabled, reg16_t hbusDivider, reg8_t isAutoSlow){
+inline reg8_t overclock(reg8_t frac, reg8_t isFracEnabled, reg16_t divider, reg8_t isHbusFracEnabled, reg16_t hbusDivider, reg8_t isAutoSlow){
     if (CPUCLK_set_div(isFracEnabled, divider) && HCLK_set_div(isHbusFracEnabled, hbusDivider)) {
-        if (isAutoSlow) {
-            BF_SETV(CLKCTRL_HBUS, APBHDMA_AS_ENABLE, 1);
-            BF_SETV(CLKCTRL_HBUS, AUTO_SLOW_MODE, 1);
-            BF_SETV(CLKCTRL_HBUS, SLOW_DIV, 4);
-        }
+        HCLK_set_autoslow(isAutoSlow);
         CPUCLK_set_gating(0);
+        CPUCLK_set_frac(frac);
         PLL_enable(1);
         delay_us(10);
         CPUCLK_set_bypass(0);
