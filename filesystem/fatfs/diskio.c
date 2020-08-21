@@ -10,7 +10,7 @@
 #include "ff.h"			/* Obtains integer types */
 #include "diskio.h"		/* Declarations of disk functions */
 
-#include "nand.h"
+#include "flash_mapping.h"
 
 /* Definitions of physical drive number for each drive */
 #define DEV_NAND	0	/* Example: Map Ramdisk to physical drive 0 */
@@ -112,7 +112,7 @@ DRESULT disk_read (
 	case DEV_NAND :
 		// translate the arguments here
 		//printf("pdrv %d,lba:%d \n",pdrv,sector);
-		switch(read_nand_pages(firstPartitionBlock + sector,count,(unsigned int *)buff,0)){
+		/*switch(read_nand_pages(sector,count,(unsigned int *)buff,0)){
 			case operationDone:
 				result = RES_OK;
 				break;
@@ -122,7 +122,9 @@ DRESULT disk_read (
 			case deviceTimeout:
 				result = RES_ERROR;
 				break;
-		}
+		}*/
+		mapping_read_lba_page(sector,(unsigned int *)buff,count);
+		
 		//result = RAM_disk_read(buff, sector, count);
 		res = RES_OK;
 		// translate the reslut code here

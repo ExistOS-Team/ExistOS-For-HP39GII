@@ -113,19 +113,54 @@ void fs_test_main()
 	FIL* testfile;
 	testfile = malloc(sizeof(FIL));
 
-	unsigned char cont[32] = {0};
-	scan_files("/");
+	unsigned char cont[32] = {0x33};
+	//scan_files("/");
 
 
-	res = f_open(testfile,"test.txt",FA_READ);
+	res = f_open(testfile,"test2.txt",FA_READ);
 	printf("Open file:%d\n",res);
 	if(!res)
 		{
-			printf("Open C:\\test.txt succeed.\n");
+			unsigned int i=0;
+			printf("Open C:\\test2.txt size:%d.\n",f_size(testfile));
 			f_gets(cont,f_size(testfile),testfile);
-			printf(cont);
+			while(i<f_size(testfile)){
+				printf("%c",cont[i]);
+				i++;
+			}
+			printf("\n");
 		}
 
+	t = 1;
+	unsigned int page = 0;
+
+
+	timer_init();
+	timer_set(0,0,0x8,(unsigned int *)timers);
+	timer_start(0,32*1000);
+	while(t)
+		{
+			//mapping_read_lba_page(page,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),1);
+			read_nand_pages(page,1,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),0);
+			page++;
+		}
+	printf("NAND Seq Read Speed:%d KB/s\n",page/2);
+
+	t=1;
+	page = 0; 
+	timer_start(0,32*1000);
+	while(t)
+		{
+			//mapping_read_lba_page(rand()%65535,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),1);
+			read_nand_pages(rand()%65535,1,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),0);
+			page++;
+		}
+	printf("NAND Rand Read Speed:%d KB/s\n",page/2);
+}
+
+
+
+/*
 	t = 1;
 	unsigned int page = 0;
 
@@ -148,5 +183,12 @@ void fs_test_main()
 			read_nand_pages(rand()%65535,1,(unsigned int*)(&__DMA_NAND_PALLOAD_BUFFER),0);
 			page++;
 		}
-	printf("NAND Rand Read Speed:%d KB/s\n",page/2);
-}
+
+*/
+
+
+
+
+
+
+

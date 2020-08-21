@@ -23,8 +23,11 @@
 #include <stdint.h>
 #include "regslcdif.h"
 
-//#define 	VRAM_BASE						0x00001000		//显存基址
+#ifdef __cplusplus 
+extern "C" { 
+#endif
 
+//#define 	VRAM_BASE						0x00001000		//显存基址
 #define 	LCD_TIMOUT_US					100000		//数据超时时间
 
 #define 	LCD_H	128
@@ -33,7 +36,7 @@
 #define		LCD_COMMANDE_BUFFER_SIZE		4			//命令缓冲区大小
 #define		LCD_PARAMETER_BUFFER_SIZE		32			//命令参数缓冲区大小
 
-unsigned int pix_format;
+static unsigned int pix_format;
 
 
 
@@ -214,5 +217,9 @@ void LCD_show_char(uint16_t x, uint16_t y, uint8_t num, uint8_t size, uint8_t co
 ===========================================================================*/
 void LCD_print(uint8_t *p);
 
+
+#ifdef __cplusplus 
+} 
+#endif
 #endif
 

@@ -244,7 +244,8 @@ void key_scan()
 		}
 	}
 	
-	key_matrix[0][10] = ((BF_RD(PINCTRL_DIN0,DIN)>>14)&1);
-	
-}
+	key_matrix[0][10] = ((BF_RD(PINCTRL_DIN0,DIN)>>14)&1);	
+};
+
+unsigned int is_key_down(keys key) { return key_matrix[key % 8][key >> 3]; };
 
