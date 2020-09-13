@@ -29,7 +29,11 @@
 
 #include "display.h"
 #include "memory.h"
+#include "dcp.h"
+#include "irq.h"
+#include "hw_irq.h"
 #include "keyboard.h"
+
 extern "C"{
 
 	#include "utils.h"
@@ -44,7 +48,9 @@ using namespace std;
 Screen sc;
 vector<int> vec;
 
-int main(){
+int main()
+{
+	overclock(18, 0, 2, 0, 1, 1);
 /*
 	printf("main");
 	fflush(stdout);
@@ -62,13 +68,10 @@ int main(){
 	//delay_us(5000000);
 //=======
 	
-	fs_test_main();
-	overclock(18, 0, 2, 0, 1, 1);
-	printf("Running Coremark!!\n");
-	coremark_main();
-    reboot_test(3);   //reboot to flash. 1=entire reset, 2=reset the digital sections of the chip, 3 or any number else=nothing to do
-    
-
-	return 0;
+	// fs_test_main();
+	// 
+	// printf("Running Coremark!!\n");
+	// coremark_main();
+    // reboot_test(3);   //reboot to flash. 1=entire reset, 2=reset the digital sections of the chip, 3 or any number else=nothing to do
 }
 
