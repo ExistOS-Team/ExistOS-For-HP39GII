@@ -6,3 +6,9 @@ typedef struct _msg_block
     reg32_t length;
     char *msg;
 } MsgBlock;
+
+typedef struct
+{
+    MsgBlock *head;
+    MsgBlock *tail;
+} ListPointer;
