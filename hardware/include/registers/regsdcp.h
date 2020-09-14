@@ -1010,11 +1010,18 @@ typedef union
     reg32_t  U;
     struct
     {
-        unsigned CIPHER_SELECT  :  4;
-        unsigned CIPHER_MODE    :  4;
-        reg8_t   KEY_SELECT;
-        unsigned HASH_SELECT    :  4;
-        unsigned RSVD           :  4;
+        union
+        {
+            struct
+            {
+                unsigned CIPHER_SELECT : 4;
+                unsigned CIPHER_MODE : 4;
+                reg8_t KEY_SELECT;
+            };
+            reg16_t FRAMEBUFFER_LENGTH;
+        };
+        unsigned HASH_SELECT : 4;
+        unsigned RSVD : 4;
         reg8_t   CIPHER_CFG;
     } B;
 } hw_dcp_packet2_t;
