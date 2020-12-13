@@ -103,7 +103,8 @@ int _write(int fd, char *ptr, int len)
     while (*ptr && (i < len))
     {
 
-		console_puts(*ptr);
+		uartdbg_putc(*ptr);
+		//console_puts(*ptr);
 		
         i++;
         ptr++;

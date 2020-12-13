@@ -12,7 +12,6 @@ SECTIONS
 	. = . + 0x1000;
 	__DMA_NAND_AUXILIARY_BUFFER = .;
 	
-	
 
 	. = 0x0000C000;
 	.text : { *(.text) }
@@ -27,6 +26,6 @@ SECTIONS
 
 	__exidx_end = .;
 
-	. = 0x68000;
+	. = 0x30000;
 	__HEAP_START = .;
 }
