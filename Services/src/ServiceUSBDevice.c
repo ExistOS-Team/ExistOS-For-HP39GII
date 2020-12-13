@@ -19,32 +19,43 @@
 #include "queue.h"
 
 
-//DebugMessage *CurrentDebugMessage;
-/*
-static void usb_drv_reset(void)
-{
-	REG_USBCMD &= ~USBCMD_RUN;
-	//REG_PORTSC1 = (REG_PORTSC1 & ~PORTSCX_PHY_TYPE_SEL) | USB_PORTSCX_PHY_TYPE;
-    vTaskDelay(500);	//等待一段时间使主机释放该USB设备
-	REG_USBCMD |= USBCMD_CTRL_RESET;
-    while (REG_USBCMD & USBCMD_CTRL_RESET);
+void vServiceUSBCDC( void *pvParameters ){
+	
+	
+	for(;;) {
+		if ( tud_cdc_available() )
+		{
+			uint8_t buf[64];
+	
+			// read and echo back
+			uint32_t count = tud_cdc_read(buf, sizeof(buf));
+
+			for(uint32_t i=0; i<count; i++)
+			{
+				tud_cdc_write_char(buf[i]);
+				if ( buf[i] == '\r' ) tud_cdc_write_char('\n');
+			}
+
+			tud_cdc_write_flush();
+		}
+		
+		vTaskDelay(10);
+	}
 	
 }
-*/
+
+
+
 void vServiceUSBDevice( void *pvParameters )
 {
 	
-	//DebugQueue = xQueueCreate(64, sizeof(DebugMessage *));
-	
-	
-	//usb_drv_reset();
-	
 	tusb_init();
 	
+	//xTaskCreate( vServiceUSBCDC, "USB CDC Service", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
 	
 	for(;;){
 		 tud_task();
-		//xQueueReceive( DebugQueue, &( CurrentDebugMessage ), ( TickType_t ) portMAX_DELAY );
+
 	}
 	
 	
