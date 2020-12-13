@@ -6,7 +6,10 @@
 
 [![GPL Licence](https://badges.frapsoft.com/os/gpl/gpl.png?v=103)](https://opensource.org/licenses/GPL-3.0/)
 
-简介还没写，先行测试。
+本固件项目由一群计算器爱好者始创，使用了[FreeRTOS kernel](https://github.com/FreeRTOS/FreeRTOS)、[TinyUSB](https://github.com/hathach/tinyusb)。我们非常欢迎同好试用和改善本项目的代码，也非常乐意听取您的宝贵意见。期待您的参与！
+
+目前工作进展：已经完成了操作系统内核和USB驱动。但由于FLASH尚未能够驱动，目前固件仅能运行在Ram上，无法写入FLASH中。同时还没有用户界面。现在的工作重心是FLASH驱动。关于用户界面CLI还在讨论中，如有宝贵意见可于Issues提出。
+
 
 ## 安装
 
