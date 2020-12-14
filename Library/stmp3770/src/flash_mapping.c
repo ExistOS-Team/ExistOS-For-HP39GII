@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "nand.h"
+#include "raw_flash.h"
 #include "uart_debug.h"
 #include "flash_mapping.h"
 #include "flash_mapping_const.h"

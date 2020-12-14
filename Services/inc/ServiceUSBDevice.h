@@ -12,6 +12,7 @@ QueueHandle_t CDCCmdLineQueue;
 
 void vServiceUSBCDC( void *pvParameters );
 void vServiceUSBDevice( void *pvParameters );
+
 void cdc_printf(const char * fmt, ...);
 
 #endif

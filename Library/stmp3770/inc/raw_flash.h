@@ -19,8 +19,8 @@
  */
 
 
-#ifndef __NAND_H
-#define __NAND_H
+#ifndef __RAW_FLASH_H
+#define __RAW_FLASH_H
 #ifdef __cplusplus 
 extern "C" { 
 #endif

@@ -23,7 +23,7 @@
 #ifndef _FLASH_MAPPING_H
 #define _FLASH_MAPPING_H
 
-#include "nand.h"
+#include "raw_flash.h"
 #ifdef __cplusplus 
 extern "C" { 
 #endif

@@ -22,7 +22,7 @@
 #include "regspinctrl.h"
 #include "regsclkctrl.h"
 #include "regsapbh.h"
-#include "nand.h"
+#include "raw_flash.h"
 #include "irq.h"
 #include "hw_irq.h"
 #include "utils.h"
@@ -54,14 +54,24 @@ extern unsigned int __DMA_NAND_AUXILIARY_BUFFER;
 
 
 //接口时序，单位ns
+
 static struct NAND_Timing_t safe_timing =
 {
-	.DataSetup            = 80,
-	.DataHold            = 60,
-	.AddressSetup        = 25,
+	.DataSetup            = 20,
+	.DataHold            = 10,
+	.AddressSetup        = 18,
 	.SampleDelay        = 1,
 };
 
+/*
+static struct NAND_Timing_t safe_timing =
+{
+	.DataSetup            = 100,
+	.DataHold            = 100,
+	.AddressSetup        = 45,
+	.SampleDelay        = 1,
+};
+*/
 
 typedef struct
 {
@@ -229,7 +239,6 @@ void GPMI_read_block_with_ecc8(unsigned char set_read_command,unsigned char star
 	//printf("\n");
 
 	//Reference STMP3770 datasheet P.439
-
 	/***********************************
 	 *     Descriptor 0: issue NAND read setup command (CLE/ALE)
 	 ***********************************/
@@ -453,17 +462,10 @@ void GPMI_dma_irq_handle()
 		}
 
 
-	HW_APBH_CTRL1_SET(BM_APBH_CTRL1_CH4_CMDCMPLT_IRQ);
 	HW_APBH_CTRL1_CLR(BM_APBH_CTRL1_CH4_CMDCMPLT_IRQ);
-	HW_APBH_CTRL1_TOG(BM_APBH_CTRL1_CH4_CMDCMPLT_IRQ);
 
-	HW_APBH_CTRL1_SET(BM_APBH_CTRL1_CH4_AHB_ERROR_IRQ);
 	HW_APBH_CTRL1_CLR(BM_APBH_CTRL1_CH4_AHB_ERROR_IRQ);
-	HW_APBH_CTRL1_TOG(BM_APBH_CTRL1_CH4_AHB_ERROR_IRQ);
 
-
-
-	irq_set_enable(VECTOR_IRQ_GPMI_DMA, 1);
 }
 
 void GPMI_irq_handle()
@@ -473,7 +475,7 @@ void GPMI_irq_handle()
 	BF_CS1(GPMI_CTRL1,DEV_IRQ,0);
 	BF_CS1(GPMI_CTRL1,TIMEOUT_IRQ,0);
 
-	irq_set_enable(VECTOR_IRQ_GPMI, 1);
+	//irq_set_enable(VECTOR_IRQ_GPMI, 1);
 
 }
 
@@ -500,9 +502,9 @@ void ecc8_completion_irq_handle()
 		printf("uncorrectable ECC error while reading.\n");
 	}
 
-	HW_ECC8_CTRL_SET(BM_ECC8_CTRL_COMPLETE_IRQ);
+
 	HW_ECC8_CTRL_CLR(BM_ECC8_CTRL_COMPLETE_IRQ);
-	HW_ECC8_CTRL_TOG(BM_ECC8_CTRL_COMPLETE_IRQ);
+
 
 
 
@@ -512,7 +514,7 @@ void ecc8_completion_irq_handle()
 
 	//printf("ECCCOUNT:%x \n",(*(unsigned int *)0x8000C030));
 
-	irq_set_enable(VECTOR_IRQ_ECC8, 1);                                            //ECC8
+	//irq_set_enable(VECTOR_IRQ_ECC8, 1);                                            //ECC8
 
 
 }
@@ -528,7 +530,7 @@ void gpmi_dma_init()
 			;        //等待DMA通道重置完成
 		}
 
-
+	//printf("gpmi dma inited.\n");
 
 	irq_install_service(VECTOR_IRQ_GPMI_DMA, (void *)GPMI_dma_irq_handle);        //注册DMA操作完成中断的处理函数
 	irq_install_service(VECTOR_IRQ_GPMI, (void *)GPMI_irq_handle);                //注册DMA操作完成中断的处理函数
@@ -700,17 +702,20 @@ void NAND_init()
 
 	//设置引脚复用寄存器，连接至SoC内部的NAND控制器
 
-
+	BF_CS1(APBH_CTRL0, RESET_CHANNEL, (BF_RD(APBH_CTRL0, RESET_CHANNEL)|0x10));
+	while((BF_RD(APBH_CTRL0, RESET_CHANNEL)&0x10));		//等待DMA通道重置完成
 
 	BF_CS1(CLKCTRL_GPMI, DIV, 1);                //设置主时钟分频
 	BF_CLR(CLKCTRL_GPMI,CLKGATE);
 	//HW_CLKCTRL_GPMI(BM_CLKCTRL_GPMI_CLKGATE);
 	while(BF_RD(CLKCTRL_GPMI,CLKGATE));
-	GPMI_clockFrequencyInHz  = 24 * 1000000;    //24MHz    todo:从时钟控制器里取出分频系数并计算
-	GPMI_clockPeriodIn_ns    = (1000000000 / GPMI_clockFrequencyInHz) ;
+	GPMI_clockFrequencyInHz  = 24 * 1000000UL;    //24MHz    todo:从时钟控制器里取出分频系数并计算
+	GPMI_clockPeriodIn_ns    = (1000000000UL / GPMI_clockFrequencyInHz) ;
 	DeviceTimeOut_s = 1;
 	DeviceTimeOutCycles = GPMI_clockFrequencyInHz / 4096;
-
+	
+	//printf("Hz:%d,ns:%d\n",GPMI_clockFrequencyInHz,GPMI_clockPeriodIn_ns);
+	
 	HW_GPMI_CTRL0_CLR(BM_GPMI_CTRL0_SFTRST);
 	while(BF_RD(GPMI_CTRL0,SFTRST));
 	HW_GPMI_CTRL0_CLR(BM_GPMI_CTRL0_CLKGATE);
@@ -739,7 +744,7 @@ void NAND_init()
 	hw_timing.DataHold = ns_to_cycles(safe_timing.DataHold,GPMI_clockPeriodIn_ns,1);
 	hw_timing.AddressSetup = ns_to_cycles(safe_timing.AddressSetup,GPMI_clockPeriodIn_ns,0);
 
-	//printf("NAND DataSetup:%x, DataHold:%x, AddressSetup:%x ",hw_timing.DataSetup,hw_timing.DataHold,hw_timing.DataSetup);
+	//printf("NAND DataSetup:%x, DataHold:%x, AddressSetup:%x \n",hw_timing.DataSetup,hw_timing.DataHold,hw_timing.DataSetup);
 
 	BF_CS3(
 	    GPMI_TIMING0,

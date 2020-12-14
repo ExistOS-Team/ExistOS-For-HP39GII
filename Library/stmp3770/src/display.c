@@ -350,7 +350,7 @@ void LCD_dma_irq_handle()
 void LCD_dma_channel_reset(void)
 {
 	//todo: DMA应有DMA程序管理
-	BF_CS2(APBH_CTRL0, SFTRST, 0, CLKGATE, 0);			//重置LCD DMA通道，使能通道时钟
+	
 	BF_CS1(APBH_CTRL0, RESET_CHANNEL, (BF_RD(APBH_CTRL0, RESET_CHANNEL)|0x01));
 	while((BF_RD(APBH_CTRL0, RESET_CHANNEL)&0x01));		//等待DMA通道重置完成
 

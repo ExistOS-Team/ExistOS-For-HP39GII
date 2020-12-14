@@ -36,7 +36,6 @@
 #include "hw_irq.h"
 #include "memory.h"
 #include "console.h"
-#include "nand.h"
 #include "flash_mapping.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,7 +63,6 @@ void _boot()
 	//console_init();
 	
 	
-	//NAND_init();
 	
 
 	

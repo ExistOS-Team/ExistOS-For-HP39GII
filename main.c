@@ -42,6 +42,7 @@
 
 /* Library includes. */
 #include "regsuartdbg.h"
+#include "regsapbh.h"
 #include "irq.h"
 #include "tusb.h"
 
@@ -85,7 +86,7 @@ void vTask2( void *pvParameters ){
 void vTask3( void *pvParameters ){
 	
 	
-	for(;;){/*
+	for(;;){
 		uartdbg_print_regs();
 		//switch_mode(USER_MODE);
 		
@@ -98,7 +99,7 @@ void vTask3( void *pvParameters ){
         printf("%s", pcWriteBuffer);
 		printf("任务状态:  X-运行  R-就绪  B-阻塞  S-挂起  D-删除\n");
 		printf("内存剩余:   %d Bytes\n",(unsigned int)xPortGetFreeHeapSize());
-		printf("Task mode: %x\n",get_mode());*/
+		printf("Task mode: %x\n",get_mode());
 		vTaskDelay(1000);
 	}
 	
@@ -153,6 +154,8 @@ int main( void )
 
 static void prvSetupHardware(void)
 {
+	BF_CS2(APBH_CTRL0, SFTRST, 0, CLKGATE, 0);			//启动APHB桥DMA
+	
 	enable_interrupts();					//打开中断
 }
 /*-----------------------------------------------------------*/
