@@ -289,11 +289,14 @@ static void bus_reset(uint8_t rhport)
   _dcd_data.qhd[0].int_on_setup = 1; // OUT only
 }
 
+void usb_cdc_isr(void);
 
 void dcd_init (uint8_t rhport){
 	
 	tu_memclr(&_dcd_data, sizeof(dcd_data_t));
 	dcd_registers_t* dcd_reg = _dcd_controller[rhport].regs;
+	
+	irq_install_service(HW_IRQ_USB_CTRL,(void *)usb_cdc_isr);
 	
 	usb_phy_enable(true);
 	//usb_drv_reset();
@@ -315,7 +318,6 @@ void dcd_init (uint8_t rhport){
 }
 
 void dcd_int_enable (uint8_t rhport){
-	irq_install_service(HW_IRQ_USB_CTRL,(void *)dcd_int_handler);
 	irq_set_enable(HW_IRQ_USB_CTRL,1);
 }
 
@@ -376,7 +378,6 @@ static void qtd_init(dcd_qtd_t* p_qtd, void * data_ptr, uint16_t total_bytes)
 // ISR
 //--------------------------------------------------------------------+
 void dcd_int_handler(uint8_t rhport){
-	rhport = 0;
 	dcd_registers_t* const dcd_reg = _dcd_controller[rhport].regs;
 	
 	uint32_t int_enable = dcd_reg->USBINTR;
@@ -462,6 +463,11 @@ void dcd_int_handler(uint8_t rhport){
 	if (int_status & INTR_ERROR) TU_ASSERT(false, );
 	
 }
+
+void usb_cdc_isr( void ){
+	dcd_int_handler(0);
+}
+
 
 //--------------------------------------------------------------------+
 // Endpoint API

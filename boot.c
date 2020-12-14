@@ -53,7 +53,7 @@ void _boot()
 	disable_interrupts();					//关闭所有中断
 	stack_init();							//栈初始化（设定异常、系统、中断等模式下的堆栈
 	switch_mode(SVC_MODE);					//切换到系统管理模式
-	asm volatile ("ldr sp,=#0x0007C000");	//设置系统管理模式下的栈地址
+	asm volatile ("ldr sp,=#0x0007A000");	//设置系统管理模式下的栈地址
 	exception_init();						//初始化异常向量
 	irq_init();								//初始化中断
 	DFLTP_init();							//初始化页表

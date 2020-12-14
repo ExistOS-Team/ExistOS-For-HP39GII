@@ -170,10 +170,10 @@ void stack_init(){
     set_stack((unsigned int *)0x0007E000);
 	
     switch_mode(IRQ_MODE);
-    set_stack((unsigned int *)0x0007D000);
+    set_stack((unsigned int *)0x0007B000);
     
 	switch_mode(SYS_MODE);
-	set_stack((unsigned int *)0x0007B000);
+	set_stack((unsigned int *)0x00079000);
 	
 	switch_mode(SVC_MODE);
     asm volatile ("nop");       

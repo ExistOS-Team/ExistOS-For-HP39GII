@@ -83,11 +83,11 @@ void __handler_swi(void)
 {
 
 		__asm volatile ("add lr,lr,#4");
-		portSAVE_CONTEXT_ASM;
+		portSAVE_CONTEXT_ASM;/*
 		asm volatile ("stmfd sp!, {r0-r12, lr}");
 		asm volatile ("ldr r4, [lr, #-4]");
 		asm volatile ("bic r4, r4, #0xff000000");
-		asm volatile ("str r4,%0" :"=m"(swiImmed));
+		asm volatile ("str r4,%0" :"=m"(swiImmed));*/
 		//printf("Software Interrupt: %d\n",swiImmed);		
 		__asm volatile ( "bl vTaskSwitchContext" );
 		portRESTORE_CONTEXT_ASM;                          		

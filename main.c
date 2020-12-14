@@ -34,6 +34,7 @@
 #include "BlockQ.h"
 
 #include "init.h"
+#include "uart_debug.h"
 
 /* System serive includes. */
 #include "ServiceManger.h"
@@ -42,6 +43,7 @@
 /* Library includes. */
 #include "regsuartdbg.h"
 #include "irq.h"
+#include "tusb.h"
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
@@ -79,11 +81,14 @@ void vTask2( void *pvParameters ){
 	
 }
 
+
 void vTask3( void *pvParameters ){
 	
 	
-	for(;;){
+	for(;;){/*
+		uartdbg_print_regs();
 		//switch_mode(USER_MODE);
+		
 		vTaskList((char *)&pcWriteBuffer);
 		printf("=======================================================\r\n");
         printf("任务名                 任务状态   优先级   剩余栈   任务序号\n");
@@ -92,12 +97,30 @@ void vTask3( void *pvParameters ){
 		vTaskGetRunTimeStats((char *)&pcWriteBuffer);
         printf("%s", pcWriteBuffer);
 		printf("任务状态:  X-运行  R-就绪  B-阻塞  S-挂起  D-删除\n");
-		printf("内存剩余:   %d KB\n",(unsigned int)xPortGetFreeHeapSize()/1024);
-		printf("Task mode: %x\n",get_mode());
+		printf("内存剩余:   %d Bytes\n",(unsigned int)xPortGetFreeHeapSize());
+		printf("Task mode: %x\n",get_mode());*/
 		vTaskDelay(1000);
 	}
 	
 }
+
+void vUsbDeviceTask(){
+	
+	tusb_init();
+	for(;;) {
+		tud_task();
+	}
+}
+
+
+#if CFG_TUSB_DEBUG
+  #define USBD_STACK_SIZE     (3*configMINIMAL_STACK_SIZE)
+#else
+  #define USBD_STACK_SIZE     (3*configMINIMAL_STACK_SIZE/2)
+#endif
+
+StackType_t  usb_device_stack[USBD_STACK_SIZE];
+StaticTask_t usb_device_taskdef;
 
 /* Create all the demo application tasks, then start the scheduler. */
 int main( void )
@@ -108,15 +131,17 @@ int main( void )
 	/* Create the tasks defined within this file. */
 	//xTaskCreate( vTask1, "test task1", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
 	//xTaskCreate( vTask2, "test task2", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
+	xTaskCreateStatic( vUsbDeviceTask, "usbd", USBD_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, usb_device_stack, &usb_device_taskdef);
+	
 	xTaskCreate( vTask3, "Task Manager", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
 	xTaskCreate( vServiceManger, "Service Host", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
 	xTaskCreate( vInit, "init", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
-
+	
 	//vStartBlockingQueueTasks(1);
 	//vStartGenericQueueTasks(1);
 	
 	printf("pdMS_TO_TICKS(500)=%d\n",pdMS_TO_TICKS(500));
-
+	
 	vTaskStartScheduler();
 	/* Execution will only reach here if there was insufficient heap to
 	start the scheduler. */

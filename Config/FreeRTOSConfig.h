@@ -58,6 +58,8 @@
 #define configUSE_RECURSIVE_MUTEXES             1
 #define configUSE_COUNTING_SEMAPHORES           1
 
+#define configCHECK_FOR_STACK_OVERFLOW          0
+
 #define configUSE_16_BIT_TICKS		0
 #define configIDLE_SHOULD_YIELD		0
 
@@ -85,6 +87,9 @@ extern volatile unsigned long ulHighFrequencyTimerTicks;
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 		0
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
+
+
+#define configCOMMAND_INT_MAX_OUTPUT_SIZE		2048
 
 /* Set the following definitions to 1 to include the API function, or zero
 to exclude the API function. */

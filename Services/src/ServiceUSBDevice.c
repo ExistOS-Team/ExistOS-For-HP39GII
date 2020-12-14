@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
 
 #include "tusb.h"
 
@@ -18,27 +19,40 @@
 #include "task.h"
 #include "queue.h"
 
+unsigned char buffer[512];
 
+void cdc_printf(const char * fmt, ...)
+{
+	int i = 0;
+	va_list args;
+	tud_cdc_write_clear();
+	va_start(args,fmt);
+	vsprintf(buffer, fmt, args);
+	while(!tud_cdc_write_available()){
+		vTaskDelay(1);
+	}
+	while(buffer[i]){
+		tud_cdc_write_char(buffer[i++]);
+	}
+	tud_cdc_write_flush();
+	va_end(args);
+	memset(buffer,0,512);
+}
+
+
+
+uint8_t buf[64];
 void vServiceUSBCDC( void *pvParameters ){
 	
-	
 	for(;;) {
-		if ( tud_cdc_available() )
-		{
-			uint8_t buf[64];
-	
-			// read and echo back
-			uint32_t count = tud_cdc_read(buf, sizeof(buf));
-
-			for(uint32_t i=0; i<count; i++)
-			{
-				tud_cdc_write_char(buf[i]);
-				if ( buf[i] == '\r' ) tud_cdc_write_char('\n');
-			}
-
-			tud_cdc_write_flush();
-		}
 		
+		if ( tud_cdc_available() )
+		{	
+			uint32_t count = tud_cdc_read(buf, sizeof(buf));
+			xQueueSend(CDCCmdLineQueue, buf , ( TickType_t ) 0 );
+			memset(buf,0,sizeof(buf));
+			tud_cdc_read_flush();
+		}
 		vTaskDelay(10);
 	}
 	
@@ -46,16 +60,15 @@ void vServiceUSBCDC( void *pvParameters ){
 
 
 
+
 void vServiceUSBDevice( void *pvParameters )
 {
+	CDCCmdLineQueue =  xQueueCreate(32, 64);
 	
-	tusb_init();
 	
-	//xTaskCreate( vServiceUSBCDC, "USB CDC Service", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
 	
-	for(;;){
-		 tud_task();
-
+	for(;;) {
+		vTaskSuspend(NULL);
 	}
 	
 	

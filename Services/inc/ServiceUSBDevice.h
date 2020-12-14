@@ -8,24 +8,11 @@
 #include "task.h"
 #include "queue.h"
 
+QueueHandle_t CDCCmdLineQueue;
 
-
-/*
-typedef enum {
-	DEBUG_MSG_TYPE_NOP,
-	DEBUG_MSG_TYPE_TO_UART,
-	DEBUG_MSG_TYPE_TO_CONSOLE
-}DebugMsgType;
-
-typedef struct DebugMessage{
-	unsigned int DebugMsgType;
-	unsigned char *text;
-}DebugMessage;
-
-QueueHandle_t DebugQueue;
-*/
-
+void vServiceUSBCDC( void *pvParameters );
 void vServiceUSBDevice( void *pvParameters );
+void cdc_printf(const char * fmt, ...);
 
 #endif
 

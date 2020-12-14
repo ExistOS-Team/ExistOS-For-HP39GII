@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "init.h"
+#include "cdc_console.h"
 
 #include "ServiceGraphic.h"
 
@@ -30,8 +31,9 @@ void vInit(){
 	text1.font_size = 12;
 	text1.font_color = 255;
 	text1.text = "Hello World";
-	xQueueSend(GraphicQueue, &(GM.selfAddr) , ( TickType_t ) 0 );	
+	xQueueSend(GraphicQueue, &(GM.selfAddr) , ( TickType_t ) 0 );
 	
+	xTaskCreate( vCDC_Console, "CDC Console", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
 	//vTaskSuspend(NULL);
 	vTaskDelete(NULL);
 	for(;;){

@@ -8,14 +8,14 @@ LDSCRIPT 		= .\script\ld.script
 CC             = ..\tools\gcc-arm\bin\arm-none-eabi-gcc
 GPP            = ..\tools\gcc-arm\bin\arm-none-eabi-g++
 AS             = ..\tools\gcc-arm\bin\arm-none-eabi-as
-CFLAGS         = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O1 -pipe  
+CFLAGS         = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -Os -pipe -ffunction-sections
 CFLAGS_TESTING = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O3 -pipe -Wstringop-overflow=0
 
 LINKER        = ..\tools\gcc-arm\bin\arm-none-eabi-gcc
 LIBS          = 
 #-L..\tools\gcc-arm\lib\gcc\arm-none-eabi\9.3.1 
 #-lc -lstdc++ -lm -lgcc
-LFLAGS        = -T$(LDSCRIPT)
+LFLAGS        = -T$(LDSCRIPT) -Wl,--gc-sections
 #-nodefaultlibs -nostdlib 
 DEL_FILE      = del /Q /S
 DEL_DIR       = rmdir
@@ -23,10 +23,10 @@ ELF2ROM		  = ..\tools\sbtools\elftosb.exe
 SBLOADER	  = ..\tools\sbtools\sb_loader.exe
 
 GCCINCPATH       = -I. -I..\tools\gcc-arm\arm-none-eabi\include 
-INCPATH  		=  -Ikernel\porting -Ikernel\include -Ilibrary\stmp3770\inc -Ilibrary\stmp3770\inc\registers -ITestApp -IServices\inc -ISystemApp -IConfig -ILibrary\TinyUSB -ILibrary\TinyUSB\device
+INCPATH  		=  -Ikernel\porting -Ikernel\include -Ilibrary\stmp3770\inc -Ilibrary\stmp3770\inc\registers -ITestApp -IServices\inc -ISystemApp -IConfig -ILibrary\TinyUSB -ILibrary\TinyUSB\device -ILibrary\FreeRTOS-Plus-CLI
 
 
-CSRCS 	= $(wildcard  ./*.c ./kernel/*.c   ./kernel/porting/*.c ./library/stmp3770/src/*.c  ./TestApp/*.c ./Services/src/*.c ./SystemApp/*.c ./Config/*.c)
+CSRCS 	= $(wildcard  ./*.c ./kernel/*.c   ./kernel/porting/*.c ./library/stmp3770/src/*.c  ./TestApp/*.c ./Services/src/*.c ./SystemApp/*.c ./Config/*.c ./Library/FreeRTOS-Plus-CLI/*.c)
 
 
 CTINYUSBCSRCS	=	$(wildcard ./Library/TinyUSB/*.c ./Library/TinyUSB/common/*.c ./Library/TinyUSB/device/*.c ./Library/TinyUSB/class/cdc/*.c ./Library/TinyUSB/class/msc/*.c )
