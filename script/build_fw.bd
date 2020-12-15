@@ -13,20 +13,10 @@ componentVersion = "1.00.00";
 sources {
 
 inputFile = extern(0);	//第0个输入文件
-//inputFile_2 = extern(1);	//第1个输入文件
-//bin_file = "img2.bin";
 
 }
 
-section (0x686f7374) {
+section (0) {
 	load inputFile;
 	call inputFile;
-}
-
-section (0x68766d69)  {
-	
-}
-
-section (0x72737263)  {
-
 }

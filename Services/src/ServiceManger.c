@@ -6,6 +6,7 @@
 #include "ServiceDebug.h"
 #include "ServiceUSBDevice.h"
 #include "ServiceRawFlash.h"
+#include "ServiceSTMPPartition.h"
 
 
 /* Library includes. */
@@ -29,6 +30,7 @@ void vServiceManger( void *pvParameters )
 	xTaskCreate( vServiceDebug, "Debug Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
 	xTaskCreate( vServiceUSBDevice, "USB Device Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
 	xTaskCreate( vServiceUSBCDC, "USB CDC Service", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
+	xTaskCreate( vSTMPPartition, "STMP Partition Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
 	
 	vTaskSuspend(NULL);
 	for(;;){

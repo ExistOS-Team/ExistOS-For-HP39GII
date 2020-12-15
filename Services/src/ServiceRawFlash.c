@@ -17,7 +17,10 @@
 #include "queue.h"
 #include "semphr.h"
 
-SemaphoreHandle_t flashLock, readPageLock;
+extern unsigned int dma_error;
+
+
+SemaphoreHandle_t flashLock;
 
 extern volatile unsigned int dmaOperationCompleted;
 extern volatile unsigned int eccOperationCompleted;
@@ -26,7 +29,7 @@ void set_page_address_data(unsigned int pageNumber);
 void GPMI_read_block_with_ecc8(unsigned char set_read_command,unsigned char start_read_command,
                                unsigned char *address_data, unsigned int *buffer, unsigned int address_data_size_bytes );
 							   
-BaseType_t xReadFlashPages( unsigned int start_page, unsigned int pages, unsigned int *buffer, unsigned int timeout_ms ) {
+BaseType_t xReadFlashPages( unsigned int start_page, unsigned int pages, void *buffer, unsigned int timeout_ms ) {
 	unsigned int count = 0;
 	unsigned int startTick = xTaskGetTickCount();
 	if(xSemaphoreTake(flashLock, timeout_ms) == pdFALSE){
@@ -40,7 +43,7 @@ BaseType_t xReadFlashPages( unsigned int start_page, unsigned int pages, unsigne
 		while( !dmaOperationCompleted || !eccOperationCompleted ){
 			if( xTaskGetTickCount() - startTick > timeout_ms){
 				xSemaphoreGive(flashLock);
-				return READ_TIMEOUT;
+				return TIMEOUT;
 			}
 		}
  
@@ -51,22 +54,121 @@ BaseType_t xReadFlashPages( unsigned int start_page, unsigned int pages, unsigne
 	return NO_ERROR;
 }
 
+unsigned char NMETA[19] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+
+BaseType_t xWriteFlashPages( unsigned int start_page, unsigned int pages, void *data_buffer, void *meta_buffer, unsigned int timeout_ms ) {
+	unsigned int count = 0;
+	unsigned int startTick = xTaskGetTickCount();
+	if(xSemaphoreTake(flashLock, timeout_ms) == pdFALSE){
+		return DEVICE_BUSY;
+	}
+	
+	if(meta_buffer = NULL){
+		meta_buffer = NMETA;
+		
+	}
+	
+	while(count < pages){
+		GPMI_write_block_with_ecc8(NAND_CMD_SEQIN,NAND_CMD_PAGEPROG,NAND_CMD_STATUS,
+								start_page + count ,data_buffer,meta_buffer);
+		count++;
+		data_buffer += 2048;
+		meta_buffer += 19;
+		
+		while( !dmaOperationCompleted ){
+			if( xTaskGetTickCount() - startTick > timeout_ms){
+				xSemaphoreGive(flashLock);
+				return TIMEOUT;
+			}
+		}
+		
+		if(dma_error){
+			xSemaphoreGive(flashLock);
+			return OPERATION_FAIL;
+		}
+		
+	}
+
+	xSemaphoreGive(flashLock);
+	return NO_ERROR;
+}
+
+BaseType_t xEraseFlashBlocks( unsigned int start_block, unsigned int blocks, unsigned int timeout_ms ) {
+	unsigned int count = 0;
+	unsigned int startTick = xTaskGetTickCount();
+	if(xSemaphoreTake(flashLock, timeout_ms) == pdFALSE){
+		return DEVICE_BUSY;
+	}
+	
+	while(count < blocks){
+ 
+		GPMI_erase_block_cmd(NAND_CMD_ERASE1, NAND_CMD_ERASE2, NAND_CMD_STATUS, start_block + count);
+		
+		count++;
+		
+		while( !dmaOperationCompleted ){
+			if( xTaskGetTickCount() - startTick > timeout_ms){
+				xSemaphoreGive(flashLock);
+				return TIMEOUT;
+			}
+		}
+		
+		if(dma_error){
+			xSemaphoreGive(flashLock);
+			return OPERATION_FAIL;
+		}
+		
+	}
+
+	xSemaphoreGive(flashLock);
+	return NO_ERROR;
+}
 
 
+unsigned int pageInBlock(unsigned int page){
+	return (page / 64);
+}
+
+unsigned int blockStartPage(unsigned int block){
+	return (block * 64);
+}
+
+BaseType_t xGetFlashStatus(){
+	if(dmaOperationCompleted && eccOperationCompleted){
+		return NO_ERROR;
+	}else{
+		return DEVICE_BUSY;
+	}
+}
+
+
+OperationQueue  CurrentOperation;
 
 void vServiceRawFlash( void *pvParameters ){
 	
 	flashLock = xSemaphoreCreateMutex();
-	readPageLock = xSemaphoreCreateMutex();
+	flashOperationQueue = xQueueCreate(256, sizeof(OperationQueue));
 	
 	NAND_init();
-	
-	
-	
-	
-	vTaskSuspend(NULL);
+
+	//vTaskSuspend(NULL);
 	for(;;){
-		vTaskDelay(portMAX_DELAY);
+		if(xQueueReceive( flashOperationQueue, (&CurrentOperation), ( TickType_t ) portMAX_DELAY ) == pdTRUE ){
+			switch(CurrentOperation.OperationType){
+				case WRTIE:
+					xWriteFlashPages( CurrentOperation.whichPage, 1, 
+											CurrentOperation.flashDataInBuffer, 
+											CurrentOperation.flashMetaInBuffer, 
+											2000 ) ;
+				break;
+				
+				
+			}
+			
+		
+			
+		}
+		
 	}
 	
 	

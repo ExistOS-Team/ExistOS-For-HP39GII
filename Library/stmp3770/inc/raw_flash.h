@@ -71,6 +71,7 @@ unsigned int firstPartitionBlock;
 #define NAND_CMD_UNLOCK1	0x23
 #define NAND_CMD_UNLOCK2	0x24
 
+#define MASK_AND_REFERENCE_VALUE 0x0100
 
 typedef struct NAND_Timing_t {
 	unsigned char DataSetup;
@@ -142,8 +143,11 @@ void GPMI_send_cmd(unsigned int command, unsigned int address, unsigned int addr
 unsigned int gpmi_is_busy();
 unsigned int read_nand_pages(unsigned int start_page, unsigned int pages, unsigned int *buffer, unsigned int timeout_ms);
 
+void GPMI_write_block_with_ecc8(unsigned char set_up_command,unsigned char start_write_confirm_command,unsigned char read_status_command,
+								unsigned int page_to_write,void *write_payload_buffer, void *write_aux_buffer);
 
 
+void GPMI_erase_block_cmd(unsigned char erase_command, unsigned char confirm_erase_command, unsigned char read_status_command, unsigned int block_address);
 
 #endif
 

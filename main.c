@@ -87,9 +87,9 @@ void vTask3( void *pvParameters ){
 	
 	
 	for(;;){
-		uartdbg_print_regs();
+		//uartdbg_print_regs();
 		//switch_mode(USER_MODE);
-		
+		/*
 		vTaskList((char *)&pcWriteBuffer);
 		printf("=======================================================\r\n");
         printf("任务名                 任务状态   优先级   剩余栈   任务序号\n");
@@ -99,8 +99,8 @@ void vTask3( void *pvParameters ){
         printf("%s", pcWriteBuffer);
 		printf("任务状态:  X-运行  R-就绪  B-阻塞  S-挂起  D-删除\n");
 		printf("内存剩余:   %d Bytes\n",(unsigned int)xPortGetFreeHeapSize());
-		printf("Task mode: %x\n",get_mode());
-		vTaskDelay(1000);
+		printf("Task mode: %x\n",get_mode());*/
+		vTaskDelay(5000);
 	}
 	
 }

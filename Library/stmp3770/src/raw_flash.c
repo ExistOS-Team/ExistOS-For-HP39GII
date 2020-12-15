@@ -55,6 +55,7 @@ extern unsigned int __DMA_NAND_AUXILIARY_BUFFER;
 
 //接口时序，单位ns
 
+
 static struct NAND_Timing_t safe_timing =
 {
 	.DataSetup            = 20,
@@ -70,8 +71,8 @@ static struct NAND_Timing_t safe_timing =
 	.DataHold            = 100,
 	.AddressSetup        = 45,
 	.SampleDelay        = 1,
-};
-*/
+};*/
+
 
 typedef struct
 {
@@ -101,7 +102,7 @@ unsigned char id[10];
 
 struct nand_flash_dev foundChip;
 
-volatile GPMI_DMA_GENERIC_DESCRIPTOR chains[10];
+volatile GPMI_DMA_GENERIC_DESCRIPTOR chains[11];
 
 
 
@@ -220,7 +221,458 @@ void GPMI_send_cmd(unsigned int command, unsigned int address, unsigned int addr
 
 }
 
+void GPMI_erase_block_cmd(unsigned char erase_command, unsigned char confirm_erase_command, unsigned char read_status_command, unsigned int block_address){
+	
+	commandAddressBuffer[0] = erase_command;
+	
+	commandAddressBuffer[1] = (block_address << 6) & 0xFF;
+	commandAddressBuffer[2] = (block_address >> 2) & 0xFF;
+	commandAddressBuffer[3] = (block_address >> 10) & 0xFF;
+	
+	
+	commandAddressBuffer[6] = confirm_erase_command;
+	
+	commandAddressBuffer[7] = read_status_command;
+	
+	//----------------------------------------------------------------------------
+	// Descriptor 1: issue NAND write setup command (CLE/ALE)
+	//----------------------------------------------------------------------------
+	
+	chains[0].dma_nxtcmdar = (unsigned int)&chains[3];
+	chains[0].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (1 + 3) 			| // 1 byte command, 2 byte address 
+						BF_APBH_CHn_CMD_CMDWORDS (3) 				| // send 3 words to the GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (1) 			| // wait for command to finish before continuing
+						BF_APBH_CHn_CMD_SEMAPHORE (0) 				|
+						BF_APBH_CHn_CMD_NANDWAIT4READY(0) 			|
+						BF_APBH_CHn_CMD_NANDLOCK (1) 				| // prevent other DMA channels from taking over
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) 				|
+						BF_APBH_CHn_CMD_CHAIN (1) 					| // follow chain to next command
+						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ);	 // read data from DMA, write to NAND
+						
+	chains[0].dma_bar = (unsigned int)&commandAddressBuffer[0]; 											// byte 0 write setup, bytes 1 - 2 NAND address
+																						// 3 words sent to the GPMI
+						chains[0].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WRITE) | // write to the NAND
+						BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT) 							|
+						BV_FLD(GPMI_CTRL0, LOCK_CS, ENABLED) 							|
+						BF_GPMI_CTRL0_CS (chipSelect) 									| // must correspond to NAND CS used
+						BV_FLD(GPMI_CTRL0, ADDRESS, NAND_CLE) 							|
+						BF_GPMI_CTRL0_ADDRESS_INCREMENT (1) 							| // send command and address
+						BF_GPMI_CTRL0_XFER_COUNT (1 + 3); 									// 1 byte command, 2 byte address  
+	chains[0].gpmi_compare = (unsigned int)NULL; 										// field not used but necessary to set eccctrl
+	chains[0].gpmi_eccctrl = BV_FLD(GPMI_ECCCTRL, ENABLE_ECC, DISABLE); 	// disable the ECC block	
 
+
+	//----------------------------------------------------------------------------
+	// Descriptor 4: issue NAND write execute command (CLE)
+	//----------------------------------------------------------------------------
+	chains[3].dma_nxtcmdar = (unsigned int)&chains[4]; // point to the next descriptor
+	chains[3].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (1) | // 1 byte command
+						BF_APBH_CHn_CMD_CMDWORDS (3) | // send 3 words to the GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (1) | // wait for command to finish before continuing
+						BF_APBH_CHn_CMD_SEMAPHORE (0) |
+						BF_APBH_CHn_CMD_NANDWAIT4READY(0) |
+						BF_APBH_CHn_CMD_NANDLOCK (1) | // maintain resource lock
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
+						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
+						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ); // read data from DMA, write to NAND
+	chains[3].dma_bar = (unsigned int)&commandAddressBuffer[6]; // point to byte 6, write execute command
+															// 3 words sent to the GPMI
+	chains[3].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WRITE) | // write to the NAND
+						BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT) |
+						BV_FLD(GPMI_CTRL0, LOCK_CS, ENABLED) |
+						BF_GPMI_CTRL0_CS (chipSelect) | // must correspond to NAND CS used
+						BV_FLD(GPMI_CTRL0, ADDRESS, NAND_CLE) |
+						BF_GPMI_CTRL0_ADDRESS_INCREMENT (0) |
+						BF_GPMI_CTRL0_XFER_COUNT (1); // 1 byte command
+	chains[3].gpmi_compare = (unsigned int)NULL; // field not used but necessary to set eccctrl
+	chains[3].gpmi_eccctrl = BV_FLD(GPMI_ECCCTRL, ENABLE_ECC, DISABLE); // disable the ECC block	
+	//----------------------------------------------------------------------------
+	// Descriptor 5: wait for ready (CLE)
+	//----------------------------------------------------------------------------
+	chains[4].dma_nxtcmdar = (unsigned int)&chains[5]; // point to the next descriptor
+	chains[4].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (0) | // no dma transfer
+						BF_APBH_CHn_CMD_CMDWORDS (1) | // send 1 word to the GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (1) | // wait for command to finish before continuing
+						BF_APBH_CHn_CMD_SEMAPHORE (0) |
+						BF_APBH_CHn_CMD_NANDWAIT4READY(1) | // wait for nand to be ready
+						BF_APBH_CHn_CMD_NANDLOCK (0) | // relinquish nand lock
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
+						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
+						BV_FLD(APBH_CHn_CMD, COMMAND, NO_DMA_XFER); // no dma transfer
+	chains[4].dma_bar = (unsigned int)NULL; // field not used
+	
+	// 1 word sent to the GPMI
+	chains[4].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WAIT_FOR_READY) | // wait for NAND ready
+							BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT) |
+							BV_FLD(GPMI_CTRL0, LOCK_CS, DISABLED) |
+							BF_GPMI_CTRL0_CS (chipSelect) | // must correspond to NAND CS used
+							BV_FLD(GPMI_CTRL0, ADDRESS, NAND_DATA) |
+							BF_GPMI_CTRL0_ADDRESS_INCREMENT (0) |
+							BF_GPMI_CTRL0_XFER_COUNT (0);
+ 
+	//----------------------------------------------------------------------------
+	// Descriptor 6: psense compare (time out check)
+	//----------------------------------------------------------------------------
+	chains[5].dma_nxtcmdar = (unsigned int)&chains[6]; // point to the next descriptor
+	chains[5].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (0) | // no dma transfer
+						BF_APBH_CHn_CMD_CMDWORDS (0) | // no words sent to GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (0) | // do not wait to continue
+						BF_APBH_CHn_CMD_SEMAPHORE (0) |
+						BF_APBH_CHn_CMD_NANDWAIT4READY(0) |
+						BF_APBH_CHn_CMD_NANDLOCK (0) |
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
+						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
+						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_SENSE); // perform a sense check
+						chains[5].dma_bar = (unsigned int)&chains[10]; // if sense check fails, branch to error handler
+	//----------------------------------------------------------------------------
+	// Descriptor 7: issue NAND status command (CLE)
+	//----------------------------------------------------------------------------
+	chains[6].dma_nxtcmdar = (unsigned int)&chains[7]; // point to the next descriptor
+	chains[6].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (1) | // 1 byte command
+						BF_APBH_CHn_CMD_CMDWORDS (3) | // send 3 words to the GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (1) | // wait for command to finish before continuing
+						BF_APBH_CHn_CMD_SEMAPHORE (0) |
+						BF_APBH_CHn_CMD_NANDWAIT4READY(0) |
+						BF_APBH_CHn_CMD_NANDLOCK (1) | // prevent other DMA channels from taking over
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
+						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
+						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ); // read data from DMA, write to NAND
+	chains[6].dma_bar = (unsigned int)&commandAddressBuffer[7]; // point to byte 7, status command
+	chains[6].gpmi_compare = (unsigned int)NULL; // field not used but necessary to set eccctrl
+	chains[6].gpmi_eccctrl = BV_FLD(GPMI_ECCCTRL, ENABLE_ECC, DISABLE); // disable the ECC block
+											// 3 words sent to the GPMI
+	chains[6].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WRITE) | // write to the NAND
+						BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT) |
+						BV_FLD(GPMI_CTRL0, LOCK_CS, ENABLED) |
+						BF_GPMI_CTRL0_CS (chipSelect) | // must correspond to NAND CS used
+						BV_FLD(GPMI_CTRL0, ADDRESS, NAND_CLE) |
+						BF_GPMI_CTRL0_ADDRESS_INCREMENT (0) |
+						BF_GPMI_CTRL0_XFER_COUNT (1); // 1 byte command
+	
+	//----------------------------------------------------------------------------
+	// Descriptor 8: read status and compare (DATA)
+	//----------------------------------------------------------------------------
+	chains[7].dma_nxtcmdar = (unsigned int)&chains[8]; // point to the next descriptor
+	chains[7].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (0) | // no dma transfer
+						BF_APBH_CHn_CMD_CMDWORDS (2) | // send 2 words to the GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (1) | // wait for command to finish before continuing
+						BF_APBH_CHn_CMD_SEMAPHORE (0) |
+						BF_APBH_CHn_CMD_NANDWAIT4READY(0) |
+						BF_APBH_CHn_CMD_NANDLOCK (1) | // maintain resource lock
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
+						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
+						BV_FLD(APBH_CHn_CMD, COMMAND, NO_DMA_XFER); // no dma transfer
+	chains[7].dma_bar = (unsigned int)NULL; // field not used
+	// 2 word sent to the GPMI
+	chains[7].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, READ_AND_COMPARE) | // read from the NAND and compare to expect
+						BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT) |
+						BV_FLD(GPMI_CTRL0, LOCK_CS, DISABLED) |
+						BF_GPMI_CTRL0_CS (chipSelect) | // must correspond to NAND CS used
+						BV_FLD(GPMI_CTRL0, ADDRESS, NAND_DATA) |
+						BF_GPMI_CTRL0_ADDRESS_INCREMENT (0) |
+						BF_GPMI_CTRL0_XFER_COUNT (1);
+	chains[7].gpmi_compare = MASK_AND_REFERENCE_VALUE; // NOTE: mask and reference values are NAND
+													// SPECIFIC to evaluate the NAND status
+	
+	//----------------------------------------------------------------------------
+	// Descriptor 9: psense compare (time out check)
+	//----------------------------------------------------------------------------
+	chains[8].dma_nxtcmdar = (unsigned int)&chains[9]; // point to the next descriptor
+	chains[8].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (0) | // no dma transfer
+						BF_APBH_CHn_CMD_CMDWORDS (0) | // no words sent to GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (0) | // do not wait to continue
+						BF_APBH_CHn_CMD_SEMAPHORE (0) |
+						BF_APBH_CHn_CMD_NANDWAIT4READY(0) |
+						BF_APBH_CHn_CMD_NANDLOCK (0) | // relinquish nand lock
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
+						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
+						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_SENSE); // perform a sense check
+	chains[8].dma_bar = (unsigned int)&chains[10]; // if sense check fails, branch to error handler
+	//----------------------------------------------------------------------------
+	// Descriptor 10: emit GPMI interrupt
+	//----------------------------------------------------------------------------
+	chains[9].dma_nxtcmdar = (unsigned int)&chains[10]; // not used since this is last descriptor
+	chains[9].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (0) | // no dma transfer
+						BF_APBH_CHn_CMD_CMDWORDS (0) | // no words sent to GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (0) | // do not wait to continue
+						BF_APBH_CHn_CMD_SEMAPHORE (0) |
+						BF_APBH_CHn_CMD_NANDWAIT4READY(0) |
+						BF_APBH_CHn_CMD_NANDLOCK (0) |
+						BF_APBH_CHn_CMD_IRQONCMPLT (1) | // emit GPMI interrupt
+						BF_APBH_CHn_CMD_CHAIN (0) | // terminate DMA chain processing
+						BV_FLD(APBH_CHn_CMD, COMMAND, NO_DMA_XFER); // no dma transfer
+	
+	
+	
+	
+	chains[10].dma_cmd =    BF_APBH_CHn_CMD_IRQONCMPLT(1)                    |
+	                        BF_APBH_CHn_CMD_WAIT4ENDCMD(1)                   |
+	                        BF_APBH_CHn_CMD_SEMAPHORE(1)                     |    // 发送完成当前描述符后DMA计数器减一
+	                        BV_FLD(APBH_CHn_CMD, COMMAND, NO_DMA_XFER);
+
+	chains[10].dma_bar = (unsigned int)NULL;
+	chains[10].dma_nxtcmdar = (unsigned int)NULL;
+	
+	BF_WRn(APBH_CHn_NXTCMDAR, NAND_DMA_Channel, CMD_ADDR, (reg32_t)&chains[0]);    // 填写DMA寄存器下个描述符地址
+	BW_APBH_CHn_SEMA_INCREMENT_SEMA(NAND_DMA_Channel, 1);                        // DMA计数器加一，开始工作
+	
+	
+}
+
+
+void GPMI_write_block_with_ecc8(unsigned char set_up_command,unsigned char start_write_confirm_command,unsigned char read_status_command,
+								unsigned int page_to_write,void *write_payload_buffer, void *write_aux_buffer){
+	
+	
+	commandAddressBuffer[0] = set_up_command;
+	commandAddressBuffer[1] = 0;
+	commandAddressBuffer[2] = 0;
+	commandAddressBuffer[3] = page_to_write & 0xFF;
+	commandAddressBuffer[4] = (page_to_write >> 8) & 0xFF;
+	
+	commandAddressBuffer[5] = 0;
+	
+	commandAddressBuffer[6] = start_write_confirm_command;
+	commandAddressBuffer[7] = read_status_command;
+	
+	
+	//----------------------------------------------------------------------------
+	// Descriptor 1: issue NAND write setup command (CLE/ALE)
+	//----------------------------------------------------------------------------
+	
+	chains[0].dma_nxtcmdar = (unsigned int)&chains[1];
+	chains[0].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (1 + 4) 			| // 1 byte command, 4 byte address
+						BF_APBH_CHn_CMD_CMDWORDS (3) 				| // send 3 words to the GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (1) 			| // wait for command to finish before continuing
+						BF_APBH_CHn_CMD_SEMAPHORE (0) 				|
+						BF_APBH_CHn_CMD_NANDWAIT4READY(0) 			|
+						BF_APBH_CHn_CMD_NANDLOCK (1) 				| // prevent other DMA channels from taking over
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) 				|
+						BF_APBH_CHn_CMD_CHAIN (1) 					| // follow chain to next command
+						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ);	 // read data from DMA, write to NAND
+						
+	chains[0].dma_bar = (unsigned int)&commandAddressBuffer; 											// byte 0 write setup, bytes 1 - 4 NAND address
+																						// 3 words sent to the GPMI
+						chains[0].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WRITE) | // write to the NAND
+						BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT) 							|
+						BV_FLD(GPMI_CTRL0, LOCK_CS, ENABLED) 							|
+						BF_GPMI_CTRL0_CS (chipSelect) 									| // must correspond to NAND CS used
+						BV_FLD(GPMI_CTRL0, ADDRESS, NAND_CLE) 							|
+						BF_GPMI_CTRL0_ADDRESS_INCREMENT (1) 							| // send command and address
+						BF_GPMI_CTRL0_XFER_COUNT (1 + 4); 									// 1 byte command, 5 byte address
+						chains[0].gpmi_compare = (unsigned int)NULL; 										// field not used but necessary to set eccctrl
+						chains[0].gpmi_eccctrl = BV_FLD(GPMI_ECCCTRL, ENABLE_ECC, DISABLE); 	// disable the ECC block
+						
+	//----------------------------------------------------------------------------					
+	// Descriptor 2: write the data payload (DATA)
+	//----------------------------------------------------------------------------					
+	chains[1].dma_nxtcmdar = (unsigned int)&chains[2]; // point to the next descriptor
+	chains[1].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (4*512) | // NOTE: DMA transfer only the data payload
+							BF_APBH_CHn_CMD_CMDWORDS (4) | // send 4 words to the GPMI
+							BF_APBH_CHn_CMD_WAIT4ENDCMD (0) | // DON’T wait to end, wait in the next descriptor
+							BF_APBH_CHn_CMD_SEMAPHORE (0) |
+							BF_APBH_CHn_CMD_NANDWAIT4READY(0) |
+							BF_APBH_CHn_CMD_NANDLOCK (1) | // maintain resource lock
+							BF_APBH_CHn_CMD_IRQONCMPLT (0) |
+							BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
+							BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ); // read data from DMA, write to NAND
+	chains[1].dma_bar = (unsigned int)write_payload_buffer; // pointer for the 4K byte data area
+												// 4 words sent to the GPMI
+	chains[1].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WRITE) | // write to the NAND
+							BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT) |
+							BV_FLD(GPMI_CTRL0, LOCK_CS, ENABLED) |
+							BF_GPMI_CTRL0_CS (chipSelect) | // must correspond to NAND CS used
+							BV_FLD(GPMI_CTRL0, ADDRESS, NAND_DATA) |
+							BF_GPMI_CTRL0_ADDRESS_INCREMENT (0) |
+							BF_GPMI_CTRL0_XFER_COUNT (4*512+19); // NOTE: this field contains the total amount
+							//BF_GPMI_CTRL0_XFER_COUNT (8*512+65); // NOTE: this field contains the total amount
+	// DMA transferred (8 data and 1 aux blocks)
+	// to GPMI!
+	chains[1].gpmi_compare = (unsigned int)NULL; // field not used but necessary to set eccctrl
+	chains[1].gpmi_eccctrl = BV_FLD(GPMI_ECCCTRL, ECC_CMD, ENCODE_4_BIT) | // specify t = 4 mode
+							BV_FLD(GPMI_ECCCTRL, ENABLE_ECC, ENABLE) | // enable ECC module
+							BF_GPMI_ECCCTRL_BUFFER_MASK (0x10F); // write all 8 data blocks and 1 aux block
+							//BF_GPMI_ECCCTRL_BUFFER_MASK (0x1FF); // write all 8 data blocks and 1 aux block
+							
+							
+	//chains[1].gpmi_ecccount = BF_GPMI_ECCCOUNT_COUNT(8*(512+18)+(65+9)); // specify number of bytes written to NAND
+	chains[1].gpmi_ecccount = BF_GPMI_ECCCOUNT_COUNT(4*(512+9)+(19+9)); // specify number of bytes written to NAND
+	// NOTE: the extra 8*(18)+9 bytes are parity
+	// bytes generated by the ECC block.
+	
+	//----------------------------------------------------------------------------
+	// Descriptor 3: write the aux payload (DATA)
+	//----------------------------------------------------------------------------
+	chains[2].dma_nxtcmdar = (unsigned int)&chains[3]; // point to the next descriptor
+	chains[2].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (19) | // NOTE: DMA transfer only the aux block
+						BF_APBH_CHn_CMD_CMDWORDS (0) | // no words sent to GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (1) | // wait for command to finish before continuing
+						BF_APBH_CHn_CMD_SEMAPHORE (0) |
+						BF_APBH_CHn_CMD_NANDWAIT4READY(0) |
+						BF_APBH_CHn_CMD_NANDLOCK (1) | // maintain resource lock
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
+						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
+						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ); // read data from DMA, write to NAND
+	chains[2].dma_bar = (unsigned int)write_aux_buffer; // pointer for the 19 byte meta data area
+	
+	
+	//----------------------------------------------------------------------------
+	// Descriptor 4: issue NAND write execute command (CLE)
+	//----------------------------------------------------------------------------
+	chains[3].dma_nxtcmdar = (unsigned int)&chains[4]; // point to the next descriptor
+	chains[3].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (1) | // 1 byte command
+						BF_APBH_CHn_CMD_CMDWORDS (3) | // send 3 words to the GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (1) | // wait for command to finish before continuing
+						BF_APBH_CHn_CMD_SEMAPHORE (0) |
+						BF_APBH_CHn_CMD_NANDWAIT4READY(0) |
+						BF_APBH_CHn_CMD_NANDLOCK (1) | // maintain resource lock
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
+						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
+						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ); // read data from DMA, write to NAND
+	chains[3].dma_bar = (unsigned int)&commandAddressBuffer[6]; // point to byte 6, write execute command
+															// 3 words sent to the GPMI
+	chains[3].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WRITE) | // write to the NAND
+						BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT) |
+						BV_FLD(GPMI_CTRL0, LOCK_CS, ENABLED) |
+						BF_GPMI_CTRL0_CS (chipSelect) | // must correspond to NAND CS used
+						BV_FLD(GPMI_CTRL0, ADDRESS, NAND_CLE) |
+						BF_GPMI_CTRL0_ADDRESS_INCREMENT (0) |
+						BF_GPMI_CTRL0_XFER_COUNT (1); // 1 byte command
+	chains[3].gpmi_compare = (unsigned int)NULL; // field not used but necessary to set eccctrl
+	chains[3].gpmi_eccctrl = BV_FLD(GPMI_ECCCTRL, ENABLE_ECC, DISABLE); // disable the ECC block
+	
+	//----------------------------------------------------------------------------
+	// Descriptor 5: wait for ready (CLE)
+	//----------------------------------------------------------------------------
+	chains[4].dma_nxtcmdar = (unsigned int)&chains[5]; // point to the next descriptor
+	chains[4].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (0) | // no dma transfer
+						BF_APBH_CHn_CMD_CMDWORDS (1) | // send 1 word to the GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (1) | // wait for command to finish before continuing
+						BF_APBH_CHn_CMD_SEMAPHORE (0) |
+						BF_APBH_CHn_CMD_NANDWAIT4READY(1) | // wait for nand to be ready
+						BF_APBH_CHn_CMD_NANDLOCK (0) | // relinquish nand lock
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
+						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
+						BV_FLD(APBH_CHn_CMD, COMMAND, NO_DMA_XFER); // no dma transfer
+	chains[4].dma_bar = (unsigned int)NULL; // field not used
+	
+	// 1 word sent to the GPMI
+	chains[4].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WAIT_FOR_READY) | // wait for NAND ready
+							BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT) |
+							BV_FLD(GPMI_CTRL0, LOCK_CS, DISABLED) |
+							BF_GPMI_CTRL0_CS (chipSelect) | // must correspond to NAND CS used
+							BV_FLD(GPMI_CTRL0, ADDRESS, NAND_DATA) |
+							BF_GPMI_CTRL0_ADDRESS_INCREMENT (0) |
+							BF_GPMI_CTRL0_XFER_COUNT (0);
+ 
+	//----------------------------------------------------------------------------
+	// Descriptor 6: psense compare (time out check)
+	//----------------------------------------------------------------------------
+	chains[5].dma_nxtcmdar = (unsigned int)&chains[6]; // point to the next descriptor
+	chains[5].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (0) | // no dma transfer
+						BF_APBH_CHn_CMD_CMDWORDS (0) | // no words sent to GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (0) | // do not wait to continue
+						BF_APBH_CHn_CMD_SEMAPHORE (0) |
+						BF_APBH_CHn_CMD_NANDWAIT4READY(0) |
+						BF_APBH_CHn_CMD_NANDLOCK (0) |
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
+						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
+						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_SENSE); // perform a sense check
+						chains[5].dma_bar = (unsigned int)&chains[10]; // if sense check fails, branch to error handler
+	//----------------------------------------------------------------------------
+	// Descriptor 7: issue NAND status command (CLE)
+	//----------------------------------------------------------------------------
+	chains[6].dma_nxtcmdar = (unsigned int)&chains[7]; // point to the next descriptor
+	chains[6].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (1) | // 1 byte command
+						BF_APBH_CHn_CMD_CMDWORDS (3) | // send 3 words to the GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (1) | // wait for command to finish before continuing
+						BF_APBH_CHn_CMD_SEMAPHORE (0) |
+						BF_APBH_CHn_CMD_NANDWAIT4READY(0) |
+						BF_APBH_CHn_CMD_NANDLOCK (1) | // prevent other DMA channels from taking over
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
+						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
+						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ); // read data from DMA, write to NAND
+	chains[6].dma_bar = (unsigned int)&commandAddressBuffer[7]; // point to byte 7, status command
+	chains[6].gpmi_compare = (unsigned int)NULL; // field not used but necessary to set eccctrl
+	chains[6].gpmi_eccctrl = BV_FLD(GPMI_ECCCTRL, ENABLE_ECC, DISABLE); // disable the ECC block
+											// 3 words sent to the GPMI
+	chains[6].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WRITE) | // write to the NAND
+						BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT) |
+						BV_FLD(GPMI_CTRL0, LOCK_CS, ENABLED) |
+						BF_GPMI_CTRL0_CS (chipSelect) | // must correspond to NAND CS used
+						BV_FLD(GPMI_CTRL0, ADDRESS, NAND_CLE) |
+						BF_GPMI_CTRL0_ADDRESS_INCREMENT (0) |
+						BF_GPMI_CTRL0_XFER_COUNT (1); // 1 byte command
+	
+	//----------------------------------------------------------------------------
+	// Descriptor 8: read status and compare (DATA)
+	//----------------------------------------------------------------------------
+	chains[7].dma_nxtcmdar = (unsigned int)&chains[8]; // point to the next descriptor
+	chains[7].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (0) | // no dma transfer
+						BF_APBH_CHn_CMD_CMDWORDS (2) | // send 2 words to the GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (1) | // wait for command to finish before continuing
+						BF_APBH_CHn_CMD_SEMAPHORE (0) |
+						BF_APBH_CHn_CMD_NANDWAIT4READY(0) |
+						BF_APBH_CHn_CMD_NANDLOCK (1) | // maintain resource lock
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
+						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
+						BV_FLD(APBH_CHn_CMD, COMMAND, NO_DMA_XFER); // no dma transfer
+	chains[7].dma_bar = (unsigned int)NULL; // field not used
+	// 2 word sent to the GPMI
+	chains[7].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, READ_AND_COMPARE) | // read from the NAND and compare to expect
+						BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT) |
+						BV_FLD(GPMI_CTRL0, LOCK_CS, DISABLED) |
+						BF_GPMI_CTRL0_CS (chipSelect) | // must correspond to NAND CS used
+						BV_FLD(GPMI_CTRL0, ADDRESS, NAND_DATA) |
+						BF_GPMI_CTRL0_ADDRESS_INCREMENT (0) |
+						BF_GPMI_CTRL0_XFER_COUNT (1);
+	chains[7].gpmi_compare = MASK_AND_REFERENCE_VALUE; // NOTE: mask and reference values are NAND
+													// SPECIFIC to evaluate the NAND status
+	
+	//----------------------------------------------------------------------------
+	// Descriptor 9: psense compare (time out check)
+	//----------------------------------------------------------------------------
+	chains[8].dma_nxtcmdar = (unsigned int)&chains[9]; // point to the next descriptor
+	chains[8].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (0) | // no dma transfer
+						BF_APBH_CHn_CMD_CMDWORDS (0) | // no words sent to GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (0) | // do not wait to continue
+						BF_APBH_CHn_CMD_SEMAPHORE (0) |
+						BF_APBH_CHn_CMD_NANDWAIT4READY(0) |
+						BF_APBH_CHn_CMD_NANDLOCK (0) | // relinquish nand lock
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
+						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
+						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_SENSE); // perform a sense check
+	chains[8].dma_bar = (unsigned int)&chains[10]; // if sense check fails, branch to error handler
+	//----------------------------------------------------------------------------
+	// Descriptor 10: emit GPMI interrupt
+	//----------------------------------------------------------------------------
+	chains[9].dma_nxtcmdar = (unsigned int)&chains[10]; // not used since this is last descriptor
+	chains[9].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (0) | // no dma transfer
+						BF_APBH_CHn_CMD_CMDWORDS (0) | // no words sent to GPMI
+						BF_APBH_CHn_CMD_WAIT4ENDCMD (0) | // do not wait to continue
+						BF_APBH_CHn_CMD_SEMAPHORE (0) |
+						BF_APBH_CHn_CMD_NANDWAIT4READY(0) |
+						BF_APBH_CHn_CMD_NANDLOCK (0) |
+						BF_APBH_CHn_CMD_IRQONCMPLT (1) | // emit GPMI interrupt
+						BF_APBH_CHn_CMD_CHAIN (0) | // terminate DMA chain processing
+						BV_FLD(APBH_CHn_CMD, COMMAND, NO_DMA_XFER); // no dma transfer
+	
+	
+	
+	
+	chains[10].dma_cmd =    BF_APBH_CHn_CMD_IRQONCMPLT(1)                    |
+	                        BF_APBH_CHn_CMD_WAIT4ENDCMD(1)                   |
+	                        BF_APBH_CHn_CMD_SEMAPHORE(1)                     |    // 发送完成当前描述符后DMA计数器减一
+	                        BV_FLD(APBH_CHn_CMD, COMMAND, NO_DMA_XFER);
+
+	chains[10].dma_bar = (unsigned int)NULL;
+	chains[10].dma_nxtcmdar = (unsigned int)NULL;
+	
+	BF_WRn(APBH_CHn_NXTCMDAR, NAND_DMA_Channel, CMD_ADDR, (reg32_t)&chains[0]);    // 填写DMA寄存器下个描述符地址
+	BW_APBH_CHn_SEMA_INCREMENT_SEMA(NAND_DMA_Channel, 1);                        // DMA计数器加一，开始工作
+	
+	
+}
 
 void GPMI_read_block_with_ecc8(unsigned char set_read_command,unsigned char start_read_command,
                                unsigned char *address_data, unsigned int *buffer, unsigned int address_data_size_bytes )
@@ -379,7 +831,7 @@ void GPMI_read_block_with_ecc8(unsigned char set_read_command,unsigned char star
 
 	//chains[4].gpmi_ecccount = BF_GPMI_ECCCOUNT_COUNT(8*(512+18)+(65+9));            // 4K PAGE SIZE specify number of bytes read fromNAND
 	chains[4].gpmi_ecccount = BF_GPMI_ECCCOUNT_COUNT(4*(512+9)+(19+9));               // 2K PAGE SIZE specify number of bytes read fromNAND
-	chains[4].gpmi_data_ptr = (unsigned int)buffer;               // pointer for the 4K byte data area
+	chains[4].gpmi_data_ptr = (unsigned int)buffer;               // pointer for the data area
 	chains[4].gpmi_aux_ptr = (unsigned int)&__DMA_NAND_AUXILIARY_BUFFER;              // pointer for the 65 byte aux area + parity and syndrome bytes \
 	for both data and aux blocks.
 
@@ -451,6 +903,7 @@ void GPMI_dma_irq_handle()
 {
 	dma_cmplt = BF_RD(APBH_CTRL1, CH4_CMDCMPLT_IRQ);
 	dma_error = BF_RD(APBH_CTRL1, CH4_AHB_ERROR_IRQ);
+	
 	//printf("GPMI DMA IRQ CMPLT:%1d ERROR:%1d\n",dma_cmplt,dma_error);
 
 	if(dma_cmplt)
@@ -479,6 +932,8 @@ void GPMI_irq_handle()
 
 }
 
+volatile unsigned char ecc_res[4];
+
 void ecc8_completion_irq_handle()
 {
 
@@ -494,13 +949,18 @@ void ecc8_completion_irq_handle()
 
 	//HW_ECC8_STATUS0_RD();
 	//HW_ECC8_STATUS1_RD();
-	if((BF_RD(ECC8_STATUS1,STATUS_PAYLOAD0) == 0xE)||
+	ecc_res[0] = BF_RD(ECC8_STATUS1,STATUS_PAYLOAD0);
+	ecc_res[1] = BF_RD(ECC8_STATUS1,STATUS_PAYLOAD1);
+	ecc_res[2] = BF_RD(ECC8_STATUS1,STATUS_PAYLOAD2);
+	ecc_res[3] = BF_RD(ECC8_STATUS1,STATUS_PAYLOAD3);
+	
+	/*if((BF_RD(ECC8_STATUS1,STATUS_PAYLOAD0) == 0xE)||
 	   (BF_RD(ECC8_STATUS1,STATUS_PAYLOAD1) == 0xE)||
 	   (BF_RD(ECC8_STATUS1,STATUS_PAYLOAD2) == 0xE)||
 	   (BF_RD(ECC8_STATUS1,STATUS_PAYLOAD3) == 0xE)
 		){
 		printf("uncorrectable ECC error while reading.\n");
-	}
+	}*/
 
 
 	HW_ECC8_CTRL_CLR(BM_ECC8_CTRL_COMPLETE_IRQ);
@@ -691,14 +1151,14 @@ void NAND_init()
 	);
 
 
-	*((unsigned int *)0x80018200 + 0x08) |= 0x33333333;
-	*((unsigned int *)0x80018200 + 0x04) |= 0x22222222;     //BANK0 0-7     8mA
+	*((unsigned int *)0x80018200 + 0x08) |= 0x33333333;		//CLR
+	*((unsigned int *)0x80018200 + 0x04) |= 0x22222222;     //BANK0 0-7     12mA	//SET
 
 	*((unsigned int *)0x80018220 + 0x08) |= 0x33003033;
-	*((unsigned int *)0x80018220 + 0x04) |= 0x22002022;     //BANK0 16 17 19 22 23     8mA
+	*((unsigned int *)0x80018220 + 0x04) |= 0x22002022;     //BANK0 16 17 19 22 23     12mA
 
 	*((unsigned int *)0x80018290 + 0x08) |= 0x30000000;
-	*((unsigned int *)0x80018290 + 0x04) |= 0x20000000;     //BANK2 15         8mA
+	*((unsigned int *)0x80018290 + 0x04) |= 0x20000000;     //BANK2 15         12mA
 
 	//设置引脚复用寄存器，连接至SoC内部的NAND控制器
 

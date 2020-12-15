@@ -11,13 +11,37 @@
 typedef enum {
 	NO_ERROR,
 	DEVICE_BUSY,
-	READ_TIMEOUT
+	TIMEOUT,
+	OPERATION_FAIL
 }rawFlashStatus;
+
+typedef enum {
+	NONE,
+	WRTIE,
+	READ,
+	CHECK
+}OperationType;
+
+
+typedef struct OperationQueueInfo{
+	unsigned char OperationType;
+	unsigned int whichPage;
+	void *flashDataInBuffer;
+	void *flashMetaInBuffer;
+	void *flashDataOutBuffer;
+	void *flashMetaOutBuffer;
+}OperationQueue;
+
+QueueHandle_t flashOperationQueue;
+
 
 extern unsigned int __DMA_NAND_PALLOAD_BUFFER;
 extern unsigned int __DMA_NAND_AUXILIARY_BUFFER;
 
-BaseType_t xReadFlashPages( unsigned int start_page, unsigned int pages, unsigned int *buffer, unsigned int timeout_ms );
+BaseType_t xWriteFlashPages( unsigned int start_page, unsigned int pages, void *data_buffer, void *meta_buffer, unsigned int timeout_ms ) ;
+BaseType_t xReadFlashPages( unsigned int start_page, unsigned int pages, void *buffer, unsigned int timeout_ms );
+BaseType_t xGetFlashStatus( void );
+BaseType_t xEraseFlashBlocks( unsigned int start_block, unsigned int blocks, unsigned int timeout_ms ) ;
 
 void vServiceRawFlash( void *pvParameters );
 
