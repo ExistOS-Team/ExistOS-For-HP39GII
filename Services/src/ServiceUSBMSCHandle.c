@@ -1,5 +1,7 @@
 #include "tusb.h"
 #include "ServiceRawFlash.h"
+#include "ServiceFlashMap.h"
+#include "map.h"
 #include "raw_flash.h"
 
 /* Kernel includes. */
@@ -8,7 +10,12 @@
 #include "queue.h"
 #include "semphr.h"
 
+
+
+
 #if CFG_TUD_MSC
+
+extern struct dhara_map map;
 
 // Invoked when received SCSI_CMD_INQUIRY
 // Application fill vendor id, product id and revision with string up to 8, 16, 4 characters respectively
@@ -42,7 +49,8 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_siz
 {
   (void) lun;
 
-  *block_count = 65536;
+  *block_count = dhara_map_capacity(&map);
+  
   *block_size  = 2048;
 }
 
@@ -75,11 +83,16 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void* buff
   (void) lun;
   
   unsigned char *rb_buffer;
+  
 	if(bufsize == 2048){
-		xReadFlashPages(lba,1,buffer,5000);
+		//xReadFlashPages(lba,1,buffer,5000);
+		//xReadFlashPages(lba,1,buffer,1000);
+		dhara_map_read(&map, lba, buffer, NULL);
+		
 	}else{
 		rb_buffer = pvPortMalloc(bufsize);
-		xReadFlashPages(lba,1,(unsigned int *)rb_buffer,5000);
+		//xReadFlashPages(lba,1,(unsigned int *)rb_buffer,5000);
+		dhara_map_read(&map, lba, rb_buffer, NULL);
 		memcpy(buffer, rb_buffer + offset, bufsize);
 		vPortFree(rb_buffer);
 	}
@@ -107,16 +120,20 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* 
 	O.flashDataInBuffer = buffer;
 	O.flashMetaInBuffer = NULL;
 	*/
-	delay_us(1000);
-	GPMI_write_block_with_ecc8(NAND_CMD_SEQIN,NAND_CMD_PAGEPROG,NAND_CMD_STATUS,
-								lba, buffer, NMETA);
+	//delay_us(3000);
+	//printf("bufsize: %d, mode %02x\n",bufsize,get_mode());
+	
+	dhara_map_write(&map, lba, buffer, NULL);
+	//vTaskDelay(1);
+	//GPMI_write_block_with_ecc8(NAND_CMD_SEQIN,NAND_CMD_PAGEPROG,NAND_CMD_STATUS,
+	//							lba, buffer, NMETA);
 	
 	//xQueueSend(flashOperationQueue, &O , ( TickType_t ) 0 );
 
 	//xWriteFlashPages(lba,1,buffer,NULL,1000);
 	
 
-  return bufsize;
+	return bufsize;
 }
 
 // Callback invoked when received an SCSI command not in built-in list below

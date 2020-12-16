@@ -2,6 +2,7 @@
 #include "regsusbphy.h"
 #include "regspower.h"
 #include "regsclkctrl.h"
+#include "regspower.h"
 #include "regsdigctl.h"
 #include "usb_phy.h"
 #include "clkgen.h"
@@ -33,6 +34,18 @@ void usb_phy_pwr_enable(bool enable)
 {
     if(enable)
     {
+		
+		BF_CLR(POWER_CTRL, CLKGATE);
+		BF_SET(POWER_DEBUG, VBUSVALIDPIOLOCK);
+		BF_SET(POWER_DEBUG, AVALIDPIOLOCK);
+		BF_SET(POWER_DEBUG, BVALIDPIOLOCK);
+
+		BF_SET(POWER_STS, BVALID);
+		BF_SET(POWER_STS, AVALID);
+		BF_SET(POWER_STS, VBUSVALID);
+		
+		
+		
         BF_CLR(USBPHY_CTRL, SFTRST);
         BF_CLR(USBPHY_CTRL, CLKGATE);
         HW_USBPHY_PWD_CLR(0xffffffff);

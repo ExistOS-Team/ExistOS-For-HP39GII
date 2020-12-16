@@ -7,6 +7,7 @@
 
 #include "ServiceUSBDevice.h"
 #include "ServiceRawFlash.h"
+#include "ServiceSTMPPartition.h"
 
 #include "raw_flash.h"
 
@@ -54,6 +55,35 @@ BaseType_t erase_all_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char 
 		}
 		if(i % 100 == 0){
 			cdc_printf("Erasing %d/1024 ...\n",i);
+		}
+		
+	}
+	cdc_printf("Erase finish. %d ...\n",paraNum);
+	
+	
+	return pdFALSE;
+	
+}
+
+BaseType_t erase_data_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString){
+	const char *pcParameter;
+	BaseType_t xParameterStringLength, xStatus;
+	uint8_t cNum[16];
+	uint32_t paraNum = 0;
+
+	
+	for(int i=getDataRegonStartBlock(); i<getDataRegonStartBlock() + getDataRegonTotalBlocks(); i++){
+		
+		xStatus = xEraseFlashBlocks(i, 1, 5000);
+		vTaskDelay(1);
+		
+		if(xStatus == TIMEOUT){
+			cdc_printf("Timeout at %d block.\n",  i);
+		}else if(xStatus == OPERATION_FAIL){
+			cdc_printf("OPERATION_FAIL at %d block.\n",  i);
+		}
+		if(i % (getDataRegonTotalBlocks() / 10 ) == 0){
+			cdc_printf("Erasing %d/%d ...\n",i,getDataRegonTotalBlocks());
 		}
 		
 	}
@@ -183,7 +213,7 @@ BaseType_t dreadpage_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char 
 				cdc_printf(" ");
 			}
 			
-			cdc_printf("%02X ",buffer[i]);
+			cdc_printf("%02X ",__DMA_NAND_AUXILIARY_BUFFER[i]);
 		}
 		cdc_printf("\n");
 		cdc_printf("\nECC status: %02X %02X %02X %02X\n",ecc_res[0], ecc_res[1], ecc_res[2], ecc_res[3]);
@@ -237,10 +267,12 @@ BaseType_t chkdsk_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pc
 	unsigned int unstable = 0;
 	unsigned int p = 0,i;
 	unsigned int tick = 0;
+	unsigned char *buffer;
+	buffer = pvPortMalloc(2048);
 	cdc_printf("Scanning bad block ... \n");
 	tick = xTaskGetTickCount();
 	for(i = 0; i < 65535; i++){
-		xStatus = xReadFlashPages( i, 1,(unsigned int *)(&__DMA_NAND_PALLOAD_BUFFER), 100 );
+		xStatus = xReadFlashPages( i, 1,buffer, 100 );
 		
 		//if( *((unsigned char *)(&__DMA_NAND_AUXILIARY_BUFFER)) != 0xFF ){
 		if( ecc_res[0] == 0xE ||
@@ -271,7 +303,7 @@ BaseType_t chkdsk_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pc
 	}
 
 	cdc_printf("Total page: %d, total bad page: %d, unstable: %d \n", i+1, badblocks, unstable);
-	
+	vPortFree(buffer);
 	return pdFALSE;
 }
 
@@ -324,6 +356,13 @@ static const CLI_Command_Definition_t cmd_erase_all = {
 	0
 };
 
+static const CLI_Command_Definition_t cmd_erase_data = {
+	"erase_data",
+	"\r\nerase_all - Erase all flash blocks'\r\n",
+	erase_data_cb,
+	0
+};
+
 
 
 void vCDC_Console(){
@@ -337,6 +376,8 @@ void vCDC_Console(){
 	FreeRTOS_CLIRegisterCommand(&cmd_dwrallonec);
 	FreeRTOS_CLIRegisterCommand(&cmd_deraseb);
 	FreeRTOS_CLIRegisterCommand(&cmd_erase_all);
+	FreeRTOS_CLIRegisterCommand(&cmd_erase_data);
+	
 	
 	
 	for(;;){

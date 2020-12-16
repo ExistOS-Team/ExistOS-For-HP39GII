@@ -30,7 +30,7 @@ void vInit(){
 	text1.area_height = 16;
 	text1.font_size = 12;
 	text1.font_color = 255;
-	text1.text = "Hello World";
+	text1.text = "Test a";
 	xQueueSend(GraphicQueue, &(GM.selfAddr) , ( TickType_t ) 0 );
 	
 	xTaskCreate( vCDC_Console, "CDC Console", configMINIMAL_STACK_SIZE, NULL, 3, NULL );

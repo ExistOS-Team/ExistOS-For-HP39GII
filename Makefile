@@ -23,13 +23,15 @@ ELF2ROM		  = ..\tools\sbtools\elftosb.exe
 SBLOADER	  = ..\tools\sbtools\sb_loader.exe
 
 GCCINCPATH       = -I. -I..\tools\gcc-arm\arm-none-eabi\include 
-INCPATH  		=  -Ikernel\porting -Ikernel\include -Ilibrary\stmp3770\inc -Ilibrary\stmp3770\inc\registers -ITestApp -IServices\inc -ISystemApp -IConfig -ILibrary\TinyUSB -ILibrary\TinyUSB\device -ILibrary\FreeRTOS-Plus-CLI
+INCPATH  		=  -Ikernel\porting -Ikernel\include -Ilibrary\stmp3770\inc -Ilibrary\stmp3770\inc\registers -ITestApp -IServices\inc -ISystemApp -IConfig -ILibrary\TinyUSB -ILibrary\TinyUSB\device -ILibrary\FreeRTOS-Plus-CLI -ILibrary\dhara
 
 
 CSRCS 	= $(wildcard  ./*.c ./kernel/*.c   ./kernel/porting/*.c ./library/stmp3770/src/*.c  ./TestApp/*.c ./Services/src/*.c ./SystemApp/*.c ./Config/*.c ./Library/FreeRTOS-Plus-CLI/*.c)
 
 
 CTINYUSBCSRCS	=	$(wildcard ./Library/TinyUSB/*.c ./Library/TinyUSB/common/*.c ./Library/TinyUSB/device/*.c ./Library/TinyUSB/class/cdc/*.c ./Library/TinyUSB/class/msc/*.c )
+
+CDHARASRCS = $(wildcard ./Library/dhara/*.c)
 
 SSRCS	= $(wildcard ./*.s)
 
@@ -42,6 +44,7 @@ CPPSRCS = $(wildcard ./*.cpp ./hal/*.cpp)
 #所有的.o文件列表 原文件中所有以.c .cpp结尾的文件替换成以.o结尾
 COBJS := $(CSRCS:.c=.o) 
 CTINYUSBCOBJS := $(CTINYUSBCSRCS:.c=.o) 
+CDHARAOBJS := $(CDHARASRCS:.c=.o) 
 
 SOBJS := $(SSRCS:.s=.o) 
 CASMS := $(CSRCS:.c=.s) 
@@ -64,6 +67,9 @@ $(COBJS) : %.o : %.c
 $(CTINYUSBCOBJS) : %.o : %.c 
 	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS) 
 
+$(CDHARAOBJS) : %.o : %.c 
+	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS) 
+
 $(COBJS_TESTING) : %.o : %.c 
 	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS_TESTING) 
 
@@ -75,8 +81,8 @@ all: firmware.sb updater
 debug:
 	$(CC) -S $(CSRCS) $(GCCINCPATH) $(INCPATH)
 # $(COBJS_TESTING)
-rom.elf: $(COBJS) $(CPPOBJS) $(SOBJS)  $(CTINYUSBCOBJS) 
-	$(LINKER) -o rom.elf $(LFLAGS)  $(SOBJS) $(COBJS) $(CTINYUSBCOBJS) $(CPPOBJS) $(LIBS)
+rom.elf: $(COBJS) $(CPPOBJS) $(SOBJS)  $(CTINYUSBCOBJS) $(CDHARAOBJS)
+	$(LINKER) -o rom.elf $(LFLAGS)  $(SOBJS) $(COBJS) $(CTINYUSBCOBJS) $(CDHARAOBJS) $(CPPOBJS) $(LIBS)
 
 updater: rom.elf
 	$(ELF2ROM) -z -c $(SCRIPT_DIR)\build_updater.bd -o updater.sb rom.elf

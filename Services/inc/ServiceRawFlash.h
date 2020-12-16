@@ -35,8 +35,8 @@ typedef struct OperationQueueInfo{
 QueueHandle_t flashOperationQueue;
 
 
-extern unsigned int __DMA_NAND_PALLOAD_BUFFER;
-extern unsigned int __DMA_NAND_AUXILIARY_BUFFER;
+
+extern unsigned char __DMA_NAND_AUXILIARY_BUFFER[19];
 
 BaseType_t xWriteFlashPages( unsigned int start_page, unsigned int pages, void *data_buffer, void *meta_buffer, unsigned int timeout_ms ) ;
 BaseType_t xReadFlashPages( unsigned int start_page, unsigned int pages, void *buffer, unsigned int timeout_ms );

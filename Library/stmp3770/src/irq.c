@@ -110,7 +110,7 @@ void volatile __irq_service() {
 		
 	//irq_set_enable(current_irq_number , 0);														//关闭当前发生的中断，在对应的中断服务程序中再打开	
 	//if(current_irq_number < 63)																	//判断是有效的中断
-	
+	//uartdbg_printf("irq:%d\n",BF_RD(ICOLL_VECTOR, IRQVECTOR));
 		//printf("\n%x,%x\n",irq_vector_table_base + HW_ICOLL_STAT.B.VECTOR_NUMBER,BF_RD(ICOLL_VECTOR, IRQVECTOR));
 		(*(void(*)(void))( *((unsigned int *)BF_RD(ICOLL_VECTOR, IRQVECTOR)) )) ();
 		//(*(void(*)(void))((unsigned int)irq_vector_table_base[HW_ICOLL_STAT.B.VECTOR_NUMBER])) ();				//调用对应的中断服务程序
@@ -145,17 +145,31 @@ void irq_init() {		//中断系统的初始化
 	exception_install(EXCEPTION_IRQ, (unsigned int*)__irq_service);
 	exception_install(EXCEPTION_FIQ, (unsigned int*)__fiq_service);
 	
-	BF_CS1(ICOLL_VBASE, TABLE_ADDRESS, 0x00000100);		//设置中断控制器内部的中断向量表地址
 	
-	BW_ICOLL_CTRL_VECTOR_PITCH(BV_ICOLL_CTRL_VECTOR_PITCH__BY16);
-	//BW_ICOLL_PRIORITYn_ENABLE3(15,BV_ICOLL_PRIORITYn_ENABLE3__DISABLE);
-	//复位硬件中断控制器并启动
+	
+
+	
+	
+	HW_ICOLL_CTRL_CLR(BM_ICOLL_CTRL_CLKGATE);
+	HW_ICOLL_CTRL_SET(BM_ICOLL_CTRL_SFTRST);
+	uartdbg_printf("init irq.\n");
+	HW_ICOLL_CTRL_CLR(BM_ICOLL_CTRL_CLKGATE);
+	while(BF_RD(ICOLL_CTRL,CLKGATE))
+		{
+			;    //等待重置完成
+		}
+	//HW_ICOLL_CTRL_CLR(BM_ICOLL_CTRL_SFTRST);
+	
+	
 	HW_ICOLL_CTRL_CLR(BM_ICOLL_CTRL_SFTRST | BM_ICOLL_CTRL_CLKGATE |
                       BM_ICOLL_CTRL_BYPASS_FSM | BM_ICOLL_CTRL_NO_NESTING | BM_ICOLL_CTRL_ARM_RSE_MODE);
+	
 	HW_ICOLL_CTRL_SET(BM_ICOLL_CTRL_FIQ_FINAL_ENABLE |
                       BM_ICOLL_CTRL_IRQ_FINAL_ENABLE |
                       BM_ICOLL_CTRL_ARM_RSE_MODE |
 					  BM_ICOLL_CTRL_NO_NESTING
 					  );
+	BF_CS1(ICOLL_VBASE, TABLE_ADDRESS, IRQ_VECTOR_TABLE_BASE_ADDR);		//设置中断控制器内部的中断向量表地址
+	BW_ICOLL_CTRL_VECTOR_PITCH(BV_ICOLL_CTRL_VECTOR_PITCH__BY16);
 }
 

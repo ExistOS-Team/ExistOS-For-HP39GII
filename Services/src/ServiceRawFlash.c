@@ -25,9 +25,7 @@ SemaphoreHandle_t flashLock;
 extern volatile unsigned int dmaOperationCompleted;
 extern volatile unsigned int eccOperationCompleted;
 extern unsigned char address_page_data[5];
-void set_page_address_data(unsigned int pageNumber);
-void GPMI_read_block_with_ecc8(unsigned char set_read_command,unsigned char start_read_command,
-                               unsigned char *address_data, unsigned int *buffer, unsigned int address_data_size_bytes );
+
 							   
 BaseType_t xReadFlashPages( unsigned int start_page, unsigned int pages, void *buffer, unsigned int timeout_ms ) {
 	unsigned int count = 0;
@@ -37,8 +35,19 @@ BaseType_t xReadFlashPages( unsigned int start_page, unsigned int pages, void *b
 	}
 	
 	while(count < pages){
+		startTick = xTaskGetTickCount();
+		while( !dmaOperationCompleted ){
+		if( xTaskGetTickCount() - startTick > timeout_ms){
+				xSemaphoreGive(flashLock);
+				return TIMEOUT;
+		}
+	}
+		
+		startTick = xTaskGetTickCount();
+		taskENTER_CRITICAL();
 		set_page_address_data(start_page + count);
 		GPMI_read_block_with_ecc8(NAND_CMD_READ0,NAND_CMD_READSTART,address_page_data,buffer,4);
+		taskEXIT_CRITICAL();
 		count++;
 		while( !dmaOperationCompleted || !eccOperationCompleted ){
 			if( xTaskGetTickCount() - startTick > timeout_ms){
@@ -69,8 +78,18 @@ BaseType_t xWriteFlashPages( unsigned int start_page, unsigned int pages, void *
 	}
 	
 	while(count < pages){
+		startTick = xTaskGetTickCount();
+		while( !dmaOperationCompleted ){
+		if( xTaskGetTickCount() - startTick > timeout_ms){
+				xSemaphoreGive(flashLock);
+				return TIMEOUT;
+		}
+	}
+		startTick = xTaskGetTickCount();
+		taskENTER_CRITICAL();
 		GPMI_write_block_with_ecc8(NAND_CMD_SEQIN,NAND_CMD_PAGEPROG,NAND_CMD_STATUS,
 								start_page + count ,data_buffer,meta_buffer);
+		taskEXIT_CRITICAL();
 		count++;
 		data_buffer += 2048;
 		meta_buffer += 19;
@@ -81,6 +100,7 @@ BaseType_t xWriteFlashPages( unsigned int start_page, unsigned int pages, void *
 				return TIMEOUT;
 			}
 		}
+		eccOperationCompleted = 1;
 		
 		if(dma_error){
 			xSemaphoreGive(flashLock);
@@ -101,9 +121,18 @@ BaseType_t xEraseFlashBlocks( unsigned int start_block, unsigned int blocks, uns
 	}
 	
 	while(count < blocks){
- 
+		startTick = xTaskGetTickCount();
+		while( !dmaOperationCompleted ){
+				if( xTaskGetTickCount() - startTick > timeout_ms){
+						xSemaphoreGive(flashLock);
+						return TIMEOUT;
+				}
+			}
+		startTick = xTaskGetTickCount();
+		taskENTER_CRITICAL();
 		GPMI_erase_block_cmd(NAND_CMD_ERASE1, NAND_CMD_ERASE2, NAND_CMD_STATUS, start_block + count);
-		
+		taskEXIT_CRITICAL();
+		vTaskDelay(3);
 		count++;
 		
 		while( !dmaOperationCompleted ){
@@ -112,6 +141,7 @@ BaseType_t xEraseFlashBlocks( unsigned int start_block, unsigned int blocks, uns
 				return TIMEOUT;
 			}
 		}
+		eccOperationCompleted = 1;
 		
 		if(dma_error){
 			xSemaphoreGive(flashLock);

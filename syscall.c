@@ -11,15 +11,15 @@
 extern int errno;
 int _end asm("end");
 
-extern int  __HEAP_START;
-
+//extern int  __HEAP_START;
+#define __HEAP_START 0x30000
 
 //malloc和sprintf等函数要用到
 caddr_t _sbrk ( int incr ){
   static unsigned char *heap = NULL;
   unsigned char *prev_heap;
   if (heap == NULL) {
-    heap = (unsigned char *)(&__HEAP_START);
+    heap = (unsigned char *)(__HEAP_START);
   }
   prev_heap = heap;
   heap += incr;

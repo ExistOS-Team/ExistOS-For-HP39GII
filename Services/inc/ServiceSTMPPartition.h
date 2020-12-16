@@ -7,6 +7,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "stdbool.h"
 
 
 #define NAND_CONFIG_BLOCK_MAGIC_COOKIE  0x00010203
@@ -103,8 +104,10 @@ typedef struct _NandConfigBlockInfo {
 
 
 
-
+bool isRawFlash();
 void vSTMPPartition( void *pvParameters );
+unsigned int getDataRegonTotalBlocks();
+unsigned int getDataRegonStartBlock();
 
 #endif
 

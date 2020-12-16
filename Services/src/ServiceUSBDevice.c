@@ -20,6 +20,16 @@
 #include "task.h"
 #include "queue.h"
 
+#if CFG_TUSB_DEBUG
+  #define USBD_STACK_SIZE     (3*configMINIMAL_STACK_SIZE)
+#else
+  #define USBD_STACK_SIZE     (3*configMINIMAL_STACK_SIZE/2)
+#endif
+
+StackType_t  usb_device_stack[USBD_STACK_SIZE];
+StaticTask_t usb_device_taskdef;
+
+
 unsigned char buffer[512];
 
 void cdc_printf(const char * fmt, ...)
@@ -60,11 +70,21 @@ void vServiceUSBCDC( void *pvParameters ){
 }
 
 
-
+void vUsbDeviceTask(){
+	
+	tusb_init();
+	for(;;) {
+		tud_task();
+	}
+}
 
 void vServiceUSBDevice( void *pvParameters )
 {
 	CDCCmdLineQueue =  xQueueCreate(32, 64);
+	vTaskDelay(100);
+	
+	xTaskCreateStatic( vUsbDeviceTask, "usbd", USBD_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, usb_device_stack, &usb_device_taskdef);
+	
 	
 	
 	

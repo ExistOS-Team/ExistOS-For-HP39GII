@@ -8,6 +8,8 @@
 #include "ServiceRawFlash.h"
 #include "ServiceSTMPPartition.h"
 
+#include "ServiceFlashMap.h"
+
 
 /* Library includes. */
 #include "regsuartdbg.h"
@@ -27,10 +29,11 @@ void vServiceManger( void *pvParameters )
 	
 	xTaskCreate( vServiceGraphic, "Graphic Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
 	xTaskCreate( vServiceRawFlash, "RawFlash Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
-	xTaskCreate( vServiceDebug, "Debug Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
-	xTaskCreate( vServiceUSBDevice, "USB Device Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
+	xTaskCreate( vSTMPPartition, "STMP Partition Svc", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
+	xTaskCreate( vServiceFlashMap, "Flash Map Svc", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
+	xTaskCreate( vServiceDebug, "Debug Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );	
+	xTaskCreate( vServiceUSBDevice, "USB Device Service", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
 	xTaskCreate( vServiceUSBCDC, "USB CDC Service", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
-	xTaskCreate( vSTMPPartition, "STMP Partition Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
 	
 	vTaskSuspend(NULL);
 	for(;;){

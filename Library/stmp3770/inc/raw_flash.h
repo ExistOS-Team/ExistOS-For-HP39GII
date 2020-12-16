@@ -146,7 +146,11 @@ unsigned int read_nand_pages(unsigned int start_page, unsigned int pages, unsign
 void GPMI_write_block_with_ecc8(unsigned char set_up_command,unsigned char start_write_confirm_command,unsigned char read_status_command,
 								unsigned int page_to_write,void *write_payload_buffer, void *write_aux_buffer);
 
-
+void set_page_address_data(unsigned int pageNumber);
+void GPMI_read_block_with_ecc8(unsigned char set_read_command,unsigned char start_read_command,
+                               unsigned char *address_data, unsigned int *buffer, unsigned int address_data_size_bytes );
+							   
+							   
 void GPMI_erase_block_cmd(unsigned char erase_command, unsigned char confirm_erase_command, unsigned char read_status_command, unsigned int block_address);
 
 #endif

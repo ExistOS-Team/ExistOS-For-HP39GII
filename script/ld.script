@@ -2,18 +2,10 @@ OUTPUT_ARCH(arm)
 ENTRY(_boot)
 SECTIONS
 {
-/*	. = 0x00009200;*/
-	
 	. = 0x00001000;
 	__VRAM_BASE = .;
 	
 	. = 0x0000A000;
-	__DMA_NAND_PALLOAD_BUFFER = .;
-	. = . + 0x1000;
-	__DMA_NAND_AUXILIARY_BUFFER = .;
-	
-
-	. = 0x0000C000;
 	.text : { *(.text) }
 	.data : { *(.data) }
 	
@@ -27,5 +19,5 @@ SECTIONS
 	__exidx_end = .;
 
 	/*. = 0x32000;*/
-	__HEAP_START = .;
+	/* __HEAP_START = .; */
 }
