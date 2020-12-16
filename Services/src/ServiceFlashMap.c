@@ -282,7 +282,7 @@ void vServiceFlashMap( void *pvParameters )
 	unsigned int status = 0;
 	dhara_error_t err = 0;
 	unsigned char *buffer;
-	vTaskDelay(100);
+	vTaskDelay(50);
 	if(isRawFlash()){
 		printf("ERROR: error format flash.\n");
 		vTaskDelete(NULL);

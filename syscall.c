@@ -5,6 +5,7 @@
 #include <stdarg.h>
 
 #include "regsuartdbg.h"
+#include "uart_debug.h"
 #include "console.h"
 
 #undef errno
@@ -12,7 +13,7 @@ extern int errno;
 int _end asm("end");
 
 //extern int  __HEAP_START;
-#define __HEAP_START 0x30000
+#define __HEAP_START 0x38000
 
 //malloc和sprintf等函数要用到
 caddr_t _sbrk ( int incr ){
