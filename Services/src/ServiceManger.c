@@ -9,6 +9,8 @@
 #include "ServiceSTMPPartition.h"
 #include "ServiceFatFs.h"
 #include "ServiceFlashMap.h"
+#include "ServiceKeyboard.h"
+
 
 
 /* Library includes. */
@@ -34,7 +36,8 @@ void vServiceManger( void *pvParameters )
 	xTaskCreate( vServiceDebug, "Debug Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );	
 	xTaskCreate( vServiceUSBDevice, "USB Device Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
 	xTaskCreate( vServiceUSBCDC, "USB CDC Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
-	xTaskCreate( vServiceFatfs, "FATFS Service", 1024, NULL, 4, NULL );
+	xTaskCreate( vServiceFatfs, "FATFS Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
+	xTaskCreate( vServiceKeyboard, "KeyBoard Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
 	
 	vTaskSuspend(NULL);
 	for(;;){

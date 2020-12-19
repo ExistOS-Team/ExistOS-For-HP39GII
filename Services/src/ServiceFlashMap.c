@@ -36,7 +36,7 @@ unsigned char dhara_page_buf[2048];
 unsigned int dataRegonStartBlock = 0;
 extern unsigned char address_page_data[5];
 extern unsigned int dma_error;
-extern unsigned char __DMA_NAND_AUXILIARY_BUFFER[19];
+
 extern unsigned char ecc_res[4];
 
 
@@ -44,6 +44,7 @@ extern volatile unsigned int dmaOperationCompleted;
 extern volatile unsigned int eccOperationCompleted;
 
 extern SemaphoreHandle_t flashLock;
+bool mapLock = 0;
 
 int readDataRegonPage(unsigned int page, void *buffer){
 	unsigned int startTick = 0;
@@ -277,6 +278,50 @@ int dhara_nand_copy(const struct dhara_nand *n,
 	return 0;
 }
 
+void vServiceFlashSync(){
+	
+	for(;;) {
+		vTaskDelay(30000);
+		if(!isRawFlash()){
+			dhara_map_sync(&map, NULL);
+		}
+	}
+}
+
+void flashSyncNow(){
+	dhara_map_sync(&map, NULL);
+}
+
+bool isMaplock(){
+	return mapLock;
+}
+
+void lockFmap(bool lock){
+	mapLock = lock;
+}
+
+void flashMapClear(){
+	
+	dhara_map_clear(&map);
+}
+
+void flashMapReset(){
+	unsigned int status = 0;
+	dhara_error_t err = 0;
+	nandinf.log2_page_size = 11;		//2^11 = 2048
+	nandinf.log2_ppb = 6;				//2^6 = 64
+	nandinf.num_blocks = getDataRegonTotalBlocks();
+	dataRegonStartBlock = getDataRegonStartBlock();	
+	dhara_map_init(&map, &nandinf, dhara_page_buf, GC_RATIO);
+	err = 0;
+	status = dhara_map_resume(&map, &err);
+	printf("flashMapReset resume: %d, err:%d \n",status,err);
+	err = 0;
+	status = dhara_map_sync(&map, &err);
+	printf("flashMapReset sync: %d, err:%d \n",status,err);
+}
+
+
 void vServiceFlashMap( void *pvParameters )
 {
 	unsigned int status = 0;
@@ -317,6 +362,9 @@ void vServiceFlashMap( void *pvParameters )
 	printf("map sync done :%d err:%d \n",status,err);
 	vPortFree(buffer);*/
 	#endif
+	
+	
+	xTaskCreate( vServiceFlashSync , "Flash Sync Svc" , configMINIMAL_STACK_SIZE, NULL, 4, NULL );
 	
 	for(;;) {
 		vTaskSuspend(NULL);

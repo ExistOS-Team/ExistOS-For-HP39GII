@@ -47,13 +47,13 @@ BaseType_t erase_all_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char 
 	
 	for(int i=0; i<1024; i++){
 		xStatus = xEraseFlashBlocks(i, 1, 5000);
-		vTaskDelay(1);
+		vTaskDelay(8);
 		if(xStatus == TIMEOUT){
 			cdc_printf("Timeout at %d block.\n",  i);
 		}else if(xStatus == OPERATION_FAIL){
 			cdc_printf("OPERATION_FAIL at %d block.\n",  i);
 		}
-		if(i % 100 == 0){
+		if(i % 50 == 0){
 			cdc_printf("Erasing %d/1024 ...\n",i);
 		}
 		

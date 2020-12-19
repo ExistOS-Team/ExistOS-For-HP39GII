@@ -108,6 +108,14 @@ bool isRawFlash();
 void vSTMPPartition( void *pvParameters );
 unsigned int getDataRegonTotalBlocks();
 unsigned int getDataRegonStartBlock();
+void lockFlash(bool lock);
+
+void modifyRegion(unsigned int regionNum, unsigned int newStartBlock, unsigned int newBlockSize, unsigned int tag);
+void saveRegionTable();
+void installBootimgInPage(unsigned int page, void *buffer);
+void resetFlashRegionInfo();
+void eraseBootimgRegion();
+
 
 #endif
 

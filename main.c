@@ -139,7 +139,7 @@ int main( void )
 	
 	xTaskCreate( vTask3, "Task Manager", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
 	xTaskCreate( vServiceManger, "Service Host", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
-	xTaskCreate( vInit, "init", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
+	xTaskCreate( vInit, "init", configMINIMAL_STACK_SIZE*4, NULL, 3, NULL );
 	
 	//vStartBlockingQueueTasks(1);
 	//vStartGenericQueueTasks(1);

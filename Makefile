@@ -23,10 +23,10 @@ ELF2ROM		  = ..\tools\sbtools\elftosb.exe
 SBLOADER	  = ..\tools\sbtools\sb_loader.exe
 
 GCCINCPATH       = -I. -I..\tools\gcc-arm\arm-none-eabi\include 
-INCPATH  		=  -Ikernel\porting -Ikernel\include -Ilibrary\stmp3770\inc -Ilibrary\stmp3770\inc\registers -ITestApp -IServices\inc -ISystemApp -IConfig -ILibrary\TinyUSB -ILibrary\TinyUSB\device -ILibrary\FreeRTOS-Plus-CLI -ILibrary\dhara -ILibrary\FatFs
+INCPATH  		=  -Ikernel\porting -Ikernel\include -Ilibrary\stmp3770\inc -Ilibrary\stmp3770\inc\registers -ITestApp -IServices\inc -ISystemApp\inc -IConfig -ILibrary\TinyUSB -ILibrary\TinyUSB\device -ILibrary\FreeRTOS-Plus-CLI -ILibrary\dhara -ILibrary\FatFs
 
 
-CSRCS 	= $(wildcard  ./*.c ./kernel/*.c   ./kernel/porting/*.c ./library/stmp3770/src/*.c  ./TestApp/*.c ./Services/src/*.c ./SystemApp/*.c ./Config/*.c ./Library/FreeRTOS-Plus-CLI/*.c)
+CSRCS 	= $(wildcard  ./*.c ./kernel/*.c   ./kernel/porting/*.c ./library/stmp3770/src/*.c  ./TestApp/*.c ./Services/src/*.c ./SystemApp/src/*.c ./Config/*.c ./Library/FreeRTOS-Plus-CLI/*.c)
 
 
 CTINYUSBCSRCS	=	$(wildcard ./Library/TinyUSB/*.c ./Library/TinyUSB/common/*.c ./Library/TinyUSB/device/*.c ./Library/TinyUSB/class/cdc/*.c ./Library/TinyUSB/class/msc/*.c )

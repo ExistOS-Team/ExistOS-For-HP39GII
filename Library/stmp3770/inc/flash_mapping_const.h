@@ -51,7 +51,7 @@ extern "C" {
 //! \name 37xx BBRC (BadBlocksPerRegionCounts_t) fingerprint constants
 //@{
 #define BBRC_FINGERPRINT1   STMP_FINGERPRINT   //!< 'STMP'
-#define BBRC_FINGERPRINT2   0x52434242   //!< 'BBRC' - Bad Block per Region Counts
+#define BBRC_FINGERPRINT2   0x52434242   //!< 'BBCR' - Bad Block per Region Counts
 #define BBRC_FINGERPRINT3   0x42494252   //!< 'RBIB' - ROM Boot Image Block - B
 //@}
 

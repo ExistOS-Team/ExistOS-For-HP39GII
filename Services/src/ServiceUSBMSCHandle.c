@@ -37,6 +37,7 @@ void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16
 bool tud_msc_test_unit_ready_cb(uint8_t lun)
 {
   (void) lun;
+  
 	if(xGetFlashStatus() == NO_ERROR){
 		return true; 
 	}
@@ -49,9 +50,20 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_siz
 {
   (void) lun;
 
+
+	if(isMaplock()){
+		*block_count = 0;
+		*block_size = 0;
+		return;
+	}
+
   *block_count = dhara_map_capacity(&map);
-  
   *block_size  = 2048;
+  
+  /*
+  *block_count = 1024*64;
+  *block_size = 2048;
+  */
 }
 
 // Invoked when received Start Stop Unit command
@@ -69,6 +81,8 @@ bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, boo
       // load disk storage
     }else
     {
+		dhara_map_sync(&map, NULL);
+		return false;
       // unload disk storage
     }
   }
@@ -83,6 +97,13 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void* buff
   (void) lun;
   
   unsigned char *rb_buffer;
+  
+  if(isMaplock()){
+	  memset(buffer,0,bufsize);
+	  return bufsize;
+  }
+  
+  
   
 	if(bufsize == 2048){
 		//xReadFlashPages(lba,1,buffer,5000);
@@ -123,7 +144,13 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* 
 	//delay_us(3000);
 	//printf("bufsize: %d, mode %02x\n",bufsize,get_mode());
 	
-	dhara_map_write(&map, lba, buffer, NULL);
+	
+	
+	 if(!isMaplock()){
+		dhara_map_write(&map, lba, buffer, NULL);
+	 }
+	 
+	 
 	//vTaskDelay(1);
 	//GPMI_write_block_with_ecc8(NAND_CMD_SEQIN,NAND_CMD_PAGEPROG,NAND_CMD_STATUS,
 	//							lba, buffer, NMETA);

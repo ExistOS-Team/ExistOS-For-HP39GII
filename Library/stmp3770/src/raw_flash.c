@@ -50,7 +50,7 @@ unsigned int mapping_firstBlockLBA = 64;
 unsigned char address_page_data[5];
 
 
-unsigned char __DMA_NAND_AUXILIARY_BUFFER[19];
+volatile unsigned char __DMA_NAND_AUXILIARY_BUFFER[65];
 //接口时序，单位ns
 
 
@@ -400,8 +400,8 @@ void GPMI_erase_block_cmd(unsigned char erase_command, unsigned char confirm_era
 						BF_APBH_CHn_CMD_SEMAPHORE (0) |
 						BF_APBH_CHn_CMD_NANDWAIT4READY(0) |
 						BF_APBH_CHn_CMD_NANDLOCK (0) |
-						BF_APBH_CHn_CMD_IRQONCMPLT (1) | // emit GPMI interrupt
-						BF_APBH_CHn_CMD_CHAIN (0) | // terminate DMA chain processing
+						BF_APBH_CHn_CMD_IRQONCMPLT (0) | // emit GPMI interrupt
+						BF_APBH_CHn_CMD_CHAIN (1) | // terminate DMA chain processing
 						BV_FLD(APBH_CHn_CMD, COMMAND, NO_DMA_XFER); // no dma transfer
 	
 	
@@ -754,6 +754,7 @@ void GPMI_write_block_with_ecc8(unsigned char set_up_command,unsigned char start
 						*/
 						
 	//chains[2].dma_bar = (unsigned int)write_aux_buffer; // pointer for the 19 byte meta data area
+	//printf("%08X\n",(unsigned int)write_aux_buffer);
 	writes[2].dma_bar = (unsigned int)write_aux_buffer; // pointer for the 19 byte meta data area
 	
 	/*
@@ -1079,7 +1080,7 @@ void GPMI_read_block_with_ecc8(unsigned char set_read_command,unsigned char star
 	//chains[4].gpmi_ecccount = BF_GPMI_ECCCOUNT_COUNT(8*(512+18)+(65+9));            // 4K PAGE SIZE specify number of bytes read fromNAND
 	chains[4].gpmi_ecccount = BF_GPMI_ECCCOUNT_COUNT(4*(512+9)+(19+9));               // 2K PAGE SIZE specify number of bytes read fromNAND
 	chains[4].gpmi_data_ptr = (unsigned int)buffer;               // pointer for the data area
-	chains[4].gpmi_aux_ptr = (unsigned int)__DMA_NAND_AUXILIARY_BUFFER;              // pointer for the 65 byte aux area + parity and syndrome bytes \
+	chains[4].gpmi_aux_ptr = (unsigned int)&__DMA_NAND_AUXILIARY_BUFFER[0];              // pointer for the 65 byte aux area + parity and syndrome bytes \
 	for both data and aux blocks.
 
 	/***********************************

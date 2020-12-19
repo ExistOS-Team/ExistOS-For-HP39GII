@@ -18,36 +18,50 @@
 #include "task.h"
 #include "queue.h"
 
+unsigned int FSOK = 0;
+
 FRESULT fr;
 FATFS fs;
+FATFS *fs1;
 FIL fil;
 
 DWORD fre_clust, fre_sect, tot_sect;
 BYTE work[FF_MAX_SS];
+
+
+unsigned int isfatFsInited(){
 	
+	return FSOK;
+}
+
+
 void vServiceFatfs( void *pvParameters )
 {
+	
+	unsigned char *buffer;
 	
 	vTaskDelay(500);
 
 	
 	printf("Mounting FLash ...\n");
-	fr = f_mount(&fs, "0:", 1);
+	fr = f_mount(&fs, "/", 1);
+	fs1 = &fs;
 	printf("mount result: %d\n", fr);
 	if(fr == 0){
-		f_getfree("0:", &fre_clust, &fs);
+		FSOK = 1;
+		
+		f_getfree("/", &fre_clust, &fs1); 
 		tot_sect = (fs.n_fatent - 2) * fs.csize;
 		fre_sect = fre_clust * fs.csize;
-		printf("%10lu KiB total drive space.\n%10lu KiB available.\n", tot_sect , fre_sect );
-		
-		printf("create file :%d\n",fr);
-		fr = f_open(&fil, "0:test.txt", FA_CREATE_ALWAYS);
-		f_close(&fil);
-		printf("fr: %d\n",fr);
-		
-		f_close(&fil);
-	
+		printf("\tfre_clust:%d\n",fre_clust);
+		printf("%10lu KiB total drive space.\n%10lu KiB available.\n", tot_sect * 2 , fre_sect * 2);
+
+
+		f_setlabel("HP 39GII");
+		fr = f_mkdir("/update");
+		printf("Create directory /update :%d\n",fr);
 	}
+	
 	
 	
 	

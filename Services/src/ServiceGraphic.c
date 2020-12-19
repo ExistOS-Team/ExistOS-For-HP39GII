@@ -18,6 +18,13 @@
 
 unsigned int tmp[8];
 
+extern unsigned int __VRAM_BASE;
+
+unsigned int * getVramAddress(){
+	
+	return &__VRAM_BASE;
+}
+
 void vServiceGraphic( void *pvParameters )
 {
 	GraphicMessage *CurrentGraphicMessage;

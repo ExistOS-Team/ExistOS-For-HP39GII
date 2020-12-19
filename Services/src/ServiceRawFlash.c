@@ -72,7 +72,7 @@ BaseType_t xWriteFlashPages( unsigned int start_page, unsigned int pages, void *
 		return DEVICE_BUSY;
 	}
 	
-	if(meta_buffer = NULL){
+	if(meta_buffer == NULL){
 		meta_buffer = NMETA;
 		
 	}
@@ -121,18 +121,11 @@ BaseType_t xEraseFlashBlocks( unsigned int start_block, unsigned int blocks, uns
 	}
 	
 	while(count < blocks){
+
 		startTick = xTaskGetTickCount();
-		while( !dmaOperationCompleted ){
-				if( xTaskGetTickCount() - startTick > timeout_ms){
-						xSemaphoreGive(flashLock);
-						return TIMEOUT;
-				}
-			}
-		startTick = xTaskGetTickCount();
-		taskENTER_CRITICAL();
+		//taskENTER_CRITICAL();
 		GPMI_erase_block_cmd(NAND_CMD_ERASE1, NAND_CMD_ERASE2, NAND_CMD_STATUS, start_block + count);
-		taskEXIT_CRITICAL();
-		vTaskDelay(3);
+		//taskEXIT_CRITICAL();
 		count++;
 		
 		while( !dmaOperationCompleted ){
@@ -141,7 +134,7 @@ BaseType_t xEraseFlashBlocks( unsigned int start_block, unsigned int blocks, uns
 				return TIMEOUT;
 			}
 		}
-		eccOperationCompleted = 1;
+		
 		
 		if(dma_error){
 			xSemaphoreGive(flashLock);

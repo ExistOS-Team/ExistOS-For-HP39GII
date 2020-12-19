@@ -11,6 +11,8 @@
 
 
 void vServiceFatfs( void *pvParameters );
+unsigned int isfatFsInited();
+
 
 #endif
 

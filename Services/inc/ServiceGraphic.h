@@ -39,5 +39,6 @@ typedef struct GraphicTextOutInfo{
 QueueHandle_t GraphicQueue;
 
 void vServiceGraphic( void *pvParameters );
+unsigned int * getVramAddress();
 
 #endif
