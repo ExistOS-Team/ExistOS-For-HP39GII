@@ -95,6 +95,10 @@ int fputc(int ch, FILE *f)
  *
 * Only work for STDOUT, STDIN, and STDERR
  */
+
+char kmsgBuff[4096];
+unsigned int kmsgBuff_ptr = 0;
+
 int _write(int fd, char *ptr, int len)
 {
 	/*
@@ -103,6 +107,7 @@ int _write(int fd, char *ptr, int len)
 	asm volatile ("ldr r2,%0" :: "m"(len));
 	asm volatile ("swi #1000");
 	*/
+	
     int i = 0;
 
 
@@ -113,7 +118,10 @@ int _write(int fd, char *ptr, int len)
 
     while (*ptr && (i < len))
     {
-
+		kmsgBuff[kmsgBuff_ptr++] = *ptr;
+		if(kmsgBuff_ptr > 4096){
+			kmsgBuff_ptr = 0;
+		}
 		uartdbg_putc(*ptr);
 		//console_puts(*ptr);
 		

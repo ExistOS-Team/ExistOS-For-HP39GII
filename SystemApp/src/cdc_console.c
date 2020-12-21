@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <malloc.h>
+
+
 
 #include "init.h"
 
@@ -22,7 +25,22 @@ extern unsigned char ecc_res[4];
 uint8_t buf[64];
 uint8_t console_output_buffer[1024];
 
+extern char kmsgBuff[4096];
+
+BaseType_t dmesg_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString){
+	int i=0;
+	while(i < xWriteBufferLen && kmsgBuff[i] != 0){
+		pcWriteBuffer[i++] = kmsgBuff[i];
+	}
+	pcWriteBuffer[i] = 0;
+	
+	return pdFALSE;
+}
+
+
 BaseType_t cdc_tasklist_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString){
+	
+	struct mallinfo mallocInfo;
 	
 	vTaskList(pcWriteBuffer);
 	cdc_printf("=======================================================\r\n");
@@ -32,8 +50,21 @@ BaseType_t cdc_tasklist_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const ch
 	vTaskGetRunTimeStats(pcWriteBuffer);
     cdc_printf("%s", pcWriteBuffer);
 	cdc_printf("任务状态:  X-运行  R-就绪  B-阻塞  S-挂起  D-删除\n");
-	cdc_printf("内存剩余:   %d Bytes\n",(unsigned int)xPortGetFreeHeapSize());
 	cdc_printf("Task mode: %x\n",get_mode());
+	
+	cdc_printf("free memory size: %d \n",(unsigned int)xPortGetFreeHeapSize());
+	
+	mallocInfo = mallinfo();
+	cdc_printf("total space allocated from system: %d\n",mallocInfo.arena);
+	cdc_printf("number of non-inuse chunks: %d\n",mallocInfo.ordblks);
+	cdc_printf("number of mmapped regions: %d\n",mallocInfo.hblks);
+	cdc_printf("total space in mmapped regions: %d\n",mallocInfo.hblkhd);
+	cdc_printf("total allocated space: %d\n",mallocInfo.uordblks);
+	cdc_printf("total non-inuse space: %d\n",mallocInfo.fordblks);
+	cdc_printf("top-most, releasable (via malloc_trim) space: %d\n",mallocInfo.keepcost);
+	
+	
+	
 	*pcWriteBuffer = 0;
 	return pdFALSE;
 }
@@ -169,6 +200,31 @@ BaseType_t dwrallonec_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char
 	*pcWriteBuffer = 0;
 	return pdFALSE;
 	
+}
+
+
+BaseType_t dumprom_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString){
+
+	unsigned char *ROM = (unsigned char) 0xFFFF0000;
+		
+		
+	cdc_printf("Rom Area:");
+	
+		for(unsigned int i = 0; i < 0xFFFF; i++){
+			if(i % 16 == 0){
+				cdc_printf("\n%08X: ", i);
+			}
+			if(i % 8 == 0){
+				cdc_printf(" ");
+			}
+			
+			cdc_printf("%02X ",ROM[i]);
+		}
+		cdc_printf("\n");
+		
+	
+	*pcWriteBuffer = 0;
+	return pdFALSE;
 }
 
 BaseType_t dreadpage_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString){
@@ -368,15 +424,29 @@ static const CLI_Command_Definition_t cmd_deraseb = {
 
 static const CLI_Command_Definition_t cmd_erase_all = {
 	"erase_all",
-	"\r\nerase_all - Erase all flash blocks'\r\n",
+	"\r\nerase_all - Erase all flash blocks.\r\n",
 	erase_all_cb,
 	0
 };
 
 static const CLI_Command_Definition_t cmd_erase_data = {
 	"erase_data",
-	"\r\nerase_all - Erase all flash blocks'\r\n",
+	"\r\nerase_data - erase data region.\r\n",
 	erase_data_cb,
+	0
+};
+
+static const CLI_Command_Definition_t cmd_dmesg = {
+	"dmesg",
+	"\r\ndmesg - dump system log.\r\n",
+	dmesg_cb,
+	0
+};
+
+static const CLI_Command_Definition_t cmd_dumprom = {
+	"dumprom",
+	"\r\ndumprom - dump system ROM.\r\n",
+	dumprom_cb,
 	0
 };
 
@@ -395,13 +465,15 @@ void vCDC_Console(){
 	FreeRTOS_CLIRegisterCommand(&cmd_erase_all);
 	FreeRTOS_CLIRegisterCommand(&cmd_erase_data);
 	FreeRTOS_CLIRegisterCommand(&switch_msc_mode_chkdsk);
+	FreeRTOS_CLIRegisterCommand(&cmd_dmesg);
+	FreeRTOS_CLIRegisterCommand(&cmd_dumprom);
 	
 	
 	
 	for(;;){
 		if(xQueueReceive( CDCCmdLineQueue, (&buf), ( TickType_t ) portMAX_DELAY ) == pdTRUE ){
 			FreeRTOS_CLIProcessCommand(buf,console_output_buffer,sizeof(console_output_buffer));
-			cdc_printf("%s",console_output_buffer);
+			cdc_printf("%s\n",console_output_buffer);
 			memset(buf,0,sizeof(buf));
 		}
 	}

@@ -33,6 +33,7 @@
 #include "keyboard.h"
 #include "exception.h"
 #include "irq.h"
+#include "rtc.h"
 #include "hw_irq.h"
 #include "memory.h"
 #include "console.h"
@@ -47,12 +48,16 @@ extern unsigned char key_matrix[5][11];
 extern int main();
 extern void fs_test_main();
 
+extern unsigned int SVC_STACK_ADDR;
+
+void set_stack(unsigned int *newstackptr) __attribute__ ((naked));
+
 void _boot()
 {
 	disable_interrupts();					//关闭所有中断
 	stack_init();							//栈初始化（设定异常、系统、中断等模式下的堆栈
 	switch_mode(SVC_MODE);					//切换到系统管理模式
-	asm volatile ("ldr sp,=#0x0007A000");	//设置系统管理模式下的栈地址
+	set_stack(&SVC_STACK_ADDR);				//设置系统管理模式下的栈地址
 	exception_init();						//初始化异常向量
 	irq_init();								//初始化中断
 	DFLTP_init();							//初始化页表
@@ -60,6 +65,7 @@ void _boot()
 	
 	keyboard_init();						//键盘初始化
 
+	rtc_init();
 	//console_init();
 	
 	

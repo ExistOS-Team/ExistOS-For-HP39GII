@@ -56,10 +56,8 @@ void vServiceFatfs( void *pvParameters )
 		printf("\tfre_clust:%d\n",fre_clust);
 		printf("%10lu KiB total drive space.\n%10lu KiB available.\n", tot_sect * 2 , fre_sect * 2);
 
-
 		f_setlabel("HP 39GII");
-		fr = f_mkdir("/update");
-		printf("Create directory /update :%d\n",fr);
+	
 	}
 	
 	

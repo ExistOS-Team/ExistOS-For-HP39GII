@@ -39,6 +39,7 @@ void DFLTP_init(){
 	BF_WRn(DIGCTL_MPTEn_LOC,6,LOC,0x6);
 	BF_WRn(DIGCTL_MPTEn_LOC,7,LOC,0x7);
 	
+
 	MMU_MAP_SECTION_DEV(0x00000000,0x00000000);										//内存开头1MB映射
 	MMU_MAP_COARSE_RAM(SECOUND_LEVEL_PAGE_TABLE_FOR_KERNEL,KERNEL_ADDR_BASE);		//0x90000000处的内核内存
 	
@@ -157,23 +158,31 @@ void enable_mmu()
 
 }
 
+extern unsigned int ABT_STACK_ADDR;
+extern unsigned int UND_STACK_ADDR;
+extern unsigned int FIQ_STACK_ADDR;
+extern unsigned int IRQ_STACK_ADDR;
+extern unsigned int SYS_STACK_ADDR;
+extern unsigned int SVC_STACK_ADDR;
+
+
 
 void stack_init(){
 		
     switch_mode(ABT_MODE);
-    set_stack((unsigned int *)0x0007FF00);
+    set_stack(&ABT_STACK_ADDR);
     
 	switch_mode(UND_MODE);
-    set_stack((unsigned int *)0x0007F000);
+    set_stack(&UND_STACK_ADDR);
     
 	switch_mode(FIQ_MODE);
-    set_stack((unsigned int *)0x0007E000);
+    set_stack(&FIQ_STACK_ADDR);
 	
     switch_mode(IRQ_MODE);
-    set_stack((unsigned int *)0x0007B000);
+    set_stack(&IRQ_STACK_ADDR);
     
 	switch_mode(SYS_MODE);
-	set_stack((unsigned int *)0x00079000);
+	set_stack(&SYS_STACK_ADDR);
 	
 	switch_mode(SVC_MODE);
     asm volatile ("nop");       

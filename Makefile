@@ -23,7 +23,7 @@ ELF2ROM		  = ..\tools\sbtools\elftosb.exe
 SBLOADER	  = ..\tools\sbtools\sb_loader.exe
 
 GCCINCPATH       = -I. -I..\tools\gcc-arm\arm-none-eabi\include 
-INCPATH  		=  -Ikernel\porting -Ikernel\include -Ilibrary\stmp3770\inc -Ilibrary\stmp3770\inc\registers -ITestApp -IServices\inc -ISystemApp\inc -IConfig -ILibrary\TinyUSB -ILibrary\TinyUSB\device -ILibrary\FreeRTOS-Plus-CLI -ILibrary\dhara -ILibrary\FatFs
+INCPATH  		=  -Ikernel\porting -Ikernel\include -Ilibrary\stmp3770\inc -Ilibrary\stmp3770\inc\registers -ITestApp -IServices\inc -ISystemApp\inc -IConfig -ILibrary\TinyUSB -ILibrary\TinyUSB\device -ILibrary\FreeRTOS-Plus-CLI -ILibrary\dhara -ILibrary\FatFs -ILibrary\LVGL\
 
 
 CSRCS 	= $(wildcard  ./*.c ./kernel/*.c   ./kernel/porting/*.c ./library/stmp3770/src/*.c  ./TestApp/*.c ./Services/src/*.c ./SystemApp/src/*.c ./Config/*.c ./Library/FreeRTOS-Plus-CLI/*.c)
@@ -35,7 +35,7 @@ CDHARASRCS = $(wildcard ./Library/dhara/*.c)
 
 FatFsSrcs = $(wildcard ./Library/FatFs/*.c)
 
-
+LVGL_SRC_C = $(wildcard ./Library/LVGL/*.c ./Library/LVGL/lv_core/*.c)
 
 SSRCS	= $(wildcard ./*.s)
 
@@ -50,6 +50,8 @@ COBJS := $(CSRCS:.c=.o)
 CTINYUSBCOBJS := $(CTINYUSBCSRCS:.c=.o) 
 CDHARAOBJS := $(CDHARASRCS:.c=.o) 
 FatFsObjs := $(FatFsSrcs:.c=.o) 
+
+LVGL_SRC_O := $(LVGL_SRC_C:.c=.o) 
 
 SOBJS := $(SSRCS:.s=.o) 
 CASMS := $(CSRCS:.c=.s) 
@@ -78,6 +80,9 @@ $(CDHARAOBJS) : %.o : %.c
 $(FatFsObjs) : %.o : %.c 
 	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS) 
 
+$(LVGL_SRC_O) : %.o : %.c 
+	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS) 
+
 $(COBJS_TESTING) : %.o : %.c 
 	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS_TESTING) 
 
@@ -89,8 +94,8 @@ all: firmware.sb updater
 debug:
 	$(CC) -S $(CSRCS) $(GCCINCPATH) $(INCPATH)
 # $(COBJS_TESTING)
-rom.elf: $(COBJS) $(CPPOBJS) $(SOBJS)  $(CTINYUSBCOBJS) $(CDHARAOBJS) $(FatFsObjs)
-	$(LINKER) -o rom.elf $(LFLAGS)  $(SOBJS) $(COBJS) $(CTINYUSBCOBJS) $(CDHARAOBJS) $(FatFsObjs) $(CPPOBJS) $(LIBS)
+rom.elf: $(COBJS) $(CPPOBJS) $(SOBJS)  $(CTINYUSBCOBJS) $(CDHARAOBJS) $(FatFsObjs) $(LVGL_SRC_O)
+	$(LINKER) -o rom.elf $(LFLAGS)  $(SOBJS) $(COBJS) $(CTINYUSBCOBJS) $(CDHARAOBJS) $(FatFsObjs) $(LVGL_SRC_O) $(CPPOBJS) $(LIBS)
 
 updater: rom.elf
 	$(ELF2ROM) -z -c $(SCRIPT_DIR)\build_updater.bd -o updater.sb rom.elf

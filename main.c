@@ -45,7 +45,7 @@
 #include "regsapbh.h"
 #include "irq.h"
 #include "tusb.h"
-
+#include "rtc.h"
 /* Kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
@@ -157,7 +157,10 @@ int main( void )
 
 static void prvSetupHardware(void)
 {
-	BF_CS2(APBH_CTRL0, SFTRST, 0, CLKGATE, 0);			//启动APHB桥DMA
+	BF_CS2(APBH_CTRL0, SFTRST, 0, CLKGATE, 0);			//启动APHB桥的DMA
+	
+	
+	
 	
 	enable_interrupts();					//打开中断
 }
