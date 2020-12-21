@@ -78,13 +78,7 @@ BaseType_t xWriteFlashPages( unsigned int start_page, unsigned int pages, void *
 	}
 	
 	while(count < pages){
-		startTick = xTaskGetTickCount();
-		while( !dmaOperationCompleted ){
-		if( xTaskGetTickCount() - startTick > timeout_ms){
-				xSemaphoreGive(flashLock);
-				return TIMEOUT;
-		}
-	}
+		
 		startTick = xTaskGetTickCount();
 		taskENTER_CRITICAL();
 		GPMI_write_block_with_ecc8(NAND_CMD_SEQIN,NAND_CMD_PAGEPROG,NAND_CMD_STATUS,

@@ -60,7 +60,7 @@ BaseType_t erase_all_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char 
 	}
 	cdc_printf("Erase finish. %d ...\n",paraNum);
 	
-	
+	*pcWriteBuffer = 0;
 	return pdFALSE;
 	
 }
@@ -89,7 +89,7 @@ BaseType_t erase_data_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char
 	}
 	cdc_printf("Erase finish. %d ...\n",paraNum);
 	
-	
+	*pcWriteBuffer = 0;
 	return pdFALSE;
 	
 }
@@ -125,7 +125,7 @@ BaseType_t deraseb_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char *p
  
 	cdc_printf("Erase finish. %d ...\n",paraNum);
 	
-	
+	*pcWriteBuffer = 0;
 	return pdFALSE;
 	
 }
@@ -166,7 +166,7 @@ BaseType_t dwrallonec_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char
 	vPortFree(buffer_meta);
 	cdc_printf("Write finish. %d ...\n",paraNum);
 	
-	
+	*pcWriteBuffer = 0;
 	return pdFALSE;
 	
 }
@@ -304,8 +304,25 @@ BaseType_t chkdsk_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pc
 
 	cdc_printf("Total page: %d, total bad page: %d, unstable: %d \n", i+1, badblocks, unstable);
 	vPortFree(buffer);
+	
+	*pcWriteBuffer = 0;
 	return pdFALSE;
 }
+
+unsigned int MSC_MODE = 1;
+BaseType_t switch_msc_mode_cb(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString){
+	MSC_MODE = !MSC_MODE;
+	*pcWriteBuffer = 0;
+	return pdFALSE;
+}
+
+static const CLI_Command_Definition_t switch_msc_mode_chkdsk = {
+	"switch_msc_mode",
+	"\r\nswitch_msc_mode - FULL flash mode/data disk mode\r\n ",
+	switch_msc_mode_cb,
+	0
+};
+
 
 static const CLI_Command_Definition_t cmd_chkdsk = {
 	"chkdsk",
@@ -377,6 +394,7 @@ void vCDC_Console(){
 	FreeRTOS_CLIRegisterCommand(&cmd_deraseb);
 	FreeRTOS_CLIRegisterCommand(&cmd_erase_all);
 	FreeRTOS_CLIRegisterCommand(&cmd_erase_data);
+	FreeRTOS_CLIRegisterCommand(&switch_msc_mode_chkdsk);
 	
 	
 	

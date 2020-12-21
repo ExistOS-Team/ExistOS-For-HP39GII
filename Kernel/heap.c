@@ -100,9 +100,12 @@ void vPortFree( void *pv )
 }
 
 
+extern unsigned int __HEAP_START;
+extern unsigned char *heap;
+
 size_t xPortGetFreeHeapSize( void )
 {
-	return (0x80000 - 0x30000) - usedHeapSize;
+	return (0x70000 - (unsigned int)heap);
 }
 
 size_t xPortGetUsedHeapSize( void )

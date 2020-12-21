@@ -75,24 +75,41 @@ void __handler_dabort(){
 	
 	//while(1);
 }
-	
-unsigned int swiImmed;
 
-void __handler_swi(void) __attribute__((naked));
-void __handler_swi(void)
+
+void src_c_swi_handler(unsigned int arg0, unsigned int arg1, unsigned arg2, unsigned int swiImmed);
+
+volatile void __handler_swi(void) __attribute__((naked));
+volatile void __handler_swi(void)
 {
+	
+	
+	
+		asm volatile ( "stmfd sp!,{r0-r3, lr}");
 
-		__asm volatile ("add lr,lr,#4");
-		portSAVE_CONTEXT_ASM;/*
-		asm volatile ("stmfd sp!, {r0-r12, lr}");
-		asm volatile ("ldr r4, [lr, #-4]");
-		asm volatile ("bic r4, r4, #0xff000000");
-		asm volatile ("str r4,%0" :"=m"(swiImmed));*/
-		//printf("Software Interrupt: %d\n",swiImmed);		
-		__asm volatile ( "bl vTaskSwitchContext" );
+		asm volatile ("ldr r3, [lr, #-4]");
+		
+		asm volatile ("bic r3, r3, #0xff000000");
+		
+		asm volatile ( "bl src_c_swi_handler" );
+		
+		asm volatile ( "ldmia sp!,{r0-r3, lr}");
+		
+		
+		asm volatile ("add lr,lr,#4");
+		portSAVE_CONTEXT_ASM;
+
+		asm volatile ( "bl vTaskSwitchContext" );
+
+
+
+		
 		portRESTORE_CONTEXT_ASM;                          		
 
 }
+
+
+
 
 void install_swi_service(unsigned int swi_num, void *service){
 	swi_jump_table[swi_num] = service;
@@ -100,7 +117,7 @@ void install_swi_service(unsigned int swi_num, void *service){
 
 void exception_install(exception_type type, unsigned int *exception_handler_addr){
 	unsigned int *exception_table_base = (unsigned int *)0x00000000;
-	//resule = FFFFFE+(jmp_addr/4)-(offset/4)	现场编译跳转指令（（
+	//resule = FFFFFE+(jmp_addr/4)-(offset/4)	现场编译跳转指令 // B xx
 	exception_table_base[type] = 0xEA000000 | ((0xFFFFFE + (((unsigned int)(exception_handler_addr))/4)-(((unsigned int)&exception_table_base[type])/4))&0x00FFFFFF);
 }
 
