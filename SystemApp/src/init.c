@@ -138,9 +138,9 @@ static void Hz16chOut(const unsigned char** HZlist,unsigned int len, unsigned in
 					for(int lx = 0; lx < 8; lx++){
 						
 						if(c&1){
-							vbuf[(x++) + 258 * y ] = 0xFF;
+							vbuf[(x++) + 258 * ( y + 8 ) ] = 0xFF;
 						}else{
-							vbuf[(x++) + 258 * y ] = 0;
+							vbuf[(x++) + 258 * ( y + 8 ) ] = 0;
 						}
 						c=c>>1;
 					}
@@ -163,9 +163,9 @@ static void Hz16chOut(const unsigned char** HZlist,unsigned int len, unsigned in
 					for(int lx = 0; lx < 8; lx++){
 						
 						if(c&1){
-							vbuf[(x++) + 258 * y ] = 0xFF;
+							vbuf[(x++) + 258 * ( y + 8 ) ] = 0xFF;
 						}else{
-							vbuf[(x++) + 258 * y ] = 0;
+							vbuf[(x++) + 258 * ( y + 8 ) ] = 0;
 						}
 						c=c>>1;
 					}

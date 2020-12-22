@@ -35,6 +35,8 @@
 
 #include "init.h"
 #include "uart_debug.h"
+#include "clkgen.h"
+
 
 /* System serive includes. */
 #include "ServiceManger.h"
@@ -157,12 +159,55 @@ int main( void )
 
 static void prvSetupHardware(void)
 {
-	BF_CS2(APBH_CTRL0, SFTRST, 0, CLKGATE, 0);			//启动APHB桥的DMA
+	
+	
+	PLL_enable(1);
+	
+	HCLK_set_div(0,5);		//96 MHz
+	CPUCLK_set_div(0,5);	//96 MHz
+	CPUCLK_set_gating(0);
+	CPUCLK_set_bypass(0);
+	
+	/*
+	BF_CS1(CLKCTRL_HBUS, SLOW_DIV, 3);	
+	BF_CS1(CLKCTRL_HBUS, APBHDMA_AS_ENABLE, 1);
+	BF_CS1(CLKCTRL_HBUS, APBXDMA_AS_ENABLE, 1);
+	BF_CS1(CLKCTRL_HBUS, CPU_DATA_AS_ENABLE, 1);
+	BF_CS1(CLKCTRL_HBUS, CPU_INSTR_AS_ENABLE, 1);
+	BF_CS1(CLKCTRL_HBUS, TRAFFIC_JAM_AS_ENABLE, 1);
+	BF_CS1(CLKCTRL_HBUS, TRAFFIC_AS_ENABLE, 1);
+    BF_CS1(CLKCTRL_HBUS, AUTO_SLOW_MODE, 1);
+   */
+	
+	//BF_CS1(CLKCTRL_PIX, DIV, 8);	//修正LCD控制器频率
 	
 	
 	
+	//BF_CS1(CLKCTRL_CLKSEQ, BYPASS_PIX, 0);	//修正LCD控制器频率	
+	
+	
+	//BF_SETV(CLKCTRL_GPMI,DIV,4);
+
+	
+	BF_CS1(CLKCTRL_FRAC, CLKGATEIO, 0);
+	BF_CLR(CLKCTRL_CLKSEQ,BYPASS_GPMI);
+	
+	
+	BF_CS1(CLKCTRL_FRAC, CLKGATEPIX, 0);
+	BF_CLR(CLKCTRL_CLKSEQ,BYPASS_PIX);
+	
+	BF_SET(CLKCTRL_PIX,CLKGATE);
+	BF_CS1(CLKCTRL_PIX,DIV,20);
+	BF_CLR(CLKCTRL_PIX,CLKGATE);
+	
+	
+	
+	BF_CS2(APBH_CTRL0, SFTRST, 0, CLKGATE, 0);			//启动APBH DMA
 	
 	enable_interrupts();					//打开中断
+	
+	printf("(CLKCTRL_CPU,DIV_CPU), %08x\n",BF_RD(CLKCTRL_CPU,DIV_CPU));
+	printf("(CLKCTRL_HBUS,DIV), %08x\n",BF_RD(CLKCTRL_HBUS,DIV));
 }
 /*-----------------------------------------------------------*/
 

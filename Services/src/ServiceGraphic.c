@@ -34,7 +34,7 @@ void vServiceGraphic( void *pvParameters )
 	GraphicQueue = xQueueCreate(64, sizeof(GraphicMessage *));
 	
 	LCD_init();
-	LCD_clear_completely();
+	//LCD_clear_completely();
 	LCD_clear_buffer();
 	LCD_dma_flush_buffer(); 
 	

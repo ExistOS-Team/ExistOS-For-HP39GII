@@ -9,7 +9,7 @@
 
 void usb_phy_clkctrl_enable(bool enable)
 {
-	PLL_enable(1);
+	//PLL_enable(1);
 	
     if(enable)
         BF_SET(CLKCTRL_PLLCTRL0, EN_USB_CLKS);

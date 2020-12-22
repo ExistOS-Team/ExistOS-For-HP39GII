@@ -27,6 +27,8 @@
 #include "hw_irq.h"
 #include "utils.h"
 #include "FONT.H"
+#include <stdio.h>
+#include <string.h>
 
 
 hw_lcdif_DmaDesc screen_buffer_dma_desc[2];
@@ -151,6 +153,7 @@ void LCD_flush_buffer(void)
 
 void LCD_clear_completely()
 {
+	/*
 //列地址
 	LCD_write_cmd(0x2A, 1);
 	LCD_write_dat(0x00, 1);
@@ -169,13 +172,13 @@ void LCD_clear_completely()
 	LCD_write_cmd(0x2C, 1);
 
 	for(int i=0; i<395*162; i+=4)LCD_write_dat(0, 4);
-
+*/
 }
 //清空显存
 void LCD_clear_buffer(void)
 {
 
-	for(int i=0; i<256*128; i++)
+	for(int i=0; i<256*(128 + 8); i++)
 		{
 			screen_buffer[i] = 0;
 		}
@@ -215,7 +218,7 @@ void LCD_write_pix(unsigned int x, unsigned int y, unsigned char color)
 			screen_buffer[ (x/3)+y*(255/3+1) ] = tmp | 0x24;
 			break;
 		case PIX_FORMAT_GRAY256:
-			screen_buffer[x+258*y]=color;
+			screen_buffer[x+258*(y + 8)]=color;
 			break;
 		}
 
@@ -337,15 +340,130 @@ void LCD_dma_irq_handle()
 {
 	BF_CS1(APBH_CTRL1, CH0_CMDCMPLT_IRQ, 0);
 	//irq_set_enable(VECTOR_IRQ_LCDIF_DMA, 1);
-	//printf("LCD DMA IRQ\n");
-
+	//printf("\t\tLCD DMA IRQ\n");
+/*
 	if(LCD_wait_for_time_out(LCD_TIMOUT_US))return;
 
 	BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t)&screen_buffer_dma_desc[0]);
-	BW_APBH_CHn_SEMA_INCREMENT_SEMA(0, 2);
-
+	BW_APBH_CHn_SEMA_INCREMENT_SEMA(0, 1);
+*/
 
 }
+
+hw_lcdif_DmaDesc chains_flush_frame[6];
+
+void init_chains_flush_frame(){
+	
+	memset(chains_flush_frame,0,sizeof(chains_flush_frame));
+	
+	//============================== CMD 1 =====================================
+	chains_flush_frame[0].p_Next				= &chains_flush_frame[1];
+	chains_flush_frame[0].Semaphore 			= 0;
+	chains_flush_frame[0].Command 				= LCDIF_DMA_READ;
+	chains_flush_frame[0].Chain 				= 1;
+	chains_flush_frame[0].IRQOnCompletion 		= 0;
+	chains_flush_frame[0].WaitForEndCommand		= 1;
+	chains_flush_frame[0].p_DMABuffer 			= "\x2A";
+	chains_flush_frame[0].DMABytes 				= 1;
+	chains_flush_frame[0].PIOWords 				= 1;
+	chains_flush_frame[0].PioWord.B.COUNT		= 1;	
+	chains_flush_frame[0].PioWord.B.WORD_LENGTH	= 1;
+	chains_flush_frame[0].PioWord.B.DATA_SELECT	= 0;
+	chains_flush_frame[0].PioWord.B.RUN			= 1;
+	chains_flush_frame[0].PioWord.B.BYPASS_COUNT= 0;
+	chains_flush_frame[0].PioWord.B.READ_WRITEB	= 0;
+	
+	chains_flush_frame[1].p_Next				= &chains_flush_frame[2];
+	chains_flush_frame[1].Semaphore 			= 0;
+	chains_flush_frame[1].Command 				= LCDIF_DMA_READ;
+	chains_flush_frame[1].Chain 				= 1;
+	chains_flush_frame[1].IRQOnCompletion 		= 0;
+	chains_flush_frame[1].WaitForEndCommand		= 1;
+	chains_flush_frame[1].DMABytes 				= 4;
+	chains_flush_frame[1].p_DMABuffer 			= "\x00\x00\x00\x55";
+	chains_flush_frame[1].PIOWords 				= 1;	
+	chains_flush_frame[1].PioWord.B.COUNT		= 4;	
+	chains_flush_frame[1].PioWord.B.WORD_LENGTH	= 1;
+	chains_flush_frame[1].PioWord.B.DATA_SELECT	= 1;
+	chains_flush_frame[1].PioWord.B.RUN			= 1;
+	chains_flush_frame[1].PioWord.B.BYPASS_COUNT= 0;
+	chains_flush_frame[1].PioWord.B.READ_WRITEB	= 0;	
+	
+	//============================== CMD 2 =====================================
+	
+	chains_flush_frame[2].p_Next				= &chains_flush_frame[3];
+	chains_flush_frame[2].Semaphore 			= 0;
+	chains_flush_frame[2].Command 				= LCDIF_DMA_READ;
+	chains_flush_frame[2].Chain 				= 1;
+	chains_flush_frame[2].IRQOnCompletion 		= 1;
+	chains_flush_frame[2].WaitForEndCommand		= 1;
+	chains_flush_frame[2].DMABytes 				= 1;
+	chains_flush_frame[2].p_DMABuffer 			= "\x2B";
+	chains_flush_frame[2].PIOWords 				= 1;	
+	chains_flush_frame[2].PioWord.B.COUNT		= 1;
+	chains_flush_frame[2].PioWord.B.WORD_LENGTH	= 1;
+	chains_flush_frame[2].PioWord.B.DATA_SELECT	= 0;
+	chains_flush_frame[2].PioWord.B.RUN			= 1;
+	chains_flush_frame[2].PioWord.B.BYPASS_COUNT= 0;
+	chains_flush_frame[2].PioWord.B.READ_WRITEB	= 0;
+	
+	chains_flush_frame[3].p_Next				= &chains_flush_frame[4];
+	chains_flush_frame[3].Semaphore 			= 0;
+	chains_flush_frame[3].Command 				= LCDIF_DMA_READ;
+	chains_flush_frame[3].Chain 				= 1;
+	chains_flush_frame[3].IRQOnCompletion 		= 0;
+	chains_flush_frame[3].WaitForEndCommand		= 1;
+	chains_flush_frame[3].DMABytes 				= 4;
+	chains_flush_frame[3].p_DMABuffer 			= "\x00\x00\x00\x87";
+	chains_flush_frame[3].PIOWords 				= 1;
+	chains_flush_frame[3].PioWord.B.COUNT		= 4;
+	chains_flush_frame[3].PioWord.B.WORD_LENGTH	= 1;
+	chains_flush_frame[3].PioWord.B.DATA_SELECT	= 1;
+	chains_flush_frame[3].PioWord.B.RUN			= 1;
+	chains_flush_frame[3].PioWord.B.BYPASS_COUNT= 0;
+	chains_flush_frame[3].PioWord.B.READ_WRITEB	= 0;	
+
+	//============================== CMD 3 =====================================
+	
+	chains_flush_frame[4].p_Next					= &chains_flush_frame[5];
+	chains_flush_frame[4].Semaphore 				= 0;
+	chains_flush_frame[4].Command 					= LCDIF_DMA_READ;
+	chains_flush_frame[4].Chain 					= 1;
+	chains_flush_frame[4].IRQOnCompletion 			= 0;
+	chains_flush_frame[4].WaitForEndCommand			= 1;
+	chains_flush_frame[4].DMABytes 					= 1;
+	chains_flush_frame[4].p_DMABuffer 				= "\x2C";
+	chains_flush_frame[4].PIOWords 					= 1;	
+	chains_flush_frame[4].PioWord.B.WORD_LENGTH		= 1;
+	chains_flush_frame[4].PioWord.B.COUNT			= 1;
+	chains_flush_frame[4].PioWord.B.DATA_SELECT		= 0;
+	chains_flush_frame[4].PioWord.B.RUN				= 1;
+	chains_flush_frame[4].PioWord.B.BYPASS_COUNT	= 0;
+	chains_flush_frame[4].PioWord.B.READ_WRITEB		= 0;
+
+	//============================== write =====================================
+	
+	chains_flush_frame[5].p_Next 					= 0;
+	chains_flush_frame[5].Semaphore 				= 1;
+	chains_flush_frame[5].Command 					= LCDIF_DMA_READ;
+	chains_flush_frame[5].Chain 					= 0;
+	chains_flush_frame[5].IRQOnCompletion 			= 1;
+	chains_flush_frame[5].WaitForEndCommand 		= 1;
+	chains_flush_frame[5].DMABytes 					= 258* (128 + 8) ;
+	chains_flush_frame[5].p_DMABuffer 				= screen_buffer;
+	chains_flush_frame[5].PIOWords 					= 1;
+	chains_flush_frame[5].PioWord.B.WORD_LENGTH		= 1;
+	chains_flush_frame[5].PioWord.B.COUNT			= 258* (128 + 8)  ;	
+	chains_flush_frame[5].PioWord.B.DATA_SELECT		= 1;
+	chains_flush_frame[5].PioWord.B.RUN				= 1;
+	chains_flush_frame[5].PioWord.B.BYPASS_COUNT	= 0;
+	chains_flush_frame[5].PioWord.B.READ_WRITEB		= 0;
+	
+	
+	
+	
+}
+
 
 void LCD_dma_channel_reset(void)
 {
@@ -361,7 +479,7 @@ void LCD_dma_channel_reset(void)
 
 	//设置LCD DMA通道命令描述符
 	screen_buffer_dma_desc[0].p_Next = &screen_buffer_dma_desc[1];
-	screen_buffer_dma_desc[0].Semaphore = 1;
+	screen_buffer_dma_desc[0].Semaphore = 0;
 	screen_buffer_dma_desc[0].Command = LCDIF_DMA_READ;
 	screen_buffer_dma_desc[0].Chain = 1;
 	screen_buffer_dma_desc[0].IRQOnCompletion = 0;
@@ -411,7 +529,7 @@ void LCD_dma_channel_reset(void)
 	screen_parameter_dma_desc.Command = LCDIF_DMA_READ;
 	screen_parameter_dma_desc.Chain = 0;
 	screen_parameter_dma_desc.IRQOnCompletion = 0;
-	screen_parameter_dma_desc.WaitForEndCommand = 0;
+	screen_parameter_dma_desc.WaitForEndCommand = 1;
 	screen_parameter_dma_desc.PIOWords = 1;
 
 	screen_parameter_dma_desc.PioWord.B.WORD_LENGTH=1;
@@ -427,7 +545,7 @@ void LCD_dma_channel_reset(void)
 void LCD_dma_flush_buffer()
 {
 
-
+/*
 	switch(pix_format)
 		{
 		case PIX_FORMAT_GRAY4:
@@ -448,9 +566,14 @@ void LCD_dma_flush_buffer()
 		{
 			isAutoSend = 1;
 		}
-	BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t)&screen_buffer_dma_desc[0]);
-	BW_APBH_CHn_SEMA_INCREMENT_SEMA(0, 2);
+*/
 
+		
+	BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t)&chains_flush_frame[0]);
+	BW_APBH_CHn_SEMA_INCREMENT_SEMA(0, 1);
+	
+	while(HW_APBH_CHn_SEMA(0).B.INCREMENT_SEMA);
+	
 }
 
 
@@ -548,6 +671,8 @@ void LCD_set_pix_format(lcd_pix_format _pix_format)
 
 void LCD_init(void)
 {
+	init_chains_flush_frame();
+	
 	BF_CS8 (
 	    PINCTRL_MUXSEL2,
 	    BANK1_PIN07, 0,
@@ -570,12 +695,12 @@ void LCD_init(void)
 	);
 	//设置引脚复用寄存器，连接至SoC内部的LCD控制器
 
-	BF_CS2(CLKCTRL_PIX, CLKGATE, 0, DIV, 1);								//设置主时钟分频
-	HW_LCDIF_CTRL_CLR(BM_LCDIF_CTRL_CLKGATE);
+	
+	/*HW_LCDIF_CTRL_CLR(BM_LCDIF_CTRL_CLKGATE);
 	HW_LCDIF_CTRL_SET(BM_LCDIF_CTRL_SFTRST);							//重置LCD控制器
-	delay_us(100);
+	delay_us(100);*/
 	HW_LCDIF_CTRL_CLR(BM_LCDIF_CTRL_SFTRST | BM_LCDIF_CTRL_CLKGATE);	//将LCD控制器唤醒
-
+	delay_us(100);
 	HW_LCDIF_CTRL1_CLR(BM_LCDIF_CTRL1_MODE86);
 	HW_LCDIF_CTRL1_CLR(BM_LCDIF_CTRL1_LCD_CS_CTRL);						//设置LCD控制器使用8080总线模式进行通信
 
@@ -584,20 +709,21 @@ void LCD_init(void)
 	HW_LCDIF_VDCTRL0_SET(BM_LCDIF_VDCTRL0_VSYNC_OEB);					//VSYNC引脚作为输入（实际上不使用）
 
 	BF_CS2 (LCDIF_CTRL, VSYNC_MODE, 0, WORD_LENGTH, 1);					//不使用VSYNC同步，设置总线带宽为8bit
-	BF_CS1 (LCDIF_CTRL, BYPASS_COUNT, 0);
+	//BF_CS1 (LCDIF_CTRL, BYPASS_COUNT, 0);
 
 	BF_CS4 (LCDIF_TIMING, DATA_SETUP, 1, DATA_HOLD, 1, CMD_SETUP, 1, CMD_HOLD, 1);	//设置各个信号线的建立、保持时间
 
 	delay_us(500);
 	HW_LCDIF_CTRL1_CLR(BM_LCDIF_CTRL1_LCD_CS_CTRL);						//CS拉低，选中屏幕
-	HW_LCDIF_CTRL1_CLR(BM_LCDIF_CTRL1_RESET);							//RESET拉低10ms，硬件复位
-	delay_us(100000);
+	HW_LCDIF_CTRL1_CLR(BM_LCDIF_CTRL1_RESET);							//RESET拉低 硬件复位
+	delay_us(200000);
 	HW_LCDIF_CTRL1_SET(BM_LCDIF_CTRL1_RESET);
-	delay_us(100000);
+ 
+	
+	
 	LCD_dma_channel_reset();	//DMA通道复位
 
 	pix_format = PIX_FORMAT_GRAY256;	//默认使用256级灰度
-	isAutoSend = 0;
 
 	//硬件复位完成，开始发送LCD初始化序列
 	LCD_write_cmd(0xD7, 1);	// Auto Load Set

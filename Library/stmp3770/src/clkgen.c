@@ -2,6 +2,8 @@
 #include "regsclkctrl.h"
 #include "rtc.h"
 #include "regs.h"
+#include "regslcdif.h"
+
 #include <stdio.h>
 
 #include "utils.h"
@@ -17,6 +19,8 @@ inline reg8_t CPUCLK_set_div(reg8_t isFracEnabled, reg16_t divider){
     }else{
         BF_CS1(CLKCTRL_CPU, DIV_CPU_FRAC_EN, isFracEnabled);
         BF_SETV(CLKCTRL_CPU, DIV_CPU, divider);
+		if(!(divider & 1))
+			BF_CLRV(CLKCTRL_CPU, DIV_CPU, 1);
         return 1;
     }
 }
@@ -34,7 +38,12 @@ inline reg8_t HCLK_set_div(reg8_t isFracEnabled, reg16_t divider){
         return 0;
     }else{
         BF_CS1(CLKCTRL_HBUS, DIV_FRAC_EN, isFracEnabled);
+
         BF_SETV(CLKCTRL_HBUS, DIV, divider);
+		if(!(divider & 1))
+			BF_CLRV(CLKCTRL_HBUS, DIV, 1);
+		
+		
         return 1;
     }
 }
@@ -66,24 +75,4 @@ inline reg8_t overclock(reg8_t isFracEnabled, reg16_t divider, reg8_t isHbusFrac
     }else{
         return 0;
     }
-}
-
-void f (){
-    //BF_SETV(CLKCTRL_CLKSEQ,BYPASS_CPU,1);
-	//delay_us(20);
-	//BW_CLKCTRL_CPU_DIV_XTAL(2);
-    BF_CS1(CLKCTRL_CPU,DIV_CPU_FRAC_EN,1);
-    BF_SETV(CLKCTRL_CPU,DIV_CPU,0b1010101010);
-	//BF_SETV(CLKCTRL_CPU,DIV_CPU,2);
-	BF_SETV(CLKCTRL_HBUS,DIV,1);
-    //BF_SETV(CLKCTRL_HBUS,APBHDMA_AS_ENABLE,1);
-    BF_SETV(CLKCTRL_HBUS,APBHDMA_AS_ENABLE,1);
-    BF_SETV(CLKCTRL_HBUS,AUTO_SLOW_MODE,1);
-    BF_SETV(CLKCTRL_HBUS, SLOW_DIV,4);
-    //BW_CLKCTRL_HBUS_APBHDMA_AS_ENABLE(1);
-	BF_CS1(CLKCTRL_FRAC,CLKGATECPU,0);
-	//BF_SETV(CLKCTRL_CPU,DIV_XTAL,1);
-	BF_SETV(CLKCTRL_PLLCTRL0,POWER,1);
-	delay_us(10);
-	BF_CS1(CLKCTRL_CLKSEQ,BYPASS_CPU,0);
 }

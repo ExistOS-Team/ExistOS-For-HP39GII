@@ -14,16 +14,6 @@
 #include "queue.h"
 
 
-static void usb_drv_reset(void)
-{
-	REG_USBCMD &= ~USBCMD_RUN;
-	//REG_PORTSC1 = (REG_PORTSC1 & ~PORTSCX_PHY_TYPE_SEL) | USB_PORTSCX_PHY_TYPE;
-    vTaskDelay(500);	//等待一段时间使主机释放该USB设备
-	REG_USBCMD |= USBCMD_CTRL_RESET;
-    while (REG_USBCMD & USBCMD_CTRL_RESET);
-	
-}
-
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF
 //--------------------------------------------------------------------+
