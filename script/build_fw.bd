@@ -4,10 +4,11 @@ flags = 0x0;
 
 buildNumber = 0x1;
 
-productVersion = "1.00.00";
+productVersion = "5.0.0";
 
-componentVersion = "1.00.00";
+componentVersion = "5.0.0";
 
+driveTag = 0x50;
 }
 
 sources {

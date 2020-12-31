@@ -2,19 +2,35 @@ OUTPUT_ARCH(arm)
 ENTRY(_boot)
 SECTIONS
 {
-/*	. = 0x00009200;*/
-	
 	. = 0x00001000;
 	__VRAM_BASE = .;
 	
+	
+	. = 0x00009910;		/* === 0x9910 === VRAM ==*/
+	
+	
+	
 	. = 0x0000A000;
-	__DMA_NAND_PALLOAD_BUFFER = .;
-	. = . + 0x1000;
-	__DMA_NAND_AUXILIARY_BUFFER = .;
+	ABT_STACK_ADDR = .;
+	
+	. = . - 0x200;
+	UND_STACK_ADDR = .;
+	
+	. = . - 0x200;
+	FIQ_STACK_ADDR = .;
+	
+	. = . - 0x200;
+	IRQ_STACK_ADDR = .;	
+	
+	. = . - 0x200;
+	SYS_STACK_ADDR = .;	
+	
+	. = . - 0x200;
+	SVC_STACK_ADDR = .;		
 	
 	
-
-	. = 0x0000C000;
+	
+	. = 0x0000B000;
 	.text : { *(.text) }
 	.data : { *(.data) }
 	
@@ -26,4 +42,7 @@ SECTIONS
 
 
 	__exidx_end = .;
+
+	/*. = 0x32000;*/
+	/* __HEAP_START = .; */
 }

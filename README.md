@@ -6,7 +6,10 @@
 
 [![GPL Licence](https://badges.frapsoft.com/os/gpl/gpl.png?v=103)](https://opensource.org/licenses/GPL-3.0/)
 
-简介还没写，先行测试。
+本固件项目由一群计算器爱好者始创，使用了[FreeRTOS kernel](https://github.com/FreeRTOS/FreeRTOS)、[TinyUSB](https://github.com/hathach/tinyusb)。我们非常欢迎同好试用和改善本项目的代码，也非常乐意听取您的宝贵意见。期待您的参与！
+
+目前工作进展：已经完成了操作系统内核和USB驱动。但由于FLASH尚未能够驱动，目前固件仅能运行在Ram上，无法写入FLASH中。同时还没有用户界面。现在的工作重心是FLASH驱动。关于用户界面CLI还在讨论中，如有宝贵意见可于Issues提出。
+
 
 ## 安装
 
@@ -14,7 +17,7 @@
 
 1. 使用任意方法把本项目源码下载到您的电脑上的任意位置。
 
-2. 前往[待补充地址](https://www.baidu.com)下载编译工具链。
+2. 前往[https://github.com/Repeerc/LibreCalc-For-HP39GII/releases/tag/0.0.1](https://github.com/Repeerc/LibreCalc-For-HP39GII/releases/tag/0.0.1)下载编译工具链。
 
 3. 使本项目源码文件夹和编译工具链文件夹处于同级。如下所示
 
