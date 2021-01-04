@@ -86,12 +86,13 @@ DRESULT disk_read (
 			
 			
 			for(int i=0; i<count; i++){
-				dhara_map_read(&map, sector + i, buff, &err);
+				result = dhara_map_read(&map, sector + i, buff, &err);
 				//printf("err:%d\n",err);
-				if(err != DHARA_E_NONE){
+				/*if(err != DHARA_E_NONE){
 					result = RES_ERROR;
 					break;
-				}
+				}*/
+				//printf("read:%d, count:%d, buff:%08x, result:%d \n",sector,count,buff,result);
 			}
 
 
@@ -123,13 +124,14 @@ DRESULT disk_write (
 	
 	switch (pdrv) {
 		case DEV_FLASH :
-			//printf("write:%d, count:%d \n",sector,count);
+			//printf("write:%d, count:%d, buff:%08x \n",sector,count,buff);
 			for(int i=0; i<count; i++){
-				dhara_map_write(&map, sector + i, buff, &err);
-				if(err != DHARA_E_NONE){
+				result = dhara_map_write(&map, sector + i, buff, &err);
+				/*if(err != DHARA_E_NONE){
 					result = RES_ERROR;
 					break;
-				}
+				}*/
+				
 			}
 			
 	}
@@ -160,24 +162,25 @@ DRESULT disk_ioctl (
 			switch ( cmd ) {
 				case CTRL_SYNC:
 					dhara_map_sync(&map, &err);
-					break;
+					return RES_OK;
 				case GET_SECTOR_COUNT:
 					//res = dhara_map_capacity(&map);
-					*((unsigned int *)buff) = dhara_map_capacity(&map);
+					*((DWORD *)buff) = dhara_map_capacity(&map);
 					return RES_OK;
 				case GET_SECTOR_SIZE:
-					*((unsigned int *)buff)  = 2048;
+					*((WORD  *)buff)  = 2048;
 					return RES_OK;
 				case GET_BLOCK_SIZE:
-					*((unsigned int *)buff)  = 64;
+					*((DWORD *)buff)  = 64;
 					return RES_OK;
 				case CTRL_TRIM:
 					dhara_map_trim(&map, *((unsigned int *)buff), &err);
-					break;
+					return RES_OK;
 			}
+			/*
 		if(err != DHARA_E_NONE){
 					res = RES_ERROR;
-				}	
+				}	*/
 		return res;
 	}
 }

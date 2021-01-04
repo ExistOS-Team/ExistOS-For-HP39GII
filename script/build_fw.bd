@@ -9,25 +9,27 @@ productVersion = "5.0.0";
 componentVersion = "5.0.0";
 
 driveTag = 0x50;
+
 }
 
 sources {
 
 inputFile = extern(0);	//第0个输入文件
-//inputFile_2 = extern(1);	//第1个输入文件
-//bin_file = "img2.bin";
 
 }
 
-section (0x686f7374) {
-	load inputFile;
-	call inputFile;
-}
-
-section (0x68766d69)  {
+section (0) {
+	//load $.init from inputFile;
+	//load $.text from inputFile > 0xC000;
+	//load $.init.text from inputFile;
 	
+	load inputFile > 0x0000;
+	
+	//call inputFile:_kernel_init ();
+	
+	jump 0xC000;
+	
+	//load inputFile;
+	//call inputFile;
 }
 
-section (0x72737263)  {
-
-}

@@ -20,13 +20,12 @@
  
 #ifndef _IRQ_H
 #define _IRQ_H
-#ifdef __cplusplus 
-extern "C" { 
-#endif
 
 
 
-#define IRQ_VECTOR_TABLE_BASE_ADDR	0x00000100
+
+
+#define IRQ_VECTOR_TABLE_BASE_ADDR	0xC0000100
 
 
 void irq_init();
@@ -37,9 +36,7 @@ void enable_interrupts();
 void disable_interrupts();
 
 
-#ifdef __cplusplus 
-} 
-#endif
+
 
 #endif
 

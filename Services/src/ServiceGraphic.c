@@ -33,7 +33,7 @@ void vServiceGraphic( void *pvParameters )
 	bool RealTimeFlush = 0;
 	GraphicQueue = xQueueCreate(64, sizeof(GraphicMessage *));
 	
-	LCD_init();
+	
 	//LCD_clear_completely();
 	LCD_clear_buffer();
 	LCD_dma_flush_buffer(); 
@@ -58,10 +58,10 @@ void vServiceGraphic( void *pvParameters )
 					LCD_dma_flush_buffer();
 					break;
 				case GRAPHIC_MSG_TYPE_REALTIME_FLUSH_ON:
-					LCD_dma_flush_auto_buffer_start();
+					//LCD_dma_flush_auto_buffer_start();
 					break;
 				case GRAPHIC_MSG_TYPE_REALTIME_FLUSH_OFF:
-					LCD_dma_flush_auto_buffer_stop();
+					//LCD_dma_flush_auto_buffer_stop();
 					break;
 			}
 			if(RealTimeFlush == 0)

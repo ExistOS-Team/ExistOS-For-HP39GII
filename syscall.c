@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <stdarg.h>
 
+#include "memory_map.h"
 #include "regsuartdbg.h"
 #include "uart_debug.h"
 #include "console.h"
@@ -14,10 +15,28 @@ int _end asm("end");
 
 //extern int  __HEAP_START;
 
-unsigned int __HEAP_START = 0x38000;
+void * _sbrk_r(struct _reent *pReent, int incr);
+//! non-reentrant sbrk uses is actually reentrant by using current context
+// ... because the current _reent structure is pointed to by global _impure_ptr
+/*
+char * sbrk(unsigned int incr) { 
+	
+	return _sbrk_r(_impure_ptr, incr); 
+}
+//! _sbrk is a synonym for sbrk.
+
+char * _sbrk(unsigned int incr) { 
+	
+	return sbrk(incr); 
+};
+*/
+
+
+
+/*
+unsigned int __HEAP_START = HEAP_MEMORY;
 unsigned char *heap = NULL;
 
-//malloc和sprintf等函数要用到
 caddr_t _sbrk ( int incr ){
   unsigned char *prev_heap;
   if (heap == NULL) {
@@ -28,7 +47,7 @@ caddr_t _sbrk ( int incr ){
   uartdbg_printf("heap %x\n",heap);
   return (caddr_t) prev_heap;
 }
- 
+*/ 
 
 int link(char *old, char *new)
 {

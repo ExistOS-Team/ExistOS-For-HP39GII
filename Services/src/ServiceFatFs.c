@@ -7,6 +7,7 @@
 
 /* System serive includes. */
 #include "ServiceFatFs.h"
+#include "ServiceFlashMap.h"
 
 /* Library includes. */
 #include "regsuartdbg.h"
@@ -23,10 +24,10 @@ unsigned int FSOK = 0;
 FRESULT fr;
 FATFS fs;
 FATFS *fs1;
-FIL fil;
+
 
 DWORD fre_clust, fre_sect, tot_sect;
-BYTE work[FF_MAX_SS];
+ 
 
 
 unsigned int isfatFsInited(){
@@ -38,15 +39,17 @@ unsigned int isfatFsInited(){
 void vServiceFatfs( void *pvParameters )
 {
 	
-	unsigned char *buffer;
-	
-	vTaskDelay(500);
 
+	while(!isFlashMapInited()){
+		vTaskDelay(5);
+	}
 	
-	printf("Mounting FLash ...\n");
+	
+	
+	printf("Mounting Flash ...\n");
 	fr = f_mount(&fs, "/", 1);
 	fs1 = &fs;
-	printf("mount result: %d\n", fr);
+	
 	if(fr == 0){
 		FSOK = 1;
 		
@@ -56,13 +59,16 @@ void vServiceFatfs( void *pvParameters )
 		printf("\tfre_clust:%d\n",fre_clust);
 		printf("%10lu KiB total drive space.\n%10lu KiB available.\n", tot_sect * 2 , fre_sect * 2);
 
-		f_setlabel("HP 39GII");
+		
 	
+	}else{
+		
+		printf("Mount fail: %d\n", fr);
 	}
 	
 	
 	
-	
+	vTaskDelete(NULL);
 	for(;;){
 		vTaskSuspend(NULL);
 	}

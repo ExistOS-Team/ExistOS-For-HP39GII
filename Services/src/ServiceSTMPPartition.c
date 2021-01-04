@@ -15,6 +15,7 @@
 #include "regsuartdbg.h"
 #include "irq.h"
 #include "display.h"
+#include "mmu.h"
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
@@ -139,12 +140,16 @@ void vScanAndBuildRegionInfo(){
 	
 	nRegion = 0 ;
 	buffer = pvPortMalloc(2048);
-	
+	//printf("buffer %08x\n",buffer);
 	for(block = 0; block < 64; block++){
+		
 		xReadFlashPages( block * 64 + 1, 1 ,buffer, 5000);
+		
 		
 		p_NandConfigBlock = (NandConfigBlockInfo_t *)buffer;
 		
+		
+		flush_cache();
 		if((p_NandConfigBlock->iMagicCookie == NAND_CONFIG_BLOCK_MAGIC_COOKIE) && 
 		
 		   (p_NandConfigBlock->iVersionNum  == NAND_CONFIG_BLOCK_VERSION)){
@@ -178,7 +183,7 @@ void vScanAndBuildRegionInfo(){
 	
 }
 
-
+/*
 void modifyRegion(unsigned int regionNum, unsigned int newStartBlock, unsigned int newBlockSize, unsigned int tag){
 	
 	if(_isRawFlash)
@@ -193,10 +198,10 @@ void modifyRegion(unsigned int regionNum, unsigned int newStartBlock, unsigned i
 	SysNandConfigBlock.Regions[regionNum].wTag = tag;
 	
 }
+*/
 
 
-
-
+/*
 
 void saveRegionTable(){
 	
@@ -226,8 +231,8 @@ void saveRegionTable(){
 	printf("saveRegionTable\n");
 	
 }
-
-
+*/
+/*
 void resetFlashRegionInfo(){
 	
 
@@ -350,28 +355,7 @@ void resetFlashRegionInfo(){
 		
 		vPortFree(buffer);
 		
-	/*}else{
-		
-		modifyRegion(0, 22, 8, 0x50);		//system 1
-		modifyRegion(1, 22, 8, 0x60);		//system 2
-		modifyRegion(2, 22, 8, 0x70);		//system 3
-		
-		modifyRegion(3, 30, 978, 0);		//data 1
-		
-		modifyRegion(4, 1008, 8, 3);		//Hidden 1
-		modifyRegion(5, 1016, 8, 2);		//Hidden 2
-		
-		saveRegionTable();
-		
-	}*/
-	
-	/*
-	for(int i=22; i < 22 + 8; i++){
-		xEraseFlashBlocks(i ,1,5000);
-		vTaskDelay(5);
-	}
-	
-	*/ 
+
 	
 }
 
@@ -408,6 +392,7 @@ void installBootimgInPage(unsigned int page, void *buffer){
 	STMP_meta[1] = 0;
 }
 
+*/
 
 /*
 void lockFlash(bool lock){
@@ -418,6 +403,7 @@ void lockFlash(bool lock){
 	}
 }
 */
+
 bool isRawFlash()
 {
 	return _isRawFlash;
@@ -425,7 +411,8 @@ bool isRawFlash()
 
 unsigned int getDataRegonTotalBlocks(){
 	
-	/*
+	
+	
 	if(_isRawFlash){
 		return 0;
 	}
@@ -434,12 +421,12 @@ unsigned int getDataRegonTotalBlocks(){
 			return Regions[i].iNumBlks;
 		}
 	}
-	*/
-	return 978;
+	
+	//return 978;
 }
 
 unsigned int getDataRegonStartBlock(){
-	/*
+	
 	if(_isRawFlash){
 		return 0;
 	}
@@ -447,16 +434,27 @@ unsigned int getDataRegonStartBlock(){
 		if(Regions[i].eDriveType == kDriveTypeData){
 			return Regions[i].iStartBlock;
 		}
-	}*/
+	}
 	
-	return 30;
+	//return 30;
+}
+
+unsigned int STMPFormatInited = 0;
+unsigned int isSTMPDiskInited(){
+	return STMPFormatInited;
 }
 
 void vSTMPPartition( void *pvParameters )
 {
-	vTaskDelay(1);
+	while(!isNANDinited())
+	{
+		vTaskDelay(5);
+	}
 	
 	vScanAndBuildRegionInfo();
+	STMPFormatInited = 1;
+	
+	vTaskDelete(NULL);
 	
 	for(;;) {
 		vTaskSuspend(NULL);

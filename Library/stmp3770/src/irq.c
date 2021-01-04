@@ -19,7 +19,7 @@
  */
 
 #include "portmacro.h"
- 
+ #include "regsuartdbg.h"
 #include "regsicoll.h"
 #include "exception.h"
 #include "uart_debug.h"
@@ -39,6 +39,7 @@ void __fiq_service() __attribute__ ((naked));
 void __fiq_service() {					//FIQ中断暂不支持
 	
 	uartdbg_printf("unsupposed FIQ.\n");
+	uartdbg_print_regs();
 	while(1);
 	
 }
@@ -64,6 +65,10 @@ void enable_interrupts()
 void disable_interrupts()  __attribute__ ((naked));
 void disable_interrupts() 
 {				
+
+	//HW_UARTDBGDR_WR('f');
+	
+	//while(1);
 	//asm volatile ("push {r1}");
 	asm volatile ("mrs r1, cpsr_all");
 	asm volatile ("orr r1, r1, #0xc0");
@@ -111,9 +116,11 @@ void volatile __irq_service() {
 	//irq_set_enable(current_irq_number , 0);														//关闭当前发生的中断，在对应的中断服务程序中再打开	
 	//if(current_irq_number < 63)																	//判断是有效的中断
 	//uartdbg_printf("irq:%d\n",BF_RD(ICOLL_VECTOR, IRQVECTOR));
-		//printf("\n%x,%x\n",irq_vector_table_base + HW_ICOLL_STAT.B.VECTOR_NUMBER,BF_RD(ICOLL_VECTOR, IRQVECTOR));
-		(*(void(*)(void))( *((unsigned int *)BF_RD(ICOLL_VECTOR, IRQVECTOR)) )) ();
-		//(*(void(*)(void))((unsigned int)irq_vector_table_base[HW_ICOLL_STAT.B.VECTOR_NUMBER])) ();				//调用对应的中断服务程序
+		//printf("\n%08x %08x\n",BF_RD(ICOLL_VECTOR, IRQVECTOR) , irq_vector_table_base[HW_ICOLL_STAT.B.VECTOR_NUMBER]);
+		
+		//while(1);
+		//(*(void(*)(void))( *((unsigned int *)BF_RD(ICOLL_VECTOR, IRQVECTOR)) )) ();
+		(*(void(*)(void))((unsigned int)irq_vector_table_base[HW_ICOLL_STAT.B.VECTOR_NUMBER])) ();				//调用对应的中断服务程序
 	
 	
 	BF_SETV(ICOLL_VECTOR, IRQVECTOR, BF_RD(ICOLL_VECTOR, IRQVECTOR));							//通知中断控制器已经响应当前中断	
@@ -171,5 +178,7 @@ void irq_init() {		//中断系统的初始化
 					  );
 	BF_CS1(ICOLL_VBASE, TABLE_ADDRESS, IRQ_VECTOR_TABLE_BASE_ADDR);		//设置中断控制器内部的中断向量表地址
 	BW_ICOLL_CTRL_VECTOR_PITCH(BV_ICOLL_CTRL_VECTOR_PITCH__BY16);
+	
+	uartdbg_printf("irq inited.\n");
 }
 

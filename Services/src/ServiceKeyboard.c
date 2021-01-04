@@ -26,7 +26,7 @@ void vServiceKeyboard( void *pvParameters )
 	
 	
 	for(;;){
-		vTaskDelay(10);
+		vTaskDelay(50);
 		key_scan();
 		//xQueueReceive( DebugQueue, &( CurrentDebugMessage ), ( TickType_t ) portMAX_DELAY );
 	}

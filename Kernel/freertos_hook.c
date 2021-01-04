@@ -27,13 +27,14 @@
 // INCLUDE
 //--------------------------------------------------------------------+
 #include "FreeRTOS.h"
+#include "uart_debug.h"
 #include "task.h"
 #include "common/tusb_common.h"
 
 
 void vApplicationMallocFailedHook(void)
 {
-	printf("malloc fail\n");
+	uartdbg_printf("malloc fail\n");
   taskDISABLE_INTERRUPTS();
   TU_ASSERT(false, );
   while(1);
