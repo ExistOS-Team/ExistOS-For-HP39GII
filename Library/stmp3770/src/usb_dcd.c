@@ -5,6 +5,7 @@
 #include "hw_irq.h"
 #include "usb_phy.h"
 #include "irq.h"
+#include "mmu.h"
 
 #include <stdio.h>
 
@@ -279,14 +280,14 @@ static void bus_reset(uint8_t rhport)
   _dcd_data.qhd[0].int_on_setup = 1; // OUT only
 }
 
-void usb_cdc_isr(void);
+void usb_dcd_isr(void);
 
 void dcd_init (uint8_t rhport){
 	
 	tu_memclr(&_dcd_data, sizeof(dcd_data_t));
 	dcd_registers_t* dcd_reg = _dcd_controller[rhport].regs;
 	
-	irq_install_service(HW_IRQ_USB_CTRL,(void *)usb_cdc_isr);
+	irq_install_service(HW_IRQ_USB_CTRL,(void *)usb_dcd_isr);
 	
 	usb_phy_enable(true);
 	//usb_drv_reset();
@@ -298,7 +299,9 @@ void dcd_init (uint8_t rhport){
 	dcd_reg->OTGSC = OTGSC_VBUS_DISCHARGE | OTGSC_OTG_TERMINATION;
 	REG_DEVICEADDR = 0;
 	
-	dcd_reg->ENDPTLISTADDR = (uint32_t) _dcd_data.qhd; // Endpoint List Address has to be 2K alignment
+	dcd_reg->ENDPTLISTADDR = (uint32_t) VIR_TO_PHY_ADDR((uint8_t*)_dcd_data.qhd); // Endpoint List Address has to be 2K alignment
+	//printf("ep addr %08x %08x\n",_dcd_data.qhd,dcd_reg->ENDPTLISTADDR);
+	
 	dcd_reg->USBSTS  = dcd_reg->USBSTS;
 	dcd_reg->USBINTR = INTR_USB | INTR_ERROR | INTR_PORT_CHANGE | INTR_RESET | INTR_SUSPEND /*| INTR_SOF*/;
 
@@ -317,10 +320,11 @@ void dcd_int_disable(uint8_t rhport){
 
 void dcd_set_address(uint8_t rhport, uint8_t dev_addr) {
 	// Response with status first before changing device address
+	//printf("dev_addr %08x\n",dev_addr);
 	dcd_edpt_xfer(rhport, tu_edpt_addr(0, TUSB_DIR_IN), NULL, 0);
 	
 	dcd_registers_t* dcd_reg = _dcd_controller[rhport].regs;
-	dcd_reg->DEVICEADDR = (dev_addr << 25) | TU_BIT(24);
+	dcd_reg->DEVICEADDR =  (dev_addr << 25) | TU_BIT(24);
 }
 
 void dcd_remote_wakeup(uint8_t rhport) {
@@ -399,6 +403,7 @@ void dcd_int_handler(uint8_t rhport){
 	}
 	
   // Make sure we read the latest version of _dcd_data.
+  flush_cache();
   //CleanInvalidateDCache_by_Addr((uint32_t*) &_dcd_data, sizeof(dcd_data_t));
 
   // TODO disconnection does not generate interrupt !!!!!!
@@ -454,7 +459,7 @@ void dcd_int_handler(uint8_t rhport){
 	
 }
 
-void usb_cdc_isr( void ){
+void usb_dcd_isr( void ){
 	dcd_int_handler(0);
 }
 
@@ -488,10 +493,12 @@ bool dcd_edpt_open        (uint8_t rhport, tusb_desc_endpoint_t const * p_endpoi
 	p_qhd->qtd_overlay.next        = QTD_NEXT_INVALID;
 	
 	//CleanInvalidateDCache_by_Addr((uint32_t*) &_dcd_data, sizeof(dcd_data_t));
-	
+	flush_cache();
 	// Enable EP Control
 	dcd_registers_t* dcd_reg = _dcd_controller[rhport].regs;
 	dcd_reg->ENDPTCTRL[epnum] |= ((p_endpoint_desc->bmAttributes.xfer << 2) | ENDPTCTRL_ENABLE | ENDPTCTRL_TOGGLE_RESET) << (dir ? 16 : 0);
+	
+	//printf("p_endpoint_desc %08x\n",p_endpoint_desc->bmAttributes.xfer );
 	
 	return true;
 }
@@ -521,14 +528,15 @@ bool dcd_edpt_xfer        (uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, ui
 	// address to 32-byte boundaries.
 	// void* cast to suppress cast-align warning, buffer must be
 	//CleanInvalidateDCache_by_Addr((uint32_t*) tu_align((uint32_t) buffer, 4), total_bytes + 31);
-	
+	buffer = VIR_TO_PHY_ADDR(buffer);
+	flush_cache();
 	//------------- Prepare qtd -------------//
 	qtd_init(p_qtd, buffer, total_bytes);
 	p_qtd->int_on_complete = true;
-	p_qhd->qtd_overlay.next = (uint32_t) p_qtd; // link qtd to qhd
+	p_qhd->qtd_overlay.next = (uint32_t) VIR_TO_PHY_ADDR ((uint8_t*)p_qtd); // link qtd to qhd
 	
 	//CleanInvalidateDCache_by_Addr((uint32_t*) &_dcd_data, sizeof(dcd_data_t));
-	
+	flush_cache();
 	// start transfer
 	dcd_reg->ENDPTPRIME = TU_BIT( ep_idx2bit(ep_idx) ) ;
 	

@@ -35,9 +35,14 @@ void vServiceManger( void *pvParameters )
 	xTaskCreate( vServiceFlashMap, "Flash Map Svc", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
 	xTaskCreate( vServiceDebug, "Debug Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );	
 	xTaskCreate( vServiceUSBDevice, "USB Device Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
-	xTaskCreate( vServiceUSBCDC, "USB CDC Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
+	//xTaskCreate( vServiceUSBCDC, "USB CDC Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
 	xTaskCreate( vServiceFatfs, "FATFS Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
 	xTaskCreate( vServiceKeyboard, "KeyBoard Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
+	
+	
+	
+	
+	vTaskDelete(NULL);
 	
 	vTaskSuspend(NULL);
 	for(;;){

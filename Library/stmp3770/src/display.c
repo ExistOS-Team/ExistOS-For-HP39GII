@@ -24,6 +24,7 @@
 #include "regsapbh.h"
 #include "display.h"
 #include "irq.h"
+#include "mmu.h"
 #include "hw_irq.h"
 #include "utils.h"
 #include "FONT.H"
@@ -41,6 +42,8 @@ unsigned int isAutoSend;
 extern char __VRAM_BASE;
 unsigned char *screen_buffer = &__VRAM_BASE; //显存
 unsigned int pos_y = 0; //屏幕信息位置
+
+
 
 unsigned int LCD_is_busy()
 {
@@ -68,13 +71,19 @@ unsigned int LCD_wait_for_time_out(unsigned int us)
 void LCD_write_dat(unsigned int dat, unsigned int dat_size)
 {
 
+
 	if(LCD_wait_for_time_out(LCD_TIMOUT_US))return;
 	screen_parameter_dma_desc.DMABytes = dat_size;
 	screen_parameter_dma_desc.PioWord.B.COUNT= dat_size;
-	screen_parameter_dma_desc.p_DMABuffer = &dat;
-	BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t)&screen_parameter_dma_desc);
+	
+	screen_parameter_dma_desc.p_DMABuffer = VIR_TO_PHY_ADDR(&dat);
+		
+	
+	while(HW_APBH_CHn_SEMA(0).B.INCREMENT_SEMA);
+	BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t) VIR_TO_PHY_ADDR(&screen_parameter_dma_desc));
 	BW_APBH_CHn_SEMA_INCREMENT_SEMA(0, 1);
-
+	
+	
 }
 
 //向LCD发送命令
@@ -84,11 +93,18 @@ void LCD_write_cmd(unsigned int cmd, unsigned int cmd_size)
 
 	screen_command_dma_desc.DMABytes = cmd_size;
 	screen_command_dma_desc.PioWord.B.COUNT= cmd_size;
-	screen_command_dma_desc.p_DMABuffer = &cmd;
+	
 
-	BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t)&screen_command_dma_desc);
+	screen_command_dma_desc.p_DMABuffer = VIR_TO_PHY_ADDR(&cmd);
+
+	
+	
+	 
+	while(HW_APBH_CHn_SEMA(0).B.INCREMENT_SEMA);
+	BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t) VIR_TO_PHY_ADDR(&screen_command_dma_desc));
 	BW_APBH_CHn_SEMA_INCREMENT_SEMA(0, 1);
-
+	
+	
 }
 
 void LCD_read_dat(unsigned char *buffer, unsigned int size_bytes, unsigned char first_read_dummy)
@@ -357,13 +373,13 @@ void init_chains_flush_frame(){
 	memset(chains_flush_frame,0,sizeof(chains_flush_frame));
 	
 	//============================== CMD 1 =====================================
-	chains_flush_frame[0].p_Next				= &chains_flush_frame[1];
+	chains_flush_frame[0].p_Next				= VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[1]);
 	chains_flush_frame[0].Semaphore 			= 0;
 	chains_flush_frame[0].Command 				= LCDIF_DMA_READ;
 	chains_flush_frame[0].Chain 				= 1;
 	chains_flush_frame[0].IRQOnCompletion 		= 0;
 	chains_flush_frame[0].WaitForEndCommand		= 1;
-	chains_flush_frame[0].p_DMABuffer 			= "\x2A";
+	chains_flush_frame[0].p_DMABuffer 			= VIR_TO_PHY_ADDR((uint8_t *)"\x2A");
 	chains_flush_frame[0].DMABytes 				= 1;
 	chains_flush_frame[0].PIOWords 				= 1;
 	chains_flush_frame[0].PioWord.B.COUNT		= 1;	
@@ -373,14 +389,14 @@ void init_chains_flush_frame(){
 	chains_flush_frame[0].PioWord.B.BYPASS_COUNT= 0;
 	chains_flush_frame[0].PioWord.B.READ_WRITEB	= 0;
 	
-	chains_flush_frame[1].p_Next				= &chains_flush_frame[2];
+	chains_flush_frame[1].p_Next				=  VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[2]);
 	chains_flush_frame[1].Semaphore 			= 0;
 	chains_flush_frame[1].Command 				= LCDIF_DMA_READ;
 	chains_flush_frame[1].Chain 				= 1;
 	chains_flush_frame[1].IRQOnCompletion 		= 0;
 	chains_flush_frame[1].WaitForEndCommand		= 1;
 	chains_flush_frame[1].DMABytes 				= 4;
-	chains_flush_frame[1].p_DMABuffer 			= "\x00\x00\x00\x55";
+	chains_flush_frame[1].p_DMABuffer 			=  VIR_TO_PHY_ADDR((uint8_t *)"\x00\x00\x00\x55");
 	chains_flush_frame[1].PIOWords 				= 1;	
 	chains_flush_frame[1].PioWord.B.COUNT		= 4;	
 	chains_flush_frame[1].PioWord.B.WORD_LENGTH	= 1;
@@ -391,14 +407,14 @@ void init_chains_flush_frame(){
 	
 	//============================== CMD 2 =====================================
 	
-	chains_flush_frame[2].p_Next				= &chains_flush_frame[3];
+	chains_flush_frame[2].p_Next				=  VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[3]);
 	chains_flush_frame[2].Semaphore 			= 0;
 	chains_flush_frame[2].Command 				= LCDIF_DMA_READ;
 	chains_flush_frame[2].Chain 				= 1;
 	chains_flush_frame[2].IRQOnCompletion 		= 1;
 	chains_flush_frame[2].WaitForEndCommand		= 1;
 	chains_flush_frame[2].DMABytes 				= 1;
-	chains_flush_frame[2].p_DMABuffer 			= "\x2B";
+	chains_flush_frame[2].p_DMABuffer 			=  VIR_TO_PHY_ADDR((uint8_t *)"\x2B");
 	chains_flush_frame[2].PIOWords 				= 1;	
 	chains_flush_frame[2].PioWord.B.COUNT		= 1;
 	chains_flush_frame[2].PioWord.B.WORD_LENGTH	= 1;
@@ -407,14 +423,14 @@ void init_chains_flush_frame(){
 	chains_flush_frame[2].PioWord.B.BYPASS_COUNT= 0;
 	chains_flush_frame[2].PioWord.B.READ_WRITEB	= 0;
 	
-	chains_flush_frame[3].p_Next				= &chains_flush_frame[4];
+	chains_flush_frame[3].p_Next				=  VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[4]);
 	chains_flush_frame[3].Semaphore 			= 0;
 	chains_flush_frame[3].Command 				= LCDIF_DMA_READ;
 	chains_flush_frame[3].Chain 				= 1;
 	chains_flush_frame[3].IRQOnCompletion 		= 0;
 	chains_flush_frame[3].WaitForEndCommand		= 1;
 	chains_flush_frame[3].DMABytes 				= 4;
-	chains_flush_frame[3].p_DMABuffer 			= "\x00\x00\x00\x87";
+	chains_flush_frame[3].p_DMABuffer 			=  VIR_TO_PHY_ADDR((uint8_t *)"\x00\x00\x00\x87");
 	chains_flush_frame[3].PIOWords 				= 1;
 	chains_flush_frame[3].PioWord.B.COUNT		= 4;
 	chains_flush_frame[3].PioWord.B.WORD_LENGTH	= 1;
@@ -425,14 +441,14 @@ void init_chains_flush_frame(){
 
 	//============================== CMD 3 =====================================
 	
-	chains_flush_frame[4].p_Next					= &chains_flush_frame[5];
+	chains_flush_frame[4].p_Next					=  VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[5]);
 	chains_flush_frame[4].Semaphore 				= 0;
 	chains_flush_frame[4].Command 					= LCDIF_DMA_READ;
 	chains_flush_frame[4].Chain 					= 1;
 	chains_flush_frame[4].IRQOnCompletion 			= 0;
 	chains_flush_frame[4].WaitForEndCommand			= 1;
 	chains_flush_frame[4].DMABytes 					= 1;
-	chains_flush_frame[4].p_DMABuffer 				= "\x2C";
+	chains_flush_frame[4].p_DMABuffer 				=  VIR_TO_PHY_ADDR((uint8_t *)"\x2C");
 	chains_flush_frame[4].PIOWords 					= 1;	
 	chains_flush_frame[4].PioWord.B.WORD_LENGTH		= 1;
 	chains_flush_frame[4].PioWord.B.COUNT			= 1;
@@ -450,7 +466,7 @@ void init_chains_flush_frame(){
 	chains_flush_frame[5].IRQOnCompletion 			= 1;
 	chains_flush_frame[5].WaitForEndCommand 		= 1;
 	chains_flush_frame[5].DMABytes 					= 258* (128 + 8) ;
-	chains_flush_frame[5].p_DMABuffer 				= screen_buffer;
+	chains_flush_frame[5].p_DMABuffer 				=  VIR_TO_PHY_ADDR((uint8_t *)screen_buffer);
 	chains_flush_frame[5].PIOWords 					= 1;
 	chains_flush_frame[5].PioWord.B.WORD_LENGTH		= 1;
 	chains_flush_frame[5].PioWord.B.COUNT			= 258* (128 + 8)  ;	
@@ -478,13 +494,13 @@ void LCD_dma_channel_reset(void)
 
 
 	//设置LCD DMA通道命令描述符
-	screen_buffer_dma_desc[0].p_Next = &screen_buffer_dma_desc[1];
+	screen_buffer_dma_desc[0].p_Next =  VIR_TO_PHY_ADDR((uint8_t *)&screen_buffer_dma_desc[1]);
 	screen_buffer_dma_desc[0].Semaphore = 0;
 	screen_buffer_dma_desc[0].Command = LCDIF_DMA_READ;
 	screen_buffer_dma_desc[0].Chain = 1;
 	screen_buffer_dma_desc[0].IRQOnCompletion = 0;
 	screen_buffer_dma_desc[0].WaitForEndCommand = 0;
-	screen_buffer_dma_desc[0].p_DMABuffer = "\x2c";
+	screen_buffer_dma_desc[0].p_DMABuffer =  VIR_TO_PHY_ADDR((uint8_t *)"\x2c");
 	screen_buffer_dma_desc[0].PIOWords = 1;
 	screen_buffer_dma_desc[0].DMABytes = 1;
 	screen_buffer_dma_desc[0].PioWord.B.COUNT= 1;
@@ -501,7 +517,7 @@ void LCD_dma_channel_reset(void)
 	screen_buffer_dma_desc[1].Chain = 0;
 	screen_buffer_dma_desc[1].IRQOnCompletion = 0;
 	screen_buffer_dma_desc[1].WaitForEndCommand = 0;
-	screen_buffer_dma_desc[1].p_DMABuffer = screen_buffer;
+	screen_buffer_dma_desc[1].p_DMABuffer =  VIR_TO_PHY_ADDR((uint8_t *)screen_buffer);
 	screen_buffer_dma_desc[1].PIOWords = 1;
 	screen_buffer_dma_desc[1].PioWord.B.WORD_LENGTH=1;
 	screen_buffer_dma_desc[1].PioWord.B.DATA_SELECT=1;
@@ -568,29 +584,16 @@ void LCD_dma_flush_buffer()
 		}
 */
 
-		
-	BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t)&chains_flush_frame[0]);
-	BW_APBH_CHn_SEMA_INCREMENT_SEMA(0, 1);
-	
 	while(HW_APBH_CHn_SEMA(0).B.INCREMENT_SEMA);
 	
+	BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t) VIR_TO_PHY_ADDR(&chains_flush_frame[0]));
+	BW_APBH_CHn_SEMA_INCREMENT_SEMA(0, 1);
+	
+	
+	
 }
 
 
-void LCD_dma_flush_auto_buffer_start()
-{
-	screen_buffer_dma_desc[1].IRQOnCompletion = 1;
-	LCD_dma_flush_buffer();
-}
-
-void LCD_dma_flush_auto_buffer_stop()
-{
-	if(!isAutoSend)return;
-	screen_buffer_dma_desc[1].IRQOnCompletion = 0;
-	isAutoSend = 0;
-	while(BF_RDn(APBH_CHn_SEMA,0,PHORE));	//等待DMA发送完最后的数据
-	if(LCD_wait_for_time_out(LCD_TIMOUT_US))return;
-}
 
 void LCD_scroll_up(unsigned int pixs)
 {
@@ -653,13 +656,8 @@ void LCD_scroll_on()
 //设置对比度 范围 0-127
 void LCD_set_contrast(unsigned char contrast)
 {
-	if(isAutoSend)
-		{
-			LCD_dma_flush_auto_buffer_stop();
-			LCD_write_cmd(0x25, 1);
-			LCD_write_dat(contrast & 0x7F, 1);
-			LCD_dma_flush_auto_buffer_start();
-		}
+	LCD_write_cmd(0x25, 1);
+	LCD_write_dat(contrast & 0x7F, 1);
 }
 
 void LCD_set_pix_format(lcd_pix_format _pix_format)
@@ -696,9 +694,10 @@ void LCD_init(void)
 	//设置引脚复用寄存器，连接至SoC内部的LCD控制器
 
 	
-	/*HW_LCDIF_CTRL_CLR(BM_LCDIF_CTRL_CLKGATE);
+
+
 	HW_LCDIF_CTRL_SET(BM_LCDIF_CTRL_SFTRST);							//重置LCD控制器
-	delay_us(100);*/
+	delay_us(100);
 	HW_LCDIF_CTRL_CLR(BM_LCDIF_CTRL_SFTRST | BM_LCDIF_CTRL_CLKGATE);	//将LCD控制器唤醒
 	delay_us(100);
 	HW_LCDIF_CTRL1_CLR(BM_LCDIF_CTRL1_MODE86);

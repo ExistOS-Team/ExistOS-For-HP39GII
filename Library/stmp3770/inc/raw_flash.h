@@ -148,8 +148,7 @@ void GPMI_write_block_with_ecc8(unsigned char set_up_command,unsigned char start
 
 void set_page_address_data(unsigned int pageNumber);
 void GPMI_read_block_with_ecc8(unsigned char set_read_command,unsigned char start_read_command,
-                               unsigned char *address_data, unsigned int *buffer, unsigned int address_data_size_bytes );
-							   
+                               unsigned char *address_data, unsigned int *buffer, unsigned int *meta_buffer , unsigned int address_data_size_bytes );							   
 							   
 void GPMI_erase_block_cmd(unsigned char erase_command, unsigned char confirm_erase_command, unsigned char read_status_command, unsigned int block_address);
 

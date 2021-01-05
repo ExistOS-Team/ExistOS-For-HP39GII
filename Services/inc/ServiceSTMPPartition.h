@@ -116,6 +116,7 @@ void installBootimgInPage(unsigned int page, void *buffer);
 void resetFlashRegionInfo();
 void eraseBootimgRegion();
 
+unsigned int isSTMPDiskInited();
 
 #endif
 

@@ -119,8 +119,9 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void* buff
 				dhara_map_read(&map, lba, buffer, NULL);
 		
 		}
-		else
+		else{
 			xReadFlashPages(lba,1,buffer,1000);
+		}
 		/*
 	}else{
 		rb_buffer = pvPortMalloc(bufsize);

@@ -14,6 +14,8 @@ void vServiceUSBCDC( void *pvParameters );
 void vServiceUSBDevice( void *pvParameters );
 
 void cdc_printf(const char * fmt, ...);
+void cdc_putchar(const char c);
+
 
 #endif
 

@@ -24,7 +24,7 @@
 extern "C" { 
 #endif
 
-#define EXCEPTION_VECTOR_TABLE_BASE_ADDR	0x00000000
+#define EXCEPTION_VECTOR_TABLE_BASE_ADDR	0xFFFF0000
 
 typedef enum exception_type{
 	EXCEPTION_RESET = 0,

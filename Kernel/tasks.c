@@ -306,6 +306,7 @@ typedef struct tskTaskControlBlock 			/* The old naming convention is used to pr
 		for additional information. */
 		struct	_reent xNewLib_reent;
 	#endif
+	
 
 	#if( configUSE_TASK_NOTIFICATIONS == 1 )
 		volatile uint32_t ulNotifiedValue;
@@ -777,6 +778,7 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB ) PRIVILEGED_FUNCTION;
 				/* Allocate space for the TCB. */
 				pxNewTCB = ( TCB_t * ) pvPortMalloc( sizeof( TCB_t ) ); /*lint !e9087 !e9079 All values returned by pvPortMalloc() have at least the alignment required by the MCU's stack, and the first member of TCB_t is always a pointer to the task's stack. */
 
+				
 				if( pxNewTCB != NULL )
 				{
 					/* Store the stack location in the TCB. */
@@ -805,6 +807,7 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB ) PRIVILEGED_FUNCTION;
 				pxNewTCB->ucStaticallyAllocated = tskDYNAMICALLY_ALLOCATED_STACK_AND_TCB;
 			}
 			#endif /* tskSTATIC_AND_DYNAMIC_ALLOCATION_POSSIBLE */
+
 
 			prvInitialiseNewTask( pxTaskCode, pcName, ( uint32_t ) usStackDepth, pvParameters, uxPriority, pxCreatedTask, pxNewTCB, NULL );
 			prvAddNewTaskToReadyList( pxNewTCB );
@@ -937,6 +940,9 @@ UBaseType_t x;
 		pxNewTCB->uxMutexesHeld = 0;
 	}
 	#endif /* configUSE_MUTEXES */
+	
+	
+
 
 	vListInitialiseItem( &( pxNewTCB->xStateListItem ) );
 	vListInitialiseItem( &( pxNewTCB->xEventListItem ) );
@@ -5306,5 +5312,7 @@ when performing module tests). */
 	#endif
 
 #endif
+
+
 
 

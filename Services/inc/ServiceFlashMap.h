@@ -17,5 +17,8 @@ bool isMaplock();
 void lockFmap(bool lock);
 void flashMapClear();
 
+
+unsigned int isFlashMapInited();
+
 #endif
 

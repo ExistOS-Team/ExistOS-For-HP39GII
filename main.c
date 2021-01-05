@@ -29,6 +29,7 @@
 #include <malloc.h>
 #include "portmacro.h"
 #include "mmu.h"
+#include "display.h"
 
 #include "GenQTest.h"
 #include "BlockQ.h"
@@ -48,6 +49,9 @@
 #include "irq.h"
 #include "tusb.h"
 #include "rtc.h"
+#include "mmu.h"
+#include "memory_map.h"
+
 /* Kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
@@ -109,7 +113,8 @@ void vTask3( void *pvParameters ){
 	for(;;){
 		//uartdbg_print_regs();
 		//switch_mode(USER_MODE);
-		vTaskDelay(5000);/*
+		vTaskDelay(1000);
+		/*
 		vTaskList((char *)&pcWriteBuffer);
 		printf("=======================================================\r\n");
         printf("任务名                 任务状态   优先级   剩余栈   任务序号\n");
@@ -133,8 +138,9 @@ void vTask3( void *pvParameters ){
 int main( void )
 {
 	/* Perform any hardware setup necessary. */
+	
   	prvSetupHardware();
-
+		
 	/* Create the tasks defined within this file. */
 	//xTaskCreate( vTask1, "test task1", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
 	//xTaskCreate( vTask2, "test task2", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
@@ -148,7 +154,11 @@ int main( void )
 	
 	printf("pdMS_TO_TICKS(500)=%d\n",pdMS_TO_TICKS(500));
 	
+	
 	vTaskStartScheduler();
+	
+	printf("kernel start fail.\n");
+	uartdbg_print_regs();
 	/* Execution will only reach here if there was insufficient heap to
 	start the scheduler. */
 	return 0;
@@ -188,7 +198,7 @@ static void prvSetupHardware(void)
 	
 	//BF_SETV(CLKCTRL_GPMI,DIV,4);
 
-	
+
 	BF_CS1(CLKCTRL_FRAC, CLKGATEIO, 0);
 	BF_CLR(CLKCTRL_CLKSEQ,BYPASS_GPMI);
 	
@@ -197,17 +207,20 @@ static void prvSetupHardware(void)
 	BF_CLR(CLKCTRL_CLKSEQ,BYPASS_PIX);
 	
 	BF_SET(CLKCTRL_PIX,CLKGATE);
-	BF_CS1(CLKCTRL_PIX,DIV,20);
+	BF_CS1(CLKCTRL_PIX,DIV,20);		//480 / 20 = 24MHz
+	
+	
+	
 	BF_CLR(CLKCTRL_PIX,CLKGATE);
-	
-	
-	
 	BF_CS2(APBH_CTRL0, SFTRST, 0, CLKGATE, 0);			//启动APBH DMA
 	
 	enable_interrupts();					//打开中断
 	
 	printf("(CLKCTRL_CPU,DIV_CPU), %08x\n",BF_RD(CLKCTRL_CPU,DIV_CPU));
 	printf("(CLKCTRL_HBUS,DIV), %08x\n",BF_RD(CLKCTRL_HBUS,DIV));
+	
+	LCD_init();
+	
 }
 /*-----------------------------------------------------------*/
 

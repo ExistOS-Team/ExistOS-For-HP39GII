@@ -26,32 +26,12 @@
   #define USBD_STACK_SIZE     (3*configMINIMAL_STACK_SIZE/2)
 #endif
 
+//StackType_t  *usb_device_stack;
 StackType_t  usb_device_stack[USBD_STACK_SIZE];
 StaticTask_t usb_device_taskdef;
 
 
-unsigned char buffer[512];
-
-void cdc_printf(const char * fmt, ...)
-{
-	int i = 0;
-	va_list args;
-	tud_cdc_write_clear();
-	va_start(args,fmt);
-	vsprintf(buffer, fmt, args);
-	while(!tud_cdc_write_available()){
-		vTaskDelay(1);
-	}
-	while(buffer[i]){
-		tud_cdc_write_char(buffer[i++]);
-	}
-	tud_cdc_write_flush();
-	va_end(args);
-	memset(buffer,0,512);
-}
-
-
-
+/*
 uint8_t buf[64];
 void vServiceUSBCDC( void *pvParameters ){
 	
@@ -68,7 +48,7 @@ void vServiceUSBCDC( void *pvParameters ){
 	}
 	
 }
-
+*/
 
 void vUsbDeviceTask(){
 	
@@ -81,7 +61,9 @@ void vUsbDeviceTask(){
 void vServiceUSBDevice( void *pvParameters )
 {
 	CDCCmdLineQueue =  xQueueCreate(32, 64);
-	vTaskDelay(1000);
+	vTaskDelay(3000);
+	
+	//usb_device_stack = pvPortMalloc(sizeof(StackType_t) * USBD_STACK_SIZE);
 	
 	xTaskCreateStatic( vUsbDeviceTask, "usbd", USBD_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, usb_device_stack, &usb_device_taskdef);
 	

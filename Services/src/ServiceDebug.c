@@ -21,8 +21,9 @@ DebugMessage *CurrentDebugMessage;
 void vServiceDebug( void *pvParameters )
 {
 	
-	DebugQueue = xQueueCreate(64, sizeof(DebugMessage *));
+	//DebugQueue = xQueueCreate(64, sizeof(DebugMessage *));
 	
+	vTaskDelete(NULL);
 	
 	for(;;){
 		xQueueReceive( DebugQueue, &( CurrentDebugMessage ), ( TickType_t ) portMAX_DELAY );

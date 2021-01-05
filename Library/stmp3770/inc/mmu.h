@@ -20,28 +20,39 @@
  #pragma once
 #ifndef _MMU_H
 #define _MMU_H
+#include <regsdigctl.h>
+#include <stdint.h>
 
-#define MMU_SECTION_RAM(a) (((a)&0xfff00000)| 0xc1e)	
-#define MMU_SECTION_ROM(a) (((a)&0xfff00000)| 0x01e)	
+#define MMU_SECTION_RAM(a) (((a)&0xfff00000)| 0xc1e)
 #define MMU_SECTION_DEV(a) (((a)&0xfff00000)| 0xc12)	
-#define MMU_PAGES_RAM(a)   (((a)&0xfffffc00)| 0x011)	
+#define MMU_COARSE_PAGE(a)   (((a)&0xfffffc00)| 0x011)	
 
-#define MMU_PAGE(a)			      (((a)&0xfffff000)|0xffe)	
-#define MMU_PAGE_NOT_IN_MEMORY(a) (((a)&0xfffff000)|0x00e)	
+
+#define MMU_SMALL_PAGE_CACHED(a)			      (((a)&0xfffff000)|0xffe)	
+#define MMU_SMALL_PAGE_NONCACHED(a)			      (((a)&0xfffff000)|0xff2)	
+#define MMU_SMALL_PAGE_UNMAP			      	  (0)	
+
 
 #define MMU_LEVEL1_INDEX(virt) (((virt)>>20)&0xfff)
 #define MMU_LEVEL2_INDEX(virt) (((virt)>>12)&0xff)
 
 
-#define MMU_MAP_SECTION_ROM(phys,virt) (mmu_base[MMU_LEVEL1_INDEX(virt)]=MMU_SECTION_ROM(phys))//映射一个1MB的内存段（带Chche和Buffer
-#define MMU_MAP_SECTION_RAM(phys,virt) (mmu_base[MMU_LEVEL1_INDEX(virt)]=MMU_SECTION_RAM(phys))//映射一个1MB的ROM段 （带Chche和Buffer，只读，写入会产生异常
-#define MMU_MAP_SECTION_DEV(phys,virt) (mmu_base[MMU_LEVEL1_INDEX(virt)]=MMU_SECTION_DEV(phys))//映射一个1MB的设备内存段（无ChChe无Buffer 
-#define MMU_MAP_COARSE_RAM(phys,virt)  (mmu_base[MMU_LEVEL1_INDEX(virt)]=MMU_PAGES_RAM(phys))  //二级页表的映射
+#define MMU_UNMAP_SECTION_VIRT_RAM(virt) (tlb_base[MMU_LEVEL1_INDEX(virt)]=0)
 
-#define MMU_MAP_PAGE_IN_MEMORY(phys,virt) 	  ( ( (unsigned int *)(mmu_base[MMU_LEVEL1_INDEX(virt)]&0xfffffc00))[MMU_LEVEL2_INDEX(virt)]=MMU_PAGE(phys))	//用于一个4K页的映射，页面且在内存中
-#define MMU_MAP_PAGE_NOT_IN_MEMORY(phys,virt) ( ( (unsigned int *)(mmu_base[MMU_LEVEL1_INDEX(virt)]&0xfffffc00))\
-												[MMU_LEVEL2_INDEX(virt)]=MMU_PAGE_NOT_IN_MEMORY(phys) 
-												//用于一个4K页的映射，页面且不在内存中 )
+#define MMU_MAP_SECTION_RAM(phys,virt) (tlb_base[MMU_LEVEL1_INDEX(virt)]=MMU_SECTION_RAM(phys))
+#define MMU_MAP_SECTION_DEV(phys,virt) (tlb_base[MMU_LEVEL1_INDEX(virt)]=MMU_SECTION_DEV(phys))
+#define MMU_MAP_COARSE_RAM(phys,virt)  (tlb_base[MMU_LEVEL1_INDEX(virt)]=MMU_COARSE_PAGE(phys))  
+
+#define MMU_MAP_SMALL_PAGE_CACHED(phys,virt) 	  ( ( (unsigned int *)(tlb_base[MMU_LEVEL1_INDEX(virt)]&0xfffffc00))[MMU_LEVEL2_INDEX(virt)]=MMU_SMALL_PAGE_CACHED(phys))
+
+#define MMU_MAP_SMALL_PAGE_NONCACHED(phys,virt) 	  ( ( (unsigned int *)(tlb_base[MMU_LEVEL1_INDEX(virt)]&0xfffffc00))[MMU_LEVEL2_INDEX(virt)]=MMU_SMALL_PAGE_NONCACHED(phys))
+
+#define MMU_MAP_SMALL_PAGE_UNMAP(virt) 	  	( ( (unsigned int *)(tlb_base[MMU_LEVEL1_INDEX(virt)]&0xfffffc00))[MMU_LEVEL2_INDEX(virt)]=MMU_SMALL_PAGE_UNMAP)
+
+
+//#define VIR_TO_PHY_ADDR(virt)		((unsigned int *)(((((unsigned int *)(tlb_base[((((unsigned int)(virt))>>20)&0xFFF)] &0xfffffc00 ))[(((unsigned int)(virt))>>12)&0xFF]) & 0xfffff000) | ((unsigned int)(virt) & 0xFFF)))
+
+//((((unsigned int *)(tlb_base[MMU_LEVEL1_INDEX((unsigned int)(virt))]&0xfffffc00))[MMU_LEVEL2_INDEX((unsigned int)(virt))]) & 0xfffff000 |(((unsigned int)(virt))&0xfffff000))
 
 
 #define USER_MODE 0x10
@@ -52,10 +63,7 @@
 #define UND_MODE  0x1b
 #define SYS_MODE  0x1f
 
-#define FIRST_LEVEL_PAGE_TABLE_BASE		0x800C0000	//一级页表基址
-#define SECOUND_LEVEL_PAGE_TABLE_FOR_KERNEL		0x00000400	//存放用于内核的二级页表
-
-#define KERNEL_ADDR_BASE						0x90000000	//内核的内存基址
+//#define FIRST_LEVEL_PAGE_TABLE_BASE		0x800C0000	//一级页表基址
 
 #ifdef __cplusplus 
 extern "C" { 
@@ -64,6 +72,8 @@ extern "C" {
 void DFLTP_init(void);
 //栈初始化
 void stack_init(void);
+void stack_relocate();
+
 //模式切换
 void switch_mode(int mode) __attribute__ ((naked));
 //获取模式
@@ -75,6 +85,12 @@ void enable_mmu(void);
 
 //设置当前模式下的栈地址（即R13寄存器）
 void set_stack(unsigned int *) __attribute__ ((naked));
+
+void flush_cache();
+
+
+uint8_t *VIR_TO_PHY_ADDR(uint8_t *VIRT_ADDR);
+
 #ifdef __cplusplus 
 } 
 #endif

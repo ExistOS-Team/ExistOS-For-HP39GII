@@ -36,7 +36,7 @@
 #include "exception.h"
 #include "portmacro.h"
 #include "regstimrot.h"
-
+ 
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "task.h"
@@ -48,9 +48,9 @@
 
 /* Constants required to handle critical sections. */
 #define portNO_CRITICAL_NESTING 		( ( uint32_t ) 0 )
-
+ 
 volatile unsigned long ulHighFrequencyTimerTicks;
-
+ 
 /*-----------------------------------------------------------*/
 
 /* Setup the TB to generate the tick interrupts. */
@@ -177,6 +177,6 @@ static void prvSetupTimerInterrupt( void )
 	timer_start(0,3000);		//1ms  1kHz
 	
 	timer_set(1,1,0xF,(void *)HighFrequencyTimerISR);
-	timer_start(1,300);		//100us 10kHz	
+	timer_start(1,600);		//200us 5kHz	
 }
 /*-----------------------------------------------------------*/

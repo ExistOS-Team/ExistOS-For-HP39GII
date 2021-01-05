@@ -24,6 +24,7 @@
 #include "regsapbh.h"
 #include "raw_flash.h"
 #include "irq.h"
+#include "mmu.h"
 #include "hw_irq.h"
 #include "utils.h"
 #include "uart_debug.h"
@@ -134,7 +135,7 @@ void GPMI_send_cmd(unsigned int command, unsigned int address, unsigned int addr
 	                        BV_FLD(GPMI_CTRL0, ADDRESS, NAND_DATA)                              |    // 数据模式
 	                        BF_GPMI_CTRL0_CS(chipSelect);                                            // 片选
 
-	chains[0].dma_nxtcmdar = (reg32_t)&chains[1];
+	chains[0].dma_nxtcmdar = (reg32_t) VIR_TO_PHY_ADDR((uint8_t *) &chains[1]);
 
 	/***********************************
 	 *     DMA描述符链 1    发送命令和地址
@@ -149,7 +150,7 @@ void GPMI_send_cmd(unsigned int command, unsigned int address, unsigned int addr
 	                    BF_APBH_CHn_CMD_CHAIN (1)                             |
 	                    BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ);              // 从内存读取，发送到NAND
 
-	chains[1].dma_bar = (unsigned int)&commandAddressBuffer;
+	chains[1].dma_bar = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) &commandAddressBuffer );
 
 	chains[1].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WRITE)             | // 写入NAND
 	                       BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT)             |
@@ -165,11 +166,11 @@ void GPMI_send_cmd(unsigned int command, unsigned int address, unsigned int addr
 
 	if(address_size_bytes)
 		{
-			chains[1].dma_nxtcmdar = (reg32_t)&chains[2];
+			chains[1].dma_nxtcmdar = (reg32_t) VIR_TO_PHY_ADDR((uint8_t *) &chains[2]);
 		}
 	else
 		{
-			chains[1].dma_nxtcmdar = (reg32_t)&chains[3];
+			chains[1].dma_nxtcmdar = (reg32_t) VIR_TO_PHY_ADDR((uint8_t *) &chains[3]);
 		}
 
 	/***********************************
@@ -187,7 +188,7 @@ void GPMI_send_cmd(unsigned int command, unsigned int address, unsigned int addr
 	                    BF_APBH_CHn_CMD_CHAIN (1)                             |
 	                    BV_FLD(APBH_CHn_CMD, COMMAND, DMA_WRITE);
 
-	chains[2].dma_bar = (unsigned int)readback_buffer_address;
+	chains[2].dma_bar = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) readback_buffer_address);
 
 	chains[2].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, READ)             |
 	                       BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT)             |
@@ -201,7 +202,7 @@ void GPMI_send_cmd(unsigned int command, unsigned int address, unsigned int addr
 	chains[2].gpmi_compare = (unsigned int)NULL;
 	chains[2].gpmi_eccctrl = (unsigned int)NULL;
 
-	chains[2].dma_nxtcmdar = (reg32_t)&chains[3];
+	chains[2].dma_nxtcmdar = (reg32_t) VIR_TO_PHY_ADDR((uint8_t *)&chains[3]);
 
 	/***********************************
 	 *     DMA描述符链 3    终止
@@ -219,7 +220,7 @@ void GPMI_send_cmd(unsigned int command, unsigned int address, unsigned int addr
 	eccOperationCompleted = 0;
 	dmaOperationCompleted = 0;
 
-	BF_WRn(APBH_CHn_NXTCMDAR, NAND_DMA_Channel, CMD_ADDR, (reg32_t)&chains[0]);    // 填写DMA寄存器下个描述符地址
+	BF_WRn(APBH_CHn_NXTCMDAR, NAND_DMA_Channel, CMD_ADDR, (reg32_t)VIR_TO_PHY_ADDR((uint8_t *)&chains[0]));    // 填写DMA寄存器下个描述符地址
 	BW_APBH_CHn_SEMA_INCREMENT_SEMA(NAND_DMA_Channel, 1);                        // DMA计数器加一，开始工作
 
 }
@@ -229,7 +230,7 @@ void init_erase_chains(){
 	// Descriptor 1: issue NAND write setup command (CLE/ALE)
 	//----------------------------------------------------------------------------
 	
-	erases[0].dma_nxtcmdar = (unsigned int)&erases[3];
+	erases[0].dma_nxtcmdar = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) &erases[3]);
 	erases[0].dma_cmd = BF_APBH_CHn_CMD_XFER_COUNT (1 + 3) 			| // 1 byte command, 2 byte address 
 						BF_APBH_CHn_CMD_CMDWORDS (3) 				| // send 3 words to the GPMI
 						BF_APBH_CHn_CMD_WAIT4ENDCMD (1) 			| // wait for command to finish before continuing
@@ -240,7 +241,7 @@ void init_erase_chains(){
 						BF_APBH_CHn_CMD_CHAIN (1) 					| // follow chain to next command
 						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ);	 // read data from DMA, write to NAND
 						
-	erases[0].dma_bar = (unsigned int)&commandAddressBuffer[0]; 											// byte 0 write setup, bytes 1 - 2 NAND address
+	erases[0].dma_bar = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) &commandAddressBuffer[0] ); 											// byte 0 write setup, bytes 1 - 2 NAND address
 																						// 3 words sent to the GPMI
 						erases[0].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WRITE) | // write to the NAND
 						BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT) 							|
@@ -266,7 +267,7 @@ void init_erase_chains(){
 						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
 						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
 						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ); // read data from DMA, write to NAND
-	erases[3].dma_bar = (unsigned int)&commandAddressBuffer[6]; // point to byte 6, write execute command
+	erases[3].dma_bar = (unsigned int)  VIR_TO_PHY_ADDR((uint8_t *) &commandAddressBuffer[6]) ; // point to byte 6, write execute command
 															// 3 words sent to the GPMI
 	erases[3].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WRITE) | // write to the NAND
 						BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT) |
@@ -314,7 +315,7 @@ void init_erase_chains(){
 						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
 						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
 						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_SENSE); // perform a sense check
-						erases[5].dma_bar = (unsigned int)&erases[10]; // if sense check fails, branch to error handler
+						erases[5].dma_bar = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) &erases[10]); // if sense check fails, branch to error handler
 	//----------------------------------------------------------------------------
 	// Descriptor 7: issue NAND status command (CLE)
 	//----------------------------------------------------------------------------
@@ -328,7 +329,7 @@ void init_erase_chains(){
 						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
 						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
 						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ); // read data from DMA, write to NAND
-	erases[6].dma_bar = (unsigned int)&commandAddressBuffer[7]; // point to byte 7, status command
+	erases[6].dma_bar = (unsigned int)   VIR_TO_PHY_ADDR((uint8_t *) &commandAddressBuffer[7]); // point to byte 7, status command
 	erases[6].gpmi_compare = (unsigned int)NULL; // field not used but necessary to set eccctrl
 	erases[6].gpmi_eccctrl = BV_FLD(GPMI_ECCCTRL, ENABLE_ECC, DISABLE); // disable the ECC block
 											// 3 words sent to the GPMI
@@ -404,6 +405,14 @@ void init_erase_chains(){
 	erases[10].dma_bar = (unsigned int)NULL;
 	erases[10].dma_nxtcmdar = (unsigned int)NULL;
 	
+	for(int i=3; i<10; i++){
+		
+		erases[i].dma_nxtcmdar = (unsigned int )VIR_TO_PHY_ADDR((uint8_t *) &erases[i+1] );
+		
+	}
+	
+	
+	
 }
 
 
@@ -424,11 +433,11 @@ void GPMI_erase_block_cmd(unsigned char erase_command, unsigned char confirm_era
 	eccOperationCompleted = 0;
 	dmaOperationCompleted = 0;
 	
-	
-	BF_WRn(APBH_CHn_NXTCMDAR, NAND_DMA_Channel, CMD_ADDR, (reg32_t)&erases[0]);    // 填写DMA寄存器下个描述符地址
+	while(HW_APBH_CHn_SEMA(NAND_DMA_Channel).B.INCREMENT_SEMA);
+	BF_WRn(APBH_CHn_NXTCMDAR, NAND_DMA_Channel, CMD_ADDR, (reg32_t)VIR_TO_PHY_ADDR((uint8_t *) &erases[0]));    // 填写DMA寄存器下个描述符地址
 	BW_APBH_CHn_SEMA_INCREMENT_SEMA(NAND_DMA_Channel, 1);                        // DMA计数器加一，开始工作
 	
-	while(HW_APBH_CHn_SEMA(NAND_DMA_Channel).B.INCREMENT_SEMA);
+	
 }
 
 void init_wrtie_chains(){
@@ -448,7 +457,7 @@ void init_wrtie_chains(){
 						BF_APBH_CHn_CMD_CHAIN (1) 					| // follow chain to next command
 						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ);	 // read data from DMA, write to NAND
 	
-	writes[0].dma_bar = (unsigned int)&commandAddressBuffer; 											// byte 0 write setup, bytes 1 - 4 NAND address
+	writes[0].dma_bar = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) &commandAddressBuffer); 											// byte 0 write setup, bytes 1 - 4 NAND address
 	writes[0].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WRITE) | // write to the NAND
 						BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT) 							|
 						BV_FLD(GPMI_CTRL0, LOCK_CS, ENABLED) 							|
@@ -522,7 +531,7 @@ void init_wrtie_chains(){
 						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
 						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
 						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ); // read data from DMA, write to NAND
-	writes[3].dma_bar = (unsigned int)&commandAddressBuffer[6]; // point to byte 6, write execute command
+	writes[3].dma_bar = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) &commandAddressBuffer[6]); // point to byte 6, write execute command
 															// 3 words sent to the GPMI
 	writes[3].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WRITE) | // write to the NAND
 						BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT) |
@@ -571,7 +580,7 @@ void init_wrtie_chains(){
 						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
 						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
 						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_SENSE); // perform a sense check
-						writes[5].dma_bar = (unsigned int)&writes[10]; // if sense check fails, branch to error handler
+						writes[5].dma_bar = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) &writes[10]); // if sense check fails, branch to error handler
 	//----------------------------------------------------------------------------
 	// Descriptor 7: issue NAND status command (CLE)
 	//----------------------------------------------------------------------------
@@ -585,7 +594,7 @@ void init_wrtie_chains(){
 						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
 						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
 						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ); // read data from DMA, write to NAND
-	writes[6].dma_bar = (unsigned int)&commandAddressBuffer[7]; // point to byte 7, status command
+	writes[6].dma_bar = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) &commandAddressBuffer[7]); // point to byte 7, status command
 	writes[6].gpmi_compare = (unsigned int)NULL; // field not used but necessary to set eccctrl
 	writes[6].gpmi_eccctrl = BV_FLD(GPMI_ECCCTRL, ENABLE_ECC, DISABLE); // disable the ECC block
 											// 3 words sent to the GPMI
@@ -635,7 +644,7 @@ void init_wrtie_chains(){
 						BF_APBH_CHn_CMD_IRQONCMPLT (0) |
 						BF_APBH_CHn_CMD_CHAIN (1) | // follow chain to next command
 						BV_FLD(APBH_CHn_CMD, COMMAND, DMA_SENSE); // perform a sense check
-	writes[8].dma_bar = (unsigned int)&writes[10]; // if sense check fails, branch to error handler
+	writes[8].dma_bar = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) &writes[10]); // if sense check fails, branch to error handler
 	//----------------------------------------------------------------------------
 	// Descriptor 10: emit GPMI interrupt
 	//----------------------------------------------------------------------------
@@ -656,7 +665,15 @@ void init_wrtie_chains(){
 	                        BV_FLD(APBH_CHn_CMD, COMMAND, NO_DMA_XFER);
 
 	writes[10].dma_bar = (unsigned int)NULL;
-	writes[10].dma_nxtcmdar = (unsigned int)NULL;					
+	writes[10].dma_nxtcmdar = (unsigned int)NULL;
+
+
+	for(int i=0; i<9; i++){
+		
+		writes[i].dma_nxtcmdar = (unsigned int )VIR_TO_PHY_ADDR((uint8_t *) &writes[i+1] );
+		
+	}
+	
 }
 
 void GPMI_write_block_with_ecc8(unsigned char set_up_command,unsigned char start_write_confirm_command,unsigned char read_status_command,
@@ -676,17 +693,18 @@ void GPMI_write_block_with_ecc8(unsigned char set_up_command,unsigned char start
 	commandAddressBuffer[7] = read_status_command;
 	
 	
-	writes[1].dma_bar = (unsigned int)write_payload_buffer; // pointer for the 4K byte data area
+	writes[1].dma_bar = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) write_payload_buffer); // pointer for the 4K byte data area
 
-	writes[2].dma_bar = (unsigned int)write_aux_buffer; // pointer for the 19 byte meta data area
+	writes[2].dma_bar = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) write_aux_buffer); // pointer for the 19 byte meta data area
 
 	eccOperationCompleted = 0;
 	dmaOperationCompleted = 0;
 	
-	BF_WRn(APBH_CHn_NXTCMDAR, NAND_DMA_Channel, CMD_ADDR, (reg32_t)&writes[0]);    // 填写DMA寄存器下个描述符地址
+	while(HW_APBH_CHn_SEMA(NAND_DMA_Channel).B.INCREMENT_SEMA);
+	BF_WRn(APBH_CHn_NXTCMDAR, NAND_DMA_Channel, CMD_ADDR, (reg32_t) VIR_TO_PHY_ADDR((uint8_t *) &writes[0]));    // 填写DMA寄存器下个描述符地址
 	BW_APBH_CHn_SEMA_INCREMENT_SEMA(NAND_DMA_Channel, 1);                        // DMA计数器加一，开始工作
 	
-	while(HW_APBH_CHn_SEMA(NAND_DMA_Channel).B.INCREMENT_SEMA);
+	
 	
 	
 }
@@ -711,7 +729,7 @@ void init_read_chains(){
 	                            BF_APBH_CHn_CMD_CHAIN (1)                                    | // follow chain to next command
 	                            BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ);                       // read data from DMA, write to NAND
 
-	reads[0].dma_bar = (unsigned int)&commandAddressBuffer;
+	reads[0].dma_bar = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) &commandAddressBuffer);
 
 	reads[0].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WRITE)                    |
 	                       BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT)                    |
@@ -737,7 +755,7 @@ void init_read_chains(){
 	                    BF_APBH_CHn_CMD_CHAIN (1)                                | // follow chain to next command
 	                    BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ);                   // read data from DMA, write to NAND
 
-	reads[1].dma_bar = (unsigned int)&commandAddressBuffer[5];                   // point to byte 6, read execute command
+	reads[1].dma_bar = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) &commandAddressBuffer[5]);                   // point to byte 6, read execute command
 
 	reads[1].gpmi_ctrl0 = BV_FLD(GPMI_CTRL0, COMMAND_MODE, WRITE)                | // write to the NAND
 	                       BV_FLD(GPMI_CTRL0, WORD_LENGTH, 8_BIT)                |
@@ -786,7 +804,7 @@ void init_read_chains(){
 
 
 	//reads[3].dma_bar = dma_error_handler; // if sense check fails, branch to error handler
-	reads[3].dma_bar = (unsigned int)&reads[7]; // if sense check fails, branch to error handler
+	reads[3].dma_bar = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) &reads[7]); // if sense check fails, branch to error handler
 
 
 	/***********************************
@@ -837,7 +855,7 @@ void init_read_chains(){
 	//reads[4].gpmi_ecccount = BF_GPMI_ECCCOUNT_COUNT(8*(512+18)+(65+9));            // 4K PAGE SIZE specify number of bytes read fromNAND
 	reads[4].gpmi_ecccount = BF_GPMI_ECCCOUNT_COUNT(4*(512+9)+(19+9));               // 2K PAGE SIZE specify number of bytes read fromNAND
 	
-	reads[4].gpmi_aux_ptr = (unsigned int)&__DMA_NAND_AUXILIARY_BUFFER[0];              // pointer for the 65 byte aux area + parity and syndrome bytes \
+	reads[4].gpmi_aux_ptr = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) &__DMA_NAND_AUXILIARY_BUFFER[0]);              // pointer for the 65 byte aux area + parity and syndrome bytes \
 	for both data and aux blocks.
 
 	/***********************************
@@ -893,13 +911,19 @@ void init_read_chains(){
 
 	reads[7].dma_bar = (unsigned int)NULL;
 	reads[7].dma_nxtcmdar = (unsigned int)NULL;
+	
+	for(int i=0; i<7; i++){
+		
+		reads[i].dma_nxtcmdar = (unsigned int )VIR_TO_PHY_ADDR((uint8_t *) &reads[i+1] );
+		
+	}
+	
 }
 
 
 void GPMI_read_block_with_ecc8(unsigned char set_read_command,unsigned char start_read_command,
-                               unsigned char *address_data, unsigned int *buffer, unsigned int address_data_size_bytes )
+                               unsigned char *address_data, unsigned int *buffer, unsigned int *meta_buffer , unsigned int address_data_size_bytes )
 {
-	unsigned int i;
 
 	// 设置读取模式命令（1byte） + 地址数据(一般5bytes) + 开始读取命令(1byte)
 	commandAddressBuffer[0] = set_read_command;
@@ -909,16 +933,20 @@ void GPMI_read_block_with_ecc8(unsigned char set_read_command,unsigned char star
 	commandAddressBuffer[4] = address_data[3];
 	commandAddressBuffer[5] = start_read_command;
 
-	reads[4].gpmi_data_ptr = (unsigned int)buffer;               // pointer for the data area
+	reads[4].gpmi_data_ptr = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) buffer);               // pointer for the data area
+	reads[4].gpmi_aux_ptr = (unsigned int) VIR_TO_PHY_ADDR((uint8_t *) meta_buffer);              // pointer for the 65 byte aux area + parity and syndrome bytes \
 
 
 	eccOperationCompleted = 0;
 	dmaOperationCompleted = 0;
 	
-	BF_WRn(APBH_CHn_NXTCMDAR, NAND_DMA_Channel, CMD_ADDR, (reg32_t)&reads[0]);    // 填写DMA寄存器下个描述符地址
-	BW_APBH_CHn_SEMA_INCREMENT_SEMA(NAND_DMA_Channel, 1);                        // DMA计数器加一，开始工作
+	
 	
 	while(HW_APBH_CHn_SEMA(NAND_DMA_Channel).B.INCREMENT_SEMA);
+	BF_WRn(APBH_CHn_NXTCMDAR, NAND_DMA_Channel, CMD_ADDR, (reg32_t) VIR_TO_PHY_ADDR((uint8_t *) &reads[0]));    // 填写DMA寄存器下个描述符地址
+	BW_APBH_CHn_SEMA_INCREMENT_SEMA(NAND_DMA_Channel, 1);                        // DMA计数器加一，开始工作
+	
+	
 }
 
 
@@ -1082,6 +1110,7 @@ unsigned int gpmi_is_busy()
  *  1 device busy
  *  2 read timeout
  */
+ /*
 unsigned int read_nand_pages(unsigned int start_page, unsigned int pages, unsigned int *buffer, unsigned int timeout_ms)
 {
 	unsigned int cnt1, cnt2, pgcnt = 0;
@@ -1104,7 +1133,7 @@ unsigned int read_nand_pages(unsigned int start_page, unsigned int pages, unsign
 	while(pgcnt < pages)
 		{
 			set_page_address_data(start_page);
-			GPMI_read_block_with_ecc8(NAND_CMD_READ0,NAND_CMD_READSTART,address_page_data,buffer,4);
+			GPMI_read_block_with_ecc8(NAND_CMD_READ0,NAND_CMD_READSTART,address_page_data,buffer,(unsigned int *)&__DMA_NAND_AUXILIARY_BUFFER[0],4);
 
 			while((!dmaOperationCompleted || !eccOperationCompleted))
 				{
@@ -1124,7 +1153,7 @@ unsigned int read_nand_pages(unsigned int start_page, unsigned int pages, unsign
 		}
 
 
-}
+}*/
 
 /**
  * ns_to_cycles - 转换纳秒时间到对应循环周期
@@ -1198,7 +1227,7 @@ void NAND_init()
 	BF_CLR(CLKCTRL_GPMI,CLKGATE);
 	//HW_CLKCTRL_GPMI(BM_CLKCTRL_GPMI_CLKGATE);
 	while(BF_RD(CLKCTRL_GPMI,CLKGATE));
-	GPMI_clockFrequencyInHz  = (480 / 10) * 1000000UL;    //24MHz    todo:从时钟控制器里取出分频系数并计算
+	GPMI_clockFrequencyInHz  = (480 / 10) * 1000000UL;    //24MHz    
 	GPMI_clockPeriodIn_ns    = (1000000000UL / GPMI_clockFrequencyInHz) ;
 	DeviceTimeOut_s = 1;
 	DeviceTimeOutCycles = GPMI_clockFrequencyInHz / 4096;

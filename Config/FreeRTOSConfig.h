@@ -48,7 +48,7 @@
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION		0
 #define configUSE_IDLE_HOOK			0
 #define configUSE_TICK_HOOK			0
-#define configCPU_CLOCK_HZ			( ( unsigned long ) 24000000 ) /* Timer clock. */
+#define configCPU_CLOCK_HZ			( ( unsigned long ) 96000000 ) /* Timer clock. */
 #define configTICK_RATE_HZ			( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES		( 5 )
 #define configMINIMAL_STACK_SIZE	( ( unsigned short ) 400 )
@@ -58,7 +58,9 @@
 #define configUSE_RECURSIVE_MUTEXES             1
 #define configUSE_COUNTING_SEMAPHORES           1
 
-#define configCHECK_FOR_STACK_OVERFLOW          0
+#define configUSE_NEWLIB_REENTRANT				1
+
+#define configCHECK_FOR_STACK_OVERFLOW          1
 
 #define configUSE_16_BIT_TICKS		0
 #define configIDLE_SHOULD_YIELD		0
@@ -110,7 +112,7 @@ to exclude the API function. */
 #define INCLUDE_xEventGroupSetBitFromISR        1
 #define INCLUDE_xTimerPendFunctionCall          0
 #define INCLUDE_xTaskAbortDelay                 0
-#define INCLUDE_xTaskGetHandle                  0
+#define INCLUDE_xTaskGetHandle                  1
 #define INCLUDE_xTaskResumeFromISR              1
 
 

@@ -73,7 +73,7 @@
 
 // can be defined by compiler in DEBUG build
 #ifndef CFG_TUSB_DEBUG
-  #define CFG_TUSB_DEBUG           1
+  #define CFG_TUSB_DEBUG           0
 #endif
 
 /* USB DMA on some MCUs can only access a specific SRAM region with restriction on alignment.
@@ -84,13 +84,13 @@
  * - CFG_TUSB_MEM_ALIGN   : __attribute__ ((aligned(4)))
  */
 #ifndef CFG_TUSB_MEM_SECTION
-#define CFG_TUSB_MEM_SECTION
+#define CFG_TUSB_MEM_SECTION		__attribute__ (( section(".usb_ram") ))
 #endif
-
+ 
 #ifndef CFG_TUSB_MEM_ALIGN
 #define CFG_TUSB_MEM_ALIGN          __attribute__ ((aligned(4)))
 #endif
-
+ 
 //--------------------------------------------------------------------
 // DEVICE CONFIGURATION
 //--------------------------------------------------------------------

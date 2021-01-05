@@ -18,34 +18,84 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
  
-#include <regsdigctl.h>
-#include <mmu.h>
+
+
+#include "mmu.h"
+#include "memory_map.h"
+volatile unsigned int *tlb_base = (unsigned int *)0x800C0000;	//一级页表基地址
+
+
+
+uint8_t *VIR_TO_PHY_ADDR(uint8_t *VIRT_ADDR)
+{
+	uint8_t *result = VIRT_ADDR;
+	unsigned int COARSE_ADDR;
+	
+	//printf("search virt %08x\n", VIRT_ADDR);
+	
+	switch( tlb_base[((((unsigned int)(VIRT_ADDR))>>20)&0xFFF)] & 3){
+		case 1:
+			COARSE_ADDR = tlb_base[((((unsigned int)(VIRT_ADDR))>>20)&0xFFF)] & 0xfffffc00;
+			
+			if(COARSE_ADDR < TOTAL_PHY_MEMORY){
+				
+				COARSE_ADDR += RAM_START_VIRT_ADDR;
+				//uartdbg_printf("COARSE_ADDR %x\n",COARSE_ADDR);
+			}
+			
+			result = (uint8_t *)((unsigned int *)(((((unsigned int *)(  COARSE_ADDR ))[(((unsigned int)(VIRT_ADDR))>>12)&0xFF]) & 0xfffff000) | ((unsigned int)(VIRT_ADDR) & 0xFFF)));
+			break;
+		case 2:
+			result = (uint8_t *) ( (tlb_base[((unsigned int)VIRT_ADDR)>>20] &0xFFF00000) | ((unsigned int)VIRT_ADDR & 0x000FFFFF));
+			//uartdbg_printf("SECTION ADDR %x\n",result);
+			break;
+	}
+	
+	
+	//printf("result %08x\n" , result);
+	
+	return result;
+}
+
+
+/*
+unsigned int HEAP_MEMORY_COARSE_TABLE[256] __attribute__((aligned(0x400)));
+//unsigned int TLB[4096] __attribute__((aligned(0x4000)));
 
 
 
 void DFLTP_init(){
-	unsigned int *mmu_base=(unsigned int *)FIRST_LEVEL_PAGE_TABLE_BASE;	//一级页表基地址
+	//tlb_base = TLB;
+	tlb_base = (unsigned int *)0x800C0000;
+
 	
-	for(unsigned char *ptr = (unsigned char*)(SECOUND_LEVEL_PAGE_TABLE_FOR_KERNEL);ptr < (unsigned char *)(SECOUND_LEVEL_PAGE_TABLE_FOR_KERNEL + 0x800);ptr++) {	//清空二级页表
-		*ptr = 0;
-	}
+	BF_WRn(DIGCTL_MPTEn_LOC,0,LOC,0xaaaa);									
+	BF_WRn(DIGCTL_MPTEn_LOC,1,LOC,0xbbbb);	
+	BF_WRn(DIGCTL_MPTEn_LOC,2,LOC,0xcccc);
+	BF_WRn(DIGCTL_MPTEn_LOC,3,LOC,0xdddd);
+	BF_WRn(DIGCTL_MPTEn_LOC,4,LOC,0xeeee);
 	
-	BF_WRn(DIGCTL_MPTEn_LOC,0,LOC,0x0);											//SoC内部自带的硬件一级页表
-	BF_WRn(DIGCTL_MPTEn_LOC,1,LOC,KERNEL_ADDR_BASE >> 20);	
-	BF_WRn(DIGCTL_MPTEn_LOC,2,LOC,0x2);
-	BF_WRn(DIGCTL_MPTEn_LOC,3,LOC,0x3);
-	BF_WRn(DIGCTL_MPTEn_LOC,4,LOC,0x4);
-	BF_WRn(DIGCTL_MPTEn_LOC,5,LOC,0x5);
-	BF_WRn(DIGCTL_MPTEn_LOC,6,LOC,0x6);
-	BF_WRn(DIGCTL_MPTEn_LOC,7,LOC,0x7);
+	BF_WRn(DIGCTL_MPTEn_LOC,5,LOC,RAM_START_VIRT_ADDR >> 20);
+	
+	
+	
+	BF_WRn(DIGCTL_MPTEn_LOC,6,LOC,0x0);
+	BF_WRn(DIGCTL_MPTEn_LOC,7,LOC,KHEAP_MEMORY_VIR_START >> 20);
 	
 
-	MMU_MAP_SECTION_DEV(0x00000000,0x00000000);										//内存开头1MB映射
-	MMU_MAP_COARSE_RAM(SECOUND_LEVEL_PAGE_TABLE_FOR_KERNEL,KERNEL_ADDR_BASE);		//0x90000000处的内核内存
+	MMU_MAP_SECTION_DEV(0x00000000,0x00000000);
+	MMU_MAP_SECTION_DEV(0x00000000,RAM_START_VIRT_ADDR);
+	//MMU_MAP_SECTION_DEV(0x80000000,0x80000000);
+	 
 	
-	for(unsigned int i = 0;i<384*1024;i+=4*1024)									//填写二级页表
-		MMU_MAP_PAGE_IN_MEMORY(0x00020000 + i,KERNEL_ADDR_BASE + i);				//384个页，每个页4KB
-} 
+	MMU_MAP_COARSE_RAM((unsigned int)&HEAP_MEMORY_COARSE_TABLE, KHEAP_MEMORY_VIR_START);
+	
+	for(unsigned int i = 0;i<256*1024;i+=4*1024)						
+		MMU_MAP_SMALL_PAGE_CACHED(KHEAP_MAP_PHY_START + i,KHEAP_MEMORY_VIR_START + i);	
+	
+	
+		
+} */
 
 //设置栈指针
 void set_stack(unsigned int *newstackptr) __attribute__ ((naked));
@@ -92,7 +142,7 @@ static void __disable_mmu(){
 	
 }
 
-void __enable_mmu(unsigned int base)
+void __enable_mmu(unsigned int *base)
 {
 	//r0 = base
 	asm volatile ("mcr p15,0,r0,c2,c0,0");      // WRITE MMU BASE REGISTER, ALL CACHES SHOULD'VE BEEN CLEARED BEFORE
@@ -115,7 +165,7 @@ void __enable_mmu(unsigned int base)
 }
 
 
-static void __flush_Dcache(void)
+volatile static void __flush_Dcache(void)
 {
 	register unsigned int counter asm("r2");
 	register unsigned int cacheaddr asm("r3");
@@ -131,7 +181,7 @@ static void __flush_Dcache(void)
 
 }
 
-static void __flush_Icache(void)
+volatile static void __flush_Icache(void)
 {
 	// CLEAN AND INVALIDATE ENTRY USING INDEX
 	register unsigned int value;
@@ -139,7 +189,7 @@ static void __flush_Icache(void)
 	asm volatile ("mcr p15, 0, %0, c7, c5, 0" : : "r" (value));
 }
 
-static void __flush_TLB(void)
+volatile static void __flush_TLB(void)
 {
 	// CLEAN AND INVALIDATE ENTRY USING INDEX
 	register unsigned int value;
@@ -154,7 +204,8 @@ void enable_mmu()
 	__flush_Dcache();
 	__flush_Icache();
 	__flush_TLB();
-	__enable_mmu(FIRST_LEVEL_PAGE_TABLE_BASE);
+	//__enable_mmu(FIRST_LEVEL_PAGE_TABLE_BASE);
+	__enable_mmu(tlb_base);
 
 }
 
@@ -189,6 +240,26 @@ void stack_init(){
     
 }
 
+void stack_relocate(){
+	switch_mode(ABT_MODE);
+    set_stack((&ABT_STACK_ADDR) + RAM_START_VIRT_ADDR);
+    
+	switch_mode(UND_MODE);
+    set_stack((&UND_STACK_ADDR) + RAM_START_VIRT_ADDR);
+    
+	switch_mode(FIQ_MODE);
+    set_stack((&FIQ_STACK_ADDR) + RAM_START_VIRT_ADDR);
+	
+    switch_mode(IRQ_MODE);
+    set_stack((&IRQ_STACK_ADDR) + RAM_START_VIRT_ADDR);
+    
+	switch_mode(SYS_MODE);
+	set_stack((&SYS_STACK_ADDR) + RAM_START_VIRT_ADDR);
+	
+	switch_mode(SVC_MODE);
+    asm volatile ("nop");       
+}
+
 
 void disable_mmu(){
 	__flush_Dcache();
@@ -197,3 +268,15 @@ void disable_mmu(){
 	__disable_mmu();
 }
 
+volatile void flush_cache(){
+	asm volatile ("tci_loop: MRC p15, 0, r15, c7, c14, 3 "); // test clean and invalidate
+	asm volatile ("BNE tci_loop");
+}
+
+volatile void flush_tlb(){
+	// CLEAN AND INVALIDATE ENTRY USING INDEX
+	register unsigned int value;
+	value=0;
+	asm volatile ("mcr p15, 0, %0, c8, c7, 0" : : "r" (value));
+
+}

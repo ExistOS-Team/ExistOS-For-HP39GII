@@ -1,41 +1,98 @@
 OUTPUT_ARCH(arm)
-ENTRY(_boot)
+
+ENTRY(_kernel_init)
+
 SECTIONS
 {
-	. = 0x00001000;
+	. = 0x0;
+
+	.exception_handler_map_table 0xC0000000 : AT(0x0000) 
+	{
+		*(.exception_handler_map_table)
+	}
+	
+	. = 0x1000;
+	
+	.exception_handler_table 0xC0001000 : AT(0x1000) 
+	{
+		*(.exception_handler_table)
+	}	
+	
+	.kernel_heap_memory 0x00002000 : AT(0x2000) 
+	{
+		*(.kernel_heap_memory)
+	}
+
+
+
+
+
+	. = 0xC0003000;
+	
 	__VRAM_BASE = .;
 	
 	
-	. = 0x00009910;		/* === 0x9910 === VRAM ==*/
+	/* . = 0xC000A910;		 === 0x9910 === VRAM ==*/
 	
 	
 	
-	. = 0x0000A000;
+	. = 0xC000C000;
 	ABT_STACK_ADDR = .;
 	
-	. = . - 0x200;
+	. = . + 0x300;
 	UND_STACK_ADDR = .;
 	
-	. = . - 0x200;
+	. = . + 0x300;
 	FIQ_STACK_ADDR = .;
 	
-	. = . - 0x200;
+	. = . + 0x300;
 	IRQ_STACK_ADDR = .;	
 	
-	. = . - 0x200;
+	. = . + 0x300;
 	SYS_STACK_ADDR = .;	
 	
-	. = . - 0x200;
+	. = . + 0x300;
 	SVC_STACK_ADDR = .;		
 	
 	
 	
-	. = 0x0000B000;
-	.text : { *(.text) }
-	.data : { *(.data) }
+	. = 0x0000C000; 
+	
+	.init.text : AT(0xC000) 
+	{ 
+		*(.init)
+	}
+	.init.data :
+	{
+		*(.init.data)
+	}
+
+	.usb_ram 0xC000D000 : AT(0xD000) 
+	{
+		*(.usb_ram)
+	}
+	
+	.text 0xC000F000 : AT(0xF000) 
+	{ 
+		*(.text)
+	}
+	
+	__data_start__ = .;
+	
+	.data : 
+	{
+		*(.data) 
+	}
+	
+	__data_end__ = .;
 	
 	__bss_start__ = .;
-	.bss  : { *(.bss) }
+	
+	.bss  : { 
+		*(.bss) 
+	}
+	
+	
 	__bss_end__ = .;
 	
 	__exidx_start = .;
@@ -43,6 +100,4 @@ SECTIONS
 
 	__exidx_end = .;
 
-	/*. = 0x32000;*/
-	/* __HEAP_START = .; */
 }

@@ -8,6 +8,7 @@
 #include "map.h"
 #include "nand.h"
 #include "raw_flash.h"
+#include "memory_map.h"
 
 /* System serive includes. */
 #include "ServiceRawFlash.h"
@@ -46,9 +47,17 @@ extern volatile unsigned int eccOperationCompleted;
 extern SemaphoreHandle_t flashLock;
 bool mapLock = 0;
 
+unsigned char readBackMetaData[200]  __attribute__( (aligned(0x200)) );
+
 int readDataRegonPage(unsigned int page, void *buffer){
 	unsigned int startTick = 0;
-	
+	rawFlashStatus result = NO_ERROR;
+	//printf("buffer %08x\n",buffer);
+	/*
+	if((unsigned int)buffer > KHEAP_MEMORY_VIR_START){
+		buffer = buffer - KHEAP_MEMORY_VIR_START + KHEAP_MAP_PHY_START;
+	}
+	*/
 	
 	if(xSemaphoreTake(flashLock, TIMEOUT_MS) == pdFALSE){
 		return DEVICE_BUSY;
@@ -56,10 +65,26 @@ int readDataRegonPage(unsigned int page, void *buffer){
 	
 	startTick = xTaskGetTickCount();
 	
-	//taskENTER_CRITICAL();
+	
+	//printf("read buffer Addr:%08x\n",buffer);
+	taskENTER_CRITICAL();
 	set_page_address_data(page + dataRegonStartBlock * 64 );
-	GPMI_read_block_with_ecc8(NAND_CMD_READ0,NAND_CMD_READSTART,address_page_data,buffer,4);
-	//taskEXIT_CRITICAL();
+	GPMI_read_block_with_ecc8(NAND_CMD_READ0,NAND_CMD_READSTART,address_page_data,buffer,(unsigned int *)readBackMetaData,4);
+	
+	
+
+	flush_cache();
+	
+	if(ecc_res[0] == 0xE	||
+	ecc_res[1] == 0xE	||
+	ecc_res[2] == 0xE	||
+	ecc_res[3] == 0xE	
+	){
+		result = BAD;
+		
+	}
+	
+	taskEXIT_CRITICAL();
 	
 	while( !dmaOperationCompleted || !eccOperationCompleted ){
 		if( xTaskGetTickCount() - startTick > TIMEOUT_MS){
@@ -68,11 +93,23 @@ int readDataRegonPage(unsigned int page, void *buffer){
 		}
 	}
 	xSemaphoreGive(flashLock);
-	return NO_ERROR;
+	
+	return result;
 }
 
 int writeDataRegonPage(unsigned int page, void *meta_buffer, void *data_buffer){
 	unsigned int startTick = 0;
+	
+	//printf("data_buffer %08x, meta_buffer %08x\n",data_buffer,meta_buffer);
+	/*
+	if((unsigned int)data_buffer > KHEAP_MEMORY_VIR_START){
+		data_buffer = data_buffer - KHEAP_MEMORY_VIR_START + KHEAP_MAP_PHY_START;
+	}
+	
+	if((unsigned int)meta_buffer > KHEAP_MEMORY_VIR_START){
+		meta_buffer = meta_buffer - KHEAP_MEMORY_VIR_START + KHEAP_MAP_PHY_START;
+	}
+	*/
 	
 	#ifdef MAP_DEBUG
 		//printf("    write page: %d start\n",page + dataRegonStartBlock * 64);
@@ -87,8 +124,9 @@ int writeDataRegonPage(unsigned int page, void *meta_buffer, void *data_buffer){
 	#ifdef MAP_DEBUG
 		//printf("    write page: %d call\n",page + dataRegonStartBlock * 64);
 	#endif
-	
+	//printf("meta_buffer %08x\n, data_buffer %08x\n",meta_buffer,data_buffer);
 	//taskENTER_CRITICAL();
+	flush_cache();
 	GPMI_write_block_with_ecc8(NAND_CMD_SEQIN,NAND_CMD_PAGEPROG,NAND_CMD_STATUS,
 								page + dataRegonStartBlock * 64 ,data_buffer,meta_buffer);
 	//taskEXIT_CRITICAL();
@@ -129,6 +167,7 @@ int eraseDataRegonBlock(unsigned int block){
 	//taskENTER_CRITICAL();
 	GPMI_erase_block_cmd(NAND_CMD_ERASE1, NAND_CMD_ERASE2, NAND_CMD_STATUS, block + dataRegonStartBlock);
 	//taskEXIT_CRITICAL();
+	flush_cache();
 	
 	while( !dmaOperationCompleted ){
 			if( xTaskGetTickCount() - startTick > TIMEOUT_MS){
@@ -162,23 +201,31 @@ int dhara_nand_is_bad(const struct dhara_nand *n, dhara_block_t b){
 		printf("Test %d is bad? \n",b);
 	#endif
 	
-	readDataRegonPage(b * 64, page_buf);
-	
-	if(__DMA_NAND_AUXILIARY_BUFFER[0] != 0xFF){
-		#ifdef MAP_DEBUG
-			printf("    bad block %d.\n",b);
-		#endif
+	if(readDataRegonPage(b * 64, page_buf) == BAD){
+			printf("    bad block at %d.\n",b);
 		return 1;
 	}
+	
+	
+	
+	/*if(readBackMetaData[0] != 0xFF){
+
+		
+		printf("    bad block at %d.\n",b);
+		return 1;
+	}*/
 
 	return 0;
 }
 
+
+unsigned char A1META[19] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 void dhara_nand_mark_bad(const struct dhara_nand *n, dhara_block_t b){
 	
 	readDataRegonPage(b * 64, page_buf);
-	__DMA_NAND_AUXILIARY_BUFFER[0] = 0;
-	writeDataRegonPage( b * 64, __DMA_NAND_AUXILIARY_BUFFER, page_buf);
+	A1META[0] = 0;
+	writeDataRegonPage( b * 64, A1META, page_buf);
+	A1META[0] = 0xFF;
 	
 }
 
@@ -257,7 +304,10 @@ int dhara_nand_read(const struct dhara_nand *n, dhara_page_t p,
 		return -1;
 	}
 	memcpy(data,page_buf + offset, length);
-	*err = DHARA_E_NONE;
+	if(err != NULL){
+		*err = DHARA_E_NONE;
+	}
+	
 	return 0;
 }
 
@@ -322,12 +372,21 @@ void flashMapReset(){
 }
 
 
+unsigned int FlashMapInited = 0;
+unsigned int isFlashMapInited(){
+	return FlashMapInited;
+}
+
 void vServiceFlashMap( void *pvParameters )
 {
 	unsigned int status = 0;
 	dhara_error_t err = 0;
 	unsigned char *buffer;
-	vTaskDelay(50);
+	
+	while(!isSTMPDiskInited()){
+		vTaskDelay(5);
+	}
+	
 	if(isRawFlash()){
 		printf("ERROR: error format flash.\n");
 		vTaskDelete(NULL);
@@ -340,7 +399,12 @@ void vServiceFlashMap( void *pvParameters )
 	
 	printf("num_blocks: %d, StartBlock: %d\n",nandinf.num_blocks, dataRegonStartBlock);
 	err = 0;
+	
+	//dhara_page_buf = pvPortMalloc(2048);
+	
 	dhara_map_init(&map, &nandinf, dhara_page_buf, GC_RATIO);
+	
+	
 	status = dhara_map_resume(&map, &err);
 	printf("resume: %d, err:%d \n",status,err);
 	printf("  flash capacity: %d\n", dhara_map_capacity(&map));
@@ -365,6 +429,11 @@ void vServiceFlashMap( void *pvParameters )
 	
 	
 	xTaskCreate( vServiceFlashSync , "Flash Sync Svc" , configMINIMAL_STACK_SIZE, NULL, 4, NULL );
+	
+	FlashMapInited = 1;
+	
+	
+	vTaskDelete(NULL);
 	
 	for(;;) {
 		vTaskSuspend(NULL);

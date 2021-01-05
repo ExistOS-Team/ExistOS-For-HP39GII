@@ -5,6 +5,7 @@
 
 
 #include "ff.h"
+#include "memory_map.h"
 
 
 #if FF_USE_LFN == 3	/* Dynamic memory allocation */
