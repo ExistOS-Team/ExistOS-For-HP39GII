@@ -1,4 +1,4 @@
-# [LibreCalc-For-HP39GII](https://github.com/Repeerc/LibreCalc-For-HP39GII)
+# [ExistOS-For-HP39GII](https://github.com/Repeerc/LibreCalc-For-HP39GII)
 
 一个开源的HP39GII固件项目
 
@@ -6,9 +6,27 @@
 
 [![GPL Licence](https://badges.frapsoft.com/os/gpl/gpl.png?v=103)](https://opensource.org/licenses/GPL-3.0/)
 
-本固件项目由一群计算器爱好者始创，使用了[FreeRTOS kernel](https://github.com/FreeRTOS/FreeRTOS)、[TinyUSB](https://github.com/hathach/tinyusb)。我们非常欢迎同好试用和改善本项目的代码，也非常乐意听取您的宝贵意见。期待您的参与！
+本固件项目由一群计算器爱好者始创，使用了[FreeRTOS kernel](https://github.com/FreeRTOS/FreeRTOS)、[TinyUSB](https://github.com/hathach/tinyusb)、[FatFs](http://elm-chan.org/fsw/ff/00index_e.html)、[dhara](https://github.com/dlbeer/dhara)等库。我们非常欢迎同好试用和改善本项目的代码，也非常乐意听取您的宝贵意见。期待您的参与！
+## 目前工作进展
+- [x] Boot
+- [x] 调试串口
+- [x] LCD屏幕驱动
+- [x] 键盘驱动
+- [x] 定时器驱动
+- [x] CPU频率设定
+- [x] RTC时钟
+- [x] USB大容量存储模式
+- [x] USB串口控制台
+- [x] FLASH驱动
+- [x] FATFS文件系统
+- [x] 多任务
+- [ ] 虚拟内存
+- [ ] 进程、ELF加载
+- [ ] 用户界面GUI
+- [ ] 电源管理
+- [ ] 完全脱离官方刷机工具的固件升级
 
-目前工作进展：已经完成了操作系统内核和USB驱动。但由于FLASH尚未能够驱动，目前固件仅能运行在Ram上，无法写入FLASH中。同时还没有用户界面。现在的工作重心是FLASH驱动。关于用户界面CLI还在讨论中，如有宝贵意见可于Issues提出。
+目前工作进展：已经完成了操作系统大部分内核和一些必要的硬件驱动。但由于未弄清机器固件运行机制，因此刷入本固件需要在Win7\WinXP环境下用计算器自带的固件升级软件刷入。同时还没有用户界面。现在的工作重心是实现虚拟内存管理和进程加载。关于用户界面GUI等还在讨论中，如有宝贵意见可于Issues提出。
 
 
 ## 安装
@@ -17,7 +35,7 @@
 
 1. 使用任意方法把本项目源码下载到您的电脑上的任意位置。
 
-2. 前往[https://github.com/Repeerc/LibreCalc-For-HP39GII/releases/tag/0.0.1](https://github.com/Repeerc/LibreCalc-For-HP39GII/releases/tag/0.0.1)下载编译工具链。
+2. 前往[https://github.com/Repeerc/ExistOS-For-HP39GII/releases/tag/0.0.1](https://github.com/Repeerc/ExistOS-For-HP39GII/releases/tag/0.0.1)下载编译工具链。
 
 3. 使本项目源码文件夹和编译工具链文件夹处于同级。如下所示
 
