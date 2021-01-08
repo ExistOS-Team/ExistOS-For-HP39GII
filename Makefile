@@ -9,6 +9,7 @@ CC             = ..\tools\gcc-arm\bin\arm-none-eabi-gcc
 GPP            = ..\tools\gcc-arm\bin\arm-none-eabi-g++
 AS             = ..\tools\gcc-arm\bin\arm-none-eabi-as
 OBJCOPY		   = ..\tools\gcc-arm\bin\arm-none-eabi-objcopy.exe 
+SIZE           = ..\tools\gcc-arm\bin\arm-none-eabi-size.exe
 
 CFLAGS         = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -Os -pipe -ffunction-sections 
 CFLAGS_TESTING = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O3 -pipe -Wstringop-overflow=0
@@ -123,8 +124,8 @@ debug:
 	$(CC) -S $(CSRCS) $(GCCINCPATH) $(INCPATH)
 # $(COBJS_TESTING)
 rom.elf: $(COBJS) $(CPPOBJS) $(SOBJS)  $(CTINYUSBCOBJS) $(CDHARAOBJS) $(FatFsObjs) $(LVGL_SRC_O) $(COREJSON_SRC_OBJS) $(SHELL_SRC_OBJS) $(LDSCRIPT)
-	$(LINKER) -o rom.elf $(LFLAGS)  $(SOBJS) $(COBJS) $(CTINYUSBCOBJS) $(CDHARAOBJS) $(FatFsObjs) $(LVGL_SRC_O) $(COREJSON_SRC_OBJS) $(SHELL_SRC_OBJS) $(CPPOBJS) $(LIBS)
-
+	$(LINKER) -o rom.elf $(LFLAGS)  $(SOBJS) $(COBJS) $(CTINYUSBCOBJS) $(CDHARAOBJS) $(FatFsObjs) $(LVGL_SRC_O) $(COREJSON_SRC_OBJS) $(SHELL_SRC_OBJS) $(CPPOBJS) $(LIBS)  
+	$(SIZE) rom.elf
 rom.bin : rom.elf 
 	$(OBJCOPY) -O binary -R .note -R .comment -S --pad-to=0x40000 rom.elf rom.bin
 

@@ -44,6 +44,7 @@ extern "C"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "ServiceUSBDevice.h"  //for cdc_printf
 
 //#include <rtconfig.h>
 //#include <rtthread.h>

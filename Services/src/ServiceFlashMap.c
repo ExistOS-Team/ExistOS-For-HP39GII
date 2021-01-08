@@ -9,6 +9,7 @@
 #include "nand.h"
 #include "raw_flash.h"
 #include "memory_map.h"
+#include "mmu.h"
 
 /* System serive includes. */
 #include "ServiceRawFlash.h"
