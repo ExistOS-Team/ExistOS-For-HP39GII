@@ -69,6 +69,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+void mmu_set_RS(unsigned int RS);
+void mmu_set_domain_control_bit(unsigned int domain, unsigned int controlBit);
+
 //一级页表初始化
 void DFLTP_init(void);
 //栈初始化

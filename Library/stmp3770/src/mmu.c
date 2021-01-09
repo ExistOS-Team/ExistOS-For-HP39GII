@@ -24,7 +24,21 @@
 #include "memory_map.h"
 volatile unsigned int *tlb_base = (unsigned int *)0x800C0000;	//一级页表基地址
 
+volatile void mmu_set_RS(unsigned int RS) {
+    register unsigned int c1_r asm("r1");
+    asm volatile("mrc p15, 0, %0, c1, c0, 0" ::"r"(c1_r));
+    c1_r &= 0xFFFFFCFF;
+    c1_r |= (RS & 0x3) << 8;
+    asm volatile("mcr p15, 0, %0, c1, c0, 0" ::"r"(c1_r));
+}
 
+volatile void mmu_set_domain_control_bit(unsigned int domain, unsigned int controlBit) {
+    register unsigned int c3_r asm("r2");
+    asm volatile("mrc p15, 0, %0, c3, c0, 0" ::"r"(c3_r));
+    c3_r &= ~((0x3) << domain * 2);
+    c3_r |= ((controlBit & 0x3) << domain * 2);
+    asm volatile("mcr p15, 0, %0, c3, c0, 0" ::"r"(c3_r));
+}
 
 uint8_t *VIR_TO_PHY_ADDR(uint8_t *VIRT_ADDR)
 {

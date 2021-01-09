@@ -24,11 +24,11 @@ typedef struct SwapPageInfo {
     unsigned vmNum : 8;    // VM号
     unsigned resv : 2;     // reserved
     unsigned writable : 1; // 是否可写
-    unsigned inUse : 1;    // 是否使用
+    unsigned used : 1;    // 是否使用
 } SwapPageInfo;            // swap中一个page的相关信息
 
 typedef struct MemPageInfo {
-    unsigned inUse : 1;      // 是否使用
+    unsigned used : 1;      // 是否使用
     unsigned dirty : 1;      // 脏位
     unsigned associated : 1; // 是否是从swap读入的，如果是要写回相应地方
     union {
@@ -47,16 +47,18 @@ typedef struct FileLoc {
 } FileLoc;
 
 typedef struct VmSection {
-    char *start;            // 起始地址
-    unsigned len : 31;      // 长度，不得超过2G
-    unsigned writable : 1;  // 是否可写
-    FileLoc *fileloc;       // 关联文件
-    struct VmSection *next; // 链表下一项
-} VmSection;                // 一个VM中一段内容
+    char *start;              // 起始地址
+    unsigned len : 31;        // 长度，不得超过2G
+    unsigned writable : 1;    // 是否可写
+    FileLoc *fileloc;         // 关联文件
+    struct __VmSection *next; // 链表下一项
+} VmSection;                  // 一个VM中一段内容
 
 void switch_vm(unsigned int vmNum);
 
 unsigned int pageFaultISR(TaskHandle_t ExceptionTaskHandle, unsigned int accessFaultAddress, unsigned int insFaultAddress, unsigned int FSR);
+
+int vmLoadFile(unsigned char vmNum, char *start, unsigned int len, FIL *file, unsigned int offset, unsigned char writable);
 
 void vServiceSwap(void *pvParameters);
 FIL *getSwapfileHandle();
