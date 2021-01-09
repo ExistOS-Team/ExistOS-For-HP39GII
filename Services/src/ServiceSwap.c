@@ -1,232 +1,472 @@
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <malloc.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#include "init.h"
 #include "cdc_console.h"
-#include "keyboard.h"
 #include "ff.h"
-#include "rtc.h"
-#include "startup_info.h"
+#include "init.h"
+#include "keyboard.h"
 #include "memory_map.h"
 #include "mmu.h"
 #include "regsdigctl.h"
+#include "rtc.h"
+#include "startup_info.h"
 
-#include "ServiceGraphic.h"
-#include "ServiceSTMPPartition.h"
-#include "ServiceFlashMap.h"
-#include "ServiceRawFlash.h"
-#include "ServiceUSBDevice.h"
 #include "ServiceFatFs.h"
+#include "ServiceFlashMap.h"
+#include "ServiceGraphic.h"
+#include "ServiceRawFlash.h"
+#include "ServiceSTMPPartition.h"
 #include "ServiceSwap.h"
+#include "ServiceUSBDevice.h"
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "uart_debug.h"
 #include "map.h"
+#include "queue.h"
+#include "task.h"
+#include "uart_debug.h"
 
-extern int heapBytesRemaining;
+#define SWAP_PAGES (swapSizeMB * PAGES_PER_MIB)
 
-unsigned char *__pageBuffer;
-unsigned char *__l2_pgbuff_tab;
+#include <stdarg.h>
+// extern int heapBytesRemaining;
 
-FIL PageFileHandle;
+SwapPageInfo *swapPages;
+MemPageInfo *memPages;
 
-FIL* getPageFileHandle(){
-	return &PageFileHandle;
+void *__pageBuffer;
+unsigned char *pageBuffer;
+unsigned int pageBufferPhy;
+
+void *__l2_pgbuff_tabs;
+unsigned char *l2_pgbuff_tabs;
+unsigned int l2_pgbuff_tabsPhy;
+
+VmSection **vmInfo;
+
+unsigned int curL1Entry = 0;
+
+unsigned int curMemPage = 0;
+
+unsigned char curVmNum = 0;
+
+FIL swapfileHandle;
+
+FIL *getSwapfileHandle() {
+    return &swapfileHandle;
 }
 
 unsigned int swap_file_inited = 0;
 
-unsigned char *l2_pgbuff_tab;
-
-unsigned int buffer_page_index = 0;
-unsigned int buffer_section_index = 0;
-
-unsigned int fault_addr_in_page;
-unsigned int page_save_size;
-
-unsigned char *pageBuffer;
-
-
-
-//page_buffer_info page_buffer_info;
-unsigned int *page_buffer_info;
-
-volatile int last_save_Bank1_page_addr = -1;
-
-
 extern unsigned int *tlb_base;
 
-volatile int current_buffer_page_addr = -1;
-
-//unsigned int *mmu_base=(unsigned int *)FIRST_LEVEL_PAGE_TABLE_BASE;	//一级页表基地址
-
-	FRESULT pg_fr;
-	UINT pg_br;
-	
-unsigned int pageFaultISR(TaskHandle_t ExceptionTaskHandle, unsigned int accessFaultAddress, unsigned int insFaultAddress, unsigned int FSR){
-	
-			fault_addr_in_page = (accessFaultAddress - KHEAP_MEMORY_VIR_START) / PAGE_SIZE;
-			//printf("FAULT ACCESS VM PAGE:%08x\n",fault_addr_in_page);	
-			//while(1);
-			
-			
-			if(swap_file_inited){
-				printf("<%d %d %d>\n",fault_addr_in_page
-					,( (PHY_KHEAP_MEMORY_PAGES - 1) ),
-					( PHY_KHEAP_MEMORY_PAGES + (swapSizeMB * PAGES_PER_MIB)));
-					
-					
-				if(( fault_addr_in_page > (PHY_KHEAP_MEMORY_PAGES - 1) )&& 
-						(fault_addr_in_page < PHY_KHEAP_MEMORY_PAGES + (swapSizeMB * PAGES_PER_MIB))
-						){
-							
-							//unsigned int want_to_access_section = accessFaultAddress >> 20;
-							/*
-							for(int i = 0;i<VM_ROUND_ROBIN_SECTIONS; i++){
-								//if(){
-									
-								//}
-							}
-							*/
-							
-							
-							if(current_buffer_page_addr != -1){
-								f_lseek(&PageFileHandle, current_buffer_page_addr);
-								pg_fr = f_write (&PageFileHandle, pageBuffer,PAGE_SIZE ,&pg_br );
-							}
-							
-							current_buffer_page_addr = (fault_addr_in_page - PHY_KHEAP_MEMORY_PAGES) * PAGE_SIZE;
-							
-							f_lseek(&PageFileHandle, current_buffer_page_addr);
-							pg_fr = f_read(&PageFileHandle, pageBuffer, PAGE_SIZE, &pg_br);
-							
-							
-							
-							if(		(accessFaultAddress >> 20 != 1) 
-								&&  (accessFaultAddress >> 20 != 0)
-								&&  (accessFaultAddress >> 20 != BF_RDn(DIGCTL_MPTEn_LOC,0,LOC))
-								){
-									
-									BF_WRn(DIGCTL_MPTEn_LOC,0,LOC,accessFaultAddress >> 20);
-									MMU_MAP_COARSE_RAM((unsigned int) VIR_TO_PHY_ADDR((uint8_t *)l2_pgbuff_tab) , accessFaultAddress & 0xFFF00000);
-									memset(l2_pgbuff_tab,0,PAGE_TABLE_SIZE);
-							}
-							
-							if(last_save_Bank1_page_addr != -1){
-										MMU_MAP_SMALL_PAGE_UNMAP(last_save_Bank1_page_addr);
-										last_save_Bank1_page_addr = -1;
-							}
-							if(accessFaultAddress >> 20 == 1){
-								last_save_Bank1_page_addr = accessFaultAddress;
-							}
-							
-							
-							
-							MMU_MAP_SMALL_PAGE_CACHED((unsigned int) VIR_TO_PHY_ADDR((uint8_t *)(pageBuffer)),accessFaultAddress);	
-							
-							
-						
-							asm volatile ("mov	r0, #0");
-							asm volatile ("mcr p15, 0, r0, c8, c7, 0");
-					
-							
-							return 0;
-					//vTaskSuspendAll();
-				}
-			}
-	//printf("");
-	
-	return 1;
+void *mem_align_up(void *p, unsigned int u) {
+    if ((unsigned int)p % u == 0) {
+        return p;
+    } else {
+        return ((unsigned int)p / u + 1) * u;
+    }
 }
 
-
-
-void vServiceException( void *pvParameters ){
-	
-	Q_MEM_Exception = xQueueCreate(128,sizeof(MEM_Exception));
-	MEM_Exception e;
-
-	for(;;){
-		if(xQueueReceive( Q_MEM_Exception, (&e), ( TickType_t ) portMAX_DELAY ) == pdTRUE ){
-
-		}
-				
-		//vTaskDelay(100);
-	}
+int inWhichL1Entry(unsigned int addr) {
+    addr >>= 20;
+    for (int i = 0; i < NUM_L1_ENTRIES; i++) {
+        if (addr >= BF_RDn(DIGCTL_MPTEn_LOC, i, LOC) &&
+            addr < BF_RDn(DIGCTL_MPTEn_LOC, i, LOC) + 1024 * 1024) {
+            return i;
+        };
+    }
+    return -1;
 }
 
+void switch_vm(unsigned int vmNum) {
+    if (swap_file_inited) {
+        memset(l2_pgbuff_tabs, 0,
+               NUM_L1_ENTRIES * PAGE_TABLE_SIZE); // L2 table全部清零，等待重建
+        curVmNum = vmNum;
+    }
+}
 
+unsigned int pageFaultISR(TaskHandle_t ExceptionTaskHandle, unsigned int accessFaultAddress,
+                          unsigned int insFaultAddress, unsigned int FSR) {
+    if (!swap_file_inited) {
+        return 1;
+    }
 
-void vServiceSwap( void *pvParameters ){
-	
-	xTaskCreate( vServiceException, "MEM Exception SVC", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
-	
-	swap_file_inited = 0;
-	if(swapSizeMB == 0){
-		vTaskDelete(NULL);
-	}
-	
-	FRESULT fr;
-	
-	fr = f_open(&PageFileHandle,"Pagefile",FA_CREATE_ALWAYS | FA_WRITE | FA_READ);
-	if(fr != 0){
-		printf("Create pagefile fail, %d\n",fr);
-		
-		vTaskDelete(NULL);
-	}
-	
-	fr = f_expand(&PageFileHandle,swapSizeMB * 1024 * 1024, 1);
-	
-	f_sync(&PageFileHandle);
-	flashSyncNow();
-	
-	
-	if(fr != 0){
-		printf("Allocates %d MB pagefile fail, %d\n",swapSizeMB,fr);
-		
-		vTaskDelete(NULL);
-	}
-	
-	__pageBuffer = (unsigned char *)((unsigned char *)
-	
-		pvPortMalloc( 
-		
-		sizeof(int) * 1
-		
-		+ (1 + 1) * PAGE_SIZE )
-			
-	);
-	
-	__pageBuffer = (unsigned char *)(__pageBuffer);
-	
-	
-	
-	page_buffer_info  = __pageBuffer;
-	memset(page_buffer_info,0,sizeof(page_buffer_info) * BUFFER_PAGES);
-	
-	 
-	
-	l2_pgbuff_tab = __l2_pgbuff_tab = malloc(PAGE_TABLE_SIZE * 2);//malloc((VM_SECTION_NUM + 1) * PAGE_TABLE_SIZE); 
-	
-	while((unsigned int)(l2_pgbuff_tab++) % PAGE_TABLE_SIZE != 0);
-	l2_pgbuff_tab--;
-	l2_pgbuff_tab = (unsigned char *)(l2_pgbuff_tab);
-	
-	
-	memset(l2_pgbuff_tab,0,PAGE_TABLE_SIZE);
-	 
-	pageBuffer = __pageBuffer + sizeof(int) * BUFFER_PAGES;
-	
-	while((unsigned int)(pageBuffer++) % PAGE_SIZE != 0);
-	pageBuffer--;
-	
-	printf("page buffer addr:%08x , %08x\n",pageBuffer,l2_pgbuff_tab);
-	
-	swap_file_inited = 1;
-	vTaskDelete(NULL);
+    if (accessFaultAddress >= 0xc0000000) { // 不为内核段服务
+        return 1;
+    }
+
+    unsigned char code = FSR & 0b1101;
+
+    cdc_p("accessFaultAddress = 0x%x, code = 0x%x\r\n", accessFaultAddress, code);
+
+    if (code == 0b0101) { // Translation fault，关注缺页异常
+        VmSection *vs = vmInfo[curVmNum];
+        while (vs != NULL) {
+            if (vs->start <= accessFaultAddress &&
+                accessFaultAddress < vs->start + vs->len) {
+                cdc_p("In 0x%x, 0x%x\r\n", vs->start, vs->len); // TODO: log reaches here
+                goto next;
+            }
+            vs = vs->next;
+        }
+        cdc_p("Access undefined memory!\r\n");
+        return 1; // 访问未定义内存
+
+        int entry;
+    next:
+        entry = inWhichL1Entry(accessFaultAddress);
+        if (entry < 0) { // 准备挪用一个L1 entry
+            memset(l2_pgbuff_tabs + curL1Entry * PAGE_TABLE_SIZE, 0,
+                   PAGE_TABLE_SIZE); // 对应L2 table清零
+
+            unsigned int sectionAddr = (unsigned int)accessFaultAddress >> 20;
+            BF_WRn(DIGCTL_MPTEn_LOC, curL1Entry, LOC, sectionAddr);
+            MMU_MAP_COARSE_RAM(l2_pgbuff_tabsPhy + curL1Entry * PAGE_TABLE_SIZE, sectionAddr << 20);
+            cdc_p("L1 entry %d moved to 0x%x\r\n", curL1Entry, l2_pgbuff_tabs);
+            entry = curL1Entry;
+            curL1Entry++; // 步进
+            if (curL1Entry >= NUM_L1_ENTRIES) {
+                curL1Entry -= NUM_L1_ENTRIES;
+            };
+        } else {
+            cdc_p("No L1 entry moved, using entry %d\r\n", entry);
+        }
+
+        unsigned int pageAddr = accessFaultAddress >> 12;
+
+        // 复用
+        for (unsigned int index = 0; index < BUFFER_PAGES; index++) {
+            if (memPages[index].used) {
+                continue;
+            }
+            if (memPages[index].associated) {
+                if (swapPages[memPages[index].swapPageIndex].addr != pageAddr ||
+                    swapPages[memPages[index].swapPageIndex].vmNum !=
+                        curVmNum) {
+                    continue;
+                }
+            } else {
+                if (memPages[index].addr != pageAddr ||
+                    memPages[index].vmNum != curVmNum) {
+                    continue;
+                }
+            }
+            cdc_p("Able to reuse page %d\r\n", index);
+            if (memPages[index].dirty) {
+                MMU_MAP_SMALL_PAGE_CACHED_WITH_L2(
+                    pageBufferPhy + PAGE_SIZE * index, pageAddr << 12,
+                    l2_pgbuff_tabs + entry * PAGE_TABLE_SIZE);
+            } else {
+                MMU_MAP_SMALL_PAGE_CACHED_RO_WITH_L2(
+                    pageBufferPhy + PAGE_SIZE * index, pageAddr << 12,
+                    l2_pgbuff_tabs + entry * PAGE_TABLE_SIZE);
+            }
+            flush_cache();
+            return 0; // 如果pageBuffer里已经有现成的了，就直接配好L2
+                      // table，return
+        }
+        cdc_p("No page reused\r\n");
+    skip:
+        // 换出
+        cdc_p("swap out\r\n");
+        if (memPages[curMemPage].used /*&&
+            memPages[curMemPage].dirty*/) { // 脏了就写入swap，否则直接丢弃
+            unsigned int memPageAddr =
+                (memPages[curMemPage].associated
+                     ? swapPages[memPages[curMemPage].swapPageIndex].addr
+                     : memPages[curMemPage].addr)
+                << 12;
+            MMU_MAP_SMALL_PAGE_UNMAP_WITH_L2(
+                memPageAddr, l2_pgbuff_tabs + inWhichL1Entry(memPageAddr) * PAGE_TABLE_SIZE); // 把牺牲页unmap掉
+
+            FRESULT fr;
+
+            if (memPages[curMemPage].associated) {
+                fr = f_lseek(&swapfileHandle, memPages[curMemPage].swapPageIndex * PAGE_SIZE); // 如果有对应swap页面就写入
+                cdc_p("Use old swap page %d\r\n", memPages[curMemPage].swapPageIndex);
+            } else {
+                unsigned int index = 0;
+                while (swapPages[index].used) { // 否则寻找空闲swap页面
+                    index++;
+                    if (index >= SWAP_PAGES) {
+                        cdc_p("Swapfile used up!\r\n");
+                        return 1;
+                    }
+                }
+
+                swapPages[index].used = 1; // 标记swap页面
+                swapPages[index].addr = memPages[curMemPage].addr;
+                swapPages[index].vmNum = memPages[curMemPage].vmNum;
+                swapPages[index].writable = memPages[curMemPage].writable;
+
+                fr = f_lseek(&swapfileHandle, index * PAGE_SIZE);
+                cdc_p("Use new swap page %d\r\n", index);
+            }
+            if (fr != 0) {
+                cdc_p("Lseek in swapfile failed!\r\n");
+                return 1;
+            }
+
+            unsigned int bw;
+            fr = f_write(&swapfileHandle, pageBuffer[curMemPage], PAGE_SIZE, &bw);
+            if (fr != 0) {
+                cdc_p("Write to swapfile failed!\r\n");
+                return 1;
+            }
+            cdc_p("Page %d written to swapfile\r\n", curMemPage);
+        }
+
+        // L2 table里新建项
+        MMU_MAP_SMALL_PAGE_CACHED_RO_WITH_L2(
+            pageBufferPhy + PAGE_SIZE * curMemPage, pageAddr << 12,
+            l2_pgbuff_tabs + entry * PAGE_TABLE_SIZE);
+
+        // 换入
+        unsigned int index = 0;
+        while (!swapPages[index].used || swapPages[index].addr != pageAddr || swapPages[index].vmNum != curVmNum) { // 寻找相应swap页面，可优化成Tree
+            index++;
+            if (index >= SWAP_PAGES) {
+                cdc_p("Create new page\r\n");
+                memPages[curMemPage].associated = 0;
+                memPages[curMemPage].addr = pageAddr;
+                memPages[curMemPage].vmNum = curVmNum;
+                memPages[curMemPage].writable = vs->writable;
+                if (vs->fileloc == NULL) {
+                    memset(pageBuffer + curMemPage * PAGE_SIZE, 0, PAGE_SIZE);
+                } else {
+                    FRESULT fr = f_lseek(vs->fileloc->file,
+                                         (pageAddr << 12) - (unsigned int)vs->start + vs->fileloc->offset);
+                    if (fr != 0) {
+                        cdc_p("Lseek in file failed!\r\n");
+                        return 1;
+                    }
+                    unsigned int br;
+                    fr = f_read(vs->fileloc->file, pageBuffer + curMemPage * PAGE_SIZE, PAGE_SIZE, &br);
+                    if (fr != 0) {
+                        cdc_p("Read from file failed!\r\n");
+                        return 1;
+                    }
+                    if (br < PAGE_SIZE) {
+                        memset(pageBuffer + curMemPage * PAGE_SIZE + br, 0, PAGE_SIZE - br);
+                    }
+                }
+                goto total;
+            }
+        }
+        cdc_p("Reading from swap page %d\r\n", index);
+        FRESULT fr = f_lseek(&swapfileHandle, index * PAGE_SIZE);
+        if (fr != 0) {
+            cdc_p("Lseek in swapfile failed!\r\n");
+            return 1;
+        }
+        unsigned int br;
+        fr = f_read(&swapfileHandle, pageBuffer + curMemPage * PAGE_SIZE,
+                    PAGE_SIZE, &br);
+        if (fr != 0) {
+            cdc_p("Read from swapfile failed!\r\n");
+            return 1;
+        }
+        memPages[curMemPage].associated = 1; // 相关联
+        memPages[curMemPage].swapPageIndex = index;
+    total:
+        memPages[curMemPage].used = 1;
+        memPages[curMemPage].dirty = 0;
+        curMemPage++; // 步进
+        if (curMemPage >= BUFFER_PAGES) {
+            curMemPage -= BUFFER_PAGES;
+        };
+        flush_cache();
+        cdc_p("Finished\r\n");
+        return 0;
+    } else if (code == 0b1101) { // Permission fault，关注写只读异常
+        cdc_flush();
+        unsigned int pageAddr = accessFaultAddress >> 12;
+        for (unsigned int index = 0; index < BUFFER_PAGES; index++) {
+            if (memPages[index].associated) {
+                if (swapPages[memPages[index].swapPageIndex].addr != pageAddr ||
+                    swapPages[memPages[index].swapPageIndex].vmNum !=
+                        curVmNum) {
+                    continue;
+                }
+                if (!swapPages[memPages[index].swapPageIndex].writable) {
+                    return 1;
+                }
+            } else {
+                if (memPages[index].addr != pageAddr ||
+                    memPages[index].vmNum != curVmNum) {
+                    continue;
+                }
+                if (!memPages[index].writable) {
+                    return 1;
+                }
+            }
+            unsigned char entry = inWhichL1Entry(accessFaultAddress);
+            if (entry < 0) {
+                return 1;
+            }
+            memPages[index].dirty = 1;
+            MMU_MAP_SMALL_PAGE_CACHED_WITH_L2(
+                pageBufferPhy + PAGE_SIZE * index, pageAddr << 12,
+                l2_pgbuff_tabs + entry * PAGE_TABLE_SIZE);
+            flush_cache();
+            cdc_p("RO to RW\r\n");
+            return 0;
+        }
+        return 1;
+    } else {
+        return 1;
+    }
+}
+
+int vmLoadFile(unsigned char vmNum, char *start, unsigned int len, FIL *file, unsigned int offset, unsigned char writable) {
+    if (!swap_file_inited) {
+        return -1;
+    }
+    if ((unsigned int)start & 0xfff != 0 || len & 0xfff != 0) {
+        return -1;
+    }
+    VmSection *p = vmInfo[vmNum];
+    while (p != NULL) {
+        if ((start <= p->start && p->start < start + len) ||
+            (p->start <= start && start < p->start + p->len)) {
+            return -1;
+        }
+        p = p->next;
+    }
+    VmSection *vs = pvPortMalloc(sizeof(VmSection));
+    if (vs == NULL) {
+        cdc_p("Create VmSection failed!\r\n");
+        return -1;
+    }
+    vs->start = start;
+    vs->len = len;
+    vs->writable = writable;
+    vs->next = vmInfo[vmNum];
+    if (file == NULL) {
+        vs->fileloc = NULL;
+    } else {
+        FileLoc *fl = pvPortMalloc(sizeof(FileLoc));
+        if (fl == NULL) {
+            cdc_p("Create FileLoc failed!\r\n");
+            vPortFree(vs);
+            return -1;
+        }
+        fl->file = file;
+        fl->offset = offset;
+        vs->fileloc = fl;
+    }
+    vmInfo[vmNum] = vs;
+    return 0;
+}
+
+// char vmUnload(unsigned char vmNum, char *start) {
+//     VmSection *p = vmInfo[vmNum];
+//     while (p != NULL) {
+//         if (p->start == start) {
+//             if (p->fileloc != NULL) {
+//                 vPortFree(p->fileloc);
+//             }
+//             VmSection *next = p->next;
+//             vPortFree(p);
+//             p = next;
+//             return 0;
+//         }
+//         p = p->next;
+//     }
+//     return -1;
+// }
+
+void vServiceException(void *pvParameters) {
+    Q_MEM_Exception = xQueueCreate(128, sizeof(MEM_Exception));
+    MEM_Exception e;
+
+    for (;;) {
+        if (xQueueReceive(Q_MEM_Exception, (&e), (TickType_t)portMAX_DELAY) ==
+            pdTRUE) {
+        }
+
+        // vTaskDelay(100);
+    }
+}
+
+void vServiceSwap(void *pvParameters) {
+    xTaskCreate(vServiceException, "MEM Exception SVC",
+                configMINIMAL_STACK_SIZE, NULL, 4, NULL);
+
+    swapSizeMB = 1;
+    swap_file_inited = 0;
+    if (swapSizeMB == 0) {
+        vTaskDelete(NULL);
+    }
+
+    FRESULT fr = f_open(&swapfileHandle, "Pagefile",
+                        FA_CREATE_ALWAYS | FA_WRITE | FA_READ);
+    if (fr != 0) {
+        printf("Create pagefile failed, %d\r\n", fr);
+        vTaskDelete(NULL);
+    }
+
+    fr = f_expand(&swapfileHandle, swapSizeMB * 1024 * 1024, 1);
+    if (fr != 0) {
+        printf("Allocates %d MB pagefile failed, %d\r\n", swapSizeMB, fr);
+        vTaskDelete(NULL);
+    }
+
+    f_sync(&swapfileHandle);
+    flashSyncNow();
+
+    unsigned int size = SWAP_PAGES * sizeof(SwapPageInfo);
+    swapPages = pvPortMalloc(size);
+    if (swapPages == NULL) {
+        printf("Allocate %d Byte swapPageInfo failed\r\n", size);
+        vTaskDelete(NULL);
+    }
+    memset(swapPages, 0, size);
+
+    size = BUFFER_PAGES * sizeof(MemPageInfo);
+    memPages = pvPortMalloc(size);
+    if (memPages == NULL) {
+        printf("Allocate %d Byte memPageInfo failed\r\n", size);
+        vTaskDelete(NULL);
+    }
+    memset(memPages, 0, size);
+
+    size = NUM_VM * sizeof(VmSection *);
+    vmInfo = pvPortMalloc(size);
+    if (vmInfo == NULL) {
+        printf("Allocate %d Byte vmInfo failed\r\n", size);
+        vTaskDelete(NULL);
+    }
+    memset(vmInfo, 0, size);
+
+    __pageBuffer = pvPortMalloc((BUFFER_PAGES + 1) * PAGE_SIZE);
+    if (__pageBuffer == NULL) {
+        printf("Allocate %d Byte __pageBuffer failed\r\n",
+               (BUFFER_PAGES + 1) * PAGE_SIZE);
+        vTaskDelete(NULL);
+    }
+    pageBuffer = mem_align_up(__pageBuffer, PAGE_SIZE);
+    // memset(pageBuffer, 0, BUFFER_PAGES * PAGE_SIZE); 不必
+    pageBufferPhy = VIR_TO_PHY_ADDR(pageBuffer);
+
+    __l2_pgbuff_tabs = pvPortMalloc(PAGE_TABLE_SIZE * (NUM_L1_ENTRIES + 1));
+    if (__l2_pgbuff_tabs == NULL) {
+        printf("Allocate %d Byte __l2_pgbuff_tabs failed\r\n",
+               PAGE_TABLE_SIZE * 2);
+        vTaskDelete(NULL);
+    }
+    l2_pgbuff_tabs = mem_align_up(__l2_pgbuff_tabs, PAGE_TABLE_SIZE);
+    memset(l2_pgbuff_tabs, 0, PAGE_TABLE_SIZE);
+    l2_pgbuff_tabsPhy = VIR_TO_PHY_ADDR(l2_pgbuff_tabs);
+
+    // mmu_set_domain_control_bit(1, 0b01);
+
+    printf("page buffer addr:%08x , %08x\r\n", pageBuffer, l2_pgbuff_tabs);
+
+    swap_file_inited = 1;
+    vTaskDelete(NULL);
 }

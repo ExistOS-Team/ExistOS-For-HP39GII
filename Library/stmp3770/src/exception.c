@@ -205,7 +205,7 @@ void __handler_dabort(){
 				
 				
 				
-				f_write(getPageFileHandle(), 
+				f_write(getSwapfileHandle(), 
 					page_buffer_virtual_addr[buffer_page_index]  ,
 					4096,
 					&page_save_size
