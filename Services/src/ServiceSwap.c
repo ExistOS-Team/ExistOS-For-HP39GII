@@ -283,7 +283,6 @@ unsigned int pageFaultISR(TaskHandle_t ExceptionTaskHandle, unsigned int accessF
         cdc_p("Finished\r\n");
         return 0;
     } else if (code == 0b1101) { // Permission fault，关注写只读异常
-        cdc_flush();
         unsigned int pageAddr = accessFaultAddress >> 12;
         for (unsigned int index = 0; index < BUFFER_PAGES; index++) {
             if (memPages[index].associated) {
