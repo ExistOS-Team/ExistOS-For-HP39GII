@@ -38,7 +38,8 @@ unsigned int faultAddress;
 unsigned int insAddress;
 unsigned int FSR;
 
-  
+extern void flush_tlb();
+
 
 unsigned char exception_handler_table[4096] 
 __attribute__ (( section(".exception_handler_table") )) __attribute__ ((aligned(4096)));

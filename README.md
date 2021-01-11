@@ -1,5 +1,7 @@
 # [ExistOS-For-HP39GII](https://github.com/Repeerc/LibreCalc-For-HP39GII)
 
+[English readme](./README_en.md)
+
 一个开源的HP39GII固件项目
 
 ## 简介

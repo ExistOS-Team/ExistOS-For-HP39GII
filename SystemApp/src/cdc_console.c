@@ -24,6 +24,8 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "task.h"
+
+extern unsigned int getCurrentHeapEnd();
 extern unsigned char ecc_res[4];
 
 uint8_t buf[64];
@@ -166,46 +168,45 @@ void shell_test_cmd(char argc, char *argv) {
     }
 }
 
+// extern int micropython_main();
+// void shell_micropython_cmd(char argc, char *argv){
+//  	micropython_main();
+// };
+
 const static_cmd_st static_cmd[] =
-    {
-        {"ls", shell_ls_cmd},
-        {"help", shell_help_cmd},
-        {"test", shell_test_cmd},
-        {"tasklist", shell_tasklist_cmd},
-        {"\0", NULL}};
+	{
+		{"ls", shell_ls_cmd},
+		{"help", shell_help_cmd},
+		{"test", shell_test_cmd},
+		{"tasklist", shell_tasklist_cmd},
+//		{"mpy",shell_micropython_cmd},
+		{"\0", NULL}
+	};
 
-void vCDC_Console() {
 
-    unsigned char ch;
+void vCDC_Console(){
+	
+	unsigned char ch;
+	
+	vTaskDelay(500);
+	
+	shell_init();
 
-    vTaskDelay(500);
-
-    shell_init();
-
-    printf("Starting shell ...\n");
-
-    for (;;) {
-
-        if (tud_cdc_available()) {
-
-            //printf("%c \n",tud_cdc_read_char());
-            ch = tud_cdc_read_char();
-            shell(ch);
-            //cdc_putchar(ch);
-
-            //tud_cdc_read_flush();
-        }
-        vTaskDelay(10);
-        //taskYIELD();
-
-        /*
-		if(xQueueReceive( CDCCmdLineQueue, (&buf), ( TickType_t ) portMAX_DELAY ) == pdTRUE ){
-			//FreeRTOS_CLIProcessCommand(buf,console_output_buffer,sizeof(console_output_buffer));
+	printf("Starting shell ...\n");
+	
+	for(;;){
+		
+		if(tud_cdc_available()){
 			
-			//cdc_printf("%s\n",console_output_buffer);
+			//printf("%c \n",tud_cdc_read_char());
+			ch = tud_cdc_read_char();
+			shell(ch);
+			//cdc_putchar(ch);
 			
-			
-			memset(buf,0,sizeof(buf));
-		}*/
+			//tud_cdc_read_flush();
+		}
+		vTaskDelay(10);
+		//taskYIELD();
+		
     }
 }
