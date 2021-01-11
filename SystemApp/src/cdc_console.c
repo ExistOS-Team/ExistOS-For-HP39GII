@@ -171,10 +171,10 @@ void shell_test_cmd(char argc, char *argv)
 	}
 }
 
-//extern int micropython_main();
-void shell_micropython_cmd(char argc, char *argv){
-// 	micropython_main();
-};
+// extern int micropython_main();
+// void shell_micropython_cmd(char argc, char *argv){
+//  	micropython_main();
+// };
 
 const static_cmd_st static_cmd[] =
 	{
@@ -182,7 +182,7 @@ const static_cmd_st static_cmd[] =
 		{"help", shell_help_cmd},
 		{"test", shell_test_cmd},
 		{"tasklist", shell_tasklist_cmd},
-		{"mpy",shell_micropython_cmd},
+//		{"mpy",shell_micropython_cmd},
 		{"\0", NULL}
 	};
 
