@@ -1,0 +1,7 @@
+Standard: Cpp11
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 0
+AccessModifierOffset: -4
+NamespaceIndentation: All
+BreakBeforeBraces: Attach

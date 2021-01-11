@@ -9,5 +9,7 @@
 void vInit();
 void vCDC_Console();
 
+void cdc_p();
+void cdc_flush();
 
 #endif
