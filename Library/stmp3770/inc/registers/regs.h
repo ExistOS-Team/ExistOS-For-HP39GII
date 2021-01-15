@@ -32,9 +32,9 @@
 //
 
 #ifndef __LANGUAGE_ASM__
-typedef unsigned char  reg8_t;
-typedef unsigned short reg16_t;
-typedef unsigned int   reg32_t;
+typedef volatile unsigned char  reg8_t;
+typedef volatile unsigned short reg16_t;
+typedef volatile unsigned int   reg32_t;
 #endif
 
 

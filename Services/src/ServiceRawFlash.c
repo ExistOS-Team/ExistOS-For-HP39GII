@@ -58,7 +58,7 @@ BaseType_t xReadFlashPages( unsigned int start_page, unsigned int pages, void *b
 		//taskENTER_CRITICAL();
 		set_page_address_data(start_page + count);
 		
-		GPMI_read_block_with_ecc8(NAND_CMD_READ0,NAND_CMD_READSTART,address_page_data,buffer,(unsigned char  *)RAWreadBackMetaData,4);
+		GPMI_read_block_with_ecc8(NAND_CMD_READ0,NAND_CMD_READSTART,address_page_data,buffer,(unsigned int *)RAWreadBackMetaData,4);
 		flush_cache();
 		//taskEXIT_CRITICAL();
 		count++;

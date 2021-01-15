@@ -19,7 +19,7 @@
  */
 
 #include "portmacro.h"
- #include "regsuartdbg.h"
+#include "regsuartdbg.h"
 #include "regsicoll.h"
 #include "exception.h"
 #include "uart_debug.h"

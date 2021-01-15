@@ -62,8 +62,6 @@
 
 static void prvSetupHardware(void);
 
-volatile int a = 1, b = 1, c = 1;
-
 unsigned char pcWriteBuffer[2048];
 extern volatile unsigned int dmaOperationCompleted;
 extern volatile unsigned int eccOperationCompleted;
@@ -149,7 +147,7 @@ int main(void) {
 
     xTaskCreate(vTask3, "Task Manager", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
     xTaskCreate(vServiceManger, "Service Host", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
-    xTaskCreate(vInit, "init", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL);
+    xTaskCreate(vInit, "init", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL);
 
     //vStartBlockingQueueTasks(1);
     //vStartGenericQueueTasks(1);
