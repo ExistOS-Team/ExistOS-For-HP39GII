@@ -41,12 +41,16 @@ char *logptr = log;
 void cdc_p(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    logptr += vsprintf(log, fmt, args);
+    logptr += vsprintf(logptr, fmt, args);
     va_end(args);
 }
 
 void cdc_flush() {
     cdc_printf(log);
+    cdc_clear();
+}
+
+void cdc_clear() {
     logptr = log;
     memset(log, 0, 512);
 }
