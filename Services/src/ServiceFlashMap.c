@@ -9,6 +9,7 @@
 #include "nand.h"
 #include "raw_flash.h"
 #include "memory_map.h"
+#include "mmu.h"
 
 /* System serive includes. */
 #include "ServiceRawFlash.h"
@@ -260,7 +261,7 @@ int dhara_nand_prog(const struct dhara_nand *n, dhara_page_t p,
 		    dhara_error_t *err)
 {
 	int status;
-	status = writeDataRegonPage(p,NMETA,data);
+	status = writeDataRegonPage(p,NMETA,(uint8_t *)data);
 	if(status == NO_ERROR){
 		*err = DHARA_E_NONE;
 		return 0;

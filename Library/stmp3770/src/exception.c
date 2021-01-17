@@ -38,7 +38,8 @@ unsigned int faultAddress;
 unsigned int insAddress;
 unsigned int FSR;
 
-  
+extern void flush_tlb();
+
 
 unsigned char exception_handler_table[4096] 
 __attribute__ (( section(".exception_handler_table") )) __attribute__ ((aligned(4096)));
@@ -78,22 +79,14 @@ void fault(){
 
 
 
-//extern unsigned int ABT_STACK_ADDR;
-
-
 
 void __handler_dabort(void) __attribute__((naked));
 void __handler_dabort(){
 	
-	//asm volatile ( "stmfd sp!,{r0-r12, lr}");
-	//uartdbg_printf("dabort 11\n");
-	
-	//while(1);
+
 	
 	asm volatile ("ldr sp,=ABT_STACK_ADDR");
-	//asm volatile ("add sp,sp,#0xC0000000");
-	
-	
+
 	asm volatile ("subs lr,lr,#8");
 	asm volatile ("stmfd sp!, {r0-r12, lr}");
 	
@@ -153,132 +146,7 @@ void __handler_dabort(){
 	}
 	
 	xTaskResumeAll();
-	//switch_mode(ABT_MODE);
-	//vTaskSuspend(NULL);
-	
-	//asm volatile ( "ldmia sp!,{r0-r12, lr}");
-	//asm volatile ("subs pc,lr,#8");
-	
-	//asm volatile ("ldmia sp!,{r0}");
-	//asm volatile ("msr spsr,r0");
 	asm volatile ("ldmia sp!, {r0-r12, pc}^");
-	//asm volatile ("subs pc,lr,#8");
-	
-	
-/*
-	asm volatile ("add lr,lr,#8");
-	
-	portSAVE_CONTEXT_ASM;
-
-	asm volatile ( "bl vTaskSwitchContext" );
-
-	portRESTORE_CONTEXT_ASM;  
-*/
-
-
-	/*
-	asm volatile ("subs lr,lr,#8");		//LR-8为异常发生时的地址，如果是缺页处理完后应返回该地址
-	//asm volatile ("stmfd sp!, {r0-r12, lr}");
-	asm volatile ("stmfd sp!, {r0-r12, lr}");
-	
-    asm volatile ("mrs r0,cpsr");
-    asm volatile ("orr r0,r0,#0xc0");   //禁止所有中断
-    asm volatile ("msr cpsr,r0");
-	
-	asm volatile ("mov r0,lr");
-	asm volatile ("str r0,%0":"=m"(insAddress));	//取出异常指令的地址
-    asm volatile ("mrc p15, 0, r0, c6, c0, 0");
-	asm volatile ("str r0,%0":"=m"(faultAddress));	//取出异常指令访问的地址
-	asm volatile ("mrc p15, 0, r0, c5, c0, 0");	// D
-	asm volatile ("str r0,%0":"=m"(FSR));	//取出异常指令的地址
-	
-*/
-	/*
-	if(swapSizeMB > 0){
-		
-		if(( faultAddress > HEAP_MEMORY + (256 * 1024) ) 
-			&&( faultAddress < HEAP_MEMORY + (256 * 1024) + (swapSizeMB * 1024 * 1024) ) ){
-			
-			da_fault_page_ext_stor = (faultAddress - HEAP_MEMORY + 256 * 1024) / 4096;
-			
-			if(page_buffer_virtual_addr != NULL){
-				
-				
-				
-				f_write(getSwapfileHandle(), 
-					page_buffer_virtual_addr[buffer_page_index]  ,
-					4096,
-					&page_save_size
-					);
-				
-			}
-
-		}
-		
-	}
-	*/
-	
-	//printf("====Data Abort.==== \n");
-	//printf("The instruction at 0x%04X referenced\n memory at 0x%04X. \n",insAddress,faultAddress);
-	//printf("The memory could not be read.\n");
-	//printf("System halt.\n");
-	//fault();
-	
-	/*
-	MEM_Exception e;
-	e.ExceptionTaskHandle = xTaskGetHandle(pcTaskGetName(NULL));
-	e.accessFaultAddress = faultAddress;
-	e.insFaultAddress = insAddress;
-	e.FSR = FSR;
-	
-	//xQueueSend(Q_MEM_Exception,&e,0);	
-	xQueueSendFromISR(Q_MEM_Exception,&e,0);	
-	//vTaskSuspend(NULL);
-	
-	*/
-	
-	/*
-	asm volatile ("mrs r0, cpsr_all");
-	asm volatile ("bic r0, r0, #0xc0");
-	asm volatile ("msr cpsr_all, r0");
-	
-	asm volatile ("ldmia sp!, {r0-r12, pc}^");*/
-	
-	//asm volatile ("ldmia sp!, {r0-r12, lr}");
-
-	
-	//asm volatile ("add lr,lr,#8");
-	//portSAVE_CONTEXT_ASM;
-	/*
-	asm volatile ("stmfd sp!, {lr}");
-	
-	//vTaskSuspend(NULL);
-	
-	asm volatile ("ldmia sp!, {lr}");
-	asm volatile ("subs lr,lr,#8");
-	asm volatile ("mov pc,lr");
-	*/
-	//asm volatile ("stmfd sp!, {r0-r12, lr}");
-	
-
-	
-	
-	//vTaskDelay(1000);
-	
-	//printf("\nException 1.\n");
-	//vTaskDelay(1000);
-	//printf("\nException 2.\n");
-	
-	
-	//asm volatile ("ldmia sp!, {r0-r12, pc}^");
-	
-	//uartdbg_print_regs();
-	//printf("%s\n",pcTaskGetName(NULL));
-	
-	//asm volatile ( "bl vTaskSwitchContext" );
-	
-	
-	//portRESTORE_CONTEXT_ASM; 
 
 
 }

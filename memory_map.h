@@ -9,7 +9,7 @@
 
 #define PAGE_SIZE					4096
 	
-#define KHEAP_MAP_PHY_START			0x3F000
+#define KHEAP_MAP_PHY_START			0x40000
 	
 #define KHEAP_MEMORY_VIR_START		0xD0000000		// 1 MB
 	
