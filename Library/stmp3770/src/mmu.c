@@ -56,6 +56,10 @@ uint8_t *VIR_TO_PHY_ADDR(uint8_t *VIRT_ADDR)
 				COARSE_ADDR += RAM_START_VIRT_ADDR;
 				//uartdbg_printf("COARSE_ADDR %x\n",COARSE_ADDR);
 			}
+
+			if ((((unsigned int *)(  COARSE_ADDR ))[(((unsigned int)(VIRT_ADDR))>>12)&0xFF]) & 0xfffff000 == 0) {
+				return 0x0;
+			}
 			
 			result = (uint8_t *)((unsigned int *)(((((unsigned int *)(  COARSE_ADDR ))[(((unsigned int)(VIRT_ADDR))>>12)&0xFF]) & 0xfffff000) | ((unsigned int)(VIRT_ADDR) & 0xFFF)));
 			break;

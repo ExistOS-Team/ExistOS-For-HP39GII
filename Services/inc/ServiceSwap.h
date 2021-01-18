@@ -54,6 +54,8 @@ typedef struct VmSection {
     struct __VmSection *next; // 链表下一项
 } VmSection;                  // 一个VM中一段内容
 
+void dump_l2_table();
+
 void switch_vm(unsigned int vmNum);
 
 unsigned int pageFaultISR(TaskHandle_t ExceptionTaskHandle, unsigned int accessFaultAddress, unsigned int insFaultAddress, unsigned int FSR);

@@ -37,6 +37,7 @@
 *.hex
 *.bin
 *.sb
+*.bin
 
 # Debug files
 *.dSYM/
@@ -56,3 +57,5 @@ dkms.conf
 # VS code config
 .vscode/
 *.code-workspace
+
+sbtools/
