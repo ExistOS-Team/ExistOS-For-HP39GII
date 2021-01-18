@@ -4,4 +4,3 @@
 unsigned int swapSizeMB;
 
 #endif
-

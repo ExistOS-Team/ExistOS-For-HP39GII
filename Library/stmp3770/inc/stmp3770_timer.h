@@ -1,8 +1,8 @@
 #pragma once
 
 #include "hw_irq.h"
-#ifdef __cplusplus 
-extern "C" { 
+#ifdef __cplusplus
+extern "C" {
 #endif
 #define IRQ_N(n) (n + HW_IRQ_TIMER0)
 
@@ -46,7 +46,6 @@ void timer_reset(char n);
     return value: The rest count of a timer.*/
 unsigned short timer_get(char n);
 
-
 /* Some notes from the manual: 
 
 p595: Recall that the APBX typically runs at a divided clock rate from the 24-MHz crystal clock (6 MHz). 
@@ -56,6 +55,6 @@ P597: Selecting the ALWAYS tick causes the timer to decrement continuously at th
 P603: This bit must be cleared to 0 to enable operation of any timer or the rotary decoder. When set to 1, it forces a block-level reset and gates off the clocks to the block.
 
 */
-#ifdef __cplusplus 
-} 
+#ifdef __cplusplus
+}
 #endif

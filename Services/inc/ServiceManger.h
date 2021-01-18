@@ -3,9 +3,9 @@
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
-#include "task.h"
 #include "queue.h"
+#include "task.h"
 
-void vServiceManger( void *pvParameters );
+void vServiceManger(void *pvParameters);
 
 #endif

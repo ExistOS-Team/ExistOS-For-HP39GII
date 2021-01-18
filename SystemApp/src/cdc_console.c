@@ -178,39 +178,36 @@ void shell_test_cmd(char argc, char *argv) {
 // };
 
 const static_cmd_st static_cmd[] =
-	{
-		{"ls", shell_ls_cmd},
-		{"help", shell_help_cmd},
-		{"test", shell_test_cmd},
-		{"tasklist", shell_tasklist_cmd},
-//		{"mpy",shell_micropython_cmd},
-		{"\0", NULL}
-	};
+    {
+        {"ls", shell_ls_cmd},
+        {"help", shell_help_cmd},
+        {"test", shell_test_cmd},
+        {"tasklist", shell_tasklist_cmd},
+        //		{"mpy",shell_micropython_cmd},
+        {"\0", NULL}};
 
+void vCDC_Console() {
 
-void vCDC_Console(){
-	
-	unsigned char ch;
-	
-	vTaskDelay(500);
-	
-	shell_init();
+    unsigned char ch;
 
-	printf("Starting shell ...\n");
-	
-	for(;;){
-		
-		if(tud_cdc_available()){
-			
-			//printf("%c \n",tud_cdc_read_char());
-			ch = tud_cdc_read_char();
-			shell(ch);
-			//cdc_putchar(ch);
-			
-			//tud_cdc_read_flush();
-		}
-		vTaskDelay(10);
-		//taskYIELD();
-		
+    vTaskDelay(500);
+
+    shell_init();
+
+    printf("Starting shell ...\n");
+
+    for (;;) {
+
+        if (tud_cdc_available()) {
+
+            //printf("%c \n",tud_cdc_read_char());
+            ch = tud_cdc_read_char();
+            shell(ch);
+            //cdc_putchar(ch);
+
+            //tud_cdc_read_flush();
+        }
+        vTaskDelay(10);
+        //taskYIELD();
     }
 }

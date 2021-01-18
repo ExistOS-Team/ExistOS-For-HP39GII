@@ -1,10 +1,7 @@
-void _exit(){
-
+void _exit() {
 }
 
+int main() {
 
-int main(){
-
-
-	return 0;
+    return 0;
 }

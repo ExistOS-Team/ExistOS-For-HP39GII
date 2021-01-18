@@ -20,18 +20,17 @@
 
 #include "regsdigctl.h"
 
-unsigned int read_cpuid(){
-	register unsigned int CPUID;
-	asm volatile("mrc p15, 0, %0, c0, c0" : "=r"(CPUID));
-	return CPUID;
+unsigned int read_cpuid() {
+    register unsigned int CPUID;
+    asm volatile("mrc p15, 0, %0, c0, c0"
+                 : "=r"(CPUID));
+    return CPUID;
 }
 
-volatile void delay_us(unsigned int us)
-{
-	unsigned int start , cur;
-	start = cur = HW_DIGCTL_MICROSECONDS_RD();
-	while (cur < start+us) {
-		cur = HW_DIGCTL_MICROSECONDS_RD();
-	}
+volatile void delay_us(unsigned int us) {
+    unsigned int start, cur;
+    start = cur = HW_DIGCTL_MICROSECONDS_RD();
+    while (cur < start + us) {
+        cur = HW_DIGCTL_MICROSECONDS_RD();
+    }
 }
-

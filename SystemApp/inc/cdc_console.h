@@ -3,8 +3,8 @@
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
-#include "task.h"
 #include "queue.h"
+#include "task.h"
 
 void vInit();
 void vCDC_Console();
