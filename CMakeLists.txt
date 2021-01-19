@@ -1,15 +1,8 @@
 cmake_minimum_required(VERSION 3.0.0)
 
-SET(CMAKE_C_COMPILER   arm-none-eabi-gcc)
-SET(CMAKE_CXX_COMPILER arm-none-eabi-g++)
-set(CMAKE_C_COMPILER_WORKS 1)
-set(CMAKE_CXX_COMPILER_WORKS 1)
-
+set(CMAKE_TOOLCHAIN_FILE toolchain.cmake)
 project(ExistOS-for-HP39gii VERSION 0.1.0)
 
-SET(CMAKE_SYSTEM_NAME Generic)
-SET(CMAKE_SYSTEM_PROCESSOR arm)
-SET(CMAKE_CROSSCOMPILING 1)
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
@@ -17,7 +10,7 @@ set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
 
-add_compile_options(-mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -Os -pipe -ffunction-sections)
+add_compile_options(-mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -Os -pipe -ffunction-sections -fcommon)
 add_link_options(-T ${CMAKE_SOURCE_DIR}/script/ld.script -Wl,--gc-sections -Wl,--wrap=malloc  -Wl,--wrap=free -Wl,--wrap=_malloc_r)
 
 SET(BUILD_SHARED_LIBRARIES OFF)
@@ -55,16 +48,33 @@ add_subdirectory(TestApp)
 aux_source_directory(. DIR_SRCS)
 
 
-add_executable(firmware.elf ${DIR_SRCS})
-target_link_libraries(firmware.elf config kernel libraries services testapp systemapp)
+add_executable(rom.elf ${DIR_SRCS})
+target_link_libraries(rom.elf config kernel libraries services testapp systemapp)
 
+add_custom_command(TARGET rom.elf POST_BUILD
+    COMMAND ${CMAKE_SIZE} ${CMAKE_CURRENT_BINARY_DIR}/rom.elf)
+  
+add_custom_target(
+  rom.bin ALL
+  COMMAND ${CMAKE_OBJCOPY} -O binary -R .note -R .comment -S --pad-to=0x44000 ${CMAKE_CURRENT_BINARY_DIR}/rom.elf ${CMAKE_CURRENT_BINARY_DIR}/rom.bin 
+  DEPENDS rom.elf
+  )
 add_custom_target(
   firmware.sb ALL
-  COMMAND ${CMAKE_SOURCE_DIR}/../tools/sbtools/elftosb -z -c ${CMAKE_SOURCE_DIR}/script/build_fw.bd ${CMAKE_CURRENT_BINARY_DIR}/firmware.elf -o ${CMAKE_CURRENT_BINARY_DIR}/firmware.sb
-  DEPENDS firmware.elf
+  COMMAND ${CMAKE_SOURCE_DIR}/../tools/sbtools/elftosb -z -c ${CMAKE_SOURCE_DIR}/script/build_fw.bd -o ${CMAKE_CURRENT_BINARY_DIR}/firmware.sb ${CMAKE_CURRENT_BINARY_DIR}/rom.bin
+  DEPENDS rom.bin
   )
+
+if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+add_custom_target(
+  flash 
+  COMMAND ${CMAKE_SOURCE_DIR}/../tools/sbtools/sb_loader -f ${CMAKE_CURRENT_BINARY_DIR}/firmware.sb 
+  DEPENDS firmware.sb
+  )
+else()
 add_custom_target(
   flash 
   COMMAND ${CMAKE_SOURCE_DIR}/../tools/sbtools/sbloader ${CMAKE_CURRENT_BINARY_DIR}/firmware.sb -d
   DEPENDS firmware.sb
   )
+endif()
