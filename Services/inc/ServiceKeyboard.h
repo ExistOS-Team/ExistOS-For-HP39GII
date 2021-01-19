@@ -5,10 +5,9 @@
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
-#include "task.h"
 #include "queue.h"
+#include "task.h"
 
-void vServiceKeyboard( void *pvParameters );
+void vServiceKeyboard(void *pvParameters);
 
 #endif
-

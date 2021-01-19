@@ -17,31 +17,30 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
- 
+
 #ifndef _EXCEPTION_H
 #define _EXCEPTION_H
-#ifdef __cplusplus 
-extern "C" { 
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#define EXCEPTION_VECTOR_TABLE_BASE_ADDR	0xFFFF0000
+#define EXCEPTION_VECTOR_TABLE_BASE_ADDR 0xFFFF0000
 
-typedef enum exception_type{
-	EXCEPTION_RESET = 0,
-	EXCEPTION_UND,
-	EXCEPTION_SWI,
-	EXCEPTION_PABORT,
-	EXCEPTION_DABORT,
-	EXCEPTION_RESERVED,
-	EXCEPTION_IRQ,
-	EXCEPTION_FIQ
-}exception_type;
+typedef enum exception_type {
+    EXCEPTION_RESET = 0,
+    EXCEPTION_UND,
+    EXCEPTION_SWI,
+    EXCEPTION_PABORT,
+    EXCEPTION_DABORT,
+    EXCEPTION_RESERVED,
+    EXCEPTION_IRQ,
+    EXCEPTION_FIQ
+} exception_type;
 
 void exception_init();
 void exception_install(exception_type type, unsigned int *exception_handler_addr);
 void install_swi_service(unsigned int swi_num, void *service);
-#ifdef __cplusplus 
-} 
+#ifdef __cplusplus
+}
 #endif
 #endif
-

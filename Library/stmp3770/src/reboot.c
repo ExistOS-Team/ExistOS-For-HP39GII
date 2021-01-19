@@ -7,11 +7,10 @@ To record how to reboot(reset)
 */
 #include <reboot.h>
 
-void reboot_test(int option){
-    if(option == 1 || option == 2)
-    {
+void reboot_test(int option) {
+    if (option == 1 || option == 2) {
         HW_CLKCTRL_RESET = option;
-    }else{
+    } else {
         return;
     }
 }

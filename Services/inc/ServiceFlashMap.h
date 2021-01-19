@@ -6,19 +6,17 @@
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
-#include "task.h"
 #include "queue.h"
+#include "task.h"
 
 #define GC_RATIO 4
 void flashSyncNow();
-void vServiceFlashMap( void *pvParameters );
+void vServiceFlashMap(void *pvParameters);
 void flashMapReset();
 bool isMaplock();
 void lockFmap(bool lock);
 void flashMapClear();
 
-
 unsigned int isFlashMapInited();
 
 #endif
-

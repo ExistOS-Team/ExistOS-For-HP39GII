@@ -20,14 +20,14 @@
 
 #ifndef _DEBUG_H_
 #define _DEBUG_H_
-#ifdef __cplusplus 
-extern "C" { 
+#ifdef __cplusplus
+extern "C" {
 #endif
 void uartdbg_printhex(int data);
 void uartdbg_printf(char *fmt, ...);
 void uartdbg_putc(char ch);
 void uartdbg_print_regs();
-#ifdef __cplusplus 
-}; 
+#ifdef __cplusplus
+};
 #endif
 #endif

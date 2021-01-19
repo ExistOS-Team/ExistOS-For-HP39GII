@@ -94,7 +94,6 @@ void set_stack(unsigned int *) __attribute__((naked));
 void flush_cache();
 volatile void flush_tlb();
 
-
 uint8_t *VIR_TO_PHY_ADDR(uint8_t *VIRT_ADDR);
 
 #ifdef __cplusplus

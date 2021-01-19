@@ -5,14 +5,12 @@
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
-#include "task.h"
 #include "queue.h"
 #include "stdbool.h"
+#include "task.h"
 
-
-#define NAND_CONFIG_BLOCK_MAGIC_COOKIE  0x00010203
-#define NAND_CONFIG_BLOCK_VERSION       0x0000000b
-
+#define NAND_CONFIG_BLOCK_MAGIC_COOKIE 0x00010203
+#define NAND_CONFIG_BLOCK_VERSION 0x0000000b
 
 /* Possible types of a logical drive. */
 typedef enum {
@@ -23,7 +21,7 @@ typedef enum {
     ** USB mass storage and MTP. 
     */
     kDriveTypeData = 0,
-    
+
     /* 
     ** System drive.
     **
@@ -32,7 +30,7 @@ typedef enum {
     ** order with none skipped. Also, each sector can only be written to once. 
     */
     kDriveTypeSystem,
-    
+
     /* 
     ** Hidden data drive.
     ** 
@@ -40,7 +38,7 @@ typedef enum {
     ** USB mass storage or MTP. 
     */
     kDriveTypeHidden,
-    
+
     /* 
     ** Unknown drive type.
     **
@@ -48,7 +46,6 @@ typedef enum {
     */
     kDriveTypeUnknown
 } LogicalDriveType_t;
-
 
 typedef struct _NandConfigBlockRegionInfo {
 
@@ -58,7 +55,7 @@ typedef struct _NandConfigBlockRegionInfo {
     ** These constants define special values for the \a wTag field of a config block region
     ** info structure. In addition to these values, the normal drive tag values are valid. 
     */
-	/*
+    /*
     enum _region_tag_constants
     {
         // Tag value for a boot region in the config block. 
@@ -66,46 +63,44 @@ typedef struct _NandConfigBlockRegionInfo {
     };*/
 
     /* Some System Drive, or Data Drive */
-    LogicalDriveType_t eDriveType;       
-    
+    LogicalDriveType_t eDriveType;
+
     /* Drive Tag */
-    uint32_t wTag;              
-    
+    uint32_t wTag;
+
     /* Size, in blocks, of whole Region. Size includes embedded Bad Blocks */
-    int iNumBlks;         
-    
+    int iNumBlks;
+
     /* Chip number that region is located on. */
-    int iChip;            
-    
+    int iChip;
+
     /* Region's start block relative to chip. */
-    int iStartBlock;      
+    int iStartBlock;
 } NandConfigBlockRegionInfo_t;
 
 /* Configuration block info sector */
 typedef struct _NandConfigBlockInfo {
     /* #NAND_CONFIG_BLOCK_MAGIC_COOKIE */
-    int iMagicCookie;       
-    
+    int iMagicCookie;
+
     /* #NAND_CONFIG_BLOCK_VERSION */
-    int iVersionNum;        
-    
+    int iVersionNum;
+
     /* Number Bad Blocks on this Chip */
-    int iNumBadBlks;        
-    
+    int iNumBadBlks;
+
     /* Number of regions in the region array. */
-    int iNumRegions;        
-    
+    int iNumRegions;
+
     /* Total number of reserved blocks on this chip enable. */
-    int iNumReservedBlocks; 
-    
+    int iNumReservedBlocks;
+
     /* Information about the regions on this chip enable. */
-    NandConfigBlockRegionInfo_t Regions[10]; 
+    NandConfigBlockRegionInfo_t Regions[10];
 } NandConfigBlockInfo_t;
 
-
-
 bool isRawFlash();
-void vSTMPPartition( void *pvParameters );
+void vSTMPPartition(void *pvParameters);
 unsigned int getDataRegonTotalBlocks();
 unsigned int getDataRegonStartBlock();
 void lockFlash(bool lock);
@@ -119,4 +114,3 @@ void eraseBootimgRegion();
 unsigned int isSTMPDiskInited();
 
 #endif
-

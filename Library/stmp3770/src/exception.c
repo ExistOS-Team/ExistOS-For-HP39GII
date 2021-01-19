@@ -17,18 +17,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
-  
+
 #include "portmacro.h"
 
-#include "uart_debug.h"
 #include "exception.h"
 #include "memory_map.h"
 #include "mmu.h"
+#include "uart_debug.h"
 
 #include "ServiceSwap.h"
 
+#include "ServiceSwap.h"
 #include "startup_info.h"
-#include "ServiceSwap.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -40,96 +40,90 @@ unsigned int FSR;
 
 extern void flush_tlb();
 
+unsigned char exception_handler_table[4096]
+    __attribute__((section(".exception_handler_table"))) __attribute__((aligned(4096)));
 
-unsigned char exception_handler_table[4096] 
-__attribute__ (( section(".exception_handler_table") )) __attribute__ ((aligned(4096)));
-
-volatile unsigned int exception_handler_map_table[256] 
-__attribute__ (( section(".exception_handler_map_table") )) __attribute__((aligned(0x400))) ;
-
- 
+volatile unsigned int exception_handler_map_table[256]
+    __attribute__((section(".exception_handler_map_table"))) __attribute__((aligned(0x400)));
 
 void *swi_jump_table[255];
 
 void __handler_und(void) __attribute__((naked));
-void __handler_und(){
-	asm volatile ("mov r0,lr");
-	asm volatile ("str r0,%0":"=m"(insAddress));	//取出异常指令的地址
-	
-	uartdbg_printf("Undifined abortion at: %x\n",insAddress);
-	while(1);
-}
+void __handler_und() {
+    asm volatile("mov r0,lr");
+    asm volatile("str r0,%0"
+                 : "=m"(insAddress)); //取出异常指令的地址
 
+    uartdbg_printf("Undifined abortion at: %x\n", insAddress);
+    while (1)
+        ;
+}
 
 void __handler_pabort(void) __attribute__((naked));
-void __handler_pabort(){
-	asm volatile ("mov r0,lr");
-	asm volatile ("str r0,%0":"=m"(insAddress));	//取出异常指令的地址
+void __handler_pabort() {
+    asm volatile("mov r0,lr");
+    asm volatile("str r0,%0"
+                 : "=m"(insAddress)); //取出异常指令的地址
 
-	//uartdbg_print_regs();
-	uartdbg_printf("Prefetch abortion at: %x\n",insAddress);
-	while(1);
+    //uartdbg_print_regs();
+    uartdbg_printf("Prefetch abortion at: %x\n", insAddress);
+    while (1)
+        ;
 }
 
-void fault(){
-	
-	for(;;){}
+void fault() {
+
+    for (;;) {
+    }
 }
-
-
-
-
 
 void __handler_dabort(void) __attribute__((naked));
-void __handler_dabort(){
-	
+void __handler_dabort() {
 
-	
-	asm volatile ("ldr sp,=ABT_STACK_ADDR");
+    asm volatile("ldr sp,=ABT_STACK_ADDR");
 
-	asm volatile ("subs lr,lr,#8");
-	asm volatile ("stmfd sp!, {r0-r12, lr}");
-	
-	//asm volatile ("mrs r0,spsr");
-	//asm volatile ("stmfd sp!, {r0}");
-	
-	asm volatile ("mov r0,lr");
-	asm volatile ("str r0,%0":"=m"(insAddress));	//取出异常指令的地址
-    asm volatile ("mrc p15, 0, r0, c6, c0, 0");
-	asm volatile ("str r0,%0":"=m"(faultAddress));	//取出异常指令访问的地址
-	asm volatile ("mrc p15, 0, r0, c5, c0, 0");	// D
-	asm volatile ("str r0,%0":"=m"(FSR));	//取出异常指令的地址
-	
+    asm volatile("subs lr,lr,#8");
+    asm volatile("stmfd sp!, {r0-r12, lr}");
 
-	//uartdbg_printf("Page fault at 0x%x referenced memory at 0x%x, FSR:%x \n",insAddress,faultAddress,FSR);
-	//switch_mode(SVC_MODE);
-	
-	unsigned int error = 0;	
-	vTaskSuspendAll();
-	//printf("Page fault at 0x%04X referenced memory at 0x%04X, FSR:%08x \n",insAddress,faultAddress,FSR);
-	//uartdbg_printf("Page fault at 0x%x referenced memory at 0x%x, FSR:%x \n",insAddress,faultAddress,FSR);
-	
-	//vTaskDelete(NULL);
-	
-	error = pageFaultISR(
-		0,
-		faultAddress,
-		insAddress,
-		FSR
-	);
-	
-	//xQueueSend(Q_MEM_Exception,&e,0);	
-	//xQueueSendFromISR(Q_MEM_Exception,&e,0);
-	
-	//printf("page fault!!!\n");
-	
-	
-	
-	if(error){
-		printf("The instruction at 0x%04X referenced\n memory at 0x%04X. \n",insAddress,faultAddress);
-		printf("The memory could not be read.\n");
-		printf("<< %s >> killed.\n",pcTaskGetName(NULL));
-		/*
+    //asm volatile ("mrs r0,spsr");
+    //asm volatile ("stmfd sp!, {r0}");
+
+    asm volatile("mov r0,lr");
+    asm volatile("str r0,%0"
+                 : "=m"(insAddress)); //取出异常指令的地址
+    asm volatile("mrc p15, 0, r0, c6, c0, 0");
+    asm volatile("str r0,%0"
+                 : "=m"(faultAddress));        //取出异常指令访问的地址
+    asm volatile("mrc p15, 0, r0, c5, c0, 0"); // D
+    asm volatile("str r0,%0"
+                 : "=m"(FSR)); //取出异常指令的地址
+
+    //uartdbg_printf("Page fault at 0x%x referenced memory at 0x%x, FSR:%x \n",insAddress,faultAddress,FSR);
+    //switch_mode(SVC_MODE);
+
+    unsigned int error = 0;
+    vTaskSuspendAll();
+    //printf("Page fault at 0x%04X referenced memory at 0x%04X, FSR:%08x \n",insAddress,faultAddress,FSR);
+    //uartdbg_printf("Page fault at 0x%x referenced memory at 0x%x, FSR:%x \n",insAddress,faultAddress,FSR);
+
+    //vTaskDelete(NULL);
+
+    error = pageFaultISR(
+        0,
+        faultAddress,
+        insAddress,
+        FSR);
+
+    //xQueueSend(Q_MEM_Exception,&e,0);
+    //xQueueSendFromISR(Q_MEM_Exception,&e,0);
+
+    //printf("page fault!!!\n");
+
+    if (error) {
+        printf("The instruction at 0x%04X referenced\n memory at 0x%04X. \n", insAddress, faultAddress);
+        printf("The memory could not be read.\n");
+        printf("<< %s >> killed.\n", pcTaskGetName(NULL));
+        /*
 		while(lGetCurrentTaskMallocCount(NULL) > -1){
 			printf("Force free %d,%08x\n",lGetCurrentTaskMallocCount(NULL),ulGetCurrentTaskMallocLogTableVal(NULL,lGetCurrentTaskMallocCount(NULL)));
 			vPortFree( (unsigned int *) ulGetCurrentTaskMallocLogTableVal(NULL,lGetCurrentTaskMallocCount(NULL)) );
@@ -139,107 +133,84 @@ void __handler_dabort(){
 		
 		}
 		*/
-		
-		
-		xTaskResumeAll();
-		vTaskDelete(NULL);
-	}
-	
-	xTaskResumeAll();
-	asm volatile ("ldmia sp!, {r0-r12, pc}^");
 
+        xTaskResumeAll();
+        vTaskDelete(NULL);
+    }
 
+    xTaskResumeAll();
+    asm volatile("ldmia sp!, {r0-r12, pc}^");
 }
-
 
 void src_c_swi_handler(unsigned int arg0, unsigned int arg1, unsigned arg2, unsigned int swiImmed);
 
 volatile void __handler_swi(void) __attribute__((naked));
-volatile void __handler_swi(void)
-{
-	
-	
-	
-		asm volatile ( "stmfd sp!,{r0-r3, lr}");
+volatile void __handler_swi(void) {
 
-		asm volatile ("ldr r3, [lr, #-4]");
-		
-		asm volatile ("bic r3, r3, #0xff000000");
-		
-		asm volatile ( "bl src_c_swi_handler" );
-		
-		asm volatile ( "ldmia sp!,{r0-r3, lr}");
-		
-		
-		asm volatile ("add lr,lr,#4");
-		portSAVE_CONTEXT_ASM;
+    asm volatile("stmfd sp!,{r0-r3, lr}");
 
-		asm volatile ( "bl vTaskSwitchContext" );
+    asm volatile("ldr r3, [lr, #-4]");
 
+    asm volatile("bic r3, r3, #0xff000000");
 
+    asm volatile("bl src_c_swi_handler");
 
-		
-		portRESTORE_CONTEXT_ASM;                          		
+    asm volatile("ldmia sp!,{r0-r3, lr}");
 
+    asm volatile("add lr,lr,#4");
+    portSAVE_CONTEXT_ASM;
+
+    asm volatile("bl vTaskSwitchContext");
+
+    portRESTORE_CONTEXT_ASM;
 }
 
-
-
-
-void install_swi_service(unsigned int swi_num, void *service){
-	swi_jump_table[swi_num] = service;
+void install_swi_service(unsigned int swi_num, void *service) {
+    swi_jump_table[swi_num] = service;
 }
 
-void exception_install(exception_type type, unsigned int *exception_handler_addr){
-	unsigned int *exception_table_base = (unsigned int *)EXCEPTION_VECTOR_TABLE_BASE_ADDR;
-	//resule = FFFFFE+(jmp_addr/4)-(offset/4)	现场编译跳转指令 // B xx
-	//exception_table_base[type] = 0xEA000000 | ((0xFFFFFE + (((unsigned int)(exception_handler_addr))/4)-(((unsigned int)&exception_table_base[type])/4))&0x00FFFFFF);
-	
-	exception_table_base[type] = 0xE59FF018;	//ldr pc,[pc,#0x18];
-	exception_table_base[type + (0x20 / 4)] = (unsigned int)exception_handler_addr;
-	
+void exception_install(exception_type type, unsigned int *exception_handler_addr) {
+    unsigned int *exception_table_base = (unsigned int *)EXCEPTION_VECTOR_TABLE_BASE_ADDR;
+    //resule = FFFFFE+(jmp_addr/4)-(offset/4)	现场编译跳转指令 // B xx
+    //exception_table_base[type] = 0xEA000000 | ((0xFFFFFE + (((unsigned int)(exception_handler_addr))/4)-(((unsigned int)&exception_table_base[type])/4))&0x00FFFFFF);
 
-	//flush_tlb();
+    exception_table_base[type] = 0xE59FF018; //ldr pc,[pc,#0x18];
+    exception_table_base[type + (0x20 / 4)] = (unsigned int)exception_handler_addr;
+
+    //flush_tlb();
 }
 
 extern void __handler_swi_asm(void);
 extern unsigned int *tlb_base;
 
-void exception_init(){
+void exception_init() {
 
-	for(int i=0; i< 4096;i++){
-		exception_handler_table[i] = 0;
-	}
-	for(int i=0; i< 256;i++){
-		exception_handler_map_table[i] = 0;
-	}
+    for (int i = 0; i < 4096; i++) {
+        exception_handler_table[i] = 0;
+    }
+    for (int i = 0; i < 256; i++) {
+        exception_handler_map_table[i] = 0;
+    }
 
-	BF_WRn(DIGCTL_MPTEn_LOC,4,LOC,EXCEPTION_VECTOR_TABLE_BASE_ADDR >> 20);
-	
-	MMU_MAP_COARSE_RAM((unsigned int) VIR_TO_PHY_ADDR( (uint8_t*) &exception_handler_map_table), EXCEPTION_VECTOR_TABLE_BASE_ADDR);
-	
-	MMU_MAP_SMALL_PAGE_NONCACHED((unsigned int)VIR_TO_PHY_ADDR( (uint8_t*) &exception_handler_table),EXCEPTION_VECTOR_TABLE_BASE_ADDR);
+    BF_WRn(DIGCTL_MPTEn_LOC, 4, LOC, EXCEPTION_VECTOR_TABLE_BASE_ADDR >> 20);
 
-	flush_tlb();
+    MMU_MAP_COARSE_RAM((unsigned int)VIR_TO_PHY_ADDR((uint8_t *)&exception_handler_map_table), EXCEPTION_VECTOR_TABLE_BASE_ADDR);
 
-    unsigned *exception_handler_addr = (unsigned int *)EXCEPTION_VECTOR_TABLE_BASE_ADDR;	
-	for(int i=0; i<0x1C; i++) {
-		exception_handler_addr[i] = 0;					//清空异常向量表
-	}
-	exception_install(EXCEPTION_UND,(unsigned int *)&__handler_und);
-	exception_install(EXCEPTION_SWI,(unsigned int *)&__handler_swi);
-	exception_install(EXCEPTION_PABORT,(unsigned int *)&__handler_pabort);
-	exception_install(EXCEPTION_DABORT,(unsigned int *)&__handler_dabort);
-	
+    MMU_MAP_SMALL_PAGE_NONCACHED((unsigned int)VIR_TO_PHY_ADDR((uint8_t *)&exception_handler_table), EXCEPTION_VECTOR_TABLE_BASE_ADDR);
 
-	
-	
-	asm volatile ("mrc p15, 0, r0, c1, c0, 0");
-	//asm volatile ("bic r0,r0,#0x2000"); 				//设置使用低端向量表
-	asm volatile ("orr r0,r0,#0x2000"); 				//设置使用高端向量表
-	asm volatile ("mcr p15, 0, r0, c1, c0, 0");
-	
-	
+    flush_tlb();
+
+    unsigned *exception_handler_addr = (unsigned int *)EXCEPTION_VECTOR_TABLE_BASE_ADDR;
+    for (int i = 0; i < 0x1C; i++) {
+        exception_handler_addr[i] = 0; //清空异常向量表
+    }
+    exception_install(EXCEPTION_UND, (unsigned int *)&__handler_und);
+    exception_install(EXCEPTION_SWI, (unsigned int *)&__handler_swi);
+    exception_install(EXCEPTION_PABORT, (unsigned int *)&__handler_pabort);
+    exception_install(EXCEPTION_DABORT, (unsigned int *)&__handler_dabort);
+
+    asm volatile("mrc p15, 0, r0, c1, c0, 0");
+    //asm volatile ("bic r0,r0,#0x2000"); 				//设置使用低端向量表
+    asm volatile("orr r0,r0,#0x2000"); //设置使用高端向量表
+    asm volatile("mcr p15, 0, r0, c1, c0, 0");
 }
-
-

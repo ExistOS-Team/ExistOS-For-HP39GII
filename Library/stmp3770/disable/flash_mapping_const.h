@@ -20,63 +20,62 @@
 
 #ifndef _FLASH_MAPPING_CONST_H
 #define _FLASH_MAPPING_CONST_H
-#ifdef __cplusplus 
-extern "C" { 
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-
-#define STMP_FINGERPRINT    0x504d5453		//!< 'STMP'
+#define STMP_FINGERPRINT 0x504d5453 //!< 'STMP'
 
 //! \name 37xx DBBT fingerprint constants
 //@{
-#define DBBT_FINGERPRINT1   STMP_FINGERPRINT   //!< 'STMP'
-#define DBBT_FINGERPRINT2   0x54424244   //!< 'DBBT' - Discovered Bad Block Table.
-#define DBBT_FINGERPRINT3   0x44494252   //!< 'RBID' - ROM Boot Image Block - D
+#define DBBT_FINGERPRINT1 STMP_FINGERPRINT //!< 'STMP'
+#define DBBT_FINGERPRINT2 0x54424244       //!< 'DBBT' - Discovered Bad Block Table.
+#define DBBT_FINGERPRINT3 0x44494252       //!< 'RBID' - ROM Boot Image Block - D
 //@}
 
 //! \name 37xx NCB fingerprint constants
 //@{
-#define NCB_FINGERPRINT1    STMP_FINGERPRINT    //!< 'STMP'
-#define NCB_FINGERPRINT2    0x2042434E    //!< 'NCB<space>' - NAND Control Block
-#define NCB_FINGERPRINT3    0x4E494252    //!< 'RBIN' - ROM Boot Image Block - N
+#define NCB_FINGERPRINT1 STMP_FINGERPRINT //!< 'STMP'
+#define NCB_FINGERPRINT2 0x2042434E       //!< 'NCB<space>' - NAND Control Block
+#define NCB_FINGERPRINT3 0x4E494252       //!< 'RBIN' - ROM Boot Image Block - N
 //@}
 
 //! \name 37xx LDLB fingerprint constants
 //@{
-#define LDLB_FINGERPRINT1   STMP_FINGERPRINT   //!< 'STMP'
-#define LDLB_FINGERPRINT2   0x424C444C   //!< 'LDLB' - Logical Device Layout Block
-#define LDLB_FINGERPRINT3   0x4C494252   //!< 'RBIL' - ROM Boot Image Block - L
+#define LDLB_FINGERPRINT1 STMP_FINGERPRINT //!< 'STMP'
+#define LDLB_FINGERPRINT2 0x424C444C       //!< 'LDLB' - Logical Device Layout Block
+#define LDLB_FINGERPRINT3 0x4C494252       //!< 'RBIL' - ROM Boot Image Block - L
 //@}
 
 //! \name 37xx BBRC (BadBlocksPerRegionCounts_t) fingerprint constants
 //@{
-#define BBRC_FINGERPRINT1   STMP_FINGERPRINT   //!< 'STMP'
-#define BBRC_FINGERPRINT2   0x52434242   //!< 'BBCR' - Bad Block per Region Counts
-#define BBRC_FINGERPRINT3   0x42494252   //!< 'RBIB' - ROM Boot Image Block - B
+#define BBRC_FINGERPRINT1 STMP_FINGERPRINT //!< 'STMP'
+#define BBRC_FINGERPRINT2 0x52434242       //!< 'BBCR' - Bad Block per Region Counts
+#define BBRC_FINGERPRINT3 0x42494252       //!< 'RBIB' - ROM Boot Image Block - B
 //@}
 
-#define CONFIG_BLOCK_SECTOR_OFFSET  1
-#define NAND_CONFIG_BLOCK_MAGIC_COOKIE  0x00010203
-#define NAND_CONFIG_BLOCK_VERSION       0x0000000b
-#define NAND_MAGIC_COOKIE_WORD_POS      0
-#define NAND_VERSION_WORD_POS           1
+#define CONFIG_BLOCK_SECTOR_OFFSET 1
+#define NAND_CONFIG_BLOCK_MAGIC_COOKIE 0x00010203
+#define NAND_CONFIG_BLOCK_VERSION 0x0000000b
+#define NAND_MAGIC_COOKIE_WORD_POS 0
+#define NAND_VERSION_WORD_POS 1
 
 /* STMP codes */
 /* Metadata STMP code value for zone map pages. */
-#define LBA_STRING_PAGE1            (('L'<<24)|('B'<<16)|('A'<<8)|'M')	//0x4C42414D
+#define LBA_STRING_PAGE1 (('L' << 24) | ('B' << 16) | ('A' << 8) | 'M') //0x4C42414D
 
 /* Metadata STMP code value for phys map pages. */
-#define PHYS_STRING_PAGE1           (('E'<<24)|('X'<<16)|('M'<<8)|'A')	//0x45584D41
+#define PHYS_STRING_PAGE1 (('E' << 24) | ('X' << 16) | ('M' << 8) | 'A') //0x45584D41
 
 /* Map section header constants */
 /* Signature shared by all map types, used to identify a valid map header. */
-const uint32_t kNandMapHeaderSignature = (('x'<<24)|('m'<<16)|('a'<<8)|('p')); /* 'xmap' 0x786D6170 */
+const uint32_t kNandMapHeaderSignature = (('x' << 24) | ('m' << 16) | ('a' << 8) | ('p')); /* 'xmap' 0x786D6170 */
 
 /* Unique signature used for the zone map. */
-const uint32_t kNandZoneMapSignature = (('z'<<24)|('o'<<16)|('n'<<8)|('e')); /* 'zone'   0x7A6F6E65*/
+const uint32_t kNandZoneMapSignature = (('z' << 24) | ('o' << 16) | ('n' << 8) | ('e')); /* 'zone'   0x7A6F6E65*/
 
 /* Unique signature used for the phy map. */
-const uint32_t kNandPhysMapSignature = (('p'<<24)|('h'<<16)|('y'<<8)|('s')); /* 'phys'   0x70687973*/
+const uint32_t kNandPhysMapSignature = (('p' << 24) | ('h' << 16) | ('y' << 8) | ('s')); /* 'phys'   0x70687973*/
 
 /* 
 ** Current version of the map header.
@@ -90,11 +89,11 @@ const uint32_t kNandPhysMapSignature = (('p'<<24)|('h'<<16)|('y'<<8)|('s')); /* 
 */
 const uint32_t kNandMapSectionHeaderVersion = 0x00000200;
 
-typedef enum FMAP_RESULT{
-	RES_OK	=	0,
-	RES_FAIL
-}FMAP_RESULT;
-#ifdef __cplusplus 
+typedef enum FMAP_RESULT {
+    RES_OK = 0,
+    RES_FAIL
+} FMAP_RESULT;
+#ifdef __cplusplus
 };
 #endif
 

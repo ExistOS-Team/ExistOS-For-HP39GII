@@ -5,40 +5,38 @@
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
-#include "task.h"
 #include "queue.h"
-
-
+#include "task.h"
 
 typedef enum {
-	GRAPHIC_MSG_TYPE_NOP,
-	GRAPHIC_MSG_TYPE_CLEAR,
-	GRAPHIC_MSG_TYPE_FLUSH,
-	GRAPHIC_MSG_TYPE_REALTIME_FLUSH_ON,
-	GRAPHIC_MSG_TYPE_REALTIME_FLUSH_OFF,
-	GRAPHIC_MSG_TYPE_TEXTOUT,
-	GRAPHIC_MSG_TYPE_PIXON
-}GraphicMsgType;
+    GRAPHIC_MSG_TYPE_NOP,
+    GRAPHIC_MSG_TYPE_CLEAR,
+    GRAPHIC_MSG_TYPE_FLUSH,
+    GRAPHIC_MSG_TYPE_REALTIME_FLUSH_ON,
+    GRAPHIC_MSG_TYPE_REALTIME_FLUSH_OFF,
+    GRAPHIC_MSG_TYPE_TEXTOUT,
+    GRAPHIC_MSG_TYPE_PIXON
+} GraphicMsgType;
 
-typedef struct GraphicMessage{
-	void *selfAddr;
-	unsigned int type;
-	void *argsList;
-}GraphicMessage;
+typedef struct GraphicMessage {
+    void *selfAddr;
+    unsigned int type;
+    void *argsList;
+} GraphicMessage;
 
-typedef struct GraphicTextOutInfo{
-	unsigned int x;
-	unsigned int y;
-	unsigned int area_width;
-	unsigned int area_height;
-	unsigned int font_size;
-	unsigned int font_color;
-	unsigned char *text;
-}GraphicTextOutArgs;
+typedef struct GraphicTextOutInfo {
+    unsigned int x;
+    unsigned int y;
+    unsigned int area_width;
+    unsigned int area_height;
+    unsigned int font_size;
+    unsigned int font_color;
+    unsigned char *text;
+} GraphicTextOutArgs;
 
 QueueHandle_t GraphicQueue;
 
-void vServiceGraphic( void *pvParameters );
-unsigned int * getVramAddress();
+void vServiceGraphic(void *pvParameters);
+unsigned int *getVramAddress();
 
 #endif
