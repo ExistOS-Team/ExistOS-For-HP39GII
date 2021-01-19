@@ -26,7 +26,7 @@ unsigned int read_cpuid(){
 	return CPUID;
 }
 
-void delay_us(unsigned int us)
+volatile void delay_us(unsigned int us)
 {
 	unsigned int start , cur;
 	start = cur = HW_DIGCTL_MICROSECONDS_RD();

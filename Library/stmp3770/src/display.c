@@ -32,9 +32,9 @@
 #include <string.h>
 
 
-hw_lcdif_DmaDesc screen_buffer_dma_desc[2];
-hw_lcdif_DmaDesc screen_command_dma_desc;
-hw_lcdif_DmaDesc screen_parameter_dma_desc;
+volatile hw_lcdif_DmaDesc screen_buffer_dma_desc[2];
+volatile hw_lcdif_DmaDesc screen_command_dma_desc;
+volatile hw_lcdif_DmaDesc screen_parameter_dma_desc;
 
 
 unsigned int lcdScrollUpPix = 0;
@@ -45,12 +45,12 @@ unsigned int pos_y = 0; //屏幕信息位置
 
 
 
-unsigned int LCD_is_busy()
+volatile unsigned int LCD_is_busy()
 {
 	return BF_RD(LCDIF_CTRL, RUN);			//返回LCD控制器运行状态
 }
 
-unsigned int LCD_wait_for_time_out(unsigned int us)
+volatile unsigned int LCD_wait_for_time_out(unsigned int us)
 {
 	while(us > 0)
 		{
@@ -68,7 +68,7 @@ unsigned int LCD_wait_for_time_out(unsigned int us)
 }
 
 //向LCD发送数据
-void LCD_write_dat(unsigned int dat, unsigned int dat_size)
+volatile void LCD_write_dat(unsigned int dat, unsigned int dat_size)
 {
 
 
@@ -76,32 +76,27 @@ void LCD_write_dat(unsigned int dat, unsigned int dat_size)
 	screen_parameter_dma_desc.DMABytes = dat_size;
 	screen_parameter_dma_desc.PioWord.B.COUNT= dat_size;
 	
-	screen_parameter_dma_desc.p_DMABuffer = VIR_TO_PHY_ADDR(&dat);
+	screen_parameter_dma_desc.p_DMABuffer = VIR_TO_PHY_ADDR((uint8_t *)&dat);
 		
 	
 	while(HW_APBH_CHn_SEMA(0).B.INCREMENT_SEMA);
-	BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t) VIR_TO_PHY_ADDR(&screen_parameter_dma_desc));
+	BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t) VIR_TO_PHY_ADDR((uint8_t *)&screen_parameter_dma_desc));
 	BW_APBH_CHn_SEMA_INCREMENT_SEMA(0, 1);
 	
 	
 }
 
 //向LCD发送命令
-void LCD_write_cmd(unsigned int cmd, unsigned int cmd_size)
+volatile void LCD_write_cmd(unsigned int cmd, unsigned int cmd_size)
 {
 	if(LCD_wait_for_time_out(LCD_TIMOUT_US))return;
 
 	screen_command_dma_desc.DMABytes = cmd_size;
 	screen_command_dma_desc.PioWord.B.COUNT= cmd_size;
-	
+	screen_command_dma_desc.p_DMABuffer = VIR_TO_PHY_ADDR((uint8_t *)&cmd);
 
-	screen_command_dma_desc.p_DMABuffer = VIR_TO_PHY_ADDR(&cmd);
-
-	
-	
-	 
 	while(HW_APBH_CHn_SEMA(0).B.INCREMENT_SEMA);
-	BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t) VIR_TO_PHY_ADDR(&screen_command_dma_desc));
+	BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t) VIR_TO_PHY_ADDR((uint8_t *)&screen_command_dma_desc));
 	BW_APBH_CHn_SEMA_INCREMENT_SEMA(0, 1);
 	
 	
@@ -366,14 +361,14 @@ void LCD_dma_irq_handle()
 
 }
 
-hw_lcdif_DmaDesc chains_flush_frame[6];
+volatile hw_lcdif_DmaDesc chains_flush_frame[6];
 
-void init_chains_flush_frame(){
+volatile void init_chains_flush_frame(){
 	
-	memset(chains_flush_frame,0,sizeof(chains_flush_frame));
+	memset((uint8_t *)&chains_flush_frame,0,sizeof(chains_flush_frame));
 	
 	//============================== CMD 1 =====================================
-	chains_flush_frame[0].p_Next				= VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[1]);
+	chains_flush_frame[0].p_Next				= (struct _hw_lcdif_DmaDesc *)VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[1]);
 	chains_flush_frame[0].Semaphore 			= 0;
 	chains_flush_frame[0].Command 				= LCDIF_DMA_READ;
 	chains_flush_frame[0].Chain 				= 1;
@@ -389,7 +384,7 @@ void init_chains_flush_frame(){
 	chains_flush_frame[0].PioWord.B.BYPASS_COUNT= 0;
 	chains_flush_frame[0].PioWord.B.READ_WRITEB	= 0;
 	
-	chains_flush_frame[1].p_Next				=  VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[2]);
+	chains_flush_frame[1].p_Next				=  (struct _hw_lcdif_DmaDesc *)VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[2]);
 	chains_flush_frame[1].Semaphore 			= 0;
 	chains_flush_frame[1].Command 				= LCDIF_DMA_READ;
 	chains_flush_frame[1].Chain 				= 1;
@@ -407,7 +402,7 @@ void init_chains_flush_frame(){
 	
 	//============================== CMD 2 =====================================
 	
-	chains_flush_frame[2].p_Next				=  VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[3]);
+	chains_flush_frame[2].p_Next				=  (struct _hw_lcdif_DmaDesc *)VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[3]);
 	chains_flush_frame[2].Semaphore 			= 0;
 	chains_flush_frame[2].Command 				= LCDIF_DMA_READ;
 	chains_flush_frame[2].Chain 				= 1;
@@ -423,7 +418,7 @@ void init_chains_flush_frame(){
 	chains_flush_frame[2].PioWord.B.BYPASS_COUNT= 0;
 	chains_flush_frame[2].PioWord.B.READ_WRITEB	= 0;
 	
-	chains_flush_frame[3].p_Next				=  VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[4]);
+	chains_flush_frame[3].p_Next				=  (struct _hw_lcdif_DmaDesc *)VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[4]);
 	chains_flush_frame[3].Semaphore 			= 0;
 	chains_flush_frame[3].Command 				= LCDIF_DMA_READ;
 	chains_flush_frame[3].Chain 				= 1;
@@ -441,7 +436,7 @@ void init_chains_flush_frame(){
 
 	//============================== CMD 3 =====================================
 	
-	chains_flush_frame[4].p_Next					=  VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[5]);
+	chains_flush_frame[4].p_Next					=  (struct _hw_lcdif_DmaDesc *)VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[5]);
 	chains_flush_frame[4].Semaphore 				= 0;
 	chains_flush_frame[4].Command 					= LCDIF_DMA_READ;
 	chains_flush_frame[4].Chain 					= 1;
@@ -481,7 +476,7 @@ void init_chains_flush_frame(){
 }
 
 
-void LCD_dma_channel_reset(void)
+volatile void LCD_dma_channel_reset(void)
 {
 	//todo: DMA应有DMA程序管理
 	
@@ -494,7 +489,7 @@ void LCD_dma_channel_reset(void)
 
 
 	//设置LCD DMA通道命令描述符
-	screen_buffer_dma_desc[0].p_Next =  VIR_TO_PHY_ADDR((uint8_t *)&screen_buffer_dma_desc[1]);
+	screen_buffer_dma_desc[0].p_Next =  (struct _hw_lcdif_DmaDesc *)VIR_TO_PHY_ADDR((uint8_t *)&screen_buffer_dma_desc[1]);
 	screen_buffer_dma_desc[0].Semaphore = 0;
 	screen_buffer_dma_desc[0].Command = LCDIF_DMA_READ;
 	screen_buffer_dma_desc[0].Chain = 1;
@@ -558,7 +553,7 @@ void LCD_dma_channel_reset(void)
 }
 
 
-void LCD_dma_flush_buffer()
+volatile void LCD_dma_flush_buffer()
 {
 
 /*
@@ -573,20 +568,11 @@ void LCD_dma_flush_buffer()
 			screen_buffer_dma_desc[1].PioWord.B.COUNT= 258*128;
 			break;
 		}
-
-
-	if(LCD_wait_for_time_out(LCD_TIMOUT_US))return;
-	LCD_setxy(0, 0);
-
-	if(screen_buffer_dma_desc[1].IRQOnCompletion)
-		{
-			isAutoSend = 1;
-		}
 */
 
 	while(HW_APBH_CHn_SEMA(0).B.INCREMENT_SEMA);
 	
-	BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t) VIR_TO_PHY_ADDR(&chains_flush_frame[0]));
+	BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t) VIR_TO_PHY_ADDR((uint8_t *)&chains_flush_frame[0]));
 	BW_APBH_CHn_SEMA_INCREMENT_SEMA(0, 1);
 	
 	
@@ -667,7 +653,7 @@ void LCD_set_pix_format(lcd_pix_format _pix_format)
 	LCD_write_dat(pix_format, 1);
 }
 
-void LCD_init(void)
+volatile void LCD_init(void)
 {
 	init_chains_flush_frame();
 	

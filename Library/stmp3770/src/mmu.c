@@ -24,10 +24,10 @@
 #include "memory_map.h"
 volatile unsigned int *tlb_base = (unsigned int *)0x800C0000;	//一级页表基地址
 
-volatile void mmu_set_RS(unsigned int RS) {
-    register unsigned int c1_r asm("r1");
-    asm volatile("mrc p15, 0, %0, c1, c0, 0" ::"r"(c1_r));
-    c1_r &= 0xFFFFFCFF;
+volatile void mmu_set_RS(unsigned int RS) {					//设置ARM CP15 C1寄存器的RS位
+    register unsigned int c1_r asm("r1");					//定义变量c1_r为一个寄存器变量，使用r1寄存器
+    asm volatile("mrc p15, 0, %0, c1, c0, 0" ::"r"(c1_r));	//CP15协处理器里的c1寄存器
+    c1_r &= 0xFFFFFCFF;										
     c1_r |= (RS & 0x3) << 8;
     asm volatile("mcr p15, 0, %0, c1, c0, 0" ::"r"(c1_r));
 }
@@ -56,6 +56,10 @@ uint8_t *VIR_TO_PHY_ADDR(uint8_t *VIRT_ADDR)
 				COARSE_ADDR += RAM_START_VIRT_ADDR;
 				//uartdbg_printf("COARSE_ADDR %x\n",COARSE_ADDR);
 			}
+
+			if ((((unsigned int *)(  COARSE_ADDR ))[(((unsigned int)(VIRT_ADDR))>>12)&0xFF]) & 0xfffff000 == 0) {
+				return 0x0;
+			}
 			
 			result = (uint8_t *)((unsigned int *)(((((unsigned int *)(  COARSE_ADDR ))[(((unsigned int)(VIRT_ADDR))>>12)&0xFF]) & 0xfffff000) | ((unsigned int)(VIRT_ADDR) & 0xFFF)));
 			break;
@@ -71,45 +75,6 @@ uint8_t *VIR_TO_PHY_ADDR(uint8_t *VIRT_ADDR)
 	return result;
 }
 
-
-/*
-unsigned int HEAP_MEMORY_COARSE_TABLE[256] __attribute__((aligned(0x400)));
-//unsigned int TLB[4096] __attribute__((aligned(0x4000)));
-
-
-
-void DFLTP_init(){
-	//tlb_base = TLB;
-	tlb_base = (unsigned int *)0x800C0000;
-
-	
-	BF_WRn(DIGCTL_MPTEn_LOC,0,LOC,0xaaaa);									
-	BF_WRn(DIGCTL_MPTEn_LOC,1,LOC,0xbbbb);	
-	BF_WRn(DIGCTL_MPTEn_LOC,2,LOC,0xcccc);
-	BF_WRn(DIGCTL_MPTEn_LOC,3,LOC,0xdddd);
-	BF_WRn(DIGCTL_MPTEn_LOC,4,LOC,0xeeee);
-	
-	BF_WRn(DIGCTL_MPTEn_LOC,5,LOC,RAM_START_VIRT_ADDR >> 20);
-	
-	
-	
-	BF_WRn(DIGCTL_MPTEn_LOC,6,LOC,0x0);
-	BF_WRn(DIGCTL_MPTEn_LOC,7,LOC,KHEAP_MEMORY_VIR_START >> 20);
-	
-
-	MMU_MAP_SECTION_DEV(0x00000000,0x00000000);
-	MMU_MAP_SECTION_DEV(0x00000000,RAM_START_VIRT_ADDR);
-	//MMU_MAP_SECTION_DEV(0x80000000,0x80000000);
-	 
-	
-	MMU_MAP_COARSE_RAM((unsigned int)&HEAP_MEMORY_COARSE_TABLE, KHEAP_MEMORY_VIR_START);
-	
-	for(unsigned int i = 0;i<256*1024;i+=4*1024)						
-		MMU_MAP_SMALL_PAGE_CACHED(KHEAP_MAP_PHY_START + i,KHEAP_MEMORY_VIR_START + i);	
-	
-	
-		
-} */
 
 //设置栈指针
 void set_stack(unsigned int *newstackptr) __attribute__ ((naked));
@@ -219,7 +184,7 @@ void enable_mmu()
 	__flush_Icache();
 	__flush_TLB();
 	//__enable_mmu(FIRST_LEVEL_PAGE_TABLE_BASE);
-	__enable_mmu(tlb_base);
+	__enable_mmu((unsigned int *)tlb_base);
 
 }
 

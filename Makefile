@@ -12,6 +12,7 @@ OBJCOPY		   = ..\tools\gcc-arm\bin\arm-none-eabi-objcopy.exe
 SIZE           = ..\tools\gcc-arm\bin\arm-none-eabi-size.exe
 
 CFLAGS         = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -Os -pipe -ffunction-sections 
+CFLAGS_O3         = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O3 -pipe -ffunction-sections 
 CFLAGS_TESTING = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O3 -pipe -Wstringop-overflow=0
 
 LINKER        = ..\tools\gcc-arm\bin\arm-none-eabi-gcc
@@ -93,16 +94,16 @@ $(COBJS) : %.o : %.c
 	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS) 
 	
 $(SHELL_SRC_OBJS) : %.o : %.c 
-	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS) 
+	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS_O3) 
 	
 $(CTINYUSBCOBJS) : %.o : %.c 
-	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS) 
+	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS_O3) 
 
 $(CDHARAOBJS) : %.o : %.c 
-	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS) 
+	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS_O3) 
 	
 $(FatFsObjs) : %.o : %.c 
-	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS) 
+	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS_O3) 
 
 $(LVGL_SRC_O) : %.o : %.c 
 	$(CC) -c $< -o $@ $(GCCINCPATH) $(INCPATH) $(CFLAGS) 
@@ -127,7 +128,7 @@ rom.elf: $(COBJS) $(CPPOBJS) $(SOBJS)  $(CTINYUSBCOBJS) $(CDHARAOBJS) $(FatFsObj
 	$(LINKER) -o rom.elf $(LFLAGS)  $(SOBJS) $(COBJS) $(CTINYUSBCOBJS) $(CDHARAOBJS) $(FatFsObjs) $(LVGL_SRC_O) $(COREJSON_SRC_OBJS) $(SHELL_SRC_OBJS) $(CPPOBJS) $(LIBS)  
 	$(SIZE) rom.elf
 rom.bin : rom.elf 
-	$(OBJCOPY) -O binary -R .note -R .comment -S --pad-to=0x40000 rom.elf rom.bin
+	$(OBJCOPY) -O binary -R .note -R .comment -S --pad-to=0x44000 rom.elf rom.bin
 
 firmware.sb: rom.bin 
 	$(ELF2ROM) -z -c $(SCRIPT_DIR)\build_fw.bd -o firmware.sb rom.bin

@@ -21,7 +21,7 @@
 #ifndef _UTILS_H
 #define _UTILS_H
 
-void delay_us(unsigned int us);
+volatile void delay_us(unsigned int us);
 unsigned int read_cpuid(void);
 
 #endif

@@ -54,6 +54,7 @@
 #include "regsuartdbg.h"
 #include "rtc.h"
 #include "tusb.h"
+#include "elf_user.h"
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
@@ -61,8 +62,6 @@
 #include "task.h"
 
 static void prvSetupHardware(void);
-
-volatile int a = 1, b = 1, c = 1;
 
 unsigned char pcWriteBuffer[2048];
 extern volatile unsigned int dmaOperationCompleted;
@@ -94,19 +93,42 @@ void vTask1(void *pvParameters) {
     }
 }
 
+int* i2p(int i) {
+    return 0x100000 + 0x1040 + 4096 * i;
+}
+
 void vTask2(void *pvParameters) {
 
     vTaskDelay(5000);
-    cdc_printf("a\r\n");
-    vmLoadFile(0, 1024 * 1024, 1024 * 1024, NULL, 0, 1);
-    cdc_printf("b\r\n");
-    int *p = 1024 * 1024 + 0x3500;
-    cdc_printf("c\r\n");
-    *p = 5;
-    cdc_flush();
-    cdc_printf("d\r\n");
-    *p = 7;
-    cdc_printf("%d", *p);
+    cdc_printf("\r\n\r\n");
+    vmLoadFile(0, 0x100000, 0x100000, NULL, 0, 1);
+    for (int i = 1; i < 10; i++) {
+        *i2p(i)=i;
+        cdc_clear();
+        cdc_printf("%d\r\n", i);
+        cdc_clear();
+        for(int j = 1; j <= i; j++) {
+            cdc_printf("%d: %d ", j, *i2p(j));
+            cdc_clear();
+        }
+        cdc_printf("\r\n");
+    }
+
+    // FIL f;
+    // FRESULT fr;
+    // if ((fr = f_open(&f, "/a.out", FA_READ | FA_WRITE)) != 0) {
+    //     cdc_printf("Open a.out failed with fr %d!\r\n", fr);
+    //     vTaskDelete(NULL);
+    // }
+    
+    // vmLoadFile(0, 0x100000, (f_size(&f) / 0x1000 + 1) * 0x1000, &f, 0, 0); //瞎写的
+    // elf_t r;
+    // if (elf_newFile(0x100000, f_size(&f), &r) != 0) {
+    //     cdc_printf("Elf Newfile failed!\r\n");
+    //     vTaskDelete(NULL);
+    // }
+    // cdc_printf("Succeed!\r\n");
+
     for (;;) {
 
         //b++;
@@ -149,7 +171,7 @@ int main(void) {
 
     xTaskCreate(vTask3, "Task Manager", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
     xTaskCreate(vServiceManger, "Service Host", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
-    xTaskCreate(vInit, "init", configMINIMAL_STACK_SIZE * 4, NULL, 3, NULL);
+    xTaskCreate(vInit, "init", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL);
 
     //vStartBlockingQueueTasks(1);
     //vStartGenericQueueTasks(1);

@@ -9,7 +9,8 @@
 void vInit();
 void vCDC_Console();
 
-void cdc_p();
+void cdc_p(const char *fmt, ...);
 void cdc_flush();
+void cdc_clear();
 
 #endif
