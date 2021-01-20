@@ -61,22 +61,31 @@ add_custom_target(
   COMMAND ${CMAKE_OBJCOPY} -I elf32-little -O binary -R .note -R .comment -S --pad-to=0x44000 ${CMAKE_CURRENT_BINARY_DIR}/rom.elf ${CMAKE_CURRENT_BINARY_DIR}/rom.bin 
   DEPENDS rom.elf
   )
-add_custom_target(
-  firmware.sb ALL
-  COMMAND ${CMAKE_SOURCE_DIR}/../tools/sbtools/elftosb -z -c ${CMAKE_SOURCE_DIR}/script/build_fw.bd -o ${CMAKE_CURRENT_BINARY_DIR}/firmware.sb ${CMAKE_CURRENT_BINARY_DIR}/rom.bin
-  DEPENDS rom.bin
-  )
 
 if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
 add_custom_target(
+  firmware.sb ALL
+  COMMAND ${CMAKE_SOURCE_DIR}/tools/sbtools_win/elftosb -z -c ${CMAKE_SOURCE_DIR}/script/build_fw.bd -o ${CMAKE_CURRENT_BINARY_DIR}/firmware.sb ${CMAKE_CURRENT_BINARY_DIR}/rom.bin
+  DEPENDS rom.bin
+  )
+add_custom_target(
   flash 
-  COMMAND ${CMAKE_SOURCE_DIR}/../tools/sbtools/sb_loader -f ${CMAKE_CURRENT_BINARY_DIR}/firmware.sb 
+  COMMAND ${CMAKE_SOURCE_DIR}/tools/sbtools_win/sb_loader -f ${CMAKE_CURRENT_BINARY_DIR}/firmware.sb 
   DEPENDS firmware.sb
   )
 else()
+if(EXISTS ${CMAKE_SOURCE_DIR}/tools/sbtools/elftosb)
+add_custom_target(
+  firmware.sb ALL
+  COMMAND ${CMAKE_SOURCE_DIR}/tools/sbtools/elftosb -z -c ${CMAKE_SOURCE_DIR}/script/build_fw.bd -o ${CMAKE_CURRENT_BINARY_DIR}/firmware.sb ${CMAKE_CURRENT_BINARY_DIR}/rom.bin
+  DEPENDS rom.bin
+  )
 add_custom_target(
   flash 
-  COMMAND ${CMAKE_SOURCE_DIR}/../tools/sbtools/sbloader ${CMAKE_CURRENT_BINARY_DIR}/firmware.sb -d
+  COMMAND ${CMAKE_SOURCE_DIR}/tools/sbtools/sbloader ${CMAKE_CURRENT_BINARY_DIR}/firmware.sb -d
   DEPENDS firmware.sb
   )
+else(EXISTS ${CMAKE_SOURCE_DIR}/tools/sbtools/elftosb)
+message(FATAL_ERROR "Please build tools/sbtools first")
+endif(EXISTS ${CMAKE_SOURCE_DIR}/tools/sbtools/elftosb)
 endif()
