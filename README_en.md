@@ -63,19 +63,19 @@ Current development status: Most of the OS kernel and some necessary hardware dr
 
 2. For Linux, please copy 99-hp39gii.rules to /etc/udev/rules.d/  
     and type
-    ```
+    ```bash
     sudo service udev restart
     # or
     sudo udevadm control --reload-rules
     sudo udevadm trigger
     ```
 
-2. For non-Windows system, please compile /tools/sbtools first (no need to install)
+3. For non-Windows system, please compile /tools/sbtools first (no need to install)
 
-3. For Windows, download [Ninja](https://github.com/ninja-build/ninja/releases) and add the .exe file to PATH.
+4. For Windows, download [Ninja](https://github.com/ninja-build/ninja/releases) and add the .exe file to PATH.
 
-4.  execute these commands in the terminal in this directory.
-    ```
+5.  execute these commands in the terminal in this directory.
+    ```bash
     mkdir ./build
     cd ./build
     cmake ..

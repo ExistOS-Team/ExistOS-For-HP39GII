@@ -65,19 +65,19 @@
 
 2. 对于Linux系统, 请将99-hp39gii.rules复制到/etc/udev/rules.d/  
     之后执行
-    ```
+    ```bash
     sudo service udev restart
     # 或者
     sudo udevadm control --reload-rules
     sudo udevadm trigger
     ```
 
-2. 对于非Windows系统, 请先编译 /tools/sbtools (无需安装)
+3. 对于非Windows系统, 请先编译 /tools/sbtools (无需安装)
 
-3. 对于Windows系统, 下载[Ninja](https://github.com/ninja-build/ninja/releases)并将exe文件添加至PATH变量
+4. 对于Windows系统, 下载[Ninja](https://github.com/ninja-build/ninja/releases)并将exe文件添加至PATH变量
 
-4.  在此文件夹中, 执行
-    ```
+5. 在此文件夹中, 执行
+    ```bash
     mkdir ./build
     cd ./build
     cmake ..
