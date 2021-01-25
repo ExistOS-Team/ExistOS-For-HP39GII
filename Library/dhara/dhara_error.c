@@ -15,7 +15,7 @@
  */
 
 #include <stddef.h>
-#include "error.h"
+#include "dhara_error.h"
 
 const char *dhara_strerror(dhara_error_t err)
 {

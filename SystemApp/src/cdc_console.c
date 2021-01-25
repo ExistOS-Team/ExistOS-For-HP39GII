@@ -103,13 +103,10 @@ void shell_tasklist_cmd(char argc, char *argv) {
     shell_printf("未分配空闲内存：%d Bytes\r\n", (unsigned int)xPortGetFreeHeapSize());
 
     unsigned int freePhyMem, remainPhyMem;
-    if ((getCurrentHeapEnd() - KHEAP_MEMORY_VIR_START) > (TOTAL_PHY_MEMORY - KHEAP_MAP_PHY_START)) {
-        freePhyMem = 0;
-        remainPhyMem = 0;
-    } else {
-        freePhyMem = (TOTAL_PHY_MEMORY - KHEAP_MAP_PHY_START) - (getCurrentHeapEnd() - KHEAP_MEMORY_VIR_START);
+
+        freePhyMem = (getCurrentHeapEnd() - KHEAP_START_VIRT_ADDR);
         remainPhyMem = freePhyMem + mallocInfo.fordblks;
-    }
+    
 
     shell_printf("未分配物理内存：%d Bytes\r\n", freePhyMem);
     shell_printf("剩余物理内存：%d Bytes\r\n", remainPhyMem);

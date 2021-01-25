@@ -31,6 +31,8 @@
 #include <malloc.h>
 #include <stdio.h>
 
+#include <math.h>
+
 #include "BlockQ.h"
 #include "GenQTest.h"
 
@@ -82,7 +84,7 @@ void printTaskList() {
 }
 
 void vTask1(void *pvParameters) {
-
+    
     for (;;) {
         //static char c = '1';
         //vTaskDelay(1);
@@ -167,7 +169,7 @@ int main(void) {
 
     /* Create the tasks defined within this file. */
     //xTaskCreate( vTask1, "test task1", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
-    xTaskCreate(vTask2, "test task2", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+    //xTaskCreate(vTask2, "test task2", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
     xTaskCreate(vTask3, "Task Manager", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
     xTaskCreate(vServiceManger, "Service Host", configMINIMAL_STACK_SIZE, NULL, 4, NULL);

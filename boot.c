@@ -61,23 +61,23 @@ volatile void _kernel_init() {
 
     volatile unsigned int *tlb_base = (unsigned int *)0x800C0000;
 
-    BF_WRn(DIGCTL_MPTEn_LOC, 0, LOC, 4000);
-    BF_WRn(DIGCTL_MPTEn_LOC, 1, LOC, 4001);
-    BF_WRn(DIGCTL_MPTEn_LOC, 2, LOC, 4002);
-    BF_WRn(DIGCTL_MPTEn_LOC, 3, LOC, 4003);
-    BF_WRn(DIGCTL_MPTEn_LOC, 4, LOC, 4004); //将暂时用不到的一级页表项移动到页表尾部
+    BF_CS1n(DIGCTL_MPTEn_LOC, 0, LOC, 4000);
+    BF_CS1n(DIGCTL_MPTEn_LOC, 1, LOC, 4001);
+    BF_CS1n(DIGCTL_MPTEn_LOC, 2, LOC, 4002);
+    BF_CS1n(DIGCTL_MPTEn_LOC, 3, LOC, 4003);
+    BF_CS1n(DIGCTL_MPTEn_LOC, 4, LOC, 4004); //将暂时用不到的一级页表项移动到页表尾部
 
-    BF_WRn(DIGCTL_MPTEn_LOC, 5, LOC, 0x0);                          //用于当前暂时映射整个SRAM的一级页表项
-    BF_WRn(DIGCTL_MPTEn_LOC, 6, LOC, RAM_START_VIRT_ADDR >> 20);    //用于映射SRAM空间的一级页表项
-    BF_WRn(DIGCTL_MPTEn_LOC, 7, LOC, KHEAP_MEMORY_VIR_START >> 20); //用于映射内核内存区域的一级页表项
+    BF_CS1n(DIGCTL_MPTEn_LOC, 5, LOC, 0x0);                          //用于暂时物理内存映射到高处  
+    BF_CS1n(DIGCTL_MPTEn_LOC, 6, LOC, 4005);                         //用于把异常向量表映射到虚拟地址空间尾部
+    BF_CS1n(DIGCTL_MPTEn_LOC, 7, LOC, RAM_START_VIRT_ADDR >> 20);    //用于映射SRAM空间的一级页表项
 
     MMU_MAP_SECTION_DEV(0x00000000, 0x00000000);          //映射物理地址0x00000000 到虚拟地址 0x00000000
-    MMU_MAP_SECTION_DEV(0x00000000, RAM_START_VIRT_ADDR); //映射物理地址0x00000000 到虚拟地址 RAM_START_VIRT_ADDR
+    MMU_MAP_SECTION_DEV(0x00000000, RAM_START_VIRT_ADDR); //映射物理地址0x00000000 到虚拟地址 RAM_START_VIRT_ADDR   (高端位置)
 
-    MMU_MAP_COARSE_RAM(((unsigned int)&HEAP_MEMORY_COARSE_TABLE), KHEAP_MEMORY_VIR_START); //映射虚拟地址中内核堆内存区域到二级页表上
+    //MMU_MAP_COARSE_RAM(((unsigned int)&HEAP_MEMORY_COARSE_TABLE), KHEAP_MEMORY_VIR_START); //映射虚拟地址中内核堆内存区域到二级页表上
 
-    for (unsigned int i = 0; i < 256 * 1024; i += 4 * 1024)
-        MMU_MAP_SMALL_PAGE_CACHED(KHEAP_MAP_PHY_START + i, KHEAP_MEMORY_VIR_START + i); //填写二级页表，确定虚拟内存地址中内核堆内存区所映射到的物理内存位置
+    //for (unsigned int i = 0; i < 256 * 1024; i += 4 * 1024)
+    //    MMU_MAP_SMALL_PAGE_CACHED(KHEAP_MAP_PHY_START + i, KHEAP_MEMORY_VIR_START + i); //填写二级页表，确定虚拟内存地址中内核堆内存区所映射到的物理内存位置
 
     register unsigned int value;
     value = 0;

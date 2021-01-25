@@ -33,7 +33,7 @@ volatile void mmu_set_RS(unsigned int RS) {                //设置ARM CP15 C1�
 volatile void mmu_set_domain_control_bit(unsigned int domain, unsigned int controlBit) {
     register unsigned int c3_r asm("r2");
     asm volatile("mrc p15, 0, %0, c3, c0, 0" ::"r"(c3_r));
-    c3_r &= ~((0x3) << domain * 2);
+    c3_r &= ~((0x3) << (domain * 2));
     c3_r |= ((controlBit & 0x3) << domain * 2);
     asm volatile("mcr p15, 0, %0, c3, c0, 0" ::"r"(c3_r));
 }

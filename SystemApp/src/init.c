@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "Hz_string.h"
-#include "cdc_console.h"
+
 #include "ff.h"
 #include "init.h"
 #include "keyboard.h"
@@ -23,6 +23,8 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "task.h"
+
+#include "pageman.h"
 
 unsigned char *vbuf;
 
@@ -192,7 +194,7 @@ void vInit() {
 	text1.text = "Test a";
 	xQueueSend(GraphicQueue, &(GM.selfAddr) , ( TickType_t ) 0 );
 	*/
-    xTaskCreate(vCDC_Console, "CDC Console", configMINIMAL_STACK_SIZE, NULL, 3, NULL);
+    
 
     GM.selfAddr = &GM;
     GM.type = GRAPHIC_MSG_TYPE_CLEAR;
@@ -241,7 +243,9 @@ void vInit() {
     //x = testCall(args,3);
 
     //printf("retx:%d\n",x);
-
+    //mallopt(M_MXFAST,4);
+    
+    //vPortFree(pvPortMalloc(200*1024));
     malloc_stats();
 
     /*
@@ -289,9 +293,22 @@ void vInit() {
 
     vPortFree(Config_line_buf);
 
-    xTaskCreate(vServiceSwap, "Swap Svc", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
 
-    void vFaultTask(void *pvParameters);
+    if(swapSizeMB == 0){
+        swapSizeMB = 1;
+    }
+
+    //xTaskCreate(vServiceSwap, "Swap Svc", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
+    int res;
+    printf("init vm...\n");
+    res = pageman_init(16,swapSizeMB);
+    printf("init vm:%d\n",res);
+    
+    xTaskCreate(vServiceUSBDevice, "USB Device Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
+
+    void vm_test();
+
+    vm_test();
 
     //xTaskCreate( vFaultTask, "Fault Task", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
 
@@ -307,46 +324,6 @@ void vInit() {
     }
 }
 
-void vFaultTask(void *pvParameters) {
-
-    printf("Page fault test.\n");
-    int *a = ((unsigned int *)0x140000);
-    int *b = ((unsigned int *)0x40000);
-    printf("test %08x %08x\n", *a, *b);
-
-    //asm volatile ("bl 0x789700");
-
-    for (int *i = 0x140000; i < 0x140000 + 1024 * 1024; i++) {
-        *i = 0xA51234 << 8 | (unsigned char)i;
-    }
-
-    for (int *i = 0x240000; i < 0x240000 + 1024 * 1024; i++) {
-        *i = 0x5A1255 << 8 | (unsigned char)i;
-    }
-    printf("====READ 1 ====\n");
-    a = ((unsigned int *)0x140000);
-    *a = 0x23335244;
-    for (int *i = 0x140000; i < 0x140000 + 100; i++) {
-        printf("read %08x:%08x\n", i, *i);
-    }
-    printf("====READ 2 ====\n");
-    for (int *i = 0x240000; i < 0x240000 + 100; i++) {
-        printf("read %08x:%08x\n", i, *i);
-    }
-
-    for (int i = 0; i < 127; i++) {
-        (pvPortMalloc(8 * 1024));
-    }
-
-    //a = 0x23335244;
-
-    //*a = 233;
-    printf("malloc finish\n");
-
-    for (;;) {
-        vTaskDelay(1000);
-    }
-}
 
 /*
 int testCall(unsigned int *args, unsigned int argsLen){

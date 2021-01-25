@@ -27,7 +27,8 @@
 
 #include "ServiceSwap.h"
 
-#include "ServiceSwap.h"
+#include "pageman.h"
+
 #include "startup_info.h"
 
 #include "FreeRTOS.h"
@@ -85,6 +86,10 @@ void __handler_dabort() {
     asm volatile("subs lr,lr,#8");
     asm volatile("stmfd sp!, {r0-r12, lr}");
 
+    asm volatile("mrs r1, cpsr_all");
+    asm volatile("orr r1, r1, #0xc0");
+    asm volatile("msr cpsr_all, r1");
+
     //asm volatile ("mrs r0,spsr");
     //asm volatile ("stmfd sp!, {r0}");
 
@@ -103,16 +108,25 @@ void __handler_dabort() {
 
     unsigned int error = 0;
     vTaskSuspendAll();
+    
+    /*asm volatile("mrs r1, cpsr_all");
+    asm volatile("bic r1, r1, #0xc0");
+    asm volatile("msr cpsr_all, r1");   */
+    
     //printf("Page fault at 0x%04X referenced memory at 0x%04X, FSR:%08x \n",insAddress,faultAddress,FSR);
     //uartdbg_printf("Page fault at 0x%x referenced memory at 0x%x, FSR:%x \n",insAddress,faultAddress,FSR);
 
     //vTaskDelete(NULL);
-
+/*
     error = pageFaultISR(
         0,
         faultAddress,
         insAddress,
         FSR);
+*/
+    error = data_access_fault_isr( xTaskGetHandle(pcTaskGetName(NULL)) ,(unsigned int *)faultAddress,(unsigned int *)insAddress);
+
+
 
     //xQueueSend(Q_MEM_Exception,&e,0);
     //xQueueSendFromISR(Q_MEM_Exception,&e,0);
@@ -192,7 +206,7 @@ void exception_init() {
         exception_handler_map_table[i] = 0;
     }
 
-    BF_WRn(DIGCTL_MPTEn_LOC, 4, LOC, EXCEPTION_VECTOR_TABLE_BASE_ADDR >> 20);
+    BF_WRn(DIGCTL_MPTEn_LOC, 6, LOC, EXCEPTION_VECTOR_TABLE_BASE_ADDR >> 20);
 
     MMU_MAP_COARSE_RAM((unsigned int)VIR_TO_PHY_ADDR((uint8_t *)&exception_handler_map_table), EXCEPTION_VECTOR_TABLE_BASE_ADDR);
 
