@@ -1,6 +1,8 @@
 
 #include "pageman.h"
-
+#include <stdio.h>
+#include <malloc.h>
+#include <fcntl.h>
 
 void vFaultTask(void *pvParameters) {
 
@@ -34,8 +36,13 @@ void vm_test(){
     //vTaskDelay(8000);
     //xTaskCreate(vFaultTask,"Falut Task", configMINIMAL_STACK_SIZE, NULL, 3, NULL);
 
+    //FILE *test_file;
+    //test_file = fopen("/CONFIG", "wr+");
+    int fd;
+    fd = open("/pagefile",O_RDWR | O_CREAT);
+    
 
-
+    
     vTaskDelay(10000);
     
     dump_vm_spaces();

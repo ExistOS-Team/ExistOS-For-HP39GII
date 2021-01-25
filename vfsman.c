@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <sys/errno.h>
 #include "ff.h"
+#include "vfsman.h"
+
+file_descriptor *file_descriptor_list = NULL;
 
 int fatfs_error_to_vfs(FRESULT fr){
 	switch(fr)
@@ -32,12 +35,26 @@ int fatfs_error_to_vfs(FRESULT fr){
 }
 
 int vfs_init(){
+    file_descriptor_list = pvPortMalloc(sizeof(file_descriptor));
+    if(file_descriptor_list == NULL){
+        return -1;
+    }
+    file_descriptor_list -> fd = 0;
+    file_descriptor_list -> next_chain = NULL;
+
+
 
     return 0;
 }
 
 int vfs_open(const char *path, int flags, int mode){
+    if(file_descriptor_list == NULL){
+        file_descriptor_list = pvPortMalloc(sizeof(file_descriptor));
+        if(file_descriptor_list == NULL){
+            return -ENOMEM;
+        }
 
 
+    }
 
 }

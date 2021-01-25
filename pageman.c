@@ -449,7 +449,7 @@ int get_optimizing_L1_entry(unsigned int* addr, unsigned int* current_fault_ins_
         }
     }
 
-    for(int i = 0; i<MAX_CACHE_PAGES; i++){
+    for(int i = 0; i<MAX_L1_PTE_IN_USE; i++){
         if(L1_PTE[i].virt_seg != ((unsigned int)current_fault_ins_addr >> 20 ) ){
             max_lru_item = i;
             break;

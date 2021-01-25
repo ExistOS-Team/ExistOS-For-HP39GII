@@ -8,10 +8,12 @@
 #include "regsuartdbg.h"
 #include "uart_debug.h"
 
+#include "vfsman.h"
+#include "FreeRTOS.h"
+#include "task.h"
+
 #undef errno
 extern int errno;
-int _end asm("end");
-
 //extern int  __HEAP_START;
 
 void *_sbrk_r(struct _reent *pReent, int incr);
@@ -77,8 +79,20 @@ void _exit(int i) {
         ;
 }
 
-void _open() {
-}
+int _open_r(struct _reent *pReent,
+    const char *file, int flags, int mode){
+
+        int fd;
+
+        vTaskSuspendAll();
+
+        fd = vfs_open(file, flags, mode);
+        pReent->_errno = fd;
+        
+        xTaskResumeAll();
+
+        return fd;
+    }
 
 void __sync_synchronize() {
 }
