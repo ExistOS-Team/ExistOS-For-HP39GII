@@ -36,7 +36,7 @@ typedef struct{
     unsigned int *page_phy_addr;
     unsigned int LRU_count;
     TaskHandle_t belong_task;
-    FIL *file_handle;
+    int map_file_fd;
     unsigned int page_attr;
     unsigned int offset_page_in_file;
     unsigned int is_dirty;
@@ -54,7 +54,8 @@ typedef struct zone_info{
     char zone_name[9];
     unsigned int* zone_start_addr;
     unsigned int* zone_stop_addr;
-    FIL *map_file;
+    int map_file_fd;
+    unsigned int file_inner_page_start;
     vmfile_map_info *first_map_info;
 }zone_info;
 
@@ -64,16 +65,17 @@ typedef struct vm_space{
     zone_info* first_zone_info;
 }vm_space;
 
-
+int get_page_file_fd();
 
 int pageman_init(unsigned int cache_page_number,unsigned int vm_file_size_m);
 vm_space *create_vm_space(TaskHandle_t task_handle);
 vm_space *get_task_vm_space(TaskHandle_t task_handle);
-int create_new_task_space_zone(TaskHandle_t task_handle,FIL *file_handle, char *zone_name, unsigned char zone_attr, unsigned int *start_addr, unsigned int *end_addr);
-
-
+int create_new_task_space_zone(TaskHandle_t task_handle,int file, unsigned int file_inner_page_start, 
+        char *zone_name, unsigned char zone_attr, unsigned int *start_addr, unsigned int *end_addr);
 void dump_vm_spaces();
 
 int data_access_fault_isr(TaskHandle_t task_handle, unsigned int *access_fault_addr, unsigned int *fault_ins_addr);
+
+void sync_all_write_back_cache_page();
 
 #endif 
