@@ -175,7 +175,7 @@
         for (i = 0; i < l; i++) {
                 // code here
         }
-        ruturn i;
+        return i;
     ```
 
     ​	(c) 不得将for循环此三处中任意一处空出：` for ( ; ; ) `，否则请使用while循环。
