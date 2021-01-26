@@ -173,7 +173,7 @@ Notice: Please install drivers of HP39GII by yourself.
         for (i = 0; i < l; i++) {
                 // code here
         }
-        ruturn i;
+        return i;
     ```
 
     ​	(c) Do not leave any of the three of for loops empty: ` for ( ; ; ) `, otherwise use the while loop.
