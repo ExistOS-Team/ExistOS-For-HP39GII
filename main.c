@@ -31,6 +31,8 @@
 #include <malloc.h>
 #include <stdio.h>
 
+#include <math.h>
+
 #include "BlockQ.h"
 #include "GenQTest.h"
 
@@ -82,7 +84,7 @@ void printTaskList() {
 }
 
 void vTask1(void *pvParameters) {
-
+    
     for (;;) {
         //static char c = '1';
         //vTaskDelay(1);
@@ -138,9 +140,14 @@ void vTask2(void *pvParameters) {
     }
 }
 
+volatile int a = 0;
+
+
 void vTask3(void *pvParameters) {
+    unsigned int i = 0;
     for (;;) {
-        //uartdbg_print_regs();
+        //call_test();
+        uartdbg_print_regs();
         //switch_mode(USER_MODE);
         vTaskDelay(1000);
         /*
@@ -162,14 +169,16 @@ void vTask3(void *pvParameters) {
 /* Create all the demo application tasks, then start the scheduler. */
 int main(void) {
     /* Perform any hardware setup necessary. */
-
+    
     prvSetupHardware();
-
+    
     /* Create the tasks defined within this file. */
     //xTaskCreate( vTask1, "test task1", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
-    xTaskCreate(vTask2, "test task2", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+    //xTaskCreate(vTask2, "test task2", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
-    xTaskCreate(vTask3, "Task Manager", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
+    //xTaskCreate(vTask3, "Task Manager", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
+
+
     xTaskCreate(vServiceManger, "Service Host", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
     xTaskCreate(vInit, "init", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL);
 
@@ -177,11 +186,12 @@ int main(void) {
     //vStartGenericQueueTasks(1);
 
     printf("pdMS_TO_TICKS(500)=%d\n", pdMS_TO_TICKS(500));
+    uartdbg_print_regs();
 
     vTaskStartScheduler();
 
     printf("kernel start fail.\n");
-    uartdbg_print_regs();
+    
     /* Execution will only reach here if there was insufficient heap to
 	start the scheduler. */
     return 0;
@@ -232,5 +242,6 @@ static void prvSetupHardware(void) {
     printf("(CLKCTRL_HBUS,DIV), %08x\n", BF_RD(CLKCTRL_HBUS, DIV));
 
     LCD_init();
+    
 }
 /*-----------------------------------------------------------*/

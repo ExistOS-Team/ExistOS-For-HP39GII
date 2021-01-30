@@ -528,38 +528,31 @@ volatile void LCD_dma_flush_buffer() {
 void LCD_scroll_up(unsigned int pixs) {
     lcdScrollUpPix = (lcdScrollUpPix + (pixs % (161 - 8 - 27))) % (161 - 8 - 27);
     if (isAutoSend) {
-        LCD_dma_flush_auto_buffer_stop();
         LCD_write_cmd(0x37, 1);
         LCD_write_dat(lcdScrollUpPix + 8, 1);
-        LCD_dma_flush_auto_buffer_start();
     }
 }
 
 void LCD_scroll_down(unsigned int pixs) {
     lcdScrollUpPix = (lcdScrollUpPix - (pixs % (161 - 9 - 27))) % (161 - 9 - 27);
     if (isAutoSend) {
-        LCD_dma_flush_auto_buffer_stop();
         LCD_write_cmd(0x37, 1);
         LCD_write_dat(lcdScrollUpPix + 9, 1);
-        LCD_dma_flush_auto_buffer_start();
     }
 }
 
 void LCD_scroll_reset() {
     lcdScrollUpPix = 0;
     if (isAutoSend) {
-        LCD_dma_flush_auto_buffer_stop();
         LCD_write_cmd(0x37, 1);
         LCD_write_dat(8, 1);
         //LCD_write_cmd(0x13,1);
-        LCD_dma_flush_auto_buffer_start();
     }
 }
 
 void LCD_scroll_on() {
 
     if (isAutoSend) {
-        LCD_dma_flush_auto_buffer_stop();
         LCD_write_cmd(0x33, 1);
         LCD_write_dat(8, 1);
         LCD_write_dat(162 - 8 - 27, 1);
@@ -567,7 +560,6 @@ void LCD_scroll_on() {
 
         LCD_write_cmd(0x37, 1);
         LCD_write_dat(8, 1);
-        LCD_dma_flush_auto_buffer_start();
     }
 }
 

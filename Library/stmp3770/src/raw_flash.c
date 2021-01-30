@@ -54,9 +54,9 @@ volatile unsigned char __DMA_NAND_AUXILIARY_BUFFER[65];
 
 static struct NAND_Timing_t safe_timing =
     {
-        .DataSetup = 20,
-        .DataHold = 10,
-        .AddressSetup = 15,
+        .DataSetup = 30,
+        .DataHold = 25,
+        .AddressSetup = 20,
         .SampleDelay = 1,
 };
 

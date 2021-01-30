@@ -11,9 +11,9 @@ AS             = ..\tools\gcc-arm\bin\arm-none-eabi-as
 OBJCOPY		   = ..\tools\gcc-arm\bin\arm-none-eabi-objcopy.exe 
 SIZE           = ..\tools\gcc-arm\bin\arm-none-eabi-size.exe
 
-CFLAGS         = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -Os -pipe -ffunction-sections 
-CFLAGS_O3         = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O3 -pipe -ffunction-sections 
-CFLAGS_TESTING = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O3 -pipe -Wstringop-overflow=0
+CFLAGS         = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -Os -pipe -ffunction-sections  -fcommon
+CFLAGS_O3         = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O3 -pipe -ffunction-sections -fcommon
+CFLAGS_TESTING = -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -O3 -pipe -Wstringop-overflow=0 -fcommon
 
 LINKER        = ..\tools\gcc-arm\bin\arm-none-eabi-gcc
 LIBS          = 

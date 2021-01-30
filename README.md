@@ -35,7 +35,9 @@
 
 ## 安装
 
-**目前仅支持Windows平台**
+### GNU Make
+
+**此方式目前仅支持Windows平台**
 
 1. 使用任意方法把本项目源码下载到您的电脑上的任意位置。
 
@@ -56,6 +58,32 @@
 4. 双击运行hp39gii文件夹下的console.bat
 
 5. 使用`make`进行编译、`make flash`刷入编译好的固件。
+
+### CMake
+
+1. 安装 arm-none-eabi-gcc. Linux系统可以用包管理器安装，Windows系统可以从[这里](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads)下载. 对于Windows系统,请将安装目录下的./bin路径添加至PATH环境变量.
+
+2. 对于Linux系统, 请将99-hp39gii.rules复制到/etc/udev/rules.d/  
+    之后执行
+    ```bash
+    sudo service udev restart
+    # 或者
+    sudo udevadm control --reload-rules
+    sudo udevadm trigger
+    ```
+
+3. 对于非Windows系统, 请先编译 /tools/sbtools (无需安装)
+
+4. 对于Windows系统, 下载[Ninja](https://github.com/ninja-build/ninja/releases)并将exe文件添加至PATH变量
+
+5. 在此文件夹中, 执行
+    ```bash
+    mkdir ./build
+    cd ./build
+    cmake ..
+    make (或ninja)   #编译固件
+    make flash (或ninja flash)   #将固件刷入RAM
+    ```
 
 注意：HP39GII的相关驱动程序请自行安装。
 
@@ -147,7 +175,7 @@
         for (i = 0; i < l; i++) {
                 // code here
         }
-        ruturn i;
+        return i;
     ```
 
     ​	(c) 不得将for循环此三处中任意一处空出：` for ( ; ; ) `，否则请使用while循环。

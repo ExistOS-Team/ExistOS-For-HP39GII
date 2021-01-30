@@ -412,7 +412,6 @@ void vServiceException(void *pvParameters) {
 void vServiceSwap(void *pvParameters) {
     xTaskCreate(vServiceException, "MEM Exception SVC", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
 
-    swapSizeMB = 1;
     swap_file_inited = 0;
     if (swapSizeMB == 0) {
         vTaskDelete(NULL);

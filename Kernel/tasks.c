@@ -257,6 +257,8 @@ typedef struct tskTaskControlBlock 			/* The old naming convention is used to pr
 		xMPU_SETTINGS	xMPUSettings;		/*< The MPU settings are defined as part of the port layer.  THIS MUST BE THE SECOND MEMBER OF THE TCB STRUCT. */
 	#endif
 
+	volatile uint32_t	saved_regs[18];
+
 	ListItem_t			xStateListItem;	/*< The list that the state list item of a task is reference from denotes the state of that task (Ready, Blocked, Suspended ). */
 	ListItem_t			xEventListItem;		/*< Used to reference a task from an event list. */
 	UBaseType_t			uxPriority;			/*< The priority of the task.  0 is the lowest priority. */
@@ -854,7 +856,7 @@ UBaseType_t x;
 	#if( tskSET_NEW_STACKS_TO_KNOWN_VALUE == 1 )
 	{
 		/* Fill the stack with a known value to assist debugging. */
-		( void ) memset( pxNewTCB->pxStack, ( int ) tskSTACK_FILL_BYTE, ( size_t ) ulStackDepth * sizeof( StackType_t ) );
+		//( void ) memset( pxNewTCB->pxStack, ( int ) tskSTACK_FILL_BYTE, ( size_t ) ulStackDepth * sizeof( StackType_t ) );
 	}
 	#endif /* tskSET_NEW_STACKS_TO_KNOWN_VALUE */
 
@@ -1061,7 +1063,11 @@ UBaseType_t x;
 		}
 		#else /* portHAS_STACK_OVERFLOW_CHECKING */
 		{
-			pxNewTCB->pxTopOfStack = pxPortInitialiseStack( pxTopOfStack, pxTaskCode, pvParameters );
+			void vPortInitialiseNewTaskRegisters(uint32_t *regs_list, StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters) ;
+			vPortInitialiseNewTaskRegisters(pxNewTCB->saved_regs, pxTopOfStack, pxTaskCode, pvParameters);
+			pxNewTCB->pxTopOfStack = pxTopOfStack;
+			//pxNewTCB->pxTopOfStack = pxPortInitialiseStack( pxTopOfStack, pxTaskCode, pvParameters );
+			
 		}
 		#endif /* portHAS_STACK_OVERFLOW_CHECKING */
 	}

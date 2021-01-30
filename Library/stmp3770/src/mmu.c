@@ -20,7 +20,26 @@
 
 #include "mmu.h"
 #include "memory_map.h"
+
 volatile unsigned int *tlb_base = (unsigned int *)0x800C0000; //一级页表基地址
+
+volatile void memcpy_asm(void *des, void *src, unsigned int length)
+{
+    volatile register unsigned int counter asm("r2");
+    asm volatile("ldr r0,%0" :: "m"(des));
+    asm volatile("ldr r1,%0" :: "m"(src));
+    counter = 0;
+    while(counter < length){
+        asm volatile("ldrb r3,[r1]");
+        asm volatile("strb r3,[r0]");
+        asm volatile("add r0,r0,#1");
+        asm volatile("add r1,r1,#1");
+        asm volatile("add r2,r2,#1");
+    }
+    printf("a:%d b:%d c:%d d:%d\n",des,src,length,counter);
+}
+
+
 
 volatile void mmu_set_RS(unsigned int RS) {                //设置ARM CP15 C1寄存器的RS位
     register unsigned int c1_r asm("r1");                  //定义变量c1_r为一个寄存器变量，使用r1寄存器
@@ -33,7 +52,7 @@ volatile void mmu_set_RS(unsigned int RS) {                //设置ARM CP15 C1�
 volatile void mmu_set_domain_control_bit(unsigned int domain, unsigned int controlBit) {
     register unsigned int c3_r asm("r2");
     asm volatile("mrc p15, 0, %0, c3, c0, 0" ::"r"(c3_r));
-    c3_r &= ~((0x3) << domain * 2);
+    c3_r &= ~((0x3) << (domain * 2));
     c3_r |= ((controlBit & 0x3) << domain * 2);
     asm volatile("mcr p15, 0, %0, c3, c0, 0" ::"r"(c3_r));
 }
@@ -196,26 +215,6 @@ void stack_init() {
 
     switch_mode(SYS_MODE);
     set_stack(&SYS_STACK_ADDR);
-
-    switch_mode(SVC_MODE);
-    asm volatile("nop");
-}
-
-void stack_relocate() {
-    switch_mode(ABT_MODE);
-    set_stack((&ABT_STACK_ADDR) + RAM_START_VIRT_ADDR);
-
-    switch_mode(UND_MODE);
-    set_stack((&UND_STACK_ADDR) + RAM_START_VIRT_ADDR);
-
-    switch_mode(FIQ_MODE);
-    set_stack((&FIQ_STACK_ADDR) + RAM_START_VIRT_ADDR);
-
-    switch_mode(IRQ_MODE);
-    set_stack((&IRQ_STACK_ADDR) + RAM_START_VIRT_ADDR);
-
-    switch_mode(SYS_MODE);
-    set_stack((&SYS_STACK_ADDR) + RAM_START_VIRT_ADDR);
 
     switch_mode(SVC_MODE);
     asm volatile("nop");

@@ -19,6 +19,7 @@
  */
 
 #include "irq.h"
+#include "mmu.h"
 #include "exception.h"
 #include "portmacro.h"
 #include "regsicoll.h"
@@ -85,6 +86,7 @@ void irq_install_service(unsigned int irq_n, unsigned int *service_program) {
     irq_vector_table_base[irq_n] = (unsigned int)service_program;
 }
 
+
 void __irq_service() __attribute__((naked));
 void volatile __irq_service() {
 
@@ -93,12 +95,9 @@ void volatile __irq_service() {
 
     //
     //disable_interrupts();						//禁止外部中断
-    //asm volatile ("mrs r1, cpsr_all");
-    //asm volatile ("orr r1, r1, #0x1f");
-    //asm volatile ("msr cpsr_all, r1");			//切换到系统管理模式
 
     portSAVE_CONTEXT_ASM;
-
+    asm volatile("ldr sp,=IRQ_STACK_ADDR");
     //调用中断服务函数
 
     //current_irq_number = HW_ICOLL_STAT.B.VECTOR_NUMBER;										//获取当前发生的中断号

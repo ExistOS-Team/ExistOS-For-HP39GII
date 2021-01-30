@@ -25,12 +25,13 @@ GraphicMessage CurrentGraphicMessage;
 
 void vServiceManger(void *pvParameters) {
 
+    //uartdbg_print_regs();
+
     xTaskCreate(vServiceGraphic, "Graphic Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
     xTaskCreate(vServiceRawFlash, "RawFlash Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
     xTaskCreate(vSTMPPartition, "STMP Partition Svc", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
     xTaskCreate(vServiceFlashMap, "Flash Map Svc", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
     xTaskCreate(vServiceDebug, "Debug Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
-    xTaskCreate(vServiceUSBDevice, "USB Device Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
     xTaskCreate(vServiceFatfs, "FATFS Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
     xTaskCreate(vServiceKeyboard, "KeyBoard Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
 

@@ -33,8 +33,8 @@
 struct dhara_map map;
 struct dhara_nand nandinf;
 
-unsigned char page_buf[2048];
-unsigned char dhara_page_buf[2048];
+unsigned char page_buf[2048] ;//__attribute__((aligned(0x1000)));
+unsigned char dhara_page_buf[2048];// __attribute__((aligned(0x1000)));
 unsigned int dataRegonStartBlock = 0;
 extern unsigned char address_page_data[5];
 extern unsigned int dma_error;
@@ -64,7 +64,6 @@ int readDataRegonPage(unsigned int page, void *buffer) {
     }
 
     startTick = xTaskGetTickCount();
-
     //printf("read buffer Addr:%08x\n",buffer);
     taskENTER_CRITICAL();
     set_page_address_data(page + dataRegonStartBlock * 64);

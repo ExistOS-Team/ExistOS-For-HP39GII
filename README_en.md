@@ -33,7 +33,9 @@ Current development status: Most of the OS kernel and some necessary hardware dr
 
 ## Installing
 
-**Currently only Windows is supported**
+### GNU Make
+
+**Currently only Windows is supported by this method**
 
 1. Download the code.
 
@@ -53,6 +55,33 @@ Current development status: Most of the OS kernel and some necessary hardware dr
 4. Double click to run the console.bat in the hp39gii directory.
 
 5. Use `make` to compile, `make flash` to upload the firmware to calculator.
+
+
+### CMake
+
+1. Install arm-none-eabi-gcc. For linux, use the package manager; for Windows, download from [here](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads). For Windows,please add the ./bin in the install path to the PATH environment variable.
+
+2. For Linux, please copy 99-hp39gii.rules to /etc/udev/rules.d/  
+    and type
+    ```bash
+    sudo service udev restart
+    # or
+    sudo udevadm control --reload-rules
+    sudo udevadm trigger
+    ```
+
+3. For non-Windows system, please compile /tools/sbtools first (no need to install)
+
+4. For Windows, download [Ninja](https://github.com/ninja-build/ninja/releases) and add the .exe file to PATH.
+
+5.  execute these commands in the terminal in this directory.
+    ```bash
+    mkdir ./build
+    cd ./build
+    cmake ..
+    make (or ninja)   # Compile
+    make flash (or ninja flash)   # Flash into RAM
+    ```
 
 Notice: Please install drivers of HP39GII by yourself.
 
@@ -144,7 +173,7 @@ Notice: Please install drivers of HP39GII by yourself.
         for (i = 0; i < l; i++) {
                 // code here
         }
-        ruturn i;
+        return i;
     ```
 
     ​	(c) Do not leave any of the three of for loops empty: ` for ( ; ; ) `, otherwise use the while loop.
