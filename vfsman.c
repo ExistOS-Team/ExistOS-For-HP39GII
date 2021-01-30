@@ -382,3 +382,15 @@ int vfs_mkdir(const char *path)
     
 }
 
+int vfs_rename(const char *oldname, const char *newname) {
+    FRESULT fr;
+    if(oldname == NULL) return -ENXIO;
+    fr = f_rename(oldname, newname);
+    return fatfs_error_to_vfs(fr);
+}
+
+int vfs_getcwd(char* buff, int len) {
+    FRESULT fr;
+    fr = f_getcwd(buff, len);
+    return fatfs_error_to_vfs(fr);
+}

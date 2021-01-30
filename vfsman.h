@@ -25,6 +25,8 @@ int vfs_fstat(int fd, struct stat *st);
 int vfs_fsync(int fd);
 int vfs_fclose(int fd);
 int vfs_mkdir(const char *path);
+int vfs_rename(const char *oldname, const char *newname);
+int vfs_getcwd(char* buff, int len);
 
 
 #endif
