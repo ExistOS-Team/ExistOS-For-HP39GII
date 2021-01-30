@@ -11,49 +11,49 @@ unsigned int src_c_swi_handler(unsigned int r0, unsigned int r1, unsigned int r2
     switch (swiImmed) {
     // 20 functions from newlib. wait and isatty are not included here.
     case SWI_CLOSE:
-        return _close_r(_impure_ptr, r0);
+        return (unsigned int)_close_r(_impure_ptr, (int)r0);
     case SWI_EXECVE:
-        return _execve_r(_impure_ptr, r0, r1, r2);
+        return (unsigned int)_execve_r(_impure_ptr, (const char *)r0, (char *const *)r1, (char *const *)r2);
     case SWI_FCNTL:
-        return _fcntl_r(_impure_ptr, r0, r1, r2);
+        return (unsigned int)_fcntl_r(_impure_ptr, (int)r0, (int)r1, (int)r2);
     case SWI_FORK:
-        return _fork_r(_impure_ptr);
+        return (unsigned int)_fork_r(_impure_ptr);
     case SWI_FSTAT:
-        return _fstat_r(_impure_ptr, r0, r1);
+        return (unsigned int)_fstat_r(_impure_ptr, (int)r0, (struct stat *)r1);
     case SWI_GETPID:
-        return _getpid_r(_impure_ptr);
+        return (unsigned int)_getpid_r(_impure_ptr);
     case SWI_GETTIMEOFDAY:
-        return _gettimeofday_r(_impure_ptr, r0, r1);
+        return (unsigned int)_gettimeofday_r(_impure_ptr, (struct timeval *)r0, (void *)r1);
     case SWI_KILL:
-        return _kill_r(_impure_ptr, r0, r1);
+        return (unsigned int)_kill_r(_impure_ptr, (int)r0, (int)r1);
     case SWI_LINK:
-        return _link_r(_impure_ptr, r0, r1);
+        return (unsigned int)_link_r(_impure_ptr, (const char *)r0, (const char *)r1);
     case SWI_LSEEK:
-        return _lseek_r(_impure_ptr, r0, r1, r2);
+        return (unsigned int)_lseek_r(_impure_ptr, (int)r0, (_off_t)r1, (int)r2);
     case SWI_MKDIR:
-        return _mkdir_r(_impure_ptr, r0, r1);
+        return (unsigned int)_mkdir_r(_impure_ptr, (const char *)r0, (int)r1);
     case SWI_OPEN:
-        return _open_r(_impure_ptr, r0, r1, r2);
+        return (unsigned int)_open_r(_impure_ptr, (const char *)r0, (int)r1, (int)r2);
     case SWI_READ:
-        return _read_r(_impure_ptr, r0, r1, r2);
+        return (unsigned int)_read_r(_impure_ptr, (int)r0, (void *)r1, (size_t)r2);
     case SWI_RENAME:
-        return _rename_r(_impure_ptr, r0, r1);
+        return (unsigned int)_rename_r(_impure_ptr, (const char *)r0, (const char *)r1);
     case SWI_BRK:
-        return _sbrk_r(_impure_ptr, r0);
+        return (unsigned int)_sbrk_r(_impure_ptr, (ptrdiff_t)r0);
     case SWI_STAT:
-        return _stat_r(_impure_ptr, r0, r1);
+        return (unsigned int)_stat_r(_impure_ptr, (const char *)r0, (struct stat *)r1);
     case SWI_TIMES:
-        return _times_r(_impure_ptr, r0);
+        return (unsigned int)_times_r(_impure_ptr, (struct tms *)r0);
     case SWI_UNLINK:
-        return _unlink_r(_impure_ptr, r0);
+        return (unsigned int)_unlink_r(_impure_ptr, (const char *)r0);
     case SWI_WRITE:
-        return _write_r(_impure_ptr, r0, r1, r2);
+        return (unsigned int)_write_r(_impure_ptr, (int)r0, (const void *)r1, (size_t)r2);
 
     // Other system calls
     case SWI_FSYNC:
-        return fsync(r0);
+        return (unsigned int)fsync((int)r0);
     case SWI_GETCWD:
-        return getcwd(r0, r1);
+        return (unsigned int)getcwd((char *)r0, (size_t)r1);
     default:
         return -1;
     }
