@@ -49,12 +49,10 @@ SECTIONS
 	IRQ_STACK_ADDR = .;	
 	
 	. = . + 0x300;
-	SYS_STACK_ADDR = .;	
-	
-	. = . + 0x300;
 	SVC_STACK_ADDR = .;		
 	
-	
+	. = . + 0x300;
+	SYS_STACK_ADDR = .;		
 	
 	. = 0x0000C000; 
 	

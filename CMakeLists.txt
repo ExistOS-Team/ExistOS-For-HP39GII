@@ -49,7 +49,7 @@ aux_source_directory(. DIR_SRCS)
 
 
 add_executable(rom.elf ${DIR_SRCS})
-target_link_libraries(rom.elf config kernel libraries services testapp systemapp)
+target_link_libraries(rom.elf config kernel libraries services testapp systemapp -lm)
 
 
 add_custom_command(TARGET rom.elf POST_BUILD
@@ -59,7 +59,7 @@ add_custom_command(TARGET rom.elf POST_BUILD
 add_custom_target(
   rom.bin ALL
   COMMAND ${CMAKE_OBJCOPY} -I elf32-little -O binary -R .note -R .comment -S --pad-to=0x44000 ${CMAKE_CURRENT_BINARY_DIR}/rom.elf ${CMAKE_CURRENT_BINARY_DIR}/rom.bin 
-  DEPENDS rom.elf
+  DEPENDS rom.elf 
   )
 
 if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")

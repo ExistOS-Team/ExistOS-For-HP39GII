@@ -9,7 +9,7 @@
 #include "queue.h"
 #include "task.h"
 
-#define GC_RATIO 4
+#define GC_RATIO 8
 void flashSyncNow();
 void vServiceFlashMap(void *pvParameters);
 void flashMapReset();

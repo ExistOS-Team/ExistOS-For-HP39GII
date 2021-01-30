@@ -122,6 +122,8 @@ volatile void _kernel_init() {
     asm volatile("b _boot");
 }
 
+
+//unsigned int save_1;
 //at 0xC0000000
 void _boot() {
     volatile unsigned int *tlb_base = (unsigned int *)0x800C0000;
@@ -138,6 +140,13 @@ void _boot() {
     uartdbg_printf("next boot 1.\n");
     uartdbg_printf("test 1.\n");
     printf("Starting Kernel...\n");
+/*
+    save_1 = 0x23231234;
+    asm volatile("ldr r0,%0" : "=m"(save_1));
+    asm volatile("ldr r0,[r0]");
+    asm volatile("str pc,%0" : "=m"(save_1));
+    printf("save:%08x\n",save_1);
+*/
     MMU_UNMAP_SECTION_VIRT_RAM(0); //过河拆桥
     BF_WRn(DIGCTL_MPTEn_LOC, 5, LOC, 4005);
     flush_tlb();

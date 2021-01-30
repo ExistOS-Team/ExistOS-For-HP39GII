@@ -112,8 +112,8 @@ extern unsigned int FSOK;
 
 void runInRecoverMode() {
 
-    for (;;) {
-        if (is_key_down(KEY_1)) {
+    //for (;;) {
+        //if (is_key_down(KEY_1)) {
             GM.type = GRAPHIC_MSG_TYPE_CLEAR;
             xQueueSend(GraphicQueue, &(GM.selfAddr), (TickType_t)0);
             vTaskDelay(100);
@@ -147,11 +147,13 @@ void runInRecoverMode() {
             opt.fmt = FM_FAT;
             opt.au_size = 2048;
             opt.align = 2048;
+            opt.n_fat = 2;
+
 
             FATFS fs;
 
-            //int fr = f_mkfs("", &opt, work, sizeof work);
-            int fr = f_mkfs("", 0, work, sizeof work);
+            int fr = f_mkfs("", &opt, work, sizeof work);
+            //int fr = f_mkfs("", 0, work, sizeof work);
 
             printf("format :%d\n", fr);
 
@@ -168,8 +170,9 @@ void runInRecoverMode() {
 
             flashSyncNow();
             displayRecovery();
-        }
+        
 
+    for (;;) {
     next_loop:
 
         vTaskDelay(100);
@@ -210,7 +213,7 @@ void vInit() {
 	
 	taskEXIT_CRITICAL();
 	*/
-
+    //runInRecoverMode();
     if (!isfatFsInited()) {
         displayRecovery();
         runInRecoverMode();
@@ -220,7 +223,7 @@ void vInit() {
         displayRecovery();
         runInRecoverMode();
     }
-
+    
     GM.selfAddr = &GM;
     GM.type = GRAPHIC_MSG_TYPE_CLEAR;
     xQueueSend(GraphicQueue, &(GM.selfAddr), (TickType_t)0);
@@ -261,7 +264,7 @@ void vInit() {
 	*/
 
     //asm volatile ("swi #1001");
-
+/*
     FIL config_file;
     FRESULT fr;
     unsigned char *Config_line_buf = pvPortMalloc(1024);
@@ -292,10 +295,10 @@ void vInit() {
     f_close(&config_file);
 
     vPortFree(Config_line_buf);
-
+*/
 
     if(swapSizeMB == 0){
-        swapSizeMB = 1;
+        swapSizeMB = 16;
     }
 
     //xTaskCreate(vServiceSwap, "Swap Svc", configMINIMAL_STACK_SIZE, NULL, 4, NULL);

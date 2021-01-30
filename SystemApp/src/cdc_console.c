@@ -82,8 +82,12 @@ void cdc_putchar(const char c) {
 }
 
 void shell_tasklist_cmd(char argc, char *argv) {
-    unsigned char *tasklist_buf = pvPortMalloc(1024);
-    memset(tasklist_buf, 0, 1024);
+    unsigned char *tasklist_buf = pvPortMalloc(8192);
+    if(tasklist_buf == NULL){
+        shell_printf("Memory overflow\r\n");
+        return;
+    }
+    memset(tasklist_buf, 0, 8192);
 
     struct mallinfo mallocInfo;
 
@@ -100,18 +104,10 @@ void shell_tasklist_cmd(char argc, char *argv) {
     //shell_printf("free memory size: %d \n",(unsigned int)xPortGetFreeHeapSize());
 
     mallocInfo = mallinfo();
-    shell_printf("未分配空闲内存：%d Bytes\r\n", (unsigned int)xPortGetFreeHeapSize());
-
-    unsigned int freePhyMem, remainPhyMem;
-
-        freePhyMem = (getCurrentHeapEnd() - KHEAP_START_VIRT_ADDR);
-        remainPhyMem = freePhyMem + mallocInfo.fordblks;
     
+    shell_printf("未分配物理内存：%d Bytes\r\n", (TOTAL_PHY_MEMORY - KHEAP_MAP_PHY_START ) -  mallocInfo.arena);
 
-    shell_printf("未分配物理内存：%d Bytes\r\n", freePhyMem);
-    shell_printf("剩余物理内存：%d Bytes\r\n", remainPhyMem);
-
-    shell_printf("剩余内存：%d Bytes\r\n", mallocInfo.arena - mallocInfo.uordblks + (unsigned int)xPortGetFreeHeapSize());
+    shell_printf("可用物理内存：%d Bytes\r\n", (TOTAL_PHY_MEMORY - KHEAP_MAP_PHY_START ) - mallocInfo.uordblks);
     shell_printf("页面文件大小: %d Bytes\r\n", swapSizeMB * 1048576);
 
     shell_printf("total space allocated from system: %d\r\n", mallocInfo.arena);

@@ -184,10 +184,13 @@ void vServiceRawFlash(void *pvParameters) {
 
     flashLock = xSemaphoreCreateMutex();
     //flashOperationQueue = xQueueCreate(256, sizeof(OperationQueue));
+    
+    
 
     NAND_init();
 
     NandInit = 1;
+    
 
     vTaskDelete(NULL);
     //vTaskSuspend(NULL);

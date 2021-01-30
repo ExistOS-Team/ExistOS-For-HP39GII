@@ -5,14 +5,20 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "ff.h"
+#include "ProcessesMan.h"
 
-#define MAX_L1_PTE_IN_USE   4
-#define L2_TABLE_NUMBER     8
+#define SYSTEM_SPACE_PID    0
 
-#define ZONE_ATTR_R     0b0001
-#define ZONE_ATTR_W     0b0010
-#define ZONE_ATTR_X     0b0100
+#define MAX_L1_PTE_IN_USE   6
+#define L2_TABLE_NUMBER     MAX_L1_PTE_IN_USE
+
+#define ZONE_ATTR_R             0b0001
+#define ZONE_ATTR_W             0b0010
+#define ZONE_ATTR_X             0b0100
+#define ZONE_ATTR_WRITEBACK     0b1000
+
+
+#define UNUSE      0xFFFFFFFE
 
 typedef struct{
     unsigned int virt_seg;
@@ -35,7 +41,7 @@ typedef struct{
     unsigned int *map_on_virt_addr;
     unsigned int *page_phy_addr;
     unsigned int LRU_count;
-    TaskHandle_t belong_task;
+    PID_t belong_task;
     int map_file_fd;
     unsigned int page_attr;
     unsigned int offset_page_in_file;
@@ -61,20 +67,24 @@ typedef struct zone_info{
 
 typedef struct vm_space{
     struct vm_space *next_vm_space;
-    TaskHandle_t task_handle;
+    PID_t task_handle;
     zone_info* first_zone_info;
 }vm_space;
 
 int get_page_file_fd();
 
 int pageman_init(unsigned int cache_page_number,unsigned int vm_file_size_m);
-vm_space *create_vm_space(TaskHandle_t task_handle);
-vm_space *get_task_vm_space(TaskHandle_t task_handle);
-int create_new_task_space_zone(TaskHandle_t task_handle,int file, unsigned int file_inner_page_start, 
-        char *zone_name, unsigned char zone_attr, unsigned int *start_addr, unsigned int *end_addr);
+vm_space *create_vm_space(PID_t task_handle);
+vm_space *get_task_vm_space(PID_t task_handle);
+int create_new_task_space_zone(PID_t task_handle,int file, unsigned int file_inner_page_start, 
+        char *zone_name, unsigned char zone_attr, unsigned int start_addr, unsigned int end_addr);
+
+int remove_task_space_zone(PID_t pid, char *zone_name);
+
+
 void dump_vm_spaces();
 
-int data_access_fault_isr(TaskHandle_t task_handle, unsigned int *access_fault_addr, unsigned int *fault_ins_addr);
+int data_access_fault_isr(PID_t task_handle, unsigned int *access_fault_addr, unsigned int *fault_ins_addr, unsigned int FSR);
 
 void sync_all_write_back_cache_page();
 

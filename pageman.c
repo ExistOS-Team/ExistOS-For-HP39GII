@@ -2,10 +2,14 @@
 
 #include <stdio.h>
 
+
+#include "vfsman.h"
 #include "pageman.h"
 #include "memory_map.h"
 #include "FreeRTOS.h"
 #include "task.h"
+
+#include "uart_debug.h"
 
 #include "mmu.h"
 #include "ServiceFlashMap.h"
@@ -14,6 +18,8 @@
 #include <unistd.h>
 
 #include <malloc.h>
+
+
 
 #define DIFF_PHY_VS_VIRT    (RAM_START_VIRT_ADDR)
 
@@ -55,37 +61,51 @@ void invalid_all_L1_PTE(){
     flush_tlb();    
 }
 
-void set_l2_table_PTE(unsigned int which_L2_table,L2_PET_info *pet_info){
+void set_l2_table_PTE(unsigned int which_L2_table,L2_PET_info *pet_info, unsigned int enable_W){
     volatile unsigned int *l2_tab_base;
     unsigned int index;
+    unsigned int APLIST = 0b11111111;
+    
     l2_tab_base = l2_table_info[which_L2_table].table_page_phy_addr;
     l2_tab_base += DIFF_PHY_VS_VIRT/4;
 
     index = pet_info->virt_seg_inner_page_offset;
     l2_tab_base[index] = ((unsigned int)pet_info->map_phy_addr) & 0xFFFFF000;
-    l2_tab_base[index] |= 0b111111111110;
+    l2_tab_base[index] |= 0b1110;
+
+    if(enable_W){
+        l2_tab_base[index] |= (APLIST << 4);
+    }
+    
+    //l2_tab_base[index] |= 0b111111111110;
 }
 
 void set_l1_table_PTE(int which_L1_PTE, unsigned int which_L2_table){
     volatile unsigned int *l2_tab_base;
     volatile unsigned int *l1_tab_entry = (unsigned int *)0x800C0000;
+    int domain = 1;
+    
     l2_tab_base = l2_table_info[which_L2_table].table_page_phy_addr;
     
     //printf("which_L1_PTE:%d, which_L2_table:%d, (unsigned int)l2_tab_base >> 20:%08x, L1_PTE[which_L1_PTE].virt_seg:%08x\n",
     //    which_L1_PTE,which_L2_table,(unsigned int)l2_tab_base >> 20, L1_PTE[which_L1_PTE].virt_seg);
     //HW_DIGCTL_MPTEn_LOC(which_L1_PTE).B.LOC = (unsigned int)l2_tab_base >> 20;
     
-
-    
-
     BF_CS1n(DIGCTL_MPTEn_LOC, which_L1_PTE, LOC, L1_PTE[which_L1_PTE].virt_seg);
+
+    //l1_tab_entry[ L1_PTE[which_L1_PTE].virt_seg ] = 0;
 
     
 
     l1_tab_entry[ L1_PTE[which_L1_PTE].virt_seg ]   =  (unsigned int)l2_table_info[which_L2_table].table_page_phy_addr & 0xFFFFFC00;
-    l1_tab_entry[ L1_PTE[which_L1_PTE].virt_seg ] |= 0x11;
 
-    //uartdbg_print_regs();
+    
+
+    l1_tab_entry[ L1_PTE[which_L1_PTE].virt_seg ] |= (domain << 5);
+    
+    l1_tab_entry[ L1_PTE[which_L1_PTE].virt_seg ] |= 0x01;
+    //dump_page_tables();
+    
 
 }
 
@@ -134,7 +154,9 @@ int pageman_init(unsigned int cache_page_number,unsigned int vm_file_size_m)
         vPortFree(pages_info);
         return -2;
     }
-    if(lseek(vm_page_file_fd, vm_file_size * 1024 * 1024, SEEK_SET) < 0){
+
+    /*
+    if(vfs_lseek(vm_page_file_fd, vm_file_size * 1024 * 1024, SEEK_SET) < 0){
         printf("Allocates %d MB pagefile failed. \r\n", vm_file_size);
         vPortFree(vm_file_bitmap);
         vPortFree(l2_table_info);
@@ -142,6 +164,7 @@ int pageman_init(unsigned int cache_page_number,unsigned int vm_file_size_m)
         close(vm_page_file_fd);
         return -3;
     }
+    */
 
     //f_sync(&vm_page_file_handle);
     
@@ -163,7 +186,7 @@ int pageman_init(unsigned int cache_page_number,unsigned int vm_file_size_m)
         if(l2_table_info[i].table_page_phy_addr == NULL){
             return -1;
         }
-        l2_table_info[i].map_for_virt_seg = 0x4000;
+        l2_table_info[i].map_for_virt_seg = UNUSE;
         printf("L2_PT_ADDR:%08x\n",l2_table_info[i].table_page_phy_addr );
     }
 
@@ -177,14 +200,15 @@ int pageman_init(unsigned int cache_page_number,unsigned int vm_file_size_m)
         pages_info[i].belong_task = 0;
         pages_info[i].map_file_fd = -1;
         pages_info[i].offset_page_in_file = 0;
-        pages_info[i].map_on_virt_addr = 0;
+        pages_info[i].map_on_virt_addr = UNUSE;
         pages_info[i].is_dirty = 0;
+        pages_info[i].page_attr = 0;
         printf("PAGE_CACHE_ADDR:%08x\n",pages_info[i].page_phy_addr );
     }
 
-    mmu_set_RS(0b10);
-    mmu_set_domain_control_bit(0, 0b11);
-    mmu_set_domain_control_bit(1, 0b00);
+    mmu_set_RS(0b10);   //当AP = 00只读，AP =11 读写
+    mmu_set_domain_control_bit(0, 0b11);    //domain 0内的所有页任意访问
+    mmu_set_domain_control_bit(1, 0b01);    //domain 1内的所有页都需进行权限检查
 
     void dump_MPTE();
     dump_MPTE();
@@ -238,7 +262,7 @@ int get_max_lru_count_L1_PTE(){
     return max_item;
 }
 
-vm_space *create_vm_space(TaskHandle_t task_handle){
+vm_space *create_vm_space(PID_t task_handle){
     vm_space* current_vm_space_info = vm_space_info;
     if(vm_space_info == NULL){
         vm_space_info = (vm_space *)pvPortMalloc(sizeof(vm_space));
@@ -269,7 +293,7 @@ vm_space *create_vm_space(TaskHandle_t task_handle){
 
 }
 
-vm_space *get_task_vm_space(TaskHandle_t task_handle)
+vm_space *get_task_vm_space(PID_t task_handle)
 {
     vm_space* current_vm_space_info = vm_space_info;
     if(current_vm_space_info == NULL){
@@ -280,7 +304,7 @@ vm_space *get_task_vm_space(TaskHandle_t task_handle)
             return current_vm_space_info;
         }
         current_vm_space_info=current_vm_space_info->next_vm_space;
-    }while(current_vm_space_info->next_vm_space != NULL);
+    }while(current_vm_space_info != NULL);
     return NULL;
 }
 
@@ -306,19 +330,19 @@ void dump_vm_spaces(){
                 }
                 printf("\tzone map addr start:%08X\n",current_zone_info->zone_start_addr);
                 printf("\tzone map addr stop:%08X\n",current_zone_info->zone_stop_addr);
-                if(current_zone_info->map_file_fd == vm_page_file_fd){
+                //if(current_zone_info->map_file_fd == vm_page_file_fd){
                     vmfile_map_info *current_vmf_map_info = current_zone_info->first_map_info;
                     if(current_vmf_map_info != NULL){
                         int j=0;
                         do{
-                            printf("\t\tvm file map: #%d\n",j);
+                            printf("\t\tmap index: #%d\n",j);
                             printf("\t\tvmf_map_file_page:%08X\n",current_vmf_map_info->page_in_vm_file_page_offset);
                             printf("\t\tvmf_map_addr_page:%08X\n\n",current_vmf_map_info->virt_map_addr);
                             j++;
                             current_vmf_map_info = current_vmf_map_info->next_vmf_map_info;
                         }while(current_vmf_map_info != NULL);
                     }
-                }
+                //}
                 printf("-------------------------------------------\n");
                 current_zone_info = current_zone_info->next_info;
             }while(current_zone_info != NULL);           
@@ -328,8 +352,37 @@ void dump_vm_spaces(){
 
 }
 
-int create_new_task_space_zone(TaskHandle_t task_handle,int file, unsigned int file_inner_page_start, 
-        char *zone_name, unsigned char zone_attr, unsigned int *start_addr, unsigned int *end_addr)
+int remove_task_space_zone(PID_t pid, char *zone_name){
+    vm_space *current_vm_space_info;
+    zone_info *current_zone_info;
+    zone_info *prev_zone_info;
+    current_vm_space_info = get_task_vm_space(pid);
+    if(current_vm_space_info == NULL){
+        return -1;
+    }
+    if(current_vm_space_info->first_zone_info == NULL){
+        return -1;
+    }
+    current_zone_info = current_vm_space_info->first_zone_info;
+    if(strcmp(current_zone_info->zone_name , zone_name) == 0){
+        current_vm_space_info->first_zone_info = current_zone_info->next_info;
+        vPortFree(current_zone_info);
+        return 0;
+    }
+    do{
+        if(strcmp(current_zone_info->zone_name , zone_name) == 0){
+            prev_zone_info->next_info = current_zone_info->next_info;
+            vPortFree(current_zone_info);
+            return 0;
+        }
+        prev_zone_info = current_zone_info;
+        current_zone_info = current_zone_info->next_info;
+    }while(current_zone_info != NULL);
+    return -1;
+}
+
+int create_new_task_space_zone(PID_t task_handle,int file, unsigned int file_inner_page_start, 
+        char *zone_name, unsigned char zone_attr, unsigned int start_addr, unsigned int end_addr)
 {
     vm_space *current_vm_space_info;
     zone_info *current_zone_info;
@@ -358,13 +411,19 @@ int create_new_task_space_zone(TaskHandle_t task_handle,int file, unsigned int f
 
 
     current_zone_info = current_vm_space_info->first_zone_info;
+    int overlap;
     while(current_zone_info->next_info != NULL){
+        overlap = 0;
         if(!((start_addr > current_zone_info->zone_start_addr)  &&  (end_addr > current_zone_info->zone_stop_addr))  ){
-
-            return -2;
+            overlap++;
+            //printf("overlap 1\n");
         }
         if(!((start_addr < current_zone_info->zone_start_addr)  &&  (end_addr < current_zone_info->zone_stop_addr))  ){
-
+            overlap++;
+            //printf("overlap 2\n");
+        }
+        if(overlap >= 2){
+            overlap = 0;
             return -2;
         }
         if(strcmp(zone_name,(current_zone_info->zone_name)) == 0){
@@ -396,27 +455,18 @@ void ummap_cache_page(unsigned int which_page){
     volatile unsigned int *l1_tab_entry = (unsigned int *)0x800C0000;
     volatile unsigned int *l2_tab_entry;
     
-    pages_info[which_page].map_on_virt_addr = NULL;
+    pages_info[which_page].map_on_virt_addr = UNUSE;
 
     if((l1_tab_entry[ cache_page_virt_addr >> 20] & 0x3) == 0b01){
         l2_tab_entry = (unsigned int *)(l1_tab_entry[ cache_page_virt_addr >> 20] & 0xFFFFFC00);
         l2_tab_entry += (DIFF_PHY_VS_VIRT / 4);
-
-
-
         if(((unsigned int)l2_tab_entry) >= KHEAP_START_VIRT_ADDR && ((unsigned int)l2_tab_entry) <= (KHEAP_START_VIRT_ADDR + TOTAL_PHY_MEMORY - KHEAP_MAP_PHY_START)){
             //printf("!!!L2:%08x  %08x\n",l2_tab_entry[ (cache_page_virt_addr>>12) & 0xFF] , cache_page_phy_addr);
-
             if( (l2_tab_entry[ (cache_page_virt_addr>>12) & 0xFF] & 0xFFFFF000 ) == (cache_page_phy_addr & 0xFFFFF000)){
                 l2_tab_entry[ (cache_page_virt_addr>>12) & 0xFF] = 0;
             }
         }
-        
-
-
     }
-
-
 }
 
 void sync_all_write_back_cache_page(){
@@ -424,9 +474,13 @@ void sync_all_write_back_cache_page(){
     for(int i = 0; i < MAX_CACHE_PAGES; i++){
         if( (pages_info[i].map_file_fd != vm_page_file_fd) && (pages_info[i].map_file_fd > 0))
         {
+            if(pages_info[i].map_file_fd == vm_page_file_fd){
+                
+            }
+
            if((pages_info[i].page_attr & ZONE_ATTR_W)){
               if(pages_info[i].is_dirty == 1){
-                    fr = lseek(pages_info[i].map_file_fd, pages_info[i].offset_page_in_file * PAGE_SIZE, SEEK_SET);
+                    fr = vfs_lseek(pages_info[i].map_file_fd, pages_info[i].offset_page_in_file * PAGE_SIZE, SEEK_SET);
                     fr = write(pages_info[i].map_file_fd, pages_info[i].page_phy_addr + DIFF_PHY_VS_VIRT/4, PAGE_SIZE);
                     pages_info[i].is_dirty = 0;
                 }
@@ -445,29 +499,42 @@ int swap_out_cache_page(unsigned int which_page){
         return 0;
     }
 
-    ummap_cache_page(which_page);
+    //printf("swap out:%d\n",which_page);
 
 
     if(pages_info[which_page].map_file_fd == vm_page_file_fd){
         if(pages_info[which_page].is_dirty == 1){
-            fr = lseek(vm_page_file_fd, pages_info[which_page].offset_page_in_file * PAGE_SIZE, SEEK_SET);
+            fr = vfs_lseek(vm_page_file_fd, pages_info[which_page].offset_page_in_file * PAGE_SIZE, SEEK_SET);
+             //printf("fr 1:%d\n",fr);
             fr = write(vm_page_file_fd, pages_info[which_page].page_phy_addr + DIFF_PHY_VS_VIRT/4, PAGE_SIZE);
-            //fr = f_lseek(&vm_page_file_handle, pages_info[which_page].offset_page_in_file * PAGE_SIZE);
+             //printf("fr 2:%d\n",fr);
+            //fr = f_vfs_lseek(&vm_page_file_handle, pages_info[which_page].offset_page_in_file * PAGE_SIZE);
             //fr = f_write(&vm_page_file_handle, pages_info[which_page].page_phy_addr + DIFF_PHY_VS_VIRT/4,PAGE_SIZE,&br);
             pages_info[which_page].is_dirty = 0;
         }
     }else{
         if((pages_info[which_page].page_attr & ZONE_ATTR_W)){
-            if(pages_info[which_page].is_dirty == 1){
-                fr = lseek(pages_info[which_page].map_file_fd, pages_info[which_page].offset_page_in_file * PAGE_SIZE, SEEK_SET);
-                fr = write(pages_info[which_page].map_file_fd, pages_info[which_page].page_phy_addr + DIFF_PHY_VS_VIRT/4, PAGE_SIZE);
-                //fr = f_lseek(pages_info[which_page].file_handle, pages_info[which_page].offset_page_in_file * PAGE_SIZE);
-                //fr = f_write(pages_info[which_page].file_handle, pages_info[which_page].page_phy_addr + DIFF_PHY_VS_VIRT/4, PAGE_SIZE, &br); 
-                pages_info[which_page].is_dirty = 0;
+            if(pages_info[which_page].page_attr & ZONE_ATTR_WRITEBACK){
+                if(pages_info[which_page].is_dirty == 1){
+                    //printf("swap out:%d\n",pages_info[which_page].map_file_fd);
+                    fr = vfs_lseek(pages_info[which_page].map_file_fd, pages_info[which_page].offset_page_in_file * PAGE_SIZE, SEEK_SET);
+                    fr = vfs_write(pages_info[which_page].map_file_fd, pages_info[which_page].page_phy_addr + DIFF_PHY_VS_VIRT/4, PAGE_SIZE);
+                    pages_info[which_page].is_dirty = 0;
+                }
+            }else{
+                //NOT WRITE BACK
+                
+
             }
         }       
     }
+
+
+    finish:
+    pages_info[which_page].is_dirty = 0;
+
     pages_info[which_page].belong_task = 0;
+    ummap_cache_page(which_page);
     return fr;
 }
 
@@ -477,20 +544,36 @@ int swap_in_cache_page(unsigned int which_page,int file, unsigned int page_offse
     /*
     if(file == vm_page_file_fd){
         
-        //fr = f_lseek(&vm_page_file_handle, page_offset_in_file * PAGE_SIZE);
+        //fr = f_vfs_lseek(&vm_page_file_handle, page_offset_in_file * PAGE_SIZE);
         //fr = f_read(&vm_page_file_handle, (unsigned int *)(((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT), PAGE_SIZE, &br);
         //printf("readin addr:%08x\n", (((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT));
 
     }else{
-        fr = f_lseek(file_handle, page_offset_in_file * PAGE_SIZE);
+        fr = f_vfs_lseek(file_handle, page_offset_in_file * PAGE_SIZE);
         fr = f_read(file_handle, (unsigned int *)(((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT), PAGE_SIZE, &br); 
     }
     */
-    fr = lseek(file, page_offset_in_file * PAGE_SIZE, SEEK_SET);
-    fr = read(file, (unsigned int *)(((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT), PAGE_SIZE);
+    if(file == vm_page_file_fd){
+        fr = vfs_lseek(file, page_offset_in_file * PAGE_SIZE, SEEK_SET);
+        fr = vfs_read(file, (unsigned int *)(((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT), PAGE_SIZE);
+    }else{
 
+       // if((pages_info[which_page].page_attr & ZONE_ATTR_WRITEBACK)){
+       //     printf("swap in file:%d\n",file);
+        //    printf("page_attr:%d\n",pages_info[which_page].page_attr);
+
+
+            fr = vfs_lseek(file, page_offset_in_file * PAGE_SIZE, SEEK_SET);
+            fr = vfs_read(file, (unsigned int *)(((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT), PAGE_SIZE);
+       // }else if((pages_info[which_page].page_attr & ZONE_ATTR_W)){
+           
+
+       // }
+    }
+
+    finish:
     //printf("test 2\n");
-    pages_info[which_page].is_dirty = 1;
+    pages_info[which_page].is_dirty = 0;
     pages_info[which_page].map_on_virt_addr = (unsigned int *)virt_addr_to_load;
     return fr;
 }
@@ -513,7 +596,7 @@ int get_optimizing_L1_entry(unsigned int* addr, unsigned int* current_fault_ins_
     }
 
     for(int i = 0; i<MAX_L1_PTE_IN_USE; i++){
-        if(L1_PTE[i].LRU_count > max_lru && (L1_PTE[i].virt_seg != ((unsigned int)current_fault_ins_addr >> 20 ) )){
+        if((L1_PTE[i].LRU_count > max_lru) && (L1_PTE[i].virt_seg != ((unsigned int)current_fault_ins_addr >> 20 ) )){
             max_lru = L1_PTE[i].LRU_count;
             max_lru_item = i;
         }
@@ -545,7 +628,7 @@ int get_optimizing_L2_Table(unsigned int * current_fault_addr ,unsigned int* cur
     }
 
     for(int i = 0; i< L2_TABLE_NUMBER; i++){
-        if(l2_table_info[i].LRU_count > max_lru && ((unsigned int)l2_table_info[i].map_for_virt_seg != ((unsigned int)current_fault_ins_addr >> 20 ) )){
+        if((l2_table_info[i].LRU_count > max_lru) && ((unsigned int)l2_table_info[i].map_for_virt_seg != ((unsigned int)current_fault_ins_addr >> 20 ) )){
             max_lru = l2_table_info[i].LRU_count;
             max_lru_item = i;
         }
@@ -570,9 +653,12 @@ int get_optimizing_new_cache_page(unsigned int* current_fault_ins_addr){
     for(int i = 0 ;i<MAX_CACHE_PAGES; i++){
         if(pages_info[i].belong_task == 0){
             //printf("belong_task = 0,page #%d\n",i);
+            pages_info[i].LRU_count = 0;
             return i;
         }
     }
+
+
 
     for(int i = 0; i<MAX_CACHE_PAGES; i++){
         if(pages_info[i].map_on_virt_addr != current_fault_ins_addr){
@@ -582,7 +668,7 @@ int get_optimizing_new_cache_page(unsigned int* current_fault_ins_addr){
     }
 
     for(int i = 0; i<MAX_CACHE_PAGES; i++){
-        if(pages_info[i].LRU_count > max_lru && (pages_info[i].map_on_virt_addr != current_fault_ins_addr)){
+        if((pages_info[i].LRU_count > max_lru) && (pages_info[i].map_on_virt_addr != current_fault_ins_addr)){
             max_lru = pages_info[i].LRU_count;
             max_lru_item = i;
         }
@@ -666,10 +752,47 @@ void dump_page_tables(){
 
         }
     }
-    printf("--------------------------------------------\n");
+    
 
     dump_vm_page_file_bitmap();
+
+    printf("--------------------------------------------\n");
 }
+
+
+int remap_cache_page_as_writeable(unsigned int which_page){
+    int got_L1_entry;
+    int got_L2_PT;
+    L2_PET_info L2_PTE;
+    unsigned int cache_page_virt_addr_base;
+
+    if((pages_info[which_page].belong_task == NULL )&& (pages_info[which_page].map_on_virt_addr == UNUSE)){
+        return 1;
+    }
+    got_L1_entry = get_optimizing_L1_entry(pages_info[which_page].map_on_virt_addr, NULL);
+    got_L2_PT = get_optimizing_L2_Table(pages_info[which_page].map_on_virt_addr, NULL);
+
+    L1_PTE[got_L1_entry].phy_addr = l2_table_info[got_L2_PT].table_page_phy_addr;
+    L1_PTE[got_L1_entry].virt_seg = (unsigned int)pages_info[which_page].map_on_virt_addr >> 20;
+
+    l2_table_info[got_L2_PT].map_for_virt_seg = ((unsigned int)pages_info[which_page].map_on_virt_addr >> 20);
+   
+    cache_page_virt_addr_base = (unsigned int)pages_info[which_page].map_on_virt_addr;
+    cache_page_virt_addr_base = cache_page_virt_addr_base & 0x000FF000;
+    cache_page_virt_addr_base = cache_page_virt_addr_base >> 12;
+
+    L2_PTE.virt_seg_inner_page_offset = cache_page_virt_addr_base;
+    L2_PTE.map_phy_addr = pages_info[which_page].page_phy_addr;
+
+    set_l2_table_PTE(got_L2_PT, &L2_PTE, 1);
+    set_l1_table_PTE(got_L1_entry, got_L2_PT);
+
+    flush_cache();
+    flush_tlb();
+
+    return 0;
+}
+
 
 int load_cache_page_to_map_vm_space(unsigned int which_page, unsigned int *current_fault_ins_addr){
     int got_L1_entry;
@@ -677,7 +800,7 @@ int load_cache_page_to_map_vm_space(unsigned int which_page, unsigned int *curre
     L2_PET_info L2_PTE;
     unsigned int cache_page_virt_addr_base;
 
-    if(pages_info[which_page].belong_task == NULL){
+    if((pages_info[which_page].belong_task == NULL )&& (pages_info[which_page].map_on_virt_addr == UNUSE)){
         return 1;
     }
     got_L1_entry = get_optimizing_L1_entry(pages_info[which_page].map_on_virt_addr, current_fault_ins_addr);
@@ -687,7 +810,7 @@ int load_cache_page_to_map_vm_space(unsigned int which_page, unsigned int *curre
 
     L1_PTE[got_L1_entry].phy_addr = l2_table_info[got_L2_PT].table_page_phy_addr;
     L1_PTE[got_L1_entry].virt_seg = (unsigned int)pages_info[which_page].map_on_virt_addr >> 20;
-
+    
 
     l2_table_info[got_L2_PT].map_for_virt_seg = ((unsigned int)pages_info[which_page].map_on_virt_addr >> 20);
    
@@ -695,54 +818,154 @@ int load_cache_page_to_map_vm_space(unsigned int which_page, unsigned int *curre
     cache_page_virt_addr_base = cache_page_virt_addr_base & 0x000FF000;
     cache_page_virt_addr_base = cache_page_virt_addr_base >> 12;
 
-    //printf("cache_page_virt_addr_base:%08x\n",cache_page_virt_addr_base);
+    //
 
     L2_PTE.virt_seg_inner_page_offset = cache_page_virt_addr_base;
     L2_PTE.map_phy_addr = pages_info[which_page].page_phy_addr;
 
-    //dump_page_tables();
-    //printf("got_L1_entry:%d, got_L2_PT:%d\n",got_L1_entry,got_L2_PT);
-
-    set_l2_table_PTE(got_L2_PT, &L2_PTE);
+    
+/*
+    printf("l2_table_info[got_L2_PT].map_for_virt_seg:%08x\n",l2_table_info[got_L2_PT].map_for_virt_seg);
+    printf("cache_page_virt_addr_base:%08x\n",cache_page_virt_addr_base);
+    printf("got_L1_entry:%d, got_L2_PT:%d\n",got_L1_entry,got_L2_PT);
+    printf("reload which_page:%d\n",which_page);
+    printf("L1_PTE[got_L1_entry].virt_seg:%d\n",L1_PTE[got_L1_entry].virt_seg);
+*/
+    set_l2_table_PTE(got_L2_PT, &L2_PTE, 0);
     set_l1_table_PTE(got_L1_entry, got_L2_PT);
 
     
+    //uartdbg_print_regs();
 
     flush_cache();
+
+    //uartdbg_print_regs();
+
     flush_tlb();
 
+    //printf("finish load.\n");
     //dump_page_tables();
 
     return 0;
 
 }
 
-int data_access_fault_isr(TaskHandle_t task_handle, unsigned int *access_fault_addr, unsigned int *fault_ins_addr)
+unsigned int fault_count = 0;
+int data_access_fault_isr(PID_t task_handle, unsigned int *access_fault_addr, unsigned int *fault_ins_addr, unsigned int FSR)
 {
     vm_space *current_vm_space_info;
     zone_info *current_zone_info;
     int status;
+
+    
+
     current_vm_space_info = get_task_vm_space(task_handle);
+    if(current_vm_space_info == NULL){
+        return 1;
+    }
     current_zone_info = current_vm_space_info -> first_zone_info;
     int page_order;
     if(current_zone_info == NULL){
         return 1;
     }
+    fault_count++;
 
+    if(fault_count > 10){
+        return 1;
+    }
     
+    //uartdbg_printf("Fault Process 1: %x, Data Address: %x, ins address: %x fault_count:%d\n",task_handle, access_fault_addr,fault_ins_addr,fault_count);
+    
+
     do{
         if( (access_fault_addr >= current_zone_info->zone_start_addr) && (access_fault_addr <= current_zone_info->zone_stop_addr)){
+
+            //printf("FSR:%08x\n",FSR);
+            if(((FSR & 0xF) == 0b1111) || ((FSR & 0xF) == 0b1101)){
+                //printf("FSR:%08x\n",FSR);
+
+                for(int i=0; i < MAX_CACHE_PAGES; i++){
+                    if((unsigned int)pages_info[i].map_on_virt_addr == ((unsigned int)access_fault_addr & 0xFFFFF000)){
+                        if( (pages_info[i].page_attr & ZONE_ATTR_W) ){
+                            
+                            if( !(pages_info[i].page_attr & ZONE_ATTR_WRITEBACK) && (pages_info[i].map_file_fd != vm_page_file_fd) ){
+                                vmfile_map_info *current_map_info;
+                                vmfile_map_info *prev_map_info;
+                                current_map_info = current_zone_info ->first_map_info;
+                                if(current_map_info == NULL){
+                                    current_zone_info ->first_map_info = pvPortMalloc(sizeof(vmfile_map_info));
+                                    if(current_zone_info ->first_map_info == NULL){
+                                        printf("memory overflow:1\n");
+                                        return 1;
+                                    }
+                                    current_map_info = current_zone_info ->first_map_info;
+                                    current_map_info->virt_map_addr = ((unsigned int)access_fault_addr & 0xFFFFF000);
+                                    current_map_info->page_in_vm_file_page_offset = vm_page_alloc();
+                                    current_map_info->next_vmf_map_info = NULL;
+                                    pages_info[i].map_file_fd = vm_page_file_fd;
+                                    pages_info[i].offset_page_in_file = current_map_info->page_in_vm_file_page_offset;
+                                    pages_info[i].is_dirty = 1;
+                                    remap_cache_page_as_writeable(i);
+                                    return 0;
+                                }else{
+                                    do{
+                                        if(current_map_info->virt_map_addr == ((unsigned int)access_fault_addr & 0xFFFFF000)){
+                                            pages_info[i].is_dirty = 1;
+                                            return 0;
+                                        }
+                                        prev_map_info = current_map_info;
+                                        current_map_info = current_map_info->next_vmf_map_info;
+                                    }while(current_map_info != NULL);
+                                    prev_map_info -> next_vmf_map_info = pvPortMalloc(sizeof(vmfile_map_info));
+                                    if(prev_map_info -> next_vmf_map_info == NULL){
+                                        printf("memory overflow:1\n");
+                                        return 1;
+                                    }
+                                    current_map_info = prev_map_info -> next_vmf_map_info;
+                                    current_map_info->next_vmf_map_info = NULL;
+                                    current_map_info->page_in_vm_file_page_offset = vm_page_alloc();
+                                    current_map_info->virt_map_addr = ((unsigned int)access_fault_addr & 0xFFFFF000);
+                                    pages_info[i].map_file_fd = vm_page_file_fd;
+                                    pages_info[i].offset_page_in_file = current_map_info->page_in_vm_file_page_offset;
+                                    pages_info[i].is_dirty = 1;
+                                    remap_cache_page_as_writeable(i);
+                                    return 0;
+                                }
+
+                                
+                            }
+
+
+
+
+
+                            pages_info[i].is_dirty = 1;
+                            remap_cache_page_as_writeable(i);
+                            return 0;
+                        }
+
+                            pages_info[i].is_dirty = 1;
+                            remap_cache_page_as_writeable(i);
+                            return 0;
+
+                    }
+                }
+
+            }
+
+            
             //printf("Fault Process 1: %08x, Address: %08x\n",task_handle, access_fault_addr);
             if(current_zone_info -> map_file_fd == vm_page_file_fd){
+
                 vmfile_map_info *current_map_info;
-                vmfile_map_info *last_map_info;
+                vmfile_map_info *prev_map_info;
                 current_map_info = current_zone_info ->first_map_info;
                 if(current_map_info != NULL){
                      //current_map_info NOT EQU NULL
                     int is_found_fault_page = 0;
                     do{
                         if((current_map_info->virt_map_addr) == ((unsigned int)access_fault_addr & 0xFFFFF000 )){
-                            
+                            //printf("Found in vm page file\n");
                             page_order = get_optimizing_new_cache_page(fault_ins_addr);
                             status = swap_in_cache_page(page_order, vm_page_file_fd, current_map_info->page_in_vm_file_page_offset, (unsigned int)access_fault_addr & 0xFFFFF000);
                             if(status < 0){
@@ -761,20 +984,20 @@ int data_access_fault_isr(TaskHandle_t task_handle, unsigned int *access_fault_a
 
                             break;
                         }
-                        last_map_info = current_map_info;
+                        prev_map_info = current_map_info;
                         current_map_info = current_map_info->next_vmf_map_info;
                     }while(current_map_info != NULL);
 
                     if(is_found_fault_page == 0){
-                        
+                        //uartdbg_printf("NOT Found loaded page.\n");
                         //malloc_stats();
-                        last_map_info->next_vmf_map_info = pvPortMalloc(sizeof(vmfile_map_info));
-                        if(last_map_info->next_vmf_map_info == NULL){
+                        prev_map_info->next_vmf_map_info = pvPortMalloc(sizeof(vmfile_map_info));
+                        if(prev_map_info->next_vmf_map_info == NULL){
                             malloc_stats();
                             printf("memory overflow!\n");
                             return 1;
                         }
-                        current_map_info = last_map_info->next_vmf_map_info;
+                        current_map_info = prev_map_info->next_vmf_map_info;
                         current_map_info->next_vmf_map_info = NULL;
                         current_map_info->page_in_vm_file_page_offset = vm_page_alloc();
                         if( current_map_info->page_in_vm_file_page_offset == -1){
@@ -783,7 +1006,6 @@ int data_access_fault_isr(TaskHandle_t task_handle, unsigned int *access_fault_a
                         }
                         current_map_info->virt_map_addr = (unsigned int)access_fault_addr & 0xFFFFF000;
                         page_order = get_optimizing_new_cache_page(fault_ins_addr);
-                        //printf("y get_optimizing_new_cache_page:%d \n",page_order);
                         status = swap_in_cache_page(page_order, vm_page_file_fd, current_map_info->page_in_vm_file_page_offset, (unsigned int)access_fault_addr & 0xFFFFF000);
                         if(status < 0){
                             printf("load page file fault!\n");
@@ -803,7 +1025,10 @@ int data_access_fault_isr(TaskHandle_t task_handle, unsigned int *access_fault_a
                     //END current_map_info NOT EQU NULL
                 }else{
                     //START current_map_info EQU NULL
+                    //uartdbg_printf("NOT Found loaded page 2.\n");
                     current_zone_info ->first_map_info = pvPortMalloc(sizeof(vmfile_map_info));
+                    //uartdbg_printf("malloc end.\n");
+
                     if(current_zone_info ->first_map_info == NULL){
                         printf("Fault return malloc fail 2: %08x\n",task_handle);
                         return 1;
@@ -811,12 +1036,14 @@ int data_access_fault_isr(TaskHandle_t task_handle, unsigned int *access_fault_a
                     current_map_info = current_zone_info ->first_map_info;
                     current_map_info->next_vmf_map_info = NULL;
                     current_map_info->page_in_vm_file_page_offset = vm_page_alloc();
+                    //uartdbg_printf("vm_page_alloc end.\n");
                     if( current_map_info->page_in_vm_file_page_offset == -1){
                             printf("Fault return memory overflow 2: %08x\n",task_handle);
                             return 1;   //memory overflow
                     }
                     current_map_info->virt_map_addr = (unsigned int)access_fault_addr & 0xFFFFF000;
                     page_order = get_optimizing_new_cache_page(fault_ins_addr);
+                    //uartdbg_printf("get_optimizing_new_cache_page end.\n");
                     //printf("n get_optimizing_new_cache_page:%d \n",page_order);
                     status = swap_in_cache_page(page_order, vm_page_file_fd, 
                         current_map_info->page_in_vm_file_page_offset, (unsigned int)access_fault_addr & 0xFFFFF000);
@@ -830,6 +1057,7 @@ int data_access_fault_isr(TaskHandle_t task_handle, unsigned int *access_fault_a
                     pages_info[page_order].page_attr = current_zone_info->zone_attr;
                     
                     //finish setting, reload all cache pages.
+                    //uartdbg_printf("preload .\n");
                     load_cache_page_to_map_vm_space(page_order, fault_ins_addr);
                     //printf("Fault return 2: %08x\n",task_handle);
 
@@ -839,26 +1067,78 @@ int data_access_fault_isr(TaskHandle_t task_handle, unsigned int *access_fault_a
 
             }else if(current_zone_info -> map_file_fd > STDERR_FILENO){
                 //else ZONE MAP TO A FILE
+                
+                vmfile_map_info *current_map_info;
+                current_map_info = current_zone_info ->first_map_info;
+                if(current_map_info != NULL){
+                    do{
+                        if((current_map_info->virt_map_addr) == ((unsigned int)access_fault_addr & 0xFFFFF000 )){
+                            page_order = get_optimizing_new_cache_page(fault_ins_addr);
+                            status = swap_in_cache_page(page_order, vm_page_file_fd, current_map_info->page_in_vm_file_page_offset, (unsigned int)access_fault_addr & 0xFFFFF000);
+                            if(status < 0){
+                                printf("load page file fault!\n");
+                                return 1;
+                            }
+                            pages_info[page_order].belong_task = task_handle;
+                            pages_info[page_order].map_file_fd = vm_page_file_fd;
+                            pages_info[page_order].offset_page_in_file = current_map_info->page_in_vm_file_page_offset;
+                            pages_info[page_order].page_attr = current_zone_info->zone_attr;
+                            //finish setting, reload all cache pages.
+                            load_cache_page_to_map_vm_space(page_order, fault_ins_addr);
+                            return 0; 
+
+                        }
+                        current_map_info = current_map_info->next_vmf_map_info;
+                    }while(current_map_info != NULL);
+                }
+                
+
                 unsigned int fault_inside_file_page;
                 page_order = get_optimizing_new_cache_page(fault_ins_addr);
-
                 fault_inside_file_page = ((unsigned int)access_fault_addr - (unsigned int)current_zone_info->zone_start_addr) >> 12;
                 //printf("fault_inside_file_page:%d\n",fault_inside_file_page);
                 status = swap_in_cache_page(page_order, current_zone_info->map_file_fd, 
                         current_zone_info->file_inner_page_start + fault_inside_file_page,
                          (unsigned int)access_fault_addr & 0xFFFFF000);
+ 
+                //printf("\n");
                 if(status < 0)
                 {
                     printf("load page file fault!\n");
                     return 1;
                 }
-
                 pages_info[page_order].belong_task = task_handle;
                 pages_info[page_order].map_file_fd = current_zone_info -> map_file_fd;
+
                 pages_info[page_order].offset_page_in_file = current_zone_info->file_inner_page_start + fault_inside_file_page;
+
+/*
+                if(!(current_zone_info -> zone_attr & ZONE_ATTR_WRITEBACK)){
+
+                
+                    FILE *fp;
+                    int file_size;
+                    fp = fdopen(current_zone_info -> map_file_fd,"r");
+                        if(fp == NULL){
+                        return 1;
+                    }
+                    fseek(fp, 0, SEEK_END);
+                    file_size = ftell(fp);
+                    fseek(fp, 0, SEEK_SET);
+                
+                    if(pages_info[page_order].offset_page_in_file > file_size){
+                        pages_info[page_order].offset_page_in_file = file_size;
+                    }
+                
+                }
+*/
                 pages_info[page_order].page_attr = current_zone_info->zone_attr;
+                //printf("preload.\n");
                 load_cache_page_to_map_vm_space(page_order, fault_ins_addr);
+                //printf("load.\n");
                 return 0;
+
+
 
             }
 
@@ -872,4 +1152,5 @@ int data_access_fault_isr(TaskHandle_t task_handle, unsigned int *access_fault_a
 
     return 1;
 }
+
 

@@ -161,6 +161,7 @@ void *__wrap__malloc_r(void *reent, size_t nbytes) {
 };
 
 
+
 void *pvPortMalloc( size_t xWantedSize )
 {
 void *pvReturn;
@@ -170,9 +171,11 @@ void *pvReturn;
 		pvReturn = malloc( xWantedSize );
 		//traceMALLOC( pvReturn, xWantedSize );
 	}
-	
-	
+	//uartdbg_print_regs();
+	//uartdbg_printf("pvPortMalloc malloc end\n");
 	xTaskResumeAll();
+
+	//uartdbg_printf("pvPortMalloc end\n");
 
 	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
 	{

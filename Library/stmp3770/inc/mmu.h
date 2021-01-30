@@ -96,6 +96,9 @@ volatile void flush_tlb();
 
 uint8_t *VIR_TO_PHY_ADDR(uint8_t *VIRT_ADDR);
 
+
+volatile void memcpy_asm(void *des, void *src, unsigned int length);
+
 #ifdef __cplusplus
 }
 #endif
