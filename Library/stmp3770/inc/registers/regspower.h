@@ -45,7 +45,7 @@
 #include "regs.h"
 
 #ifndef REGS_POWER_BASE
-#define REGS_POWER_BASE (REGS_BASE + 0x00044000)
+#define REGS_POWER_BASE (REGS_BASE + 0x80044000)
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -74,20 +74,16 @@ typedef union
         unsigned BATT_BO_IRQ              :  1;
         unsigned ENIRQ_DC_OK              :  1;
         unsigned DC_OK_IRQ                :  1;
-        unsigned POLARITY_DC_OK           :  1;
+        unsigned ENIRQ_LINREG_OK          :  1;
+        unsigned LINREG_OK_IRQ            :  1;
+        unsigned POLARITY_LINREG_OK       :  1;
         unsigned ENIRQ_PSWITCH            :  1;
         unsigned POLARITY_PSWITCH         :  1;
         unsigned PSWITCH_IRQ_SRC          :  1;
         unsigned PSWITCH_IRQ              :  1;
-        unsigned ENIRQ_VDD5V_DROOP        :  1;
-        unsigned VDD5V_DROOP_IRQ          :  1;
-        unsigned ENIRQ_DCDC4P2_BO         :  1;
-        unsigned DCDC4P2_BO_IRQ           :  1;
-        unsigned RSRVD1                   :  2;
-        unsigned PSWITCH_MID_TRAN         :  1;
-        unsigned RSRVD2                   :  2;
+        unsigned RSRVD1                   :  7;
         unsigned CLKGATE                  :  1;
-        unsigned RSRVD3                   :  1;
+        unsigned RSRVD2                   :  1;
     } B;
 } hw_power_ctrl_t;
 #endif
@@ -127,67 +123,12 @@ typedef union
 #define BW_POWER_CTRL_CLKGATE(v)   BF_CS1(POWER_CTRL, CLKGATE, v)
 #endif
 
-//--- Register HW_POWER_CTRL, field PSWITCH_MID_TRAN
-
-#define BP_POWER_CTRL_PSWITCH_MID_TRAN      27
-#define BM_POWER_CTRL_PSWITCH_MID_TRAN      0x08000000
-
-#define BF_POWER_CTRL_PSWITCH_MID_TRAN(v)   (((v) << 27) & BM_POWER_CTRL_PSWITCH_MID_TRAN)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_CTRL_PSWITCH_MID_TRAN(v)   BF_CS1(POWER_CTRL, PSWITCH_MID_TRAN, v)
-#endif
-
-//--- Register HW_POWER_CTRL, field DCDC4P2_BO_IRQ
-
-#define BP_POWER_CTRL_DCDC4P2_BO_IRQ      24
-#define BM_POWER_CTRL_DCDC4P2_BO_IRQ      0x01000000
-
-#define BF_POWER_CTRL_DCDC4P2_BO_IRQ(v)   (((v) << 24) & BM_POWER_CTRL_DCDC4P2_BO_IRQ)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_CTRL_DCDC4P2_BO_IRQ(v)   BF_CS1(POWER_CTRL, DCDC4P2_BO_IRQ, v)
-#endif
-
-//--- Register HW_POWER_CTRL, field ENIRQ_DCDC4P2_BO
-
-#define BP_POWER_CTRL_ENIRQ_DCDC4P2_BO      23
-#define BM_POWER_CTRL_ENIRQ_DCDC4P2_BO      0x00800000
-
-#define BF_POWER_CTRL_ENIRQ_DCDC4P2_BO(v)   (((v) << 23) & BM_POWER_CTRL_ENIRQ_DCDC4P2_BO)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_CTRL_ENIRQ_DCDC4P2_BO(v)   BF_CS1(POWER_CTRL, ENIRQ_DCDC4P2_BO, v)
-#endif
-
-//--- Register HW_POWER_CTRL, field VDD5V_DROOP_IRQ
-
-#define BP_POWER_CTRL_VDD5V_DROOP_IRQ      22
-#define BM_POWER_CTRL_VDD5V_DROOP_IRQ      0x00400000
-
-#define BF_POWER_CTRL_VDD5V_DROOP_IRQ(v)   (((v) << 22) & BM_POWER_CTRL_VDD5V_DROOP_IRQ)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_CTRL_VDD5V_DROOP_IRQ(v)   BF_CS1(POWER_CTRL, VDD5V_DROOP_IRQ, v)
-#endif
-
-//--- Register HW_POWER_CTRL, field ENIRQ_VDD5V_DROOP
-
-#define BP_POWER_CTRL_ENIRQ_VDD5V_DROOP      21
-#define BM_POWER_CTRL_ENIRQ_VDD5V_DROOP      0x00200000
-
-#define BF_POWER_CTRL_ENIRQ_VDD5V_DROOP(v)   (((v) << 21) & BM_POWER_CTRL_ENIRQ_VDD5V_DROOP)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_CTRL_ENIRQ_VDD5V_DROOP(v)   BF_CS1(POWER_CTRL, ENIRQ_VDD5V_DROOP, v)
-#endif
-
 //--- Register HW_POWER_CTRL, field PSWITCH_IRQ
 
-#define BP_POWER_CTRL_PSWITCH_IRQ      20
-#define BM_POWER_CTRL_PSWITCH_IRQ      0x00100000
+#define BP_POWER_CTRL_PSWITCH_IRQ      22
+#define BM_POWER_CTRL_PSWITCH_IRQ      0x00400000
 
-#define BF_POWER_CTRL_PSWITCH_IRQ(v)   (((v) << 20) & BM_POWER_CTRL_PSWITCH_IRQ)
+#define BF_POWER_CTRL_PSWITCH_IRQ(v)   (((v) << 22) & BM_POWER_CTRL_PSWITCH_IRQ)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_CTRL_PSWITCH_IRQ(v)   BF_CS1(POWER_CTRL, PSWITCH_IRQ, v)
@@ -195,10 +136,10 @@ typedef union
 
 //--- Register HW_POWER_CTRL, field PSWITCH_IRQ_SRC
 
-#define BP_POWER_CTRL_PSWITCH_IRQ_SRC      19
-#define BM_POWER_CTRL_PSWITCH_IRQ_SRC      0x00080000
+#define BP_POWER_CTRL_PSWITCH_IRQ_SRC      21
+#define BM_POWER_CTRL_PSWITCH_IRQ_SRC      0x08000000
 
-#define BF_POWER_CTRL_PSWITCH_IRQ_SRC(v)   (((v) << 19) & BM_POWER_CTRL_PSWITCH_IRQ_SRC)
+#define BF_POWER_CTRL_PSWITCH_IRQ_SRC(v)   (((v) << 21) & BM_POWER_CTRL_PSWITCH_IRQ_SRC)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_CTRL_PSWITCH_IRQ_SRC(v)   BF_CS1(POWER_CTRL, PSWITCH_IRQ_SRC, v)
@@ -206,10 +147,10 @@ typedef union
 
 //--- Register HW_POWER_CTRL, field POLARITY_PSWITCH
 
-#define BP_POWER_CTRL_POLARITY_PSWITCH      18
-#define BM_POWER_CTRL_POLARITY_PSWITCH      0x00040000
+#define BP_POWER_CTRL_POLARITY_PSWITCH      20
+#define BM_POWER_CTRL_POLARITY_PSWITCH      0x00100000
 
-#define BF_POWER_CTRL_POLARITY_PSWITCH(v)   (((v) << 18) & BM_POWER_CTRL_POLARITY_PSWITCH)
+#define BF_POWER_CTRL_POLARITY_PSWITCH(v)   (((v) << 21) & BM_POWER_CTRL_POLARITY_PSWITCH)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_CTRL_POLARITY_PSWITCH(v)   BF_CS1(POWER_CTRL, POLARITY_PSWITCH, v)
@@ -217,24 +158,46 @@ typedef union
 
 //--- Register HW_POWER_CTRL, field ENIRQ_PSWITCH
 
-#define BP_POWER_CTRL_ENIRQ_PSWITCH      17
-#define BM_POWER_CTRL_ENIRQ_PSWITCH      0x00020000
+#define BP_POWER_CTRL_ENIRQ_PSWITCH      19
+#define BM_POWER_CTRL_ENIRQ_PSWITCH      0x00080000
 
-#define BF_POWER_CTRL_ENIRQ_PSWITCH(v)   (((v) << 17) & BM_POWER_CTRL_ENIRQ_PSWITCH)
+#define BF_POWER_CTRL_ENIRQ_PSWITCH(v)   (((v) << 19) & BM_POWER_CTRL_ENIRQ_PSWITCH)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_CTRL_ENIRQ_PSWITCH(v)   BF_CS1(POWER_CTRL, ENIRQ_PSWITCH, v)
 #endif
 
-//--- Register HW_POWER_CTRL, field POLARITY_DC_OK
+//--- Register HW_POWER_CTRL, field POLARITY_LINREG_OK
 
-#define BP_POWER_CTRL_POLARITY_DC_OK      16
-#define BM_POWER_CTRL_POLARITY_DC_OK      0x00010000
+#define BP_POWER_CTRL_POLARITY_LINREG_OK      18
+#define BM_POWER_CTRL_POLARITY_LINREG_OK      0x00040000
 
-#define BF_POWER_CTRL_POLARITY_DC_OK(v)   (((v) << 16) & BM_POWER_CTRL_POLARITY_DC_OK)
+#define BF_POWER_CTRL_POLARITY_LINREG_OK(v)   (((v) << 18) & BM_POWER_CTRL_POLARITY_LINREG_OK)
 
 #ifndef __LANGUAGE_ASM__
-#define BW_POWER_CTRL_POLARITY_DC_OK(v)   BF_CS1(POWER_CTRL, POLARITY_DC_OK, v)
+#define BW_POWER_CTRL_POLARITY_LINREG_OK(v)   BF_CS1(POWER_CTRL, POLARITY_LINREG_OK, v)
+#endif
+
+//--- Register HW_POWER_CTRL, field LINREG_OK_IRQ
+
+#define BP_POWER_CTRL_LINREG_OK_IRQ      17
+#define BM_POWER_CTRL_LINREG_OK_IRQ      0x00020000
+
+#define BF_POWER_CTRL_LINREG_OK_IRQ(v)   (((v) << 17) & BM_POWER_CTRL_LINREG_OK_IRQ)
+
+#ifndef __LANGUAGE_ASM__
+#define BW_POWER_CTRL_LINREG_OK_IRQ(v)   BF_CS1(POWER_CTRL, LINREG_OK_IRQ, v)
+#endif
+
+//--- Register HW_POWER_CTRL, field ENIRQ_LINREG_OK
+
+#define BP_POWER_CTRL_ENIRQ_LINREG_OK      16
+#define BM_POWER_CTRL_ENIRQ_LINREG_OK      0x00010000
+
+#define BF_POWER_CTRL_ENIRQ_LINREG_OK(v)   (((v) << 16) & BM_POWER_CTRL_ENIRQ_LINREG_OK)
+
+#ifndef __LANGUAGE_ASM__
+#define BW_POWER_CTRL_ENIRQ_LINREG_OK(v)   BF_CS1(POWER_CTRL, ENIRQ_LINREG_OK, v)
 #endif
 
 //--- Register HW_POWER_CTRL, field DC_OK_IRQ
@@ -425,23 +388,17 @@ typedef union
     struct
     {
         unsigned ENABLE_DCDC           :  1;
-        unsigned PWRUP_VBUS_CMPS       :  1;
+        unsigned OTG_PWRUP_CMPS        :  1;
         unsigned ILIMIT_EQ_ZERO        :  1;
         unsigned VBUSVALID_TO_B        :  1;
         unsigned VBUSVALID_5VDETECT    :  1;
+        unsigned EN_BATT_PULLDN        :  1;
         unsigned DCDC_XFER             :  1;
-        unsigned ENABLE_LINREG_ILIMIT  :  1;
+        unsigned ENABLE_ILIMIT         :  1;
         unsigned PWDN_5VBRNOUT         :  1;
-        unsigned VBUSVALID_TRSH        :  3;
-        unsigned RSRVD2                :  1;
-        unsigned CHARGE_4P2_ILIMIT     :  6;
-        unsigned RSRVD3                :  2;
-        unsigned PWD_CHARGE_4P2        :  1;
-        unsigned RSRVD4                :  3;
-        unsigned HEADROOM_ADJ          :  3;
-        unsigned RSRVD5                :  1;
-        unsigned VBUSDROOP_TRSH        :  2;
-        unsigned RSRVD6                :  2;
+        unsigned RSRVD1                :  1;
+        unsigned VBUSVALID_TRSH        :  2;
+        unsigned RSRVD2                : 20;
     } B;
 } hw_power_5vctrl_t;
 #endif
@@ -470,56 +427,12 @@ typedef union
 // constants & macros for individual HW_POWER_5VCTRL bitfields
 //
 
-//--- Register HW_POWER_5VCTRL, field VBUSDROOP_TRSH
-
-#define BP_POWER_5VCTRL_VBUSDROOP_TRSH      28
-#define BM_POWER_5VCTRL_VBUSDROOP_TRSH      0x30000000
-
-#define BF_POWER_5VCTRL_VBUSDROOP_TRSH(v)   (((v) << 28) & BM_POWER_5VCTRL_VBUSDROOP_TRSH)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_5VCTRL_VBUSDROOP_TRSH(v)   BF_CS1(POWER_5VCTRL, VBUSDROOP_TRSH, v)
-#endif
-
-//--- Register HW_POWER_5VCTRL, field HEADROOM_ADJ
-
-#define BP_POWER_5VCTRL_HEADROOM_ADJ      24
-#define BM_POWER_5VCTRL_HEADROOM_ADJ      0x07000000
-
-#define BF_POWER_5VCTRL_HEADROOM_ADJ(v)   (((v) << 24) & BM_POWER_5VCTRL_HEADROOM_ADJ)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_5VCTRL_HEADROOM_ADJ(v)   BF_CS1(POWER_5VCTRL, HEADROOM_ADJ, v)
-#endif
-
-//--- Register HW_POWER_5VCTRL, field PWD_CHARGE_4P2
-
-#define BP_POWER_5VCTRL_PWD_CHARGE_4P2      20
-#define BM_POWER_5VCTRL_PWD_CHARGE_4P2      0x00100000
-
-#define BF_POWER_5VCTRL_PWD_CHARGE_4P2(v)   (((v) << 20) & BM_POWER_5VCTRL_PWD_CHARGE_4P2)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_5VCTRL_PWD_CHARGE_4P2(v)   BF_CS1(POWER_5VCTRL, PWD_CHARGE_4P2, v)
-#endif
-
-//--- Register HW_POWER_5VCTRL, field CHARGE_4P2_ILIMIT
-
-#define BP_POWER_5VCTRL_CHARGE_4P2_ILIMIT      12
-#define BM_POWER_5VCTRL_CHARGE_4P2_ILIMIT      0x0003F000
-
-#define BF_POWER_5VCTRL_CHARGE_4P2_ILIMIT(v)   (((v) << 12) & BM_POWER_5VCTRL_CHARGE_4P2_ILIMIT)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_5VCTRL_CHARGE_4P2_ILIMIT(v)   BF_CS1(POWER_5VCTRL, CHARGE_4P2_ILIMIT, v)
-#endif
-
 //--- Register HW_POWER_5VCTRL, field VBUSVALID_TRSH
 
-#define BP_POWER_5VCTRL_VBUSVALID_TRSH      8
-#define BM_POWER_5VCTRL_VBUSVALID_TRSH      0x00000700
+#define BP_POWER_5VCTRL_VBUSVALID_TRSH      10
+#define BM_POWER_5VCTRL_VBUSVALID_TRSH      0x00000C00
 
-#define BF_POWER_5VCTRL_VBUSVALID_TRSH(v)   (((v) << 8) & BM_POWER_5VCTRL_VBUSVALID_TRSH)
+#define BF_POWER_5VCTRL_VBUSVALID_TRSH(v)   (((v) << 10) & BM_POWER_5VCTRL_VBUSVALID_TRSH)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_5VCTRL_VBUSVALID_TRSH(v)   BF_CS1(POWER_5VCTRL, VBUSVALID_TRSH, v)
@@ -527,35 +440,46 @@ typedef union
 
 //--- Register HW_POWER_5VCTRL, field PWDN_5VBRNOUT
 
-#define BP_POWER_5VCTRL_PWDN_5VBRNOUT      7
-#define BM_POWER_5VCTRL_PWDN_5VBRNOUT      0x00000080
+#define BP_POWER_5VCTRL_PWDN_5VBRNOUT      8
+#define BM_POWER_5VCTRL_PWDN_5VBRNOUT      0x00000100
 
-#define BF_POWER_5VCTRL_PWDN_5VBRNOUT(v)   (((v) << 7) & BM_POWER_5VCTRL_PWDN_5VBRNOUT)
+#define BF_POWER_5VCTRL_PWDN_5VBRNOUT(v)   (((v) << 8) & BM_POWER_5VCTRL_PWDN_5VBRNOUT)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_5VCTRL_PWDN_5VBRNOUT(v)   BF_CS1(POWER_5VCTRL, PWDN_5VBRNOUT, v)
 #endif
 
-//--- Register HW_POWER_5VCTRL, field ENABLE_LINREG_ILIMIT
+//--- Register HW_POWER_5VCTRL, field ENABLE_ILIMIT
 
-#define BP_POWER_5VCTRL_ENABLE_LINREG_ILIMIT      6
-#define BM_POWER_5VCTRL_ENABLE_LINREG_ILIMIT      0x00000040
+#define BP_POWER_5VCTRL_ENABLE_ILIMIT      7
+#define BM_POWER_5VCTRL_ENABLE_ILIMIT      0x00000080
 
-#define BF_POWER_5VCTRL_ENABLE_LINREG_ILIMIT(v)   (((v) << 6) & BM_POWER_5VCTRL_ENABLE_LINREG_ILIMIT)
+#define BF_POWER_5VCTRL_ENABLE_ILIMIT(v)   (((v) << 7) & BM_POWER_5VCTRL_ENABLE_ILIMIT)
 
 #ifndef __LANGUAGE_ASM__
-#define BW_POWER_5VCTRL_ENABLE_LINREG_ILIMIT(v)   BF_CS1(POWER_5VCTRL, ENABLE_LINREG_ILIMIT, v)
+#define BW_POWER_5VCTRL_ENABLE_ILIMIT(v)   BF_CS1(POWER_5VCTRL, ENABLE_ILIMIT, v)
 #endif
 
 //--- Register HW_POWER_5VCTRL, field DCDC_XFER
 
-#define BP_POWER_5VCTRL_DCDC_XFER      5
-#define BM_POWER_5VCTRL_DCDC_XFER      0x00000020
+#define BP_POWER_5VCTRL_DCDC_XFER      6
+#define BM_POWER_5VCTRL_DCDC_XFER      0x00000040
 
-#define BF_POWER_5VCTRL_DCDC_XFER(v)   (((v) << 5) & BM_POWER_5VCTRL_DCDC_XFER)
+#define BF_POWER_5VCTRL_DCDC_XFER(v)   (((v) << 6) & BM_POWER_5VCTRL_DCDC_XFER)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_5VCTRL_DCDC_XFER(v)   BF_CS1(POWER_5VCTRL, DCDC_XFER, v)
+#endif
+
+//--- Register HW_POWER_5VCTRL, field EN_BATT_PULLDN
+
+#define BP_POWER_5VCTRL_EN_BATT_PULLDN      5
+#define BM_POWER_5VCTRL_EN_BATT_PULLDN      0x00000020
+
+#define BF_POWER_5VCTRL_EN_BATT_PULLDN(v)   (((v) << 5) & BM_POWER_5VCTRL_EN_BATT_PULLDN)
+
+#ifndef __LANGUAGE_ASM__
+#define BW_POWER_5VCTRL_EN_BATT_PULLDN(v)   BF_CS1(POWER_5VCTRL, EN_BATT_PULLDN, v)
 #endif
 
 //--- Register HW_POWER_5VCTRL, field VBUSVALID_5VDETECT
@@ -591,15 +515,15 @@ typedef union
 #define BW_POWER_5VCTRL_ILIMIT_EQ_ZERO(v)   BF_CS1(POWER_5VCTRL, ILIMIT_EQ_ZERO, v)
 #endif
 
-//--- Register HW_POWER_5VCTRL, field PWRUP_VBUS_CMPS
+//--- Register HW_POWER_5VCTRL, field OTG_PWRUP_CMPS
 
-#define BP_POWER_5VCTRL_PWRUP_VBUS_CMPS      1
-#define BM_POWER_5VCTRL_PWRUP_VBUS_CMPS      0x00000002
+#define BP_POWER_5VCTRL_OTG_PWRUP_CMPS      1
+#define BM_POWER_5VCTRL_OTG_PWRUP_CMPS      0x00000002
 
-#define BF_POWER_5VCTRL_PWRUP_VBUS_CMPS(v)   (((v) << 1) & BM_POWER_5VCTRL_PWRUP_VBUS_CMPS)
+#define BF_POWER_5VCTRL_OTG_PWRUP_CMPS(v)   (((v) << 1) & BM_POWER_5VCTRL_OTG_PWRUP_CMPS)
 
 #ifndef __LANGUAGE_ASM__
-#define BW_POWER_5VCTRL_PWRUP_VBUS_CMPS(v)   BF_CS1(POWER_5VCTRL, PWRUP_VBUS_CMPS, v)
+#define BW_POWER_5VCTRL_OTG_PWRUP_CMPS(v)   BF_CS1(POWER_5VCTRL, OTG_PWRUP_CMPS, v)
 #endif
 
 //--- Register HW_POWER_5VCTRL, field ENABLE_DCDC
@@ -634,12 +558,9 @@ typedef union
         unsigned VBG_OFF          :  1;
         unsigned SELECT_OSC       :  1;
         unsigned ENABLE_OSC       :  1;
-        unsigned PWD_ANA_CMPS     :  1;
-        unsigned USE_VDDXTAL_VBG  :  1;
+        unsigned USB_I_SUSPENDED  :  1;
         unsigned PWD_BO           :  1;
-        unsigned VDAC_DUMP_CTRL   :  1;
-        unsigned LOWPWR_4P2       :  1;
-        unsigned RSRVD1           : 17;
+        unsigned RSRVD1           : 20;
     } B;
 } hw_power_minpwr_t;
 #endif
@@ -668,59 +589,26 @@ typedef union
 // constants & macros for individual HW_POWER_MINPWR bitfields
 //
 
-//--- Register HW_POWER_MINPWR, field LOWPWR_4P2
-
-#define BP_POWER_MINPWR_LOWPWR_4P2      14
-#define BM_POWER_MINPWR_LOWPWR_4P2      0x00004000
-
-#define BF_POWER_MINPWR_LOWPWR_4P2(v)   (((v) << 14) & BM_POWER_MINPWR_LOWPWR_4P2)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_MINPWR_LOWPWR_4P2(v)   BF_CS1(POWER_MINPWR, LOWPWR_4P2, v)
-#endif
-
-//--- Register HW_POWER_MINPWR, field VDAC_DUMP_CTRL
-
-#define BP_POWER_MINPWR_VDAC_DUMP_CTRL      13
-#define BM_POWER_MINPWR_VDAC_DUMP_CTRL      0x00002000
-
-#define BF_POWER_MINPWR_VDAC_DUMP_CTRL(v)   (((v) << 13) & BM_POWER_MINPWR_VDAC_DUMP_CTRL)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_MINPWR_VDAC_DUMP_CTRL(v)   BF_CS1(POWER_MINPWR, VDAC_DUMP_CTRL, v)
-#endif
-
 //--- Register HW_POWER_MINPWR, field PWD_BO
 
-#define BP_POWER_MINPWR_PWD_BO      12
-#define BM_POWER_MINPWR_PWD_BO      0x00001000
+#define BP_POWER_MINPWR_PWD_BO      11
+#define BM_POWER_MINPWR_PWD_BO      0x00000800
 
-#define BF_POWER_MINPWR_PWD_BO(v)   (((v) << 12) & BM_POWER_MINPWR_PWD_BO)
+#define BF_POWER_MINPWR_PWD_BO(v)   (((v) << 11) & BM_POWER_MINPWR_PWD_BO)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_MINPWR_PWD_BO(v)   BF_CS1(POWER_MINPWR, PWD_BO, v)
 #endif
 
-//--- Register HW_POWER_MINPWR, field USE_VDDXTAL_VBG
+//--- Register HW_POWER_MINPWR, field USB_I_SUSPEND
 
-#define BP_POWER_MINPWR_USE_VDDXTAL_VBG      11
-#define BM_POWER_MINPWR_USE_VDDXTAL_VBG      0x00000800
+#define BP_POWER_MINPWR_USB_I_SUSPEND      10
+#define BM_POWER_MINPWR_USB_I_SUSPEND      0x00000400
 
-#define BF_POWER_MINPWR_USE_VDDXTAL_VBG(v)   (((v) << 11) & BM_POWER_MINPWR_USE_VDDXTAL_VBG)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_MINPWR_USE_VDDXTAL_VBG(v)   BF_CS1(POWER_MINPWR, USE_VDDXTAL_VBG, v)
-#endif
-
-//--- Register HW_POWER_MINPWR, field PWD_ANA_CMPS
-
-#define BP_POWER_MINPWR_PWD_ANA_CMPS      10
-#define BM_POWER_MINPWR_PWD_ANA_CMPS      0x00000400
-
-#define BF_POWER_MINPWR_PWD_ANA_CMPS(v)   (((v) << 10) & BM_POWER_MINPWR_PWD_ANA_CMPS)
+#define BF_POWER_MINPWR_USB_I_SUSPEND(v)   (((v) << 10) & BM_POWER_MINPWR_USB_I_SUSPEND)
 
 #ifndef __LANGUAGE_ASM__
-#define BW_POWER_MINPWR_PWD_ANA_CMPS(v)   BF_CS1(POWER_MINPWR, PWD_ANA_CMPS, v)
+#define BW_POWER_MINPWR_USB_I_SUSPEND(v)   BF_CS1(POWER_MINPWR, USB_I_SUSPEND, v)
 #endif
 
 //--- Register HW_POWER_MINPWR, field ENABLE_OSC
@@ -845,19 +733,15 @@ typedef union
     struct
     {
         unsigned BATTCHRG_I                :  6;
-        unsigned RSVD1                     :  2;
+        unsigned RSRVD1                    :  2;
         unsigned STOP_ILIMIT               :  4;
-        unsigned RSVD2                     :  4;
+        unsigned RSRVD2                    :  4;
         unsigned PWD_BATTCHRG              :  1;
         unsigned USE_EXTERN_R              :  1;
-        unsigned RSVD3                     :  1;
+        unsigned RSRVD3                    :  1;
         unsigned CHRG_STS_OFF              :  1;
         unsigned ENABLE_FAULT_DETECT       :  1;
-        unsigned ENABLE_CHARGER_RESISTORS  :  1;
-        unsigned ENABLE_LOAD               :  1;
-        unsigned RSRVD3                    :  1;
-        unsigned ADJ_VOLT                  :  3;
-        unsigned RSVD4                     :  5;
+        unsigned RSRVD4                    : 11;
     } B;
 } hw_power_charge_t;
 #endif
@@ -885,50 +769,6 @@ typedef union
 //
 // constants & macros for individual HW_POWER_CHARGE bitfields
 //
-
-//--- Register HW_POWER_CHARGE, field ADJ_VOLT
-
-#define BP_POWER_CHARGE_ADJ_VOLT      24
-#define BM_POWER_CHARGE_ADJ_VOLT      0x07000000
-
-#define BF_POWER_CHARGE_ADJ_VOLT(v)   (((v) << 24) & BM_POWER_CHARGE_ADJ_VOLT)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_CHARGE_ADJ_VOLT(v)   BF_CS1(POWER_CHARGE, ADJ_VOLT, v)
-#endif
-
-//--- Register HW_POWER_CHARGE, field RSRVD3
-
-#define BP_POWER_CHARGE_RSRVD3      23
-#define BM_POWER_CHARGE_RSRVD3      0x00800000
-
-#define BF_POWER_CHARGE_RSRVD3(v)   (((v) << 23) & BM_POWER_CHARGE_RSRVD3)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_CHARGE_RSRVD3(v)   BF_CS1(POWER_CHARGE, RSRVD3, v)
-#endif
-
-//--- Register HW_POWER_CHARGE, field ENABLE_LOAD
-
-#define BP_POWER_CHARGE_ENABLE_LOAD      22
-#define BM_POWER_CHARGE_ENABLE_LOAD      0x00400000
-
-#define BF_POWER_CHARGE_ENABLE_LOAD(v)   (((v) << 22) & BM_POWER_CHARGE_ENABLE_LOAD)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_CHARGE_ENABLE_LOAD(v)   BF_CS1(POWER_CHARGE, ENABLE_LOAD, v)
-#endif
-
-//--- Register HW_POWER_CHARGE, field ENABLE_CHARGER_RESISTORS
-
-#define BP_POWER_CHARGE_ENABLE_CHARGER_RESISTORS      21
-#define BM_POWER_CHARGE_ENABLE_CHARGER_RESISTORS      0x00200000
-
-#define BF_POWER_CHARGE_ENABLE_CHARGER_RESISTORS(v)   (((v) << 21) & BM_POWER_CHARGE_ENABLE_CHARGER_RESISTORS)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_CHARGE_ENABLE_CHARGER_RESISTORS(v)   BF_CS1(POWER_CHARGE, ENABLE_CHARGER_RESISTORS, v)
-#endif
 
 //--- Register HW_POWER_CHARGE, field ENABLE_FAULT_DETECT
 
@@ -1015,9 +855,10 @@ typedef union
         unsigned RSRVD3            :  2;
         unsigned DISABLE_FET       :  1;
         unsigned ENABLE_LINREG     :  1;
+        unsigned LINREG_FROM_BATT  :  1;
         unsigned DISABLE_STEPPING  :  1;
-        unsigned PWDN_BRNOUT       :  1;
-        unsigned RSRVD4            :  4;
+        unsigned ALKALINE_CHARGE   :  1;
+        unsigned RSRVD4            :  3;
         unsigned ADJTN             :  4;
     } B;
 } hw_power_vdddctrl_t;
@@ -1059,26 +900,37 @@ typedef union
 #define BW_POWER_VDDDCTRL_ADJTN(v)   BF_CS1(POWER_VDDDCTRL, ADJTN, v)
 #endif
 
-//--- Register HW_POWER_VDDDCTRL, field PWDN_BRNOUT
+//--- Register HW_POWER_VDDDCTRL, field ALKALINE_CHARGE
 
-#define BP_POWER_VDDDCTRL_PWDN_BRNOUT      23
-#define BM_POWER_VDDDCTRL_PWDN_BRNOUT      0x00800000
+#define BP_POWER_VDDDCTRL_ALKALINE_CHARGE      24
+#define BM_POWER_VDDDCTRL_ALKALINE_CHARGE      0x01000000
 
-#define BF_POWER_VDDDCTRL_PWDN_BRNOUT(v)   (((v) << 23) & BM_POWER_VDDDCTRL_PWDN_BRNOUT)
+#define BF_POWER_VDDDCTRL_ALKALINE_CHARGE(v)   (((v) << 24) & BM_POWER_VDDDCTRL_ALKALINE_CHARGE)
 
 #ifndef __LANGUAGE_ASM__
-#define BW_POWER_VDDDCTRL_PWDN_BRNOUT(v)   BF_CS1(POWER_VDDDCTRL, PWDN_BRNOUT, v)
+#define BW_POWER_VDDDCTRL_ALKALINE_CHARGE(v)   BF_CS1(POWER_VDDDCTRL, ALKALINE_CHARGE, v)
 #endif
 
 //--- Register HW_POWER_VDDDCTRL, field DISABLE_STEPPING
 
-#define BP_POWER_VDDDCTRL_DISABLE_STEPPING      22
-#define BM_POWER_VDDDCTRL_DISABLE_STEPPING      0x00400000
+#define BP_POWER_VDDDCTRL_DISABLE_STEPPING      23
+#define BM_POWER_VDDDCTRL_DISABLE_STEPPING      0x00800000
 
-#define BF_POWER_VDDDCTRL_DISABLE_STEPPING(v)   (((v) << 22) & BM_POWER_VDDDCTRL_DISABLE_STEPPING)
+#define BF_POWER_VDDDCTRL_DISABLE_STEPPING(v)   (((v) << 23) & BM_POWER_VDDDCTRL_DISABLE_STEPPING)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_VDDDCTRL_DISABLE_STEPPING(v)   BF_CS1(POWER_VDDDCTRL, DISABLE_STEPPING, v)
+#endif
+
+//--- Register HW_POWER_VDDDCTRL, field LINREG_FROM_BATT
+
+#define BP_POWER_VDDDCTRL_LINREG_FROM_BATT      22
+#define BM_POWER_VDDDCTRL_LINREG_FROM_BATT      0x00400000
+
+#define BF_POWER_VDDDCTRL_LINREG_FROM_BATT(v)   (((v) << 22) & BM_POWER_VDDDCTRL_LINREG_FROM_BATT)
+
+#ifndef __LANGUAGE_ASM__
+#define BW_POWER_VDDDCTRL_LINREG_FROM_BATT(v)   BF_CS1(POWER_VDDDCTRL, LINREG_FROM_BATT, v)
 #endif
 
 //--- Register HW_POWER_VDDDCTRL, field ENABLE_LINREG
@@ -1156,8 +1008,7 @@ typedef union
         unsigned DISABLE_FET       :  1;
         unsigned ENABLE_LINREG     :  1;
         unsigned DISABLE_STEPPING  :  1;
-        unsigned PWDN_BRNOUT       :  1;
-        unsigned RSRVD4            : 12;
+        unsigned RSRVD4            : 13;
     } B;
 } hw_power_vddactrl_t;
 #endif
@@ -1182,17 +1033,6 @@ typedef union
 //
 // constants & macros for individual HW_POWER_VDDACTRL bitfields
 //
-
-//--- Register HW_POWER_VDDACTRL, field PWDN_BRNOUT
-
-#define BP_POWER_VDDACTRL_PWDN_BRNOUT      19
-#define BM_POWER_VDDACTRL_PWDN_BRNOUT      0x00080000
-
-#define BF_POWER_VDDACTRL_PWDN_BRNOUT(v)   (((v) << 19) & BM_POWER_VDDACTRL_PWDN_BRNOUT)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_VDDACTRL_PWDN_BRNOUT(v)   BF_CS1(POWER_VDDACTRL, PWDN_BRNOUT, v)
-#endif
 
 //--- Register HW_POWER_VDDACTRL, field DISABLE_STEPPING
 
@@ -1276,13 +1116,10 @@ typedef union
         unsigned BO_OFFSET         :  3;
         unsigned RSRVD2            :  1;
         unsigned LINREG_OFFSET     :  2;
-        unsigned RSRVD3            :  2;
         unsigned DISABLE_FET       :  1;
         unsigned DISABLE_STEPPING  :  1;
-        unsigned PWDN_BRNOUT       :  1;
-        unsigned RSRVD4            :  1;
         unsigned ADJTN             :  4;
-        reg8_t   RSRVD5;
+        unsigned RSRVD4            : 12;
     } B;
 } hw_power_vddioctrl_t;
 #endif
@@ -1310,32 +1147,21 @@ typedef union
 
 //--- Register HW_POWER_VDDIOCTRL, field ADJTN
 
-#define BP_POWER_VDDIOCTRL_ADJTN      20
-#define BM_POWER_VDDIOCTRL_ADJTN      0x00F00000
+#define BP_POWER_VDDIOCTRL_ADJTN      16
+#define BM_POWER_VDDIOCTRL_ADJTN      0x000F0000
 
-#define BF_POWER_VDDIOCTRL_ADJTN(v)   (((v) << 20) & BM_POWER_VDDIOCTRL_ADJTN)
+#define BF_POWER_VDDIOCTRL_ADJTN(v)   (((v) << 16) & BM_POWER_VDDIOCTRL_ADJTN)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_VDDIOCTRL_ADJTN(v)   BF_CS1(POWER_VDDIOCTRL, ADJTN, v)
 #endif
 
-//--- Register HW_POWER_VDDIOCTRL, field PWDN_BRNOUT
-
-#define BP_POWER_VDDIOCTRL_PWDN_BRNOUT      18
-#define BM_POWER_VDDIOCTRL_PWDN_BRNOUT      0x00040000
-
-#define BF_POWER_VDDIOCTRL_PWDN_BRNOUT(v)   (((v) << 18) & BM_POWER_VDDIOCTRL_PWDN_BRNOUT)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_VDDIOCTRL_PWDN_BRNOUT(v)   BF_CS1(POWER_VDDIOCTRL, PWDN_BRNOUT, v)
-#endif
-
 //--- Register HW_POWER_VDDIOCTRL, field DISABLE_STEPPING
 
-#define BP_POWER_VDDIOCTRL_DISABLE_STEPPING      17
-#define BM_POWER_VDDIOCTRL_DISABLE_STEPPING      0x00020000
+#define BP_POWER_VDDIOCTRL_DISABLE_STEPPING      15
+#define BM_POWER_VDDIOCTRL_DISABLE_STEPPING      0x00008000
 
-#define BF_POWER_VDDIOCTRL_DISABLE_STEPPING(v)   (((v) << 17) & BM_POWER_VDDIOCTRL_DISABLE_STEPPING)
+#define BF_POWER_VDDIOCTRL_DISABLE_STEPPING(v)   (((v) << 15) & BM_POWER_VDDIOCTRL_DISABLE_STEPPING)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_VDDIOCTRL_DISABLE_STEPPING(v)   BF_CS1(POWER_VDDIOCTRL, DISABLE_STEPPING, v)
@@ -1343,10 +1169,10 @@ typedef union
 
 //--- Register HW_POWER_VDDIOCTRL, field DISABLE_FET
 
-#define BP_POWER_VDDIOCTRL_DISABLE_FET      16
-#define BM_POWER_VDDIOCTRL_DISABLE_FET      0x00010000
+#define BP_POWER_VDDIOCTRL_DISABLE_FET      14
+#define BM_POWER_VDDIOCTRL_DISABLE_FET      0x00004000
 
-#define BF_POWER_VDDIOCTRL_DISABLE_FET(v)   (((v) << 16) & BM_POWER_VDDIOCTRL_DISABLE_FET)
+#define BF_POWER_VDDIOCTRL_DISABLE_FET(v)   (((v) << 14) & BM_POWER_VDDIOCTRL_DISABLE_FET)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_VDDIOCTRL_DISABLE_FET(v)   BF_CS1(POWER_VDDIOCTRL, DISABLE_FET, v)
@@ -1387,7 +1213,7 @@ typedef union
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//// HW_POWER_VDDMEMCTRL - VDDIO Supply Targets and Brownouts Control Register
+//// HW_POWER_DCFUNCV - DC-DC Multi-Output Converter Modes Control Register
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef __LANGUAGE_ASM__
@@ -1396,231 +1222,55 @@ typedef union
     reg32_t  U;
     struct
     {
-        unsigned TRG              :  5;
-        unsigned RSRVD1           :  3;
-        unsigned ENABLE_LINREG    :  1;
-        unsigned ENABLE_ILIMIT    :  1;
-        unsigned PULLDOWN_ACTIVE  :  1;
-        unsigned RSRVD2           : 21;
+        unsigned VDDIO            : 10;
+        unsigned RSRVD1           :  6;
+        unsigned VDDD             : 10;
+        unsigned RSRVD2           :  6;
     } B;
-} hw_power_vddmemctrl_t;
+} hw_power_dcfuncv_t;
 #endif
 
 
 //
-// constants & macros for entire HW_POWER_VDDMEMCTRL register
+// constants & macros for entire HW_POWER_DCFUNCV register
 //
 
-#define HW_POWER_VDDMEMCTRL_ADDR      (REGS_POWER_BASE + 0x00000070)
+#define HW_POWER_DCFUNCV_ADDR      (REGS_POWER_BASE + 0x00000070)
 
 #ifndef __LANGUAGE_ASM__
-#define HW_POWER_VDDMEMCTRL           (*(volatile hw_power_vddmemctrl_t *) HW_POWER_VDDMEMCTRL_ADDR)
-#define HW_POWER_VDDMEMCTRL_RD()      (HW_POWER_VDDMEMCTRL.U)
-#define HW_POWER_VDDMEMCTRL_WR(v)     (HW_POWER_VDDMEMCTRL.U = (v))
-#define HW_POWER_VDDMEMCTRL_SET(v)    (HW_POWER_VDDMEMCTRL_WR(HW_POWER_VDDMEMCTRL_RD() |  (v)))
-#define HW_POWER_VDDMEMCTRL_CLR(v)    (HW_POWER_VDDMEMCTRL_WR(HW_POWER_VDDMEMCTRL_RD() & ~(v)))
-#define HW_POWER_VDDMEMCTRL_TOG(v)    (HW_POWER_VDDMEMCTRL_WR(HW_POWER_VDDMEMCTRL_RD() ^  (v)))
-#endif
-
-
-//
-// constants & macros for individual HW_POWER_VDDMEMCTRL bitfields
-//
-
-//--- Register HW_POWER_VDDMEMCTRL, field PULLDOWN_ACTIVE
-
-#define BP_POWER_VDDMEMCTRL_PULLDOWN_ACTIVE      10
-#define BM_POWER_VDDMEMCTRL_PULLDOWN_ACTIVE      0x00000400
-
-#define BF_POWER_VDDMEMCTRL_PULLDOWN_ACTIVE(v)   (((v) << 10) & BM_POWER_VDDMEMCTRL_PULLDOWN_ACTIVE)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_VDDMEMCTRL_PULLDOWN_ACTIVE(v)   BF_CS1(POWER_VDDMEMCTRL, PULLDOWN_ACTIVE, v)
-#endif
-
-//--- Register HW_POWER_VDDMEMCTRL, field ENABLE_ILIMIT
-
-#define BP_POWER_VDDMEMCTRL_ENABLE_ILIMIT      9
-#define BM_POWER_VDDMEMCTRL_ENABLE_ILIMIT      0x00000200
-
-#define BF_POWER_VDDMEMCTRL_ENABLE_ILIMIT(v)   (((v) << 9) & BM_POWER_VDDMEMCTRL_ENABLE_ILIMIT)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_VDDMEMCTRL_ENABLE_ILIMIT(v)   BF_CS1(POWER_VDDMEMCTRL, ENABLE_ILIMIT, v)
-#endif
-
-//--- Register HW_POWER_VDDMEMCTRL, field ENABLE_LINREG
-
-#define BP_POWER_VDDMEMCTRL_ENABLE_LINREG      8
-#define BM_POWER_VDDMEMCTRL_ENABLE_LINREG      0x00000100
-
-#define BF_POWER_VDDMEMCTRL_ENABLE_LINREG(v)   (((v) << 8) & BM_POWER_VDDMEMCTRL_ENABLE_LINREG)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_VDDMEMCTRL_ENABLE_LINREG(v)   BF_CS1(POWER_VDDMEMCTRL, ENABLE_LINREG, v)
-#endif
-
-//--- Register HW_POWER_VDDMEMCTRL, field TRG
-
-#define BP_POWER_VDDMEMCTRL_TRG      0
-#define BM_POWER_VDDMEMCTRL_TRG      0x0000001F
-
-#define BF_POWER_VDDMEMCTRL_TRG(v)   (((v) << 0) & BM_POWER_VDDMEMCTRL_TRG)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_VDDMEMCTRL_TRG(v)   BF_CS1(POWER_VDDMEMCTRL, TRG, v)
-#endif
-
-
-////////////////////////////////////////////////////////////////////////////////
-//// HW_POWER_DCDC4P2 - DC-DC Converter 4.2V Control Register
-////////////////////////////////////////////////////////////////////////////////
-
-#ifndef __LANGUAGE_ASM__
-typedef union
-{
-    reg32_t  U;
-    struct
-    {
-        unsigned CMPTRIP        :  5;
-        unsigned RSRVD1         :  3;
-        unsigned BO             :  5;
-        unsigned RSRVD2         :  3;
-        unsigned TRG            :  3;
-        unsigned RSRVD3         :  1;
-        unsigned HYST_THRESH    :  1;
-        unsigned HYST_DIR       :  1;
-        unsigned ENABLE_DCDC    :  1;
-        unsigned ENABLE_4P2     :  1;
-        unsigned ISTEAL_THRESH  :  2;
-        unsigned RSRVD5         :  2;
-        unsigned DROPOUT_CTRL   :  4;
-    } B;
-} hw_power_dcdc4p2_t;
+#define HW_POWER_DCFUNCV           (*(volatile hw_power_dcfuncv_t *) HW_POWER_DCFUNCV_ADDR)
+#define HW_POWER_DCFUNCV_RD()      (HW_POWER_DCFUNCV.U)
+#define HW_POWER_DCFUNCV_WR(v)     (HW_POWER_DCFUNCV.U = (v))
+#define HW_POWER_DCFUNCV_SET(v)    (HW_POWER_DCFUNCV_WR(HW_POWER_DCFUNCV_RD() |  (v)))
+#define HW_POWER_DCFUNCV_CLR(v)    (HW_POWER_DCFUNCV_WR(HW_POWER_DCFUNCV_RD() & ~(v)))
+#define HW_POWER_DCFUNCV_TOG(v)    (HW_POWER_DCFUNCV_WR(HW_POWER_DCFUNCV_RD() ^  (v)))
 #endif
 
 
 //
-// constants & macros for entire HW_POWER_DCDC4P2 register
+// constants & macros for individual HW_POWER_DCFUNCV bitfields
 //
 
-#define HW_POWER_DCDC4P2_ADDR      (REGS_POWER_BASE + 0x00000080)
+//--- Register HW_POWER_DCFUNCV, field VDDD
+
+#define BP_POWER_DCFUNCV_VDDD      16
+#define BM_POWER_DCFUNCV_VDDD      0x03FF0000
+
+#define BF_POWER_DCFUNCV_VDDD(v)   (((v) << 16) & BM_POWER_DCFUNCV_VDDD)
 
 #ifndef __LANGUAGE_ASM__
-#define HW_POWER_DCDC4P2           (*(volatile hw_power_dcdc4p2_t *) HW_POWER_DCDC4P2_ADDR)
-#define HW_POWER_DCDC4P2_RD()      (HW_POWER_DCDC4P2.U)
-#define HW_POWER_DCDC4P2_WR(v)     (HW_POWER_DCDC4P2.U = (v))
-#define HW_POWER_DCDC4P2_SET(v)    (HW_POWER_DCDC4P2_WR(HW_POWER_DCDC4P2_RD() |  (v)))
-#define HW_POWER_DCDC4P2_CLR(v)    (HW_POWER_DCDC4P2_WR(HW_POWER_DCDC4P2_RD() & ~(v)))
-#define HW_POWER_DCDC4P2_TOG(v)    (HW_POWER_DCDC4P2_WR(HW_POWER_DCDC4P2_RD() ^  (v)))
+#define BW_POWER_DCFUNCV_VDDD(v)   BF_CS1(POWER_DCFUNCV, VDDD, v)
 #endif
 
+//--- Register HW_POWER_DCFUNCV, field VDDIO
 
-//
-// constants & macros for individual HW_POWER_DCDC4P2 bitfields
-//
+#define BP_POWER_DCFUNCV_VDDIO      0
+#define BM_POWER_DCFUNCV_VDDIO      0x000003FF
 
-//--- Register HW_POWER_DCDC4P2, field DROPOUT_CTRL
-
-#define BP_POWER_DCDC4P2_DROPOUT_CTRL      28
-#define BM_POWER_DCDC4P2_DROPOUT_CTRL      0xF0000000
+#define BF_POWER_DCFUNCV_VDDIO(v)   (((v) << 0) & BM_POWER_DCFUNCV_VDDIO)
 
 #ifndef __LANGUAGE_ASM__
-#define BF_POWER_DCDC4P2_DROPOUT_CTRL(v)   ((((reg32_t) v) << 28) & BM_POWER_DCDC4P2_DROPOUT_CTRL)
-#else
-#define BF_POWER_DCDC4P2_DROPOUT_CTRL(v)   (((v) << 28) & BM_POWER_DCDC4P2_DROPOUT_CTRL)
-#endif
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_DCDC4P2_DROPOUT_CTRL(v)   BF_CS1(POWER_DCDC4P2, DROPOUT_CTRL, v)
-#endif
-
-//--- Register HW_POWER_DCDC4P2, field ISTEAL_THRESH
-
-#define BP_POWER_DCDC4P2_ISTEAL_THRESH      24
-#define BM_POWER_DCDC4P2_ISTEAL_THRESH      0x03000000
-
-#define BF_POWER_DCDC4P2_ISTEAL_THRESH(v)   (((v) << 24) & BM_POWER_DCDC4P2_ISTEAL_THRESH)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_DCDC4P2_ISTEAL_THRESH(v)   BF_CS1(POWER_DCDC4P2, ISTEAL_THRESH, v)
-#endif
-
-//--- Register HW_POWER_DCDC4P2, field ENABLE_4P2
-
-#define BP_POWER_DCDC4P2_ENABLE_4P2      23
-#define BM_POWER_DCDC4P2_ENABLE_4P2      0x00800000
-
-#define BF_POWER_DCDC4P2_ENABLE_4P2(v)   (((v) << 23) & BM_POWER_DCDC4P2_ENABLE_4P2)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_DCDC4P2_ENABLE_4P2(v)   BF_CS1(POWER_DCDC4P2, ENABLE_4P2, v)
-#endif
-
-//--- Register HW_POWER_DCDC4P2, field ENABLE_DCDC
-
-#define BP_POWER_DCDC4P2_ENABLE_DCDC      22
-#define BM_POWER_DCDC4P2_ENABLE_DCDC      0x00400000
-
-#define BF_POWER_DCDC4P2_ENABLE_DCDC(v)   (((v) << 22) & BM_POWER_DCDC4P2_ENABLE_DCDC)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_DCDC4P2_ENABLE_DCDC(v)   BF_CS1(POWER_DCDC4P2, ENABLE_DCDC, v)
-#endif
-
-//--- Register HW_POWER_DCDC4P2, field HYST_DIR
-
-#define BP_POWER_DCDC4P2_HYST_DIR      21
-#define BM_POWER_DCDC4P2_HYST_DIR      0x00200000
-
-#define BF_POWER_DCDC4P2_HYST_DIR(v)   (((v) << 21) & BM_POWER_DCDC4P2_HYST_DIR)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_DCDC4P2_HYST_DIR(v)   BF_CS1(POWER_DCDC4P2, HYST_DIR, v)
-#endif
-
-//--- Register HW_POWER_DCDC4P2, field HYST_THRESH
-
-#define BP_POWER_DCDC4P2_HYST_THRESH      20
-#define BM_POWER_DCDC4P2_HYST_THRESH      0x00100000
-
-#define BF_POWER_DCDC4P2_HYST_THRESH(v)   (((v) << 20) & BM_POWER_DCDC4P2_HYST_THRESH)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_DCDC4P2_HYST_THRESH(v)   BF_CS1(POWER_DCDC4P2, HYST_THRESH, v)
-#endif
-
-//--- Register HW_POWER_DCDC4P2, field TRG
-
-#define BP_POWER_DCDC4P2_TRG      16
-#define BM_POWER_DCDC4P2_TRG      0x00070000
-
-#define BF_POWER_DCDC4P2_TRG(v)   (((v) << 16) & BM_POWER_DCDC4P2_TRG)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_DCDC4P2_TRG(v)   BF_CS1(POWER_DCDC4P2, TRG, v)
-#endif
-
-//--- Register HW_POWER_DCDC4P2, field BO
-
-#define BP_POWER_DCDC4P2_BO      8
-#define BM_POWER_DCDC4P2_BO      0x00001F00
-
-#define BF_POWER_DCDC4P2_BO(v)   (((v) << 8) & BM_POWER_DCDC4P2_BO)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_DCDC4P2_BO(v)   BF_CS1(POWER_DCDC4P2, BO, v)
-#endif
-
-//--- Register HW_POWER_DCDC4P2, field CMPTRIP
-
-#define BP_POWER_DCDC4P2_CMPTRIP      0
-#define BM_POWER_DCDC4P2_CMPTRIP      0x0000001F
-
-#define BF_POWER_DCDC4P2_CMPTRIP(v)   (((v) << 0) & BM_POWER_DCDC4P2_CMPTRIP)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_DCDC4P2_CMPTRIP(v)   BF_CS1(POWER_DCDC4P2, CMPTRIP, v)
+#define BW_POWER_DCFUNCV_VDDIO(v)   BF_CS1(POWER_DCFUNCV, VDDIO, v)
 #endif
 
 
@@ -1634,12 +1284,12 @@ typedef union
     reg32_t  U;
     struct
     {
-        unsigned SEL_PLLCLK    :  1;
-        unsigned TEST          :  1;
-        unsigned DELAY_TIMING  :  1;
-        unsigned RSRVD1        :  1;
-        unsigned FREQSEL       :  3;
-        unsigned RSRVD2        : 25;
+        unsigned PERIPHERALSWOFF :  1;
+        unsigned SEL_PLLCLK      :  1;
+        unsigned TEST            :  1;
+        unsigned DELAY_TIMING    :  1;
+        unsigned FREQSEL         :  2;
+        unsigned RSRVD2          : 26;
     } B;
 } hw_power_misc_t;
 #endif
@@ -1649,7 +1299,7 @@ typedef union
 // constants & macros for entire HW_POWER_MISC register
 //
 
-#define HW_POWER_MISC_ADDR      (REGS_POWER_BASE + 0x00000090)
+#define HW_POWER_MISC_ADDR      (REGS_POWER_BASE + 0x00000080)
 
 #ifndef __LANGUAGE_ASM__
 #define HW_POWER_MISC           (*(volatile hw_power_misc_t *) HW_POWER_MISC_ADDR)
@@ -1668,7 +1318,7 @@ typedef union
 //--- Register HW_POWER_MISC, field FREQSEL
 
 #define BP_POWER_MISC_FREQSEL      4
-#define BM_POWER_MISC_FREQSEL      0x00000070
+#define BM_POWER_MISC_FREQSEL      0x00000030
 
 #define BF_POWER_MISC_FREQSEL(v)   (((v) << 4) & BM_POWER_MISC_FREQSEL)
 
@@ -1676,23 +1326,12 @@ typedef union
 #define BW_POWER_MISC_FREQSEL(v)   BF_CS1(POWER_MISC, FREQSEL, v)
 #endif
 
-//--- Register HW_POWER_MISC, field RSRVD1
-
-#define BP_POWER_MISC_RSRVD1      3
-#define BM_POWER_MISC_RSRVD1      0x00000008
-
-#define BF_POWER_MISC_RSRVD1(v)   (((v) << 3) & BM_POWER_MISC_RSRVD1)
-
-#ifndef __LANGUAGE_ASM__
-#define BW_POWER_MISC_RSRVD1(v)   BF_CS1(POWER_MISC, RSRVD1, v)
-#endif
-
 //--- Register HW_POWER_MISC, field DELAY_TIMING
 
-#define BP_POWER_MISC_DELAY_TIMING      2
-#define BM_POWER_MISC_DELAY_TIMING      0x00000004
+#define BP_POWER_MISC_DELAY_TIMING      3
+#define BM_POWER_MISC_DELAY_TIMING      0x00000008
 
-#define BF_POWER_MISC_DELAY_TIMING(v)   (((v) << 2) & BM_POWER_MISC_DELAY_TIMING)
+#define BF_POWER_MISC_DELAY_TIMING(v)   (((v) << 3) & BM_POWER_MISC_DELAY_TIMING)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_MISC_DELAY_TIMING(v)   BF_CS1(POWER_MISC, DELAY_TIMING, v)
@@ -1700,10 +1339,10 @@ typedef union
 
 //--- Register HW_POWER_MISC, field TEST
 
-#define BP_POWER_MISC_TEST      1
-#define BM_POWER_MISC_TEST      0x00000002
+#define BP_POWER_MISC_TEST      2
+#define BM_POWER_MISC_TEST      0x00000004
 
-#define BF_POWER_MISC_TEST(v)   (((v) << 1) & BM_POWER_MISC_TEST)
+#define BF_POWER_MISC_TEST(v)   (((v) << 2) & BM_POWER_MISC_TEST)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_MISC_TEST(v)   BF_CS1(POWER_MISC, TEST, v)
@@ -1711,15 +1350,25 @@ typedef union
 
 //--- Register HW_POWER_MISC, field SEL_PLLCLK
 
-#define BP_POWER_MISC_SEL_PLLCLK      0
-#define BM_POWER_MISC_SEL_PLLCLK      0x00000001
+#define BP_POWER_MISC_SEL_PLLCLK      1
+#define BM_POWER_MISC_SEL_PLLCLK      0x00000002
 
-#define BF_POWER_MISC_SEL_PLLCLK(v)   (((v) << 0) & BM_POWER_MISC_SEL_PLLCLK)
+#define BF_POWER_MISC_SEL_PLLCLK(v)   (((v) << 1) & BM_POWER_MISC_SEL_PLLCLK)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_MISC_SEL_PLLCLK(v)   BF_CS1(POWER_MISC, SEL_PLLCLK, v)
 #endif
 
+//--- Register HW_POWER_MISC, field PERIPHERALSWOFF
+
+#define BP_POWER_MISC_PERIPHERALSWOFF      0
+#define BM_POWER_MISC_PERIPHERALSWOFF      0x00000001
+
+#define BF_POWER_MISC_PERIPHERALSWOFF(v)   (((v) << 0) & BM_POWER_MISC_PERIPHERALSWOFF)
+
+#ifndef __LANGUAGE_ASM__
+#define BW_POWER_MISC_PERIPHERALSWOFF(v)   BF_CS1(POWER_MISC, PERIPHERALSWOFF, v)
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 //// HW_POWER_DCLIMITS - DC-DC Duty Cycle Limits Control Register
@@ -1735,7 +1384,8 @@ typedef union
         unsigned RSRVD1         :  1;
         unsigned POSLIMIT_BUCK  :  7;
         unsigned RSRVD2         :  1;
-        reg16_t  RSRVD3;
+        unsigned POSLIMIT_BOOST :  7;
+        unsigned RSRVD3         :  9;
     } B;
 } hw_power_dclimits_t;
 #endif
@@ -1745,7 +1395,7 @@ typedef union
 // constants & macros for entire HW_POWER_DCLIMITS register
 //
 
-#define HW_POWER_DCLIMITS_ADDR      (REGS_POWER_BASE + 0x000000A0)
+#define HW_POWER_DCLIMITS_ADDR      (REGS_POWER_BASE + 0x00000090)
 
 #ifndef __LANGUAGE_ASM__
 #define HW_POWER_DCLIMITS           (*(volatile hw_power_dclimits_t *) HW_POWER_DCLIMITS_ADDR)
@@ -1760,6 +1410,17 @@ typedef union
 //
 // constants & macros for individual HW_POWER_DCLIMITS bitfields
 //
+
+//--- Register HW_POWER_DCLIMITS, field POSLIMIT_BOOST
+
+#define BP_POWER_DCLIMITS_POSLIMIT_BOOST      16
+#define BM_POWER_DCLIMITS_POSLIMIT_BOOST      0x007F0000
+
+#define BF_POWER_DCLIMITS_POSLIMIT_BOOST(v)   (((v) << 16) & BM_POWER_DCLIMITS_POSLIMIT_BOOST)
+
+#ifndef __LANGUAGE_ASM__
+#define BW_POWER_DCLIMITS_POSLIMIT_BOOST(v)   BF_CS1(POWER_DCLIMITS, POSLIMIT_BOOST, v)
+#endif
 
 //--- Register HW_POWER_DCLIMITS, field POSLIMIT_BUCK
 
@@ -1817,10 +1478,10 @@ typedef union
 // constants & macros for entire HW_POWER_LOOPCTRL register
 //
 
-#define HW_POWER_LOOPCTRL_ADDR      (REGS_POWER_BASE + 0x000000B0)
-#define HW_POWER_LOOPCTRL_SET_ADDR  (REGS_POWER_BASE + 0x000000B4)
-#define HW_POWER_LOOPCTRL_CLR_ADDR  (REGS_POWER_BASE + 0x000000B8)
-#define HW_POWER_LOOPCTRL_TOG_ADDR  (REGS_POWER_BASE + 0x000000BC)
+#define HW_POWER_LOOPCTRL_ADDR      (REGS_POWER_BASE + 0x000000A0)
+#define HW_POWER_LOOPCTRL_SET_ADDR  (REGS_POWER_BASE + 0x000000A4)
+#define HW_POWER_LOOPCTRL_CLR_ADDR  (REGS_POWER_BASE + 0x000000A8)
+#define HW_POWER_LOOPCTRL_TOG_ADDR  (REGS_POWER_BASE + 0x000000AC)
 
 #ifndef __LANGUAGE_ASM__
 #define HW_POWER_LOOPCTRL           (*(volatile hw_power_loopctrl_t *) HW_POWER_LOOPCTRL_ADDR)
@@ -1977,19 +1638,18 @@ typedef union
         unsigned VDDA_BO           :  1;
         unsigned VDDIO_BO          :  1;
         unsigned DC_OK             :  1;
-		
-        unsigned LINREG_OK       :  1;
+        unsigned LINREG_OK         :  1;
         unsigned CHRGSTS           :  1;
         unsigned VDD5V_FAULT       :  1;
         unsigned BATT_BO           :  1;
-        unsigned MODE	    :  1;
-        unsigned SESSEND_STATUS	    :  1;
+        unsigned MODE	           :  1;
+        unsigned SESSEND_STATUS	   :  1;
         unsigned VBUSVALID_STATUS  :  1;
         unsigned BVALID_STATUS     :  1;
         unsigned AVALID_STATUS     :  1;
         unsigned PSWITCH           :  2;
-        unsigned RSRVD3            :  11;
-        unsigned BATT_CHRG_PRESENT  :  1;
+        unsigned RSRVD             : 11;
+        unsigned BATT_CHRG_PRESENT :  1;
 		
     } B;
 } hw_power_sts_t;
@@ -2199,10 +1859,10 @@ typedef union
 // constants & macros for entire HW_POWER_SPEED register
 //
 
-#define HW_POWER_SPEED_ADDR      (REGS_POWER_BASE + 0x000000D0)
-#define HW_POWER_SPEED_SET_ADDR  (REGS_POWER_BASE + 0x000000D4)
-#define HW_POWER_SPEED_CLR_ADDR  (REGS_POWER_BASE + 0x000000D8)
-#define HW_POWER_SPEED_TOG_ADDR  (REGS_POWER_BASE + 0x000000DC)
+#define HW_POWER_SPEED_ADDR      (REGS_POWER_BASE + 0x000000C0)
+#define HW_POWER_SPEED_SET_ADDR  (REGS_POWER_BASE + 0x000000C4)
+#define HW_POWER_SPEED_CLR_ADDR  (REGS_POWER_BASE + 0x000000C8)
+#define HW_POWER_SPEED_TOG_ADDR  (REGS_POWER_BASE + 0x000000CC)
 
 #ifndef __LANGUAGE_ASM__
 #define HW_POWER_SPEED           (*(volatile hw_power_speed_t *) HW_POWER_SPEED_ADDR)
@@ -2247,12 +1907,11 @@ typedef union
     reg32_t  U;
     struct
     {
-        unsigned BRWNOUT_LVL      :  5;
-        unsigned RSRVD1           :  3;
+        unsigned BRWNOUT_LVL      :  4;
         unsigned BRWNOUT_PWD      :  1;
         unsigned PWDN_BATTBRNOUT  :  1;
         unsigned EN_BATADJ        :  1;
-        unsigned RSRVD2           :  5;
+        unsigned RSRVD2           :  9;
         unsigned BATT_VAL         : 10;
         unsigned RSRVD3           :  6;
     } B;
@@ -2264,7 +1923,7 @@ typedef union
 // constants & macros for entire HW_POWER_BATTMONITOR register
 //
 
-#define HW_POWER_BATTMONITOR_ADDR      (REGS_POWER_BASE + 0x000000E0)
+#define HW_POWER_BATTMONITOR_ADDR      (REGS_POWER_BASE + 0x000000D0)
 
 #ifndef __LANGUAGE_ASM__
 #define HW_POWER_BATTMONITOR           (*(volatile hw_power_battmonitor_t *) HW_POWER_BATTMONITOR_ADDR)
@@ -2293,10 +1952,10 @@ typedef union
 
 //--- Register HW_POWER_BATTMONITOR, field EN_BATADJ
 
-#define BP_POWER_BATTMONITOR_EN_BATADJ      10
-#define BM_POWER_BATTMONITOR_EN_BATADJ      0x00000400
+#define BP_POWER_BATTMONITOR_EN_BATADJ      6
+#define BM_POWER_BATTMONITOR_EN_BATADJ      0x00000040
 
-#define BF_POWER_BATTMONITOR_EN_BATADJ(v)   (((v) << 10) & BM_POWER_BATTMONITOR_EN_BATADJ)
+#define BF_POWER_BATTMONITOR_EN_BATADJ(v)   (((v) << 6) & BM_POWER_BATTMONITOR_EN_BATADJ)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_BATTMONITOR_EN_BATADJ(v)   BF_CS1(POWER_BATTMONITOR, EN_BATADJ, v)
@@ -2304,10 +1963,10 @@ typedef union
 
 //--- Register HW_POWER_BATTMONITOR, field PWDN_BATTBRNOUT
 
-#define BP_POWER_BATTMONITOR_PWDN_BATTBRNOUT      9
-#define BM_POWER_BATTMONITOR_PWDN_BATTBRNOUT      0x00000200
+#define BP_POWER_BATTMONITOR_PWDN_BATTBRNOUT      5
+#define BM_POWER_BATTMONITOR_PWDN_BATTBRNOUT      0x00000020
 
-#define BF_POWER_BATTMONITOR_PWDN_BATTBRNOUT(v)   (((v) << 9) & BM_POWER_BATTMONITOR_PWDN_BATTBRNOUT)
+#define BF_POWER_BATTMONITOR_PWDN_BATTBRNOUT(v)   (((v) << 5) & BM_POWER_BATTMONITOR_PWDN_BATTBRNOUT)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_BATTMONITOR_PWDN_BATTBRNOUT(v)   BF_CS1(POWER_BATTMONITOR, PWDN_BATTBRNOUT, v)
@@ -2315,10 +1974,10 @@ typedef union
 
 //--- Register HW_POWER_BATTMONITOR, field BRWNOUT_PWD
 
-#define BP_POWER_BATTMONITOR_BRWNOUT_PWD      8
-#define BM_POWER_BATTMONITOR_BRWNOUT_PWD      0x00000100
+#define BP_POWER_BATTMONITOR_BRWNOUT_PWD      4
+#define BM_POWER_BATTMONITOR_BRWNOUT_PWD      0x00000010
 
-#define BF_POWER_BATTMONITOR_BRWNOUT_PWD(v)   (((v) << 8) & BM_POWER_BATTMONITOR_BRWNOUT_PWD)
+#define BF_POWER_BATTMONITOR_BRWNOUT_PWD(v)   (((v) << 4) & BM_POWER_BATTMONITOR_BRWNOUT_PWD)
 
 #ifndef __LANGUAGE_ASM__
 #define BW_POWER_BATTMONITOR_BRWNOUT_PWD(v)   BF_CS1(POWER_BATTMONITOR, BRWNOUT_PWD, v)
@@ -2327,7 +1986,7 @@ typedef union
 //--- Register HW_POWER_BATTMONITOR, field BRWNOUT_LVL
 
 #define BP_POWER_BATTMONITOR_BRWNOUT_LVL      0
-#define BM_POWER_BATTMONITOR_BRWNOUT_LVL      0x0000001F
+#define BM_POWER_BATTMONITOR_BRWNOUT_LVL      0x0000000F
 
 #define BF_POWER_BATTMONITOR_BRWNOUT_LVL(v)   (((v) << 0) & BM_POWER_BATTMONITOR_BRWNOUT_LVL)
 
@@ -2359,10 +2018,10 @@ typedef union
 // constants & macros for entire HW_POWER_RESET register
 //
 
-#define HW_POWER_RESET_ADDR      (REGS_POWER_BASE + 0x00000100)
-#define HW_POWER_RESET_SET_ADDR  (REGS_POWER_BASE + 0x00000104)
-#define HW_POWER_RESET_CLR_ADDR  (REGS_POWER_BASE + 0x00000108)
-#define HW_POWER_RESET_TOG_ADDR  (REGS_POWER_BASE + 0x0000010C)
+#define HW_POWER_RESET_ADDR      (REGS_POWER_BASE + 0x000000E0)
+#define HW_POWER_RESET_SET_ADDR  (REGS_POWER_BASE + 0x000000E4)
+#define HW_POWER_RESET_CLR_ADDR  (REGS_POWER_BASE + 0x000000E8)
+#define HW_POWER_RESET_TOG_ADDR  (REGS_POWER_BASE + 0x000000EC)
 
 #ifndef __LANGUAGE_ASM__
 #define HW_POWER_RESET           (*(volatile hw_power_reset_t *) HW_POWER_RESET_ADDR)
@@ -2526,10 +2185,10 @@ typedef union
 // constants & macros for entire HW_POWER_SPECIAL register
 //
 
-#define HW_POWER_SPECIAL_ADDR      (REGS_POWER_BASE + 0x00000120)
-#define HW_POWER_SPECIAL_SET_ADDR  (REGS_POWER_BASE + 0x00000124)
-#define HW_POWER_SPECIAL_CLR_ADDR  (REGS_POWER_BASE + 0x00000128)
-#define HW_POWER_SPECIAL_TOG_ADDR  (REGS_POWER_BASE + 0x0000012C)
+#define HW_POWER_SPECIAL_ADDR      (REGS_POWER_BASE + 0x00000100)
+#define HW_POWER_SPECIAL_SET_ADDR  (REGS_POWER_BASE + 0x00000104)
+#define HW_POWER_SPECIAL_CLR_ADDR  (REGS_POWER_BASE + 0x00000108)
+#define HW_POWER_SPECIAL_TOG_ADDR  (REGS_POWER_BASE + 0x0000010C)
 
 #ifndef __LANGUAGE_ASM__
 #define HW_POWER_SPECIAL           (*(volatile hw_power_special_t *) HW_POWER_SPECIAL_ADDR)
