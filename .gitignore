@@ -57,4 +57,12 @@ dkms.conf
 .vscode/
 *.code-workspace
 
-build/
+# Cmake files
+Makefile
+CMakeCache.txt
+cmake_install.cmake
+CMakeFiles/
+
+# Tools
+elftosb
+sbloader
