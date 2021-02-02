@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.16)
+
+include(ExternalProject)
 
 set(CMAKE_TOOLCHAIN_FILE toolchain.cmake)
 project(ExistOS-for-HP39gii VERSION 0.1.0)
@@ -45,9 +47,19 @@ add_subdirectory(Services)
 add_subdirectory(SystemApp)
 add_subdirectory(TestApp)
 
+ExternalProject_Add(testelf
+                    SOURCE_DIR ${CMAKE_SOURCE_DIR}/TestELF
+                    BINARY_DIR ${CMAKE_BINARY_DIR}/TestELF
+                    INSTALL_COMMAND ""
+                    EXCLUDE_FROM_ALL 1)
+    
+ExternalProject_Add_Step(testelf forceconfigure
+    COMMAND ${CMAKE_COMMAND} -E echo "Force configure of project"
+    DEPENDEES update
+    DEPENDERS configure
+    ALWAYS 1)
+  
 aux_source_directory(. DIR_SRCS)
-
-
 add_executable(rom.elf ${DIR_SRCS})
 target_link_libraries(rom.elf config kernel libraries services testapp systemapp -lm)
 
