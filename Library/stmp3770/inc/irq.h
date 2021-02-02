@@ -17,26 +17,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
- 
+
 #ifndef _IRQ_H
 #define _IRQ_H
 
-
-
-
-
-#define IRQ_VECTOR_TABLE_BASE_ADDR	0xC0000100
-
+#define IRQ_VECTOR_TABLE_BASE_ADDR 0xC0000100
 
 void irq_init();
 void irq_set_enable(unsigned int irq_n, unsigned int enable);
-void irq_install_service(unsigned int irq_n,unsigned int *service_program);
+void irq_install_service(unsigned int irq_n, unsigned int *service_program);
 
 void enable_interrupts();
 void disable_interrupts();
 
-
-
-
 #endif
-

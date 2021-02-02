@@ -25,4 +25,3 @@ volatile void delay_us(unsigned int us);
 unsigned int read_cpuid(void);
 
 #endif
-

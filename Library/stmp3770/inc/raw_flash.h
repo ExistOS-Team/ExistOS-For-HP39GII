@@ -18,90 +18,77 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
-
 #ifndef __RAW_FLASH_H
 #define __RAW_FLASH_H
-#ifdef __cplusplus 
-extern "C" { 
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#include "regsgpmi.h"
 #include "regsecc8.h"
+#include "regsgpmi.h"
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #define NAND_MAX_ID_LEN 8
 
-typedef enum OperationStatus{
-	operationDone = 0,
-	deviceBusy,
-	deviceTimeout
-}OperationStatus;
-
+typedef enum OperationStatus {
+    operationDone = 0,
+    deviceBusy,
+    deviceTimeout
+} OperationStatus;
 
 unsigned int userDataStartBlock;
 unsigned int firstPartitionBlock;
 
-
-
-	  
-#define NAND_CMD_READ0			0
-#define NAND_CMD_READ1			1
-#define NAND_CMD_RNDOUT			5
-#define NAND_CMD_PAGEPROG		0x10
-#define NAND_CMD_READOOB		0x50
-#define NAND_CMD_ERASE1			0x60
-#define NAND_CMD_STATUS			0x70
-#define NAND_CMD_SEQIN			0x80
-#define NAND_CMD_RNDIN			0x85
-#define NAND_CMD_READID			0x90
-#define NAND_CMD_ERASE2			0xd0
-#define NAND_CMD_PARAM			0xec
-#define NAND_CMD_GET_FEATURES	0xee
-#define NAND_CMD_SET_FEATURES	0xef
-#define NAND_CMD_RESET			0xff
+#define NAND_CMD_READ0 0
+#define NAND_CMD_READ1 1
+#define NAND_CMD_RNDOUT 5
+#define NAND_CMD_PAGEPROG 0x10
+#define NAND_CMD_READOOB 0x50
+#define NAND_CMD_ERASE1 0x60
+#define NAND_CMD_STATUS 0x70
+#define NAND_CMD_SEQIN 0x80
+#define NAND_CMD_RNDIN 0x85
+#define NAND_CMD_READID 0x90
+#define NAND_CMD_ERASE2 0xd0
+#define NAND_CMD_PARAM 0xec
+#define NAND_CMD_GET_FEATURES 0xee
+#define NAND_CMD_SET_FEATURES 0xef
+#define NAND_CMD_RESET 0xff
 
 /* Extended commands for large page devices */
-#define NAND_CMD_READSTART	0x30
-#define NAND_CMD_RNDOUTSTART	0xE0
-#define NAND_CMD_CACHEDPROG	0x15
-#define NAND_CMD_NONE		-1
-#define NAND_CMD_LOCK		0x2a
-#define NAND_CMD_UNLOCK1	0x23
-#define NAND_CMD_UNLOCK2	0x24
+#define NAND_CMD_READSTART 0x30
+#define NAND_CMD_RNDOUTSTART 0xE0
+#define NAND_CMD_CACHEDPROG 0x15
+#define NAND_CMD_NONE -1
+#define NAND_CMD_LOCK 0x2a
+#define NAND_CMD_UNLOCK1 0x23
+#define NAND_CMD_UNLOCK2 0x24
 
 #define MASK_AND_REFERENCE_VALUE 0x0100
 
 typedef struct NAND_Timing_t {
-	unsigned char DataSetup;
-	unsigned char DataHold;
-	unsigned char AddressSetup;
-	unsigned char SampleDelay;
-}NAND_Timing_t;
+    unsigned char DataSetup;
+    unsigned char DataHold;
+    unsigned char AddressSetup;
+    unsigned char SampleDelay;
+} NAND_Timing_t;
 
-
-
-
-typedef enum hw_DmaCommand
-{
+typedef enum hw_DmaCommand {
     NO_DMA_XFER = 0,
-    DMA_WRITE = 1,		//从设备写到内存
-    DMA_READ = 2			//从内存读到设备
+    DMA_WRITE = 1, //从设备写到内存
+    DMA_READ = 2   //从内存读到设备
 } hw_DmaCommand;
 
-
-
-typedef struct hw_gpmi_DmaDesc	//用于GPMI控制器的DMA描述符
+typedef struct hw_gpmi_DmaDesc //用于GPMI控制器的DMA描述符
 {
     struct _hw_gpmi_DmaDesc *p_Next;
-    union 
-    {
-        struct 
+    union {
+        struct
         {
-            union 
-            {
-                struct 
+            union {
+                struct
                 {
                     hw_DmaCommand Command : 2;
                     unsigned char Chain : 1;
@@ -111,13 +98,12 @@ typedef struct hw_gpmi_DmaDesc	//用于GPMI控制器的DMA描述符
                     unsigned char Semaphore : 1;
                     unsigned char WaitForEndCommand : 1;
                     unsigned char HALTONTERMINATE : 1;
-					
-                } ;
+                };
                 unsigned char Bits;
             };
             unsigned char Reserved : 3;
             unsigned char CMDWORDS : 4;
-            unsigned short XFER_COUNT: 16;
+            unsigned short XFER_COUNT : 16;
         };
         unsigned int CommandBits;
     };
@@ -129,9 +115,6 @@ typedef struct hw_gpmi_DmaDesc	//用于GPMI控制器的DMA描述符
 
 } hw_gpmi_DmaDesc;
 
-
-
-
 void NAND_init();
 
 unsigned int GPMI_dma_is_busy();
@@ -139,18 +122,16 @@ void GPMI_read_dat(unsigned char *buffer_address, unsigned int dat_size);
 void GPMI_send_dat(unsigned int *dat_address, unsigned int data_size_bytes);
 void GPMI_send_cmd(unsigned int command, unsigned int address, unsigned int address_size_bytes, unsigned int readback_size_bytes, unsigned char *readback_buffer_address);
 
-
 unsigned int gpmi_is_busy();
 unsigned int read_nand_pages(unsigned int start_page, unsigned int pages, unsigned int *buffer, unsigned int timeout_ms);
 
-void GPMI_write_block_with_ecc8(unsigned char set_up_command,unsigned char start_write_confirm_command,unsigned char read_status_command,
-								unsigned int page_to_write,void *write_payload_buffer, void *write_aux_buffer);
+void GPMI_write_block_with_ecc8(unsigned char set_up_command, unsigned char start_write_confirm_command, unsigned char read_status_command,
+                                unsigned int page_to_write, void *write_payload_buffer, void *write_aux_buffer);
 
 void set_page_address_data(unsigned int pageNumber);
-void GPMI_read_block_with_ecc8(unsigned char set_read_command,unsigned char start_read_command,
-                               unsigned char *address_data, unsigned int *buffer, unsigned int *meta_buffer , unsigned int address_data_size_bytes );							   
-							   
+void GPMI_read_block_with_ecc8(unsigned char set_read_command, unsigned char start_read_command,
+                               unsigned char *address_data, unsigned int *buffer, unsigned int *meta_buffer, unsigned int address_data_size_bytes);
+
 void GPMI_erase_block_cmd(unsigned char erase_command, unsigned char confirm_erase_command, unsigned char read_status_command, unsigned int block_address);
 
 #endif
-

@@ -39,11 +39,12 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "regstimrot.h"
+#include "mmu.h"
 
 /* Constants required to handle critical sections. */
 #define portNO_CRITICAL_NESTING		( ( uint32_t ) 0 )
 
-volatile uint32_t ulCriticalNesting = 9999UL;
+//volatile uint32_t ulCriticalNesting = 9999UL;
 
 
 
@@ -55,28 +56,38 @@ volatile uint32_t ulCriticalNesting = 9999UL;
  */
 void vPortISRStartFirstTask( void );
 /*-----------------------------------------------------------*/
+uint32_t dump_regs;
 
 void vPortISRStartFirstTask( void )
 {
 	/* Simply start the scheduler.  This is included here as it can only be
 	called from ARM mode. */
+/*
+	extern uint32_t *pxCurrentTCB;
+	
+	asm volatile("ldr r0,=pxCurrentTCB");
+	asm volatile("ldr r0,[r0]");
+	asm volatile("add r0,r0,#60");
+	asm volatile("ldr r0,[r0]");
+
+	asm volatile("str r0,%0":"=o"(dump_regs));
+	uartdbg_printf("REG:%x\n",dump_regs);
+	uartdbg_printf("pxCurrentTCB:%x\n",*(pxCurrentTCB + 17));
+
+	while(1);
+*/
 	asm volatile (														\
 	"LDR		R0, =pxCurrentTCB								\n\t"	\
+	"LDR		R0,[R0]											\n\t"	\
+	/* R0 指向 SPSR*/													\
+	"ADD		R0, R0, #4										\n\r"	\
+	"ADD		LR, R0, #4										\n\t"	\
+	/* 将SPSR读入R0*/													\
 	"LDR		R0, [R0]										\n\t"	\
-	"LDR		LR, [R0]										\n\t"	\
-																		\
-	/* The critical nesting depth is the first item on the stack. */	\
-	/* Load it into the ulCriticalNesting variable. */					\
-	"LDR		R0, =ulCriticalNesting							\n\t"	\
-	"LDMFD	LR!, {R1}											\n\t"	\
-	"STR		R1, [R0]										\n\t"	\
-																		\
-	/* Get the SPSR from the stack. */									\
-	"LDMFD	LR!, {R0}											\n\t"	\
 	"MSR		SPSR, R0										\n\t"	\
-																		\
-	/* Restore all system mode registers for the task. */				\
-	"LDMFD	LR, {R0-R14}^										\n\t"	\
+	/*LR 指向 R0_saved	*/												\
+	/*将R0-R14载入*/													\
+	"LDMFD		LR, {R0-R14}^									\n\t"	\
 	"NOP														\n\t"	\
 																		\
 	/* Restore the return address. */									\
@@ -84,8 +95,9 @@ void vPortISRStartFirstTask( void )
 																		\
 	/* And return - correcting the offset in the LR to obtain the */	\
 	/* correct address. */												\
-	"SUBS PC, LR, #4											\n\t"	\
-	);																	
+	"SUBS 		PC, LR, #4										\n\t"\
+	);				
+
 }
 /*-----------------------------------------------------------*/
 
@@ -93,7 +105,6 @@ void vPortTickISR( void )
 {
 	/* Increment the RTOS tick count, then look for the highest priority 
 	task that is ready to run. */
-
 	if( xTaskIncrementTick() != pdFALSE )
 	{	
 		vTaskSwitchContext();
@@ -140,7 +151,7 @@ void vPortTickISR( void )
 
 #endif /* THUMB_INTERWORK */
 /*-----------------------------------------------------------*/
-
+#if 0
 void vPortEnterCritical( void )
 {
 	/* Disable interrupts as per portDISABLE_INTERRUPTS(); 							*/
@@ -179,7 +190,7 @@ void vPortExitCritical( void )
 		}
 	}
 }
-
+#endif
 
 
 

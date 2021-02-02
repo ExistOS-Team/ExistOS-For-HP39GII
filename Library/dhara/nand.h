@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include "error.h"
+#include "dhara_error.h"
 
 /* Each page in a NAND device is indexed, starting at 0. It's required
  * that there be a power-of-two number of pages in a eraseblock, so you can

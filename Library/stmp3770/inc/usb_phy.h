@@ -5,6 +5,4 @@
 
 void usb_phy_enable(bool on);
 
-
-
 #endif

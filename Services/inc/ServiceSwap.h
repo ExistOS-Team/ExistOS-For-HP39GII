@@ -24,11 +24,11 @@ typedef struct SwapPageInfo {
     unsigned vmNum : 8;    // VM号
     unsigned resv : 2;     // reserved
     unsigned writable : 1; // 是否可写
-    unsigned used : 1;    // 是否使用
+    unsigned used : 1;     // 是否使用
 } SwapPageInfo;            // swap中一个page的相关信息
 
 typedef struct MemPageInfo {
-    unsigned used : 1;      // 是否使用
+    unsigned used : 1;       // 是否使用
     unsigned dirty : 1;      // 脏位
     unsigned associated : 1; // 是否是从swap读入的，如果是要写回相应地方
     union {

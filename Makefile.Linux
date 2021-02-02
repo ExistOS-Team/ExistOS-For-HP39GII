@@ -19,8 +19,8 @@ LIBS          =
 #-lc -lstdc++ -lm -lgcc
 LFLAGS        = -T$(LDSCRIPT) -Wl,--gc-sections -Xlinker --wrap=malloc -Xlinker --wrap=free -Xlinker --wrap=_malloc_r 
 #-nodefaultlibs -nostdlib 
-DEL_FILE      = del /Q /S
-DEL_DIR       = rmdir
+DEL_FILE      = rm
+DEL_DIR       = rm -r
 ELF2ROM		  = sbtools/elftosb
 SBLOADER	  = sbtools/sbloader
 
@@ -132,13 +132,13 @@ firmware.sb: rom.bin
 	$(ELF2ROM) -z -c $(SCRIPT_DIR)/build_fw.bd -o firmware.sb rom.bin
 
 flash:
-	$(SBLOADER) firmware.sb
+	$(SBLOADER) firmware.sb -d
 
 clean:
-	@$(DEL_FILE) *.o
-	@$(DEL_FILE) *.a
-	@$(DEL_FILE) *.s
-	@$(DEL_FILE) *.tmp
+	@$(DEL_FILE) $(COBJS) $(CPPOBJS) $(SOBJS)  $(CTINYUSBCOBJS) $(CDHARAOBJS) $(FatFsObjs) $(LVGL_SRC_O) $(COREJSON_SRC_OBJS) $(SHELL_SRC_OBJS) 
+#	@$(DEL_FILE) *.a
+#	@$(DEL_FILE) *.s	
+#	@$(DEL_FILE) *.tmp
 	@$(DEL_FILE) *.bin
 	@$(DEL_FILE) *.elf
 	@$(DEL_FILE) *.sb

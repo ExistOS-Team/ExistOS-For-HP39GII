@@ -1,0 +1,39 @@
+name: CMake
+
+on: [push]
+
+env:
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: arm-none-eabi-gcc
+      uses: fiam/arm-none-eabi-gcc@v1.0.2
+      with:
+        release: 9-2019-q4
+    - name: Download elftosb
+      run: |
+        cd tools/sbtools
+        wget https://github.com/AliasQli/ExistOS-For-HP39GII/releases/download/0.0.2/elftosb
+        chmod +x elftosb
+        cd ../..
+#     - name: Download elftosb
+#       uses: fabriciobastian/download-release-asset-action@v1.0.6
+#       with:
+#         version: 0.0.2
+#         repository: AliasQli/ExistOS-For-HP39GII
+#         file: elftosb
+#         out: ./tools/sbtools/
+    - name: Cmake configure
+      run: cmake .
+    - name : Cmake build
+      run: cmake --build .
+    - name: Upload firmware.sb
+      uses: actions/upload-artifact@v2.2.2
+      with:
+        name: firmware
+        path: ./firmware.sb

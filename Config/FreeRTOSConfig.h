@@ -52,7 +52,7 @@
 #define configTICK_RATE_HZ			( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES		( 5 )
 #define configMINIMAL_STACK_SIZE	( ( unsigned short ) 400 )
-#define configTOTAL_HEAP_SIZE		( ( size_t ) (MEM_MAX - MEM_MIN) )
+
 #define configMAX_TASK_NAME_LEN		( 20 )
 #define configUSE_MUTEXES                       1
 #define configUSE_RECURSIVE_MUTEXES             1
@@ -60,13 +60,14 @@
 
 #define configUSE_NEWLIB_REENTRANT				1
 
-#define configCHECK_FOR_STACK_OVERFLOW          1
+#define configCHECK_FOR_STACK_OVERFLOW          0
 
 #define configUSE_16_BIT_TICKS		0
 #define configIDLE_SHOULD_YIELD		0
 
+#define portCRITICAL_NESTING_IN_TCB 1
 
-#define configUSE_TRACE_FACILITY          	1      
+#define configUSE_TRACE_FACILITY          	1
 #define configGENERATE_RUN_TIME_STATS 		1
 #define configUSE_STATS_FORMATTING_FUNCTIONS 		1
 

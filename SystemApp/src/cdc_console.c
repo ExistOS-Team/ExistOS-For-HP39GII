@@ -82,8 +82,12 @@ void cdc_putchar(const char c) {
 }
 
 void shell_tasklist_cmd(char argc, char *argv) {
-    unsigned char *tasklist_buf = pvPortMalloc(1024);
-    memset(tasklist_buf, 0, 1024);
+    unsigned char *tasklist_buf = pvPortMalloc(8192);
+    if(tasklist_buf == NULL){
+        shell_printf("Memory overflow\r\n");
+        return;
+    }
+    memset(tasklist_buf, 0, 8192);
 
     struct mallinfo mallocInfo;
 
@@ -100,21 +104,10 @@ void shell_tasklist_cmd(char argc, char *argv) {
     //shell_printf("free memory size: %d \n",(unsigned int)xPortGetFreeHeapSize());
 
     mallocInfo = mallinfo();
-    shell_printf("未分配空闲内存：%d Bytes\r\n", (unsigned int)xPortGetFreeHeapSize());
+    
+    shell_printf("未分配物理内存：%d Bytes\r\n", (TOTAL_PHY_MEMORY - KHEAP_MAP_PHY_START ) -  mallocInfo.arena);
 
-    unsigned int freePhyMem, remainPhyMem;
-    if ((getCurrentHeapEnd() - KHEAP_MEMORY_VIR_START) > (TOTAL_PHY_MEMORY - KHEAP_MAP_PHY_START)) {
-        freePhyMem = 0;
-        remainPhyMem = 0;
-    } else {
-        freePhyMem = (TOTAL_PHY_MEMORY - KHEAP_MAP_PHY_START) - (getCurrentHeapEnd() - KHEAP_MEMORY_VIR_START);
-        remainPhyMem = freePhyMem + mallocInfo.fordblks;
-    }
-
-    shell_printf("未分配物理内存：%d Bytes\r\n", freePhyMem);
-    shell_printf("剩余物理内存：%d Bytes\r\n", remainPhyMem);
-
-    shell_printf("剩余内存：%d Bytes\r\n", mallocInfo.arena - mallocInfo.uordblks + (unsigned int)xPortGetFreeHeapSize());
+    shell_printf("可用物理内存：%d Bytes\r\n", (TOTAL_PHY_MEMORY - KHEAP_MAP_PHY_START ) - mallocInfo.uordblks);
     shell_printf("页面文件大小: %d Bytes\r\n", swapSizeMB * 1048576);
 
     shell_printf("total space allocated from system: %d\r\n", mallocInfo.arena);
@@ -178,39 +171,36 @@ void shell_test_cmd(char argc, char *argv) {
 // };
 
 const static_cmd_st static_cmd[] =
-	{
-		{"ls", shell_ls_cmd},
-		{"help", shell_help_cmd},
-		{"test", shell_test_cmd},
-		{"tasklist", shell_tasklist_cmd},
-//		{"mpy",shell_micropython_cmd},
-		{"\0", NULL}
-	};
+    {
+        {"ls", shell_ls_cmd},
+        {"help", shell_help_cmd},
+        {"test", shell_test_cmd},
+        {"tasklist", shell_tasklist_cmd},
+        //		{"mpy",shell_micropython_cmd},
+        {"\0", NULL}};
 
+void vCDC_Console() {
 
-void vCDC_Console(){
-	
-	unsigned char ch;
-	
-	vTaskDelay(500);
-	
-	shell_init();
+    unsigned char ch;
 
-	printf("Starting shell ...\n");
-	
-	for(;;){
-		
-		if(tud_cdc_available()){
-			
-			//printf("%c \n",tud_cdc_read_char());
-			ch = tud_cdc_read_char();
-			shell(ch);
-			//cdc_putchar(ch);
-			
-			//tud_cdc_read_flush();
-		}
-		vTaskDelay(10);
-		//taskYIELD();
-		
+    vTaskDelay(500);
+
+    shell_init();
+
+    printf("Starting shell ...\n");
+
+    for (;;) {
+
+        if (tud_cdc_available()) {
+
+            //printf("%c \n",tud_cdc_read_char());
+            ch = tud_cdc_read_char();
+            shell(ch);
+            //cdc_putchar(ch);
+
+            //tud_cdc_read_flush();
+        }
+        vTaskDelay(10);
+        //taskYIELD();
     }
 }

@@ -44,7 +44,6 @@
 #include <errno.h>  // ENOMEM
 
 #include "memory_map.h"
-#include "mmemory.h"
 #include "uart_debug.h"
 
 /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
@@ -67,9 +66,9 @@ task.h is included from an application file. */
 #endif
 
 //extern char __HeapBase, __HeapLimit, HEAP_SIZE;  // make sure to define these symbols in linker command file
-int heapBytesRemaining = (END_OF_KHEAP_PHY_ADDR - KHEAP_MAP_PHY_START); // that's (&__HeapLimit)-(&__HeapBase)
+int heapBytesRemaining = (RAM_START_VIRT_ADDR + TOTAL_PHY_MEMORY - KHEAP_START_VIRT_ADDR); // that's (&__HeapLimit)-(&__HeapBase)
 
-static char *currentHeapEnd = (unsigned char *)KHEAP_MEMORY_VIR_START;
+static char *currentHeapEnd = (unsigned char *)KHEAP_START_VIRT_ADDR;
 
 
 
@@ -81,7 +80,7 @@ void * _sbrk_r(struct _reent *pReent, int incr) {
 	
 	//incr = (incr / TINY_PAGE_SIZE + 1) * 1024;
 	
-    if ((unsigned int)currentHeapEnd + incr > (KHEAP_MEMORY_VIR_START + END_OF_KHEAP_PHY_ADDR - KHEAP_MAP_PHY_START)) {
+    if ((unsigned int)currentHeapEnd + incr > (KHEAP_START_VIRT_ADDR + TOTAL_PHY_MEMORY)) {
         // Ooops, no more memory available...
        /* #if( configUSE_MALLOC_FAILED_HOOK == 1 )
         {
@@ -91,7 +90,7 @@ void * _sbrk_r(struct _reent *pReent, int incr) {
         #else*/
             // Default, if you prefer to believe your application will gracefully trap out-of-memory...
 			//printf("kmalloc fail...\n");
-			uartdbg_printf("sbrk err. %x %x\n", incr,(KHEAP_MEMORY_VIR_START + END_OF_KHEAP_PHY_ADDR - KHEAP_MAP_PHY_START));
+			uartdbg_printf("sbrk err. %x %x\n", incr,(KHEAP_START_VIRT_ADDR + TOTAL_PHY_MEMORY));
             pReent->_errno = ENOMEM; // newlib's thread-specific errno
             xTaskResumeAll();  // Note: safe to use before FreeRTOS scheduler started, but not within an ISR;
        // #endif
@@ -162,6 +161,7 @@ void *__wrap__malloc_r(void *reent, size_t nbytes) {
 };
 
 
+
 void *pvPortMalloc( size_t xWantedSize )
 {
 void *pvReturn;
@@ -171,9 +171,11 @@ void *pvReturn;
 		pvReturn = malloc( xWantedSize );
 		//traceMALLOC( pvReturn, xWantedSize );
 	}
-	
-
+	//uartdbg_print_regs();
+	//uartdbg_printf("pvPortMalloc malloc end\n");
 	xTaskResumeAll();
+
+	//uartdbg_printf("pvPortMalloc end\n");
 
 	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
 	{
