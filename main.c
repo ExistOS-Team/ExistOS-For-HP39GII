@@ -165,7 +165,7 @@ void vTask3(void *pvParameters) {
 		*/
     }
 }
-
+extern volatile uint32_t saved_svc_sp;
 /* Create all the demo application tasks, then start the scheduler. */
 int main(void) {
     /* Perform any hardware setup necessary. */
@@ -183,9 +183,9 @@ int main(void) {
     xTaskCreate(vInit, "init", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL);
 
     //vStartBlockingQueueTasks(1);
-    //vStartGenericQueueTasks(1);
-
+    //vStartGenericQueueTasks(1); 
     printf("pdMS_TO_TICKS(500)=%d\n", pdMS_TO_TICKS(500));
+    
     uartdbg_print_regs();
 
     vTaskStartScheduler();

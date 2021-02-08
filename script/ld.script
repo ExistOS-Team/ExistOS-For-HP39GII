@@ -42,7 +42,7 @@ SECTIONS
 	. = . + 0x300;
 	UND_STACK_ADDR = .;
 	
-	. = . + 0x300;
+	. = . + 0x100;
 	FIQ_STACK_ADDR = .;
 	
 	. = . + 0x300;
@@ -51,7 +51,7 @@ SECTIONS
 	. = . + 0x300;
 	SVC_STACK_ADDR = .;		
 	
-	. = . + 0x300;
+	. = . + 0x500;
 	SYS_STACK_ADDR = .;		
 	
 	. = 0x0000C000; 

@@ -56,6 +56,7 @@ void invalid_all_L1_PTE(){
     volatile unsigned int *l1_tab_entry = (unsigned int *)0x800C0000;
     for(int i=0; i<MAX_L1_PTE_IN_USE; i++){
         BF_CS1n(DIGCTL_MPTEn_LOC, i, LOC, i);
+        L1_PTE[i].virt_seg = i;
         l1_tab_entry[ i ] = 0;
     }
     flush_tlb();    
@@ -86,11 +87,14 @@ void set_l1_table_PTE(int which_L1_PTE, unsigned int which_L2_table){
     int domain = 1;
     
     l2_tab_base = l2_table_info[which_L2_table].table_page_phy_addr;
-    
-    //printf("which_L1_PTE:%d, which_L2_table:%d, (unsigned int)l2_tab_base >> 20:%08x, L1_PTE[which_L1_PTE].virt_seg:%08x\n",
-    //    which_L1_PTE,which_L2_table,(unsigned int)l2_tab_base >> 20, L1_PTE[which_L1_PTE].virt_seg);
+    /*
+    printf("\nwhich_L1_PTE:%d, which_L2_table:%d, (unsigned int)l2_tab_base >> 20:%08x, L1_PTE[which_L1_PTE].virt_seg:%08x\n",
+        which_L1_PTE,
+        which_L2_table,
+        (unsigned int)l2_tab_base >> 20, 
+        L1_PTE[which_L1_PTE].virt_seg);*/
     //HW_DIGCTL_MPTEn_LOC(which_L1_PTE).B.LOC = (unsigned int)l2_tab_base >> 20;
-    
+    //dump_MPTE();
     BF_CS1n(DIGCTL_MPTEn_LOC, which_L1_PTE, LOC, L1_PTE[which_L1_PTE].virt_seg);
 
     //l1_tab_entry[ L1_PTE[which_L1_PTE].virt_seg ] = 0;
@@ -104,6 +108,8 @@ void set_l1_table_PTE(int which_L1_PTE, unsigned int which_L2_table){
     l1_tab_entry[ L1_PTE[which_L1_PTE].virt_seg ] |= (domain << 5);
     
     l1_tab_entry[ L1_PTE[which_L1_PTE].virt_seg ] |= 0x01;
+    //printf("RB L1_PTE:%x\n",l1_tab_entry[ L1_PTE[which_L1_PTE].virt_seg ]);
+    //dump_MPTE();
     //dump_page_tables();
     
 
@@ -199,7 +205,7 @@ int pageman_init(unsigned int cache_page_number,unsigned int vm_file_size_m)
         pages_info[i].LRU_count = 9999;
         pages_info[i].belong_task = 0;
         pages_info[i].map_file_fd = -1;
-        pages_info[i].offset_page_in_file = 0;
+        pages_info[i].file_offset_addr = 0;
         pages_info[i].map_on_virt_addr = UNUSE;
         pages_info[i].is_dirty = 0;
         pages_info[i].page_attr = 0;
@@ -336,8 +342,8 @@ void dump_vm_spaces(){
                         int j=0;
                         do{
                             printf("\t\tmap index: #%d\n",j);
-                            printf("\t\tvmf_map_file_page:%08X\n",current_vmf_map_info->page_in_vm_file_page_offset);
-                            printf("\t\tvmf_map_addr_page:%08X\n\n",current_vmf_map_info->virt_map_addr);
+                            printf("\t\tmap_page_in_file_offset_addr:%08X\n",current_vmf_map_info->page_in_file_offset_addr);
+                            printf("\t\tvmf_map_addr:%08X\n\n",current_vmf_map_info->virt_map_addr);
                             j++;
                             current_vmf_map_info = current_vmf_map_info->next_vmf_map_info;
                         }while(current_vmf_map_info != NULL);
@@ -381,7 +387,7 @@ int remove_task_space_zone(PID_t pid, char *zone_name){
     return -1;
 }
 
-int create_new_task_space_zone(PID_t task_handle,int file, unsigned int file_inner_page_start, 
+int create_new_task_space_zone(PID_t task_handle,int file, unsigned int file_offset_addr, 
         char *zone_name, unsigned char zone_attr, unsigned int start_addr, unsigned int end_addr)
 {
     vm_space *current_vm_space_info;
@@ -403,7 +409,7 @@ int create_new_task_space_zone(PID_t task_handle,int file, unsigned int file_inn
         memcpy(current_vm_space_info->first_zone_info->zone_name,zone_name,9);
         current_vm_space_info->first_zone_info->zone_name[8] = '\0';
         current_vm_space_info->first_zone_info->map_file_fd = file;
-        current_vm_space_info->first_zone_info->file_inner_page_start = file_inner_page_start;
+        current_vm_space_info->first_zone_info->file_offset_addr = file_offset_addr;
         current_vm_space_info->first_zone_info->first_map_info = NULL;
 
         return 0;
@@ -444,7 +450,7 @@ int create_new_task_space_zone(PID_t task_handle,int file, unsigned int file_inn
     memcpy(current_zone_info->zone_name,zone_name,9);
     current_zone_info->zone_name[8] = '\0';
     current_zone_info->map_file_fd = file;
-    current_zone_info->file_inner_page_start = file_inner_page_start;
+    current_zone_info->file_offset_addr = file_offset_addr;
     current_zone_info->first_map_info = NULL;
     return 0;
 }
@@ -480,7 +486,7 @@ void sync_all_write_back_cache_page(){
 
            if((pages_info[i].page_attr & ZONE_ATTR_W)){
               if(pages_info[i].is_dirty == 1){
-                    fr = vfs_lseek(pages_info[i].map_file_fd, pages_info[i].offset_page_in_file * PAGE_SIZE, SEEK_SET);
+                    fr = vfs_lseek(pages_info[i].map_file_fd, pages_info[i].file_offset_addr, SEEK_SET);
                     fr = write(pages_info[i].map_file_fd, pages_info[i].page_phy_addr + DIFF_PHY_VS_VIRT/4, PAGE_SIZE);
                     pages_info[i].is_dirty = 0;
                 }
@@ -500,14 +506,15 @@ int swap_out_cache_page(unsigned int which_page){
     }
 
     //printf("swap out:%d\n",which_page);
+    //printf("pages map_on_virt_addr:%08X\n",pages_info[which_page].map_on_virt_addr);
 
 
     if(pages_info[which_page].map_file_fd == vm_page_file_fd){
         if(pages_info[which_page].is_dirty == 1){
-            fr = vfs_lseek(vm_page_file_fd, pages_info[which_page].offset_page_in_file * PAGE_SIZE, SEEK_SET);
-             //printf("fr 1:%d\n",fr);
-            fr = write(vm_page_file_fd, pages_info[which_page].page_phy_addr + DIFF_PHY_VS_VIRT/4, PAGE_SIZE);
-             //printf("fr 2:%d\n",fr);
+            fr = vfs_lseek(vm_page_file_fd, pages_info[which_page].file_offset_addr, SEEK_SET);
+            // printf("vfs_lseek:%d, file_offset_addr:%08x\n",fr, pages_info[which_page].file_offset_addr);
+            fr = vfs_write(vm_page_file_fd, pages_info[which_page].page_phy_addr + DIFF_PHY_VS_VIRT/4, PAGE_SIZE);
+            //printf("vfs_write:%d\n",fr);
             //fr = f_vfs_lseek(&vm_page_file_handle, pages_info[which_page].offset_page_in_file * PAGE_SIZE);
             //fr = f_write(&vm_page_file_handle, pages_info[which_page].page_phy_addr + DIFF_PHY_VS_VIRT/4,PAGE_SIZE,&br);
             pages_info[which_page].is_dirty = 0;
@@ -517,13 +524,19 @@ int swap_out_cache_page(unsigned int which_page){
             if(pages_info[which_page].page_attr & ZONE_ATTR_WRITEBACK){
                 if(pages_info[which_page].is_dirty == 1){
                     //printf("swap out:%d\n",pages_info[which_page].map_file_fd);
-                    fr = vfs_lseek(pages_info[which_page].map_file_fd, pages_info[which_page].offset_page_in_file * PAGE_SIZE, SEEK_SET);
-                    fr = vfs_write(pages_info[which_page].map_file_fd, pages_info[which_page].page_phy_addr + DIFF_PHY_VS_VIRT/4, PAGE_SIZE);
+                    fr = vfs_lseek( pages_info[which_page].map_file_fd,
+                                    pages_info[which_page].file_offset_addr,
+                                    SEEK_SET);
+
+                    fr = vfs_write( pages_info[which_page].map_file_fd,
+                                    pages_info[which_page].page_phy_addr + DIFF_PHY_VS_VIRT/4,
+                                    PAGE_SIZE);
+
                     pages_info[which_page].is_dirty = 0;
                 }
             }else{
                 //NOT WRITE BACK
-                
+                //printf("NOT WRITE BACK TO RO FILE.\n");
 
             }
         }       
@@ -538,7 +551,13 @@ int swap_out_cache_page(unsigned int which_page){
     return fr;
 }
 
-int swap_in_cache_page(unsigned int which_page,int file, unsigned int page_offset_in_file, unsigned int virt_addr_to_load){
+int swap_in_cache_page( unsigned int which_page,
+                        int file,
+                        unsigned int zone_start_addr_in_file,
+                        unsigned int offset_in_file,
+                        unsigned int fault_file_page_idx,
+                        int page_diff,
+                        unsigned int virt_addr_to_load){
     int fr = 0;
     //printf("test 1\n");
     /*
@@ -553,18 +572,102 @@ int swap_in_cache_page(unsigned int which_page,int file, unsigned int page_offse
         fr = f_read(file_handle, (unsigned int *)(((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT), PAGE_SIZE, &br); 
     }
     */
+    memset((unsigned int *)(((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT),0,PAGE_SIZE);
     if(file == vm_page_file_fd){
-        fr = vfs_lseek(file, page_offset_in_file * PAGE_SIZE, SEEK_SET);
+        fr = vfs_lseek(file, offset_in_file, SEEK_SET);
+       // printf("swap in: seek:%d, offset_in_file:%08x",fr,offset_in_file);
         fr = vfs_read(file, (unsigned int *)(((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT), PAGE_SIZE);
+        //printf(", swap in addr:%08x, read:%d\n", (unsigned int *)(((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT),fr);
+        //printf("read in map addr:%08x\n",virt_addr_to_load);
     }else{
 
        // if((pages_info[which_page].page_attr & ZONE_ATTR_WRITEBACK)){
        //     printf("swap in file:%d\n",file);
         //    printf("page_attr:%d\n",pages_info[which_page].page_attr);
+        //printf("swap in file:%d offset_in_file:%08x\n",file,offset_in_file);
+        /*
+        printf("offset_in_file:0x%X\n",offset_in_file);
+        printf("page_diff:0x%x\n",page_diff);
+        printf("virt_addr_to_load:0x%x\n",virt_addr_to_load);
+        printf("zone_start_addr_in_file:0x%x\n",zone_start_addr_in_file);
+        printf("fault_file_page_idx:0x%x\n",fault_file_page_idx);
+        */
+        if(fault_file_page_idx == 0){
+            fr = vfs_lseek(file, zone_start_addr_in_file, SEEK_SET);
+            fr = vfs_read(file, 
+                        (unsigned int *)(
+                            ((unsigned int)pages_info[which_page].page_phy_addr) + page_diff + DIFF_PHY_VS_VIRT
+                        ),
+                         PAGE_SIZE - page_diff);
+
+        }else{
+            fr = vfs_lseek(file, (0xFFF - page_diff) * 1 + zone_start_addr_in_file + 1 + 0x1000 * (fault_file_page_idx - 1), SEEK_SET);
+            fr = vfs_read(file, 
+                        (unsigned int *)(
+                            ((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT
+                        ),
+                         PAGE_SIZE);
 
 
-            fr = vfs_lseek(file, page_offset_in_file * PAGE_SIZE, SEEK_SET);
-            fr = vfs_read(file, (unsigned int *)(((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT), PAGE_SIZE);
+        }
+/*
+        if(((long)offset_in_file - (long)page_diff) < 0){
+            fr = vfs_lseek(file, zone_start_addr_in_file, SEEK_SET);
+            printf("FR1:%d\n",fr);
+            fr = vfs_read(file, 
+                        (unsigned int *)(
+                            ((unsigned int)pages_info[which_page].page_phy_addr) + page_diff + DIFF_PHY_VS_VIRT
+                        ),
+                         PAGE_SIZE - page_diff);
+            printf("FR2:%d\n",fr);             
+        }else{
+            fr = vfs_lseek(file, zone_start_addr_in_file + (offset_in_file & 0xFFFFF000), SEEK_SET);
+            fr = vfs_read(file, 
+                        (unsigned int *)(
+                            ((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT
+                        ),
+                         PAGE_SIZE);
+        }*/
+
+
+/*
+            fr = vfs_lseek(file, offset_in_file + page_diff, SEEK_SET);
+            fr = vfs_read(file, 
+                        (unsigned int *)(
+                            ((unsigned int)pages_info[which_page].page_phy_addr) + page_diff + DIFF_PHY_VS_VIRT
+                        ),
+                         PAGE_SIZE - page_diff);
+
+            if(offset_in_file - page_diff > 0){
+
+            }
+
+            fr = vfs_lseek(file, offset_in_file - page_diff, SEEK_SET);
+            fr = vfs_read(file, 
+                        (unsigned int *)(
+                            ((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT
+                        ),
+                        page_diff); 
+*/
+                         /*
+            if( (vfs_tell(file) - page_diff) > 0){
+                fr = vfs_lseek(file, offset_in_file - page_diff, SEEK_SET);
+                fr = vfs_read(file, 
+                        (unsigned int *)(
+                            ((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT
+                        ),
+                        page_diff);
+                }else{
+                    memset(
+                     (unsigned int *)(
+                            ((unsigned int)pages_info[which_page].page_phy_addr) + DIFF_PHY_VS_VIRT
+                        ),
+                        0,
+                        page_diff
+                );
+            }*/
+
+        
        // }else if((pages_info[which_page].page_attr & ZONE_ATTR_W)){
            
 
@@ -572,6 +675,8 @@ int swap_in_cache_page(unsigned int which_page,int file, unsigned int page_offse
     }
 
     finish:
+
+
     //printf("test 2\n");
     pages_info[which_page].is_dirty = 0;
     pages_info[which_page].map_on_virt_addr = (unsigned int *)virt_addr_to_load;
@@ -715,7 +820,7 @@ void dump_page_tables(){
         printf("\t is_dirty:%d\n",pages_info[i].is_dirty);
         printf("\t LRU_count:%d\n",pages_info[i].LRU_count);
         printf("\t map_on_virt_addr:%08x\n",pages_info[i].map_on_virt_addr);
-        printf("\t offset_page_in_file:%d\n",pages_info[i].offset_page_in_file);
+        printf("\t offset_in_file:%x\n",pages_info[i].file_offset_addr);
         printf("\t page_attr:%08x\n",pages_info[i].page_attr);
         printf("\t page_phy_addr:%08x\n\n",pages_info[i].page_phy_addr);
         
@@ -874,14 +979,15 @@ int data_access_fault_isr(PID_t task_handle, unsigned int *access_fault_addr, un
         return 1;
     }
     
-    //uartdbg_printf("Fault Process 1: %x, Data Address: %x, ins address: %x fault_count:%d\n",task_handle, access_fault_addr,fault_ins_addr,fault_count);
-    
+    //uartdbg_printf("Fault Process: %x, Data Address: %x, ins address: %x fault_count:%d\n",task_handle, access_fault_addr,fault_ins_addr,fault_count);
+    //uartdbg_printf("FSR:%x \n",FSR);
 
     do{
         if( (access_fault_addr >= current_zone_info->zone_start_addr) && (access_fault_addr <= current_zone_info->zone_stop_addr)){
 
-            //printf("FSR:%08x\n",FSR);
+            
             if(((FSR & 0xF) == 0b1111) || ((FSR & 0xF) == 0b1101)){
+               //uartdbg_printf("WR fault FSR:%x, W addr:%x\n",FSR,access_fault_addr);
                 //printf("FSR:%08x\n",FSR);
 
                 for(int i=0; i < MAX_CACHE_PAGES; i++){
@@ -892,6 +998,8 @@ int data_access_fault_isr(PID_t task_handle, unsigned int *access_fault_addr, un
                                 vmfile_map_info *current_map_info;
                                 vmfile_map_info *prev_map_info;
                                 current_map_info = current_zone_info ->first_map_info;
+
+
                                 if(current_map_info == NULL){
                                     current_zone_info ->first_map_info = pvPortMalloc(sizeof(vmfile_map_info));
                                     if(current_zone_info ->first_map_info == NULL){
@@ -900,36 +1008,37 @@ int data_access_fault_isr(PID_t task_handle, unsigned int *access_fault_addr, un
                                     }
                                     current_map_info = current_zone_info ->first_map_info;
                                     current_map_info->virt_map_addr = ((unsigned int)access_fault_addr & 0xFFFFF000);
-                                    current_map_info->page_in_vm_file_page_offset = vm_page_alloc();
+                                    current_map_info->page_in_file_offset_addr = vm_page_alloc() * PAGE_SIZE;
                                     current_map_info->next_vmf_map_info = NULL;
                                     pages_info[i].map_file_fd = vm_page_file_fd;
-                                    pages_info[i].offset_page_in_file = current_map_info->page_in_vm_file_page_offset;
+                                    pages_info[i].file_offset_addr = current_map_info->page_in_file_offset_addr;
                                     pages_info[i].is_dirty = 1;
                                     remap_cache_page_as_writeable(i);
                                     return 0;
                                 }else{
-                                    do{
-                                        if(current_map_info->virt_map_addr == ((unsigned int)access_fault_addr & 0xFFFFF000)){
-                                            pages_info[i].is_dirty = 1;
-                                            return 0;
+                                        do{
+                                            if(current_map_info->virt_map_addr == ((unsigned int)access_fault_addr & 0xFFFFF000)){
+                                                pages_info[i].is_dirty = 1;
+                                                return 0;
+                                            }
+                                            prev_map_info = current_map_info;
+                                            current_map_info = current_map_info->next_vmf_map_info;
+                                        }while(current_map_info != NULL);
+
+                                        prev_map_info -> next_vmf_map_info = pvPortMalloc(sizeof(vmfile_map_info));
+                                        if(prev_map_info -> next_vmf_map_info == NULL){
+                                            printf("memory overflow:1\n");
+                                            return 1;
                                         }
-                                        prev_map_info = current_map_info;
-                                        current_map_info = current_map_info->next_vmf_map_info;
-                                    }while(current_map_info != NULL);
-                                    prev_map_info -> next_vmf_map_info = pvPortMalloc(sizeof(vmfile_map_info));
-                                    if(prev_map_info -> next_vmf_map_info == NULL){
-                                        printf("memory overflow:1\n");
-                                        return 1;
-                                    }
-                                    current_map_info = prev_map_info -> next_vmf_map_info;
-                                    current_map_info->next_vmf_map_info = NULL;
-                                    current_map_info->page_in_vm_file_page_offset = vm_page_alloc();
-                                    current_map_info->virt_map_addr = ((unsigned int)access_fault_addr & 0xFFFFF000);
-                                    pages_info[i].map_file_fd = vm_page_file_fd;
-                                    pages_info[i].offset_page_in_file = current_map_info->page_in_vm_file_page_offset;
-                                    pages_info[i].is_dirty = 1;
-                                    remap_cache_page_as_writeable(i);
-                                    return 0;
+                                        current_map_info = prev_map_info -> next_vmf_map_info;
+                                        current_map_info->next_vmf_map_info = NULL;
+                                        current_map_info->page_in_file_offset_addr = vm_page_alloc() * PAGE_SIZE;
+                                        current_map_info->virt_map_addr = ((unsigned int)access_fault_addr & 0xFFFFF000);
+                                        pages_info[i].map_file_fd = vm_page_file_fd;
+                                        pages_info[i].file_offset_addr = current_map_info->page_in_file_offset_addr;
+                                        pages_info[i].is_dirty = 1;
+                                        remap_cache_page_as_writeable(i);
+                                        return 0;
                                 }
 
                                 
@@ -967,14 +1076,21 @@ int data_access_fault_isr(PID_t task_handle, unsigned int *access_fault_addr, un
                         if((current_map_info->virt_map_addr) == ((unsigned int)access_fault_addr & 0xFFFFF000 )){
                             //printf("Found in vm page file\n");
                             page_order = get_optimizing_new_cache_page(fault_ins_addr);
-                            status = swap_in_cache_page(page_order, vm_page_file_fd, current_map_info->page_in_vm_file_page_offset, (unsigned int)access_fault_addr & 0xFFFFF000);
+                            status = swap_in_cache_page(page_order, 
+                                                        vm_page_file_fd,
+                                                        0,
+                                                        current_map_info->page_in_file_offset_addr,
+                                                        0,
+                                                        0,
+                                                        (unsigned int)access_fault_addr & 0xFFFFF000);
+
                             if(status < 0){
                                 printf("load page file fault!\n");
                                 return 1;
                             }
                             pages_info[page_order].belong_task = task_handle;
                             pages_info[page_order].map_file_fd = vm_page_file_fd;
-                            pages_info[page_order].offset_page_in_file = current_map_info->page_in_vm_file_page_offset;
+                            pages_info[page_order].file_offset_addr = current_map_info->page_in_file_offset_addr;
                             pages_info[page_order].page_attr = current_zone_info->zone_attr;
                             is_found_fault_page = 1;
                             //printf("is_found_fault_page:%d\n",is_found_fault_page);
@@ -999,14 +1115,21 @@ int data_access_fault_isr(PID_t task_handle, unsigned int *access_fault_addr, un
                         }
                         current_map_info = prev_map_info->next_vmf_map_info;
                         current_map_info->next_vmf_map_info = NULL;
-                        current_map_info->page_in_vm_file_page_offset = vm_page_alloc();
-                        if( current_map_info->page_in_vm_file_page_offset == -1){
+                        current_map_info->page_in_file_offset_addr = vm_page_alloc() * PAGE_SIZE;
+                        if( current_map_info->page_in_file_offset_addr == -1){
                             printf("Fault return memory overflow 1: %08x\n",task_handle);
                             return 1;   //memory overflow
                         }
                         current_map_info->virt_map_addr = (unsigned int)access_fault_addr & 0xFFFFF000;
                         page_order = get_optimizing_new_cache_page(fault_ins_addr);
-                        status = swap_in_cache_page(page_order, vm_page_file_fd, current_map_info->page_in_vm_file_page_offset, (unsigned int)access_fault_addr & 0xFFFFF000);
+                        status = swap_in_cache_page(page_order, 
+                                                    vm_page_file_fd,
+                                                    0,
+                                                    current_map_info->page_in_file_offset_addr, 
+                                                    0,
+                                                    0,
+                                                    (unsigned int)access_fault_addr & 0xFFFFF000);
+
                         if(status < 0){
                             printf("load page file fault!\n");
                             return 1;
@@ -1014,7 +1137,7 @@ int data_access_fault_isr(PID_t task_handle, unsigned int *access_fault_addr, un
                         //pages_info[page_order].map_on_virt_addr
                         pages_info[page_order].belong_task = task_handle;
                         pages_info[page_order].map_file_fd = vm_page_file_fd;
-                        pages_info[page_order].offset_page_in_file = current_map_info->page_in_vm_file_page_offset;
+                        pages_info[page_order].file_offset_addr = current_map_info->page_in_file_offset_addr;
                         pages_info[page_order].page_attr = current_zone_info->zone_attr;
                         //finish setting, reload all cache pages.
                         load_cache_page_to_map_vm_space(page_order, fault_ins_addr);
@@ -1026,6 +1149,7 @@ int data_access_fault_isr(PID_t task_handle, unsigned int *access_fault_addr, un
                 }else{
                     //START current_map_info EQU NULL
                     //uartdbg_printf("NOT Found loaded page 2.\n");
+                    
                     current_zone_info ->first_map_info = pvPortMalloc(sizeof(vmfile_map_info));
                     //uartdbg_printf("malloc end.\n");
 
@@ -1035,9 +1159,9 @@ int data_access_fault_isr(PID_t task_handle, unsigned int *access_fault_addr, un
                     }
                     current_map_info = current_zone_info ->first_map_info;
                     current_map_info->next_vmf_map_info = NULL;
-                    current_map_info->page_in_vm_file_page_offset = vm_page_alloc();
+                    current_map_info->page_in_file_offset_addr = vm_page_alloc() * PAGE_SIZE;
                     //uartdbg_printf("vm_page_alloc end.\n");
-                    if( current_map_info->page_in_vm_file_page_offset == -1){
+                    if( current_map_info->page_in_file_offset_addr < 0){
                             printf("Fault return memory overflow 2: %08x\n",task_handle);
                             return 1;   //memory overflow
                     }
@@ -1045,15 +1169,20 @@ int data_access_fault_isr(PID_t task_handle, unsigned int *access_fault_addr, un
                     page_order = get_optimizing_new_cache_page(fault_ins_addr);
                     //uartdbg_printf("get_optimizing_new_cache_page end.\n");
                     //printf("n get_optimizing_new_cache_page:%d \n",page_order);
-                    status = swap_in_cache_page(page_order, vm_page_file_fd, 
-                        current_map_info->page_in_vm_file_page_offset, (unsigned int)access_fault_addr & 0xFFFFF000);
+                    status = swap_in_cache_page(page_order, 
+                                                vm_page_file_fd,
+                                                0,
+                                                current_map_info->page_in_file_offset_addr, 
+                                                0,
+                                                0,
+                                                (unsigned int)access_fault_addr & 0xFFFFF000);
                     if(status < 0){
                         printf("load page file fault!\n");
                         return 1;
                     }
                     pages_info[page_order].belong_task = task_handle;
                     pages_info[page_order].map_file_fd = vm_page_file_fd;
-                    pages_info[page_order].offset_page_in_file = current_map_info->page_in_vm_file_page_offset;
+                    pages_info[page_order].file_offset_addr = current_map_info->page_in_file_offset_addr;
                     pages_info[page_order].page_attr = current_zone_info->zone_attr;
                     
                     //finish setting, reload all cache pages.
@@ -1067,22 +1196,31 @@ int data_access_fault_isr(PID_t task_handle, unsigned int *access_fault_addr, un
 
             }else if(current_zone_info -> map_file_fd > STDERR_FILENO){
                 //else ZONE MAP TO A FILE
-                
+                //printf("fault area map in file.\n");
+                //uartdbg_printf("fault addr:%x\n",access_fault_addr);
                 vmfile_map_info *current_map_info;
                 current_map_info = current_zone_info ->first_map_info;
                 if(current_map_info != NULL){
                     do{
                         if((current_map_info->virt_map_addr) == ((unsigned int)access_fault_addr & 0xFFFFF000 )){
+                            //printf("found file map.\n");
                             page_order = get_optimizing_new_cache_page(fault_ins_addr);
-                            status = swap_in_cache_page(page_order, vm_page_file_fd, current_map_info->page_in_vm_file_page_offset, (unsigned int)access_fault_addr & 0xFFFFF000);
+                            status = swap_in_cache_page(page_order, 
+                                                        vm_page_file_fd, 
+                                                        0,
+                                                        current_map_info->page_in_file_offset_addr, 
+                                                        0,
+                                                        0,
+                                                        (unsigned int)access_fault_addr & 0xFFFFF000);
                             if(status < 0){
                                 printf("load page file fault!\n");
                                 return 1;
                             }
                             pages_info[page_order].belong_task = task_handle;
                             pages_info[page_order].map_file_fd = vm_page_file_fd;
-                            pages_info[page_order].offset_page_in_file = current_map_info->page_in_vm_file_page_offset;
+                            pages_info[page_order].file_offset_addr = current_map_info->page_in_file_offset_addr;
                             pages_info[page_order].page_attr = current_zone_info->zone_attr;
+                            
                             //finish setting, reload all cache pages.
                             load_cache_page_to_map_vm_space(page_order, fault_ins_addr);
                             return 0; 
@@ -1093,15 +1231,31 @@ int data_access_fault_isr(PID_t task_handle, unsigned int *access_fault_addr, un
                 }
                 
 
-                unsigned int fault_inside_file_page;
+                unsigned int fault_in_file_addr;
                 page_order = get_optimizing_new_cache_page(fault_ins_addr);
-                fault_inside_file_page = ((unsigned int)access_fault_addr - (unsigned int)current_zone_info->zone_start_addr) >> 12;
-                //printf("fault_inside_file_page:%d\n",fault_inside_file_page);
-                status = swap_in_cache_page(page_order, current_zone_info->map_file_fd, 
-                        current_zone_info->file_inner_page_start + fault_inside_file_page,
-                         (unsigned int)access_fault_addr & 0xFFFFF000);
- 
-                //printf("\n");
+
+                
+                //printf("page diff:%d\n",(unsigned int)current_zone_info->zone_start_addr & 0xFFF);
+/*
+                if( ((unsigned int)current_zone_info->zone_start_addr & 0xFFF) == 0){
+                    fault_in_file_addr = ((unsigned int)access_fault_addr - (unsigned int)current_zone_info->zone_start_addr) & 0xFFFFF000;
+                }else{
+                    fault_in_file_addr = ((unsigned int)access_fault_addr - (unsigned int)current_zone_info->zone_start_addr);
+                }
+*/
+                fault_in_file_addr =   ((unsigned int)access_fault_addr - (unsigned int)current_zone_info->zone_start_addr);
+
+                int page_diff = (unsigned int)current_zone_info->zone_start_addr & 0xFFF;
+
+                status = swap_in_cache_page(page_order, 
+                                            current_zone_info->map_file_fd, 
+                                            (unsigned int)current_zone_info->file_offset_addr,
+                                            fault_in_file_addr,
+                                            ((unsigned int)access_fault_addr >> 12) - ((unsigned int)current_zone_info->zone_start_addr >> 12),
+                                            page_diff,
+                                            (unsigned int)access_fault_addr & 0xFFFFF000);
+                
+                //printf("swap_in_cache_page:%d\n",status);
                 if(status < 0)
                 {
                     printf("load page file fault!\n");
@@ -1109,29 +1263,9 @@ int data_access_fault_isr(PID_t task_handle, unsigned int *access_fault_addr, un
                 }
                 pages_info[page_order].belong_task = task_handle;
                 pages_info[page_order].map_file_fd = current_zone_info -> map_file_fd;
+                pages_info[page_order].file_offset_addr = current_zone_info->file_offset_addr  +  fault_in_file_addr;
 
-                pages_info[page_order].offset_page_in_file = current_zone_info->file_inner_page_start + fault_inside_file_page;
 
-/*
-                if(!(current_zone_info -> zone_attr & ZONE_ATTR_WRITEBACK)){
-
-                
-                    FILE *fp;
-                    int file_size;
-                    fp = fdopen(current_zone_info -> map_file_fd,"r");
-                        if(fp == NULL){
-                        return 1;
-                    }
-                    fseek(fp, 0, SEEK_END);
-                    file_size = ftell(fp);
-                    fseek(fp, 0, SEEK_SET);
-                
-                    if(pages_info[page_order].offset_page_in_file > file_size){
-                        pages_info[page_order].offset_page_in_file = file_size;
-                    }
-                
-                }
-*/
                 pages_info[page_order].page_attr = current_zone_info->zone_attr;
                 //printf("preload.\n");
                 load_cache_page_to_map_vm_space(page_order, fault_ins_addr);

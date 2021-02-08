@@ -44,14 +44,14 @@ typedef struct{
     PID_t belong_task;
     int map_file_fd;
     unsigned int page_attr;
-    unsigned int offset_page_in_file;
+    unsigned int file_offset_addr;
     unsigned int is_dirty;
 }page_info;
 
 typedef struct vmfile_map_info{
     struct vmfile_map_info *next_vmf_map_info;
     unsigned int virt_map_addr;
-    unsigned int page_in_vm_file_page_offset;
+    int page_in_file_offset_addr;
 }vmfile_map_info;
 
 typedef struct zone_info{
@@ -61,7 +61,7 @@ typedef struct zone_info{
     unsigned int* zone_start_addr;
     unsigned int* zone_stop_addr;
     int map_file_fd;
-    unsigned int file_inner_page_start;
+    unsigned int file_offset_addr;
     vmfile_map_info *first_map_info;
 }zone_info;
 

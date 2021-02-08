@@ -74,13 +74,13 @@ static char *currentHeapEnd = (unsigned char *)KHEAP_START_VIRT_ADDR;
 
 void * _sbrk_r(struct _reent *pReent, int incr) {
     
-	//uartdbg_printf("incr %x\n",incr);
+	
 	
     vTaskSuspendAll(); // Note: safe to use before FreeRTOS scheduler started, but not within an ISR
 	
 	//incr = (incr / TINY_PAGE_SIZE + 1) * 1024;
 	
-    if ((unsigned int)currentHeapEnd + incr > (KHEAP_START_VIRT_ADDR + TOTAL_PHY_MEMORY)) {
+    if ((unsigned int)currentHeapEnd + incr > (KHEAP_START_VIRT_ADDR +(TOTAL_PHY_MEMORY - KHEAP_MAP_PHY_START) )) {
         // Ooops, no more memory available...
        /* #if( configUSE_MALLOC_FAILED_HOOK == 1 )
         {
@@ -90,7 +90,7 @@ void * _sbrk_r(struct _reent *pReent, int incr) {
         #else*/
             // Default, if you prefer to believe your application will gracefully trap out-of-memory...
 			//printf("kmalloc fail...\n");
-			uartdbg_printf("sbrk err. %x %x\n", incr,(KHEAP_START_VIRT_ADDR + TOTAL_PHY_MEMORY));
+			uartdbg_printf("sbrk err. %x %x\n", incr,(KHEAP_START_VIRT_ADDR + (TOTAL_PHY_MEMORY - KHEAP_MAP_PHY_START)));
             pReent->_errno = ENOMEM; // newlib's thread-specific errno
             xTaskResumeAll();  // Note: safe to use before FreeRTOS scheduler started, but not within an ISR;
        // #endif
@@ -100,6 +100,8 @@ void * _sbrk_r(struct _reent *pReent, int incr) {
     char *previousHeapEnd = currentHeapEnd;
     currentHeapEnd += incr;
     heapBytesRemaining -= incr;
+
+	//uartdbg_printf("currentHeapEnd %x\n",currentHeapEnd);
     #ifndef NDEBUG
         totalBytesProvidedBySBRK += incr;
     #endif
@@ -175,6 +177,13 @@ void *pvReturn;
 	//uartdbg_printf("pvPortMalloc malloc end\n");
 	xTaskResumeAll();
 
+
+	if( pvReturn == NULL )
+		{
+			uartdbg_printf("malloc fail.");
+			while(1);
+			
+		}
 	//uartdbg_printf("pvPortMalloc end\n");
 
 	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
@@ -201,7 +210,7 @@ void vPortFree( void *pv )
 			free( pv );
 			//traceFREE( pv, 0 );
 		}
-		( void ) xTaskResumeAll();
+		xTaskResumeAll();
 	}
 }
 

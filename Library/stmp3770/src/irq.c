@@ -86,7 +86,7 @@ void irq_install_service(unsigned int irq_n, unsigned int *service_program) {
     irq_vector_table_base[irq_n] = (unsigned int)service_program;
 }
 
-
+extern volatile uint32_t *pxCurrentTCB;
 void __irq_service() __attribute__((naked));
 void volatile __irq_service() {
 

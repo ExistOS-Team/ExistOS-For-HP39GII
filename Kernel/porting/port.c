@@ -69,20 +69,20 @@ void vPortInitialiseNewTaskRegisters(uint32_t *regs_list, StackType_t *pxTopOfSt
 {
 	regs_list[17] = 0;
 	regs_list[16] = (uint32_t) pxCode + portINSTRUCTION_SIZE;
-	regs_list[15] = 0x14141414;	//R14
+	regs_list[15] = 0;	//R14
 	regs_list[14] = (uint32_t) pxTopOfStack;	//R13
-	regs_list[13] = 0x12121212;	//R12
-	regs_list[12] = 0x11111111;	//R11
-	regs_list[11] = 0x10101010;	//R10
-	regs_list[10] = 0x09090909;	//R9
-	regs_list[9] = 0x08080808;	//R8
-	regs_list[8] = 0x07070707;	//R7
-	regs_list[7] = 0x06060606;	//R6
-	regs_list[6] = 0x05050505;	//R5
-	regs_list[5] = 0x04040404;	//R4
-	regs_list[4] = 0x03030303;	//R3
-	regs_list[3] = 0x02020202;	//R2
-	regs_list[2] = 0x01010101;	//R1
+	regs_list[13] = 0;	//R12
+	regs_list[12] = 0;	//R11
+	regs_list[11] = 0;	//R10
+	regs_list[10] = 0;	//R9
+	regs_list[9] = 0;	//R8
+	regs_list[8] = 0;	//R7
+	regs_list[7] = 0;	//R6
+	regs_list[6] = 0;	//R5
+	regs_list[5] = 0;	//R4
+	regs_list[4] = 0;	//R3
+	regs_list[3] = 0;	//R2
+	regs_list[2] = 0;	//R1
 	regs_list[1] = (uint32_t) pvParameters;	//R0
 	regs_list[0] = (uint32_t) portINITIAL_SPSR;	//SPSR
 }

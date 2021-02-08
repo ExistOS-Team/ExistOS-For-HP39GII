@@ -1115,7 +1115,9 @@ typedef struct xSTATIC_TCB
 	#if ( portUSING_MPU_WRAPPERS == 1 )
 		xMPU_SETTINGS	xDummy2;
 	#endif
-	volatile uint32_t saved_regs[17];
+	volatile uint32_t	context_stack_pointer;
+	volatile uint32_t	context_stack[128];
+	volatile uint32_t	saved_spsr;
 	
 	StaticListItem_t	xDummy3[ 2 ];
 	UBaseType_t			uxDummy5;

@@ -1,229 +1,140 @@
-#include <math.h>
-#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+#define max 30000
+char code[max]={0};
+int sourc[max]={0};
+char data[8]={'+','-','>','<',',','.','[',']'};//指令表
+int ptr=0;//数据指针
+int eip;//指令指针
+int ret[max]={0};//循环返回地址
+int loop=0;//跟踪返回指针
+extern void sleep(int ms);
 
-#include "txt.h"
-
-volatile unsigned int *timer = (unsigned int *) ((0x80000000 + 0x0001C000) + 0x000000C0);
-volatile unsigned int *uart = (unsigned int *) ((0x80000000 + 0x00070000) + 0x00000000);
-
-
-void uartdbg_putc(char ch) {
-	*uart = ch;
-	delay_us(500);
-}
-
-int Pos_Div(int x, int y) {
-    int ans = 0;
-    int i;
-    for (i = 31; i >= 0; i--) {
-        if ((x >> i) >= y) {
-            ans += (1 << i);
-            x -= (y << i);
-        }
-    }
-
-    return ans;
-}
-
-void uartdbg_printint(int data) {
-
-    int i = 0;
-    char str[10] = {0};
-    int j = 0;
-    while (j < 10 && data) {
-        str[j] = data % 10;
-        data = Pos_Div(data, 10);
-        j++;
-    }
-
-    for (i = j - 1; i >= 0; i--) {
-        uartdbg_putc(str[i] + '0');
-    }
-}
-
-void uartdbg_printhex(int data) {
-    int i = 0;
-    char c;
-    for (i = sizeof(int) * 2 - 1; i >= 0; i--) {
-        c = data >> (i * 4);
-        c &= 0xf;
-        if (c > 9)
-            uartdbg_putc(c - 10 + 'A');
-        else
-            uartdbg_putc(c + '0');
-    }
-}
-
-void uartdbg_printhex8(int data) {
-    int i = 0;
-    char c;
-    for (i = sizeof(char) * 2 - 1; i >= 0; i--) {
-        c = data >> (i * 4);
-        c &= 0xf;
-        if (c > 9)
-            uartdbg_putc(c - 10 + 'A');
-        else
-            uartdbg_putc(c + '0');
-    }
-}
-
-void uartdbg_printf(char *fmt, ...) {
-    va_list args;
-    int one;
-    va_start(args, fmt);
-    while (*fmt) {
-
-        if (*fmt == '%') {
-            fmt++;
-            switch (*fmt) {
-
-            case 'x':
-            case 'X':
-                uartdbg_printhex(va_arg(args, int));
-                break;
-            case 'd':
-            case 'D':
-                uartdbg_printint(va_arg(args, int));
-                break;
-            case '%':
-                uartdbg_putc('%');
-                break;
-            default:
+bool check(int length)
+{
+    int i,k;
+    for(i=0;i<length;i++)//编程时要注意边界检查
+    {
+        for(k=0;k<8;k++)
+        {
+            if(code[i]==data[k])
+            {
                 break;
             }
-
-        } else {
-            uartdbg_putc(*fmt);
         }
-        fmt++;
+        if(k==8)
+        {
+            printf("代码第%d含有非法命令:%c",i,code[i]);
+            return false;
+        }
     }
-    va_end(args);
+    return true;
 }
-
-
-void delay_us(unsigned int us){
-	unsigned int cur = *timer;
-	while(*timer - cur < us);
-	return;
-}
-
-void far1() __attribute__((section(".far1")));
-void far1()
+int format(int length)//扫描并保存代码中的“[”和“]”一个表中
 {
-	for(int i='1';i<='4';i++){
-		delay_us(200);
-		*uart = i;
-	}
-}
-
-void far2() __attribute__((section(".far2")));
-void far2()
-{
-	for(int i='5';i<='9';i++){
-		delay_us(200);
-		*uart = i;
-	}
-}
-
-void far3() __attribute__((section(".far3")));
-void far3()
-{
-	for(int i='1';i<='4';i++){
-		delay_us(200);
-		*uart = i;
-	}
-}
-
-void far4() __attribute__((section(".far4")));
-void far4()
-{
-	for(int i='5';i<='9';i++){
-		delay_us(200);
-		*uart = i;
-	}
-}
-
-void far5() __attribute__((section(".far5")));
-void far5()
-{
-	for(int i='1';i<='4';i++){
-		delay_us(200);
-		*uart = i;
-	}
-}
-
-void far6() __attribute__((section(".far6")));
-void far6()
-{
-	for(int i='5';i<='9';i++){
-		delay_us(200);
-		*uart = i;
-	}
-}
-
-void far7() __attribute__((section(".far7")));
-void far7()
-{
-	for(int i='5';i<='9';i++){
-		delay_us(200);
-		*uart = i;
-	}
-}
-
-void far8() __attribute__((section(".far8")));
-void far8()
-{
-	for(int i='a';i<='z';i++){
-		delay_us(200);
-		*uart = i;
-	}
-}
-
-volatile int factorial(int  n){
-        unsigned int stacks;
-		if (n==1){
-            return 1;
-        }else {
-				far1();
-	far2();
-	far3();
-	far4();
-	far5();
-	far6();
-	far7();
-	far8();
-			(*((void (*)())(  (*((unsigned int *)0xC0072200))  )))();
-			__asm volatile ("str sp,%0":"=o"(stacks));
-			uartdbg_printf("%d\n",n);
-			uartdbg_printf("sp:%x\n",stacks);
-			
-            return  factorial(n-1)+n;//1*2*3...
+    int i,j;
+    for(i=0,j=0;i<length;i++)
+    {
+        if((code[i]=='[')||(code[i]==']'))
+        {
+            ret[j++]=i;
+        }
     }
+    return j;
 }
-
-int main() {
-	
-	//uartdbg_printf(longtext);
-	int s = (int)longtext + sizeof(longtext);
-	for(char *i = longtext; i < s; i++ ){
-		uartdbg_putc(*i);
-	}
-	
-	for(int i='a';i<='z';i++){
-		delay_us(100);
-		*uart = i;
-	}
-	far1();
-	far2();
-	far3();
-	far4();
-	far5();
-	far6();
-	far7();
-	far8();
-	int a = factorial(1000);
-	uartdbg_printf("\nres:%d\n",a);
-    return 0;
+ 
+void addnum()//+操作
+{
+    sourc[ptr]++;
+    eip++;
+    return;
 }
-
-
+void subnum()//-操作
+{
+    sourc[ptr]--;
+    eip++;
+    return;
+}
+void addptr()//指针右移操作>
+{
+    ptr++;
+    eip++;
+    return;
+}
+void subptr()//指针左移操作<
+ 
+{
+    ptr--;
+    eip++;
+    return;
+}
+void print()//打印操作
+{
+    printf("%c",sourc[ptr]);
+    eip++;
+    return;
+}
+void get()//读取操作
+{
+    scanf("%d",sourc+ptr);
+    eip++;
+    return;
+}
+void leftloop(int len)//当执行到[，表示循环开始，就像C语言的while（...）{，
+{
+    sourc[ptr]<=0?eip=ret[loop=(len-1-loop)]+1:eip++;//sourc数组中保存整个程序需要的数据，初始全部为0，可以用他们来控制循环
+    return;//len-1-loop这样理解，有[  [  ]  ]，在数组中的位置用下标loop跟踪，0,1,2,3，len是长度，就是C语言中循环嵌套循环体的意思
+ 
+}
+void rightloop(int len)
+{
+    eip=ret[loop=(len-1-loop)];//作用类似C语言的  }
+    return;
+}
+int main()
+{/*
+    char name[200];
+    int len,p=0;
+    scanf("%s",name);
+    FILE *fp;
+    if(!(fp=fopen(name,"r")))
+    {
+        printf("错误文件！\n");
+        system("pause");
+        return;
+    }
+    while((code[p++]=fgetc(fp))!=EOF);//读取脚本文件
+    len=strlen(code)-1;//因为fgetc会多读入一个文件末尾标志数据，所以长度要减一
+	*/
+	char inputcode[] = "++++++++++[>+>+++>+++++++>++++++++++<<<<-]>>>++.>+.+++++++..+++.<<++.>+++++++++++++++.>.+++.------.--------.<<+.<.";
+	strcpy(code,inputcode);
+	int len=strlen(inputcode);
+	printf("code:%s\n",inputcode);
+	
+    if(!check(len))
+    {
+        //system("pause");
+        return 1;
+    }
+    int length=format(len);
+	printf("BF output:");
+    for(eip=0;eip<len;)
+    {
+        switch(code[eip])
+        {
+            case '+':addnum();break;
+            case '-':subnum();break;
+            case '>':addptr();break;
+            case '<':subptr();break;
+            case '.':print();break;
+            case ',':get();break;
+            case '[':leftloop(length);loop++;break;
+            case ']':rightloop(length);break;
+        }
+    }
+    //fclose(fp);
+    //system("pause");
+    return 1;
+}

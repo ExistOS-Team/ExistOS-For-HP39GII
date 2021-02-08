@@ -1,0 +1,15 @@
+
+
+page_diff 		= zone_start_addr & 0xFFF = 0x456
+zone_start_addr_in_file = 0xA
+zone_start_addr 	= 0x6123456
+
+fault_file_page_idx		= (fault_addr >> 12) - (zone_start_addr >> 12)
+
+0x000A~0x0BB3	->	0x6123456~0x6123FFF	:	(0xFFF - page_diff) * 0 + zone_start_addr_in_file -> page_diff	//fault_file_page_idx = 0
+
+0x0BB4~0x1BB3	->	0x6124000~0x6124FFF	:	(0xFFF - page_diff) * 1 + zone_start_addr_in_file + 1 + 0x1000 * (fault_file_page_idx - 1) -> 0	//fault_file_page_idx = 1
+
+0x1BB4~0x2BB3	->	0x6125000~0x6125FFF	:	(0xFFF - page_diff) * 1 + zone_start_addr_in_file + 1 + 0x1000 * (fault_file_page_idx - 1) -> 0	//fault_file_page_idx = 2
+
+

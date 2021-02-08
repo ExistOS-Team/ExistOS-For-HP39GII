@@ -77,25 +77,30 @@ void vPortISRStartFirstTask( void )
 	while(1);
 */
 	asm volatile (														\
-	"LDR		R0, =pxCurrentTCB								\n\t"	\
+   "LDR        R0, =pxCurrentTCB                               \n\t"   \
 	"LDR		R0,[R0]											\n\t"	\
-	/* R0 指向 SPSR*/													\
-	"ADD		R0, R0, #4										\n\r"	\
-	"ADD		LR, R0, #4										\n\t"	\
-	/* 将SPSR读入R0*/													\
-	"LDR		R0, [R0]										\n\t"	\
-	"MSR		SPSR, R0										\n\t"	\
-	/*LR 指向 R0_saved	*/												\
-	/*将R0-R14载入*/													\
-	"LDMFD		LR, {R0-R14}^									\n\t"	\
-	"NOP														\n\t"	\
-																		\
-	/* Restore the return address. */									\
-	"LDR		LR, [LR, #+60]									\n\t"	\
-																		\
-	/* And return - correcting the offset in the LR to obtain the */	\
-	/* correct address. */												\
-	"SUBS 		PC, LR, #4										\n\t"\
+    /*R0 = context_pointer*/                                             \
+    "ADD        R0, R0, #4                                      \n\t"   \
+    "LDR        R1, [R0]                                        \n\t"   \
+    "SUB        R1, R1, #68                                     \n\t"   \
+    "STR        R1, [R0]                                        \n\t"   \
+    /*LR -> R0*/                                   \
+    "MOV        R0, R1                                           \n\t"   \
+    "ADD		LR, R0, #4										\n\t"	\
+                                                                        \
+    /* Get the SPSR from the stack. */                                  \
+    "LDR	R0, [R0]                                           \n\t"   \
+    "MSR    SPSR, R0                                            \n\t"   \
+                                                                        \
+    /* Restore all system mode registers for the task. */               \
+    "LDMFD  LR, {R0-R14}^                                       \n\t"   \
+    "NOP                                                        \n\t"   \
+                                                                        \
+    /* Restore the return address. */                                   \
+    "LDR       LR, [LR, #+60]                                   \n\t"   \
+                                                                        \
+                                                                        \
+    "SUBS        PC, LR, #4                                          \n\t"   \
 	);				
 
 }

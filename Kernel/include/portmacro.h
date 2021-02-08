@@ -69,7 +69,7 @@ typedef unsigned long UBaseType_t;
 #define portSTACK_GROWTH			( -1 )
 #define portTICK_PERIOD_MS			( ( TickType_t ) 1000 / configTICK_RATE_HZ )
 #define portBYTE_ALIGNMENT			8
-#define portYIELD()					asm volatile ( "SWI 0" )
+#define portYIELD()					asm volatile ( "SWI 1" )
 #define portNOP()					asm volatile ( "NOP" )
 #define portYIELD_FROM_ISR(x)        vTaskSwitchContext()
 /*-----------------------------------------------------------*/
@@ -79,25 +79,31 @@ volatile uint32_t tsave_reg1;
 volatile uint32_t tsave_reg2;
 
 #define portSAVE_CONTEXT_ASM                  \
-    \
-    /* Push R0 as we are going to use the register. */                  \
+                                       \
     __asm volatile (                                                    \
     "LDR    SP, =pxCurrentTCB                                   \n\t"   \
+    /*SP -> pxCurrentTCB*/                                               \
     "LDR    SP,[SP]                                             \n\t"   \
-    /*指向R0_save*/                                                     \
-    "ADD    SP, SP, #8                                          \n\t"   \
+    "ADD    SP,SP,#4                                            \n\t"   \
+    /*SP -> context_pointer*/                                             \
+    "LDR    SP,[SP]                                             \n\t"   \
+    /*SP -> R0*/                                                     \
+    "ADD    SP, SP, #4                                          \n\t"   \
     /*保存正常模式下的R0-R14*/                                           \
     "STMIA  SP,{R0-R14}^                                        \n\t"   \
     "NOP                                                        \n\t"   \
     /*保存SPSR*/                                                        \
     "SUB    SP, SP ,#4                                          \n\t"   \
-    "MRS    R0, SPSR                                            \n\t"   \
-    "STR    R0, [SP]                                            \n\t"   \
-                                                    \
+    "MRS    R7, SPSR                                            \n\t"   \
+    "STR    R7, [SP]                                            \n\t"   \
+                                                                        \
     "ADD    SP, SP, #64                                         \n\t"   \
     "STR    LR, [SP]                                            \n\t"   \
-    "NOP                                                        \n\t"   \
-    );                                                                  \
+    "ADD    SP, SP, #4                                          \n\t"   \
+    "LDR    R7, =pxCurrentTCB                                   \n\t"   \
+    "LDR    R7, [R7]                                            \n\t"   \
+    "STR    SP, [R7, #4]                                        \n\t"   \
+    )                                                                  \
 
 
 
@@ -115,11 +121,15 @@ volatile uint32_t tsave_reg2;
 #define portRESTORE_CONTEXT_ASM                     \
     /* Set the LR to the task stack. */                                 \
     __asm volatile (                                                    \
-    "LDR        R0, =pxCurrentTCB                               \n\t"   \
+   "LDR        R0, =pxCurrentTCB                               \n\t"   \
 	"LDR		R0,[R0]											\n\t"	\
-    /*R0 = [SPSR]*/                                                   \
+    /*R0 = context_pointer*/                                             \
     "ADD        R0, R0, #4                                      \n\t"   \
-    /*LR = [R0]*/                                   \
+    "LDR        R1, [R0]                                        \n\t"   \
+    "SUB        R1, R1, #68                                     \n\t"   \
+    "STR        R1, [R0]                                        \n\t"   \
+    /*LR -> R0*/                                   \
+    "MOV        R0, R1                                           \n\t"   \
     "ADD		LR, R0, #4										\n\t"	\
                                                                         \
     /* Get the SPSR from the stack. */                                  \
@@ -202,6 +212,22 @@ extern void vTaskSwitchContext( void );				\
 /* Task function macros as described on the FreeRTOS.org WEB site. */
 #define portTASK_FUNCTION_PROTO( vFunction, pvParameters ) void vFunction( void * pvParameters )
 #define portTASK_FUNCTION( vFunction, pvParameters ) void vFunction( void * pvParameters )
+
+
+#if configUSE_PORT_OPTIMISED_TASK_SELECTION == 1
+
+	/* Store/clear the ready priorities in a bit map. */
+	#define portRECORD_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) |= ( 1UL << ( uxPriority ) )
+	#define portRESET_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) &= ~( 1UL << ( uxPriority ) )
+
+	/*-----------------------------------------------------------*/
+
+	#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) uxTopPriority = ( 31UL - ( uint32_t ) __builtin_clz( uxReadyPriorities ) )
+
+#endif /* configUSE_PORT_OPTIMISED_TASK_SELECTION */
+
+
+
 
 #ifdef __cplusplus
 }

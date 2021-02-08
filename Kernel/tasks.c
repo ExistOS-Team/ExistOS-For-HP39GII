@@ -256,8 +256,9 @@ typedef struct tskTaskControlBlock 			/* The old naming convention is used to pr
 	#if ( portUSING_MPU_WRAPPERS == 1 )
 		xMPU_SETTINGS	xMPUSettings;		/*< The MPU settings are defined as part of the port layer.  THIS MUST BE THE SECOND MEMBER OF THE TCB STRUCT. */
 	#endif
-
-	volatile uint32_t	saved_regs[18];
+	volatile uint32_t	context_stack_pointer;
+	volatile uint32_t	context_stack[128];
+	volatile uint32_t	saved_spsr;
 
 	ListItem_t			xStateListItem;	/*< The list that the state list item of a task is reference from denotes the state of that task (Ready, Blocked, Suspended ). */
 	ListItem_t			xEventListItem;		/*< Used to reference a task from an event list. */
@@ -334,7 +335,6 @@ typedef struct tskTaskControlBlock 			/* The old naming convention is used to pr
 /* The old tskTCB name is maintained above then typedefed to the new TCB_t name
 below to enable the use of older kernel aware debuggers. */
 typedef tskTCB TCB_t;
-
 /*lint -save -e956 A manual analysis and inspection has been used to determine
 which static variables must be declared volatile. */
 PRIVILEGED_DATA TCB_t * volatile pxCurrentTCB = NULL;
@@ -1064,8 +1064,11 @@ UBaseType_t x;
 		#else /* portHAS_STACK_OVERFLOW_CHECKING */
 		{
 			void vPortInitialiseNewTaskRegisters(uint32_t *regs_list, StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters) ;
-			vPortInitialiseNewTaskRegisters(pxNewTCB->saved_regs, pxTopOfStack, pxTaskCode, pvParameters);
-			pxNewTCB->pxTopOfStack = pxTopOfStack;
+			memset(pxNewTCB->context_stack,0,sizeof(pxNewTCB->context_stack));
+			vPortInitialiseNewTaskRegisters(pxNewTCB->context_stack, pxTopOfStack, pxTaskCode, pvParameters);
+			pxNewTCB->context_stack_pointer	= (unsigned int)&pxNewTCB->context_stack[17];
+			
+			pxNewTCB->pxTopOfStack = 0xFEFEFEFE;
 			//pxNewTCB->pxTopOfStack = pxPortInitialiseStack( pxTopOfStack, pxTaskCode, pvParameters );
 			
 		}
