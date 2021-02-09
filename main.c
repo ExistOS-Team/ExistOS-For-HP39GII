@@ -201,7 +201,7 @@ int main(void) {
 static void prvSetupHardware(void) {
 
     PLL_enable(1);
-
+    
     HCLK_set_div(0, 5);   //96 MHz
     CPUCLK_set_div(0, 5); //96 MHz
     CPUCLK_set_gating(0);

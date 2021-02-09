@@ -251,7 +251,7 @@ unsigned int* process_sbrk(PID_t pid, intptr_t increment)
         }
         return (unsigned int *)prev_incr;                     
     }
-
+    
     return (unsigned int *)prev_incr;
 }
 
