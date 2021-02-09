@@ -304,7 +304,7 @@ void vInit() {
     //xTaskCreate(vServiceSwap, "Swap Svc", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
     int res;
     printf("init vm...\n");
-    res = pageman_init(16,swapSizeMB);
+    res = pageman_init(20,swapSizeMB);
     printf("init vm:%d\n",res);
     
     xTaskCreate(vServiceUSBDevice, "USB Device Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL);

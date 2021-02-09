@@ -19,4 +19,6 @@
 
 #define PAGE_TABLE_SIZE 0x400 //1KB
 
+#define SIZE_MB 1048576
+
 #endif

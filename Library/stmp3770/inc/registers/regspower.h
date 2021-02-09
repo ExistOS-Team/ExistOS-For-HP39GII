@@ -45,7 +45,7 @@
 #include "regs.h"
 
 #ifndef REGS_POWER_BASE
-#define REGS_POWER_BASE (REGS_BASE + 0x80044000)
+#define REGS_POWER_BASE (REGS_BASE + 0x00044000)
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////

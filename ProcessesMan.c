@@ -13,18 +13,19 @@
 #include "memory_map.h"
 #include "mmu.h"
 
-#include "uart_debug.h"
-#include "swi_system_call.h"
+//#include "uart_debug.h"
+//#include "swi_system_call.h"
 
 processes_info *processes_table;
 PID_t pid_count = 10;
-PID_t current_running_pid = -1;
+int current_running_pid = -1;
 
 PID_t get_current_running_task_pid(){
     return current_running_pid;
 }
 
-void set_current_running_pid(PID_t current_pid){
+void set_current_running_pid(PID_t current_pid)
+{
     current_running_pid = current_pid;
 }
 
@@ -49,7 +50,7 @@ int vm_load_exec_elf(PID_t pid, char * elf_path, unsigned int* enrty_point){
     if(elf_check_magic((char *)elf_file.elfFile) != 0){
         return -1;
     }
-    printf("ELF load.\n");
+    //printf("ELF load.\n");
     
     int num_program_headers = elf_getNumProgramHeaders(&elf_file);
     
@@ -108,28 +109,18 @@ int vm_load_exec_elf(PID_t pid, char * elf_path, unsigned int* enrty_point){
         }
     }
     vPortFree(name_buffer);
-
+    Elf32_Syminfo a;
     status = create_new_task_space_zone(pid,get_page_file_fd(),0,
-                            "STACK",
+                            "DEFSTACK",
                             ZONE_ATTR_R | ZONE_ATTR_W,
                             0x70000,
-                            0x90000);
+                            0x80000);
     remove_task_space_zone(pid,"ELFIMAGE");
 
     printf("STACK:%d\n",status);
     //dump_vm_spaces();
     *enrty_point = (unsigned int)elf_getEntryPoint(&elf_file);
     return 0;
-    //printf("test rd %08x :%08x\n",p_entyp_point, *p_entyp_point);
-    //vTaskDelete(NULL);
-/*
-    if(p_entyp_point != NULL){
-        int return_value;
-        return_value = 
-        (*((int (*)())(p_entyp_point)))();
-        printf("exec return :%d\n",return_value);
-    }
-*/
 
 }
 
@@ -161,37 +152,168 @@ PID_t get_pid_from_task_handle(TaskHandle_t task_handle)
     return -1;
 }
 
- 
+processes_info* get_process_info(PID_t pid){
+    processes_info *current_process_info;
+    current_process_info = processes_table;
+    if(current_process_info == NULL)
+    {
+        return NULL;
+    }
 
-
-unsigned int U8RAND = 1;
-volatile unsigned char
-get_u8_rand (unsigned int *seed)
-{
-  unsigned int next = *seed;
-  int result;
-
-  next *= 1103515245;
-  next += 12345;
-  result = (unsigned int) (next / 65536) % 2048;
-
-  next *= 1103515245;
-  next += 12345;
-  result <<= 10;
-  result ^= (unsigned int) (next / 65536) % 1024;
-
-  next *= 1103515245;
-  next += 12345;
-  result <<= 10;
-  result ^= (unsigned int) (next / 65536) % 1024;
-
-  *seed = next;
-
-  return result & 0xFF;
+    do{
+        if(current_process_info->PID == pid){
+            return current_process_info;
+        }
+        current_process_info = current_process_info->next_info;
+    }while(current_process_info != NULL);
+    return NULL;
 }
 
+void dump_all_processes_info(){
+    processes_info *current_process_info;
+    threads_info *current_thread_info;
+    current_process_info = processes_table;
+    if(current_process_info == NULL)
+    {
+        return;
+    }
+    printf("-------------------\n");
+    do{
+        printf("PID:#%d\n",current_process_info->PID);
+        printf("    Name:%s\n",current_process_info->process_name);
+        printf("    PageFaultCount:%d\n",current_process_info->seg_fault_count);
+        printf("    MainThread:%08x\n",current_process_info->main_thread_task_handle);
+        printf("    SBRK:%d\n",current_process_info->sbrk);
+        if(current_process_info->first_thread_info != NULL){
+            current_thread_info = current_process_info->first_thread_info;
+            do{
+                printf("        Thread #%d\n",current_thread_info->tid);
+                printf("        Thread Task Handle:%08X\n",current_thread_info->task_handle);
+                printf("        Thread Status:%d\n\n",current_thread_info->status);
+                current_thread_info = current_thread_info->next_info;
+            }while(current_thread_info != NULL);
+        }
+        current_process_info = current_process_info->next_info;
+    }while(current_process_info != NULL);
+    printf("-------------------\n");
+}
 
+#define BASE_HEAP_ADDR       0x10000000
 
+unsigned int* process_sbrk(PID_t pid, intptr_t increment)
+{
+    processes_info *current_process_info;
+    int status;
+    unsigned int prev_incr = 0;
+    char heap_zone_name[9];
+    current_process_info = get_process_info(pid);
+    if(current_process_info == NULL){
+        return NULL;
+    }
+    if( current_process_info -> sbrk == 0){
+        status = create_new_task_space_zone(
+                            pid,
+                            get_page_file_fd(),
+                            0,
+                            "HEAP00",
+                            ZONE_ATTR_R | ZONE_ATTR_W,
+                            BASE_HEAP_ADDR,
+                            BASE_HEAP_ADDR + ((increment + 0x000FFFFF) & 0xFFF00000));
+        if(status != 0){
+            return 0;
+        }
+
+        prev_incr = BASE_HEAP_ADDR;
+        current_process_info -> sbrk = prev_incr;
+        current_process_info -> sbrk += increment;
+        current_process_info -> last_sbrk_seg_end = BASE_HEAP_ADDR + ((increment + 0x000FFFFF) & 0xFFF00000);
+        return (unsigned int *)prev_incr;
+    }
+
+    prev_incr = current_process_info -> sbrk;
+    current_process_info -> sbrk += increment;
+
+    if(current_process_info -> sbrk < current_process_info -> last_sbrk_seg_end){
+        return (unsigned int *)prev_incr;
+    }else{
+        sprintf(heap_zone_name,"HEAP%02X",(current_process_info -> last_sbrk_seg_end & 0x0FF00000) >> 4*5);
+        status = create_new_task_space_zone(
+                            pid,
+                            get_page_file_fd(),
+                            0,
+                            heap_zone_name,
+                            ZONE_ATTR_R | ZONE_ATTR_W,
+                            current_process_info -> last_sbrk_seg_end,
+                            current_process_info -> last_sbrk_seg_end + ((increment + 0x000FFFFF) & 0xFFF00000));
+        current_process_info -> last_sbrk_seg_end = current_process_info -> last_sbrk_seg_end + ((increment + 0x000FFFFF) & 0xFFF00000);
+        if(status != 0){
+            return 0;
+        }
+        return (unsigned int *)prev_incr;                     
+    }
+
+    return (unsigned int *)prev_incr;
+}
+
+unsigned int* create_thread(PID_t pid, void *func, unsigned int *stack_addr, char *thread_name ){
+    vTaskSuspendAll();
+    processes_info *current_process_info;
+    threads_info *current_thread_info;
+
+    current_process_info = get_process_info(pid);
+    if(current_process_info == NULL){
+        xTaskResumeAll();
+        return NULL;
+    }
+    
+    unsigned int *new_task_tcb = pvPortMalloc(sizeof(StaticTask_t));
+    if(new_task_tcb == NULL){
+        xTaskResumeAll();
+        return NULL;
+    }
+    int tid_count = 1;
+    current_thread_info = current_process_info->first_thread_info;
+    
+    if(current_thread_info == NULL){
+        current_process_info->first_thread_info = pvPortMalloc(sizeof(threads_info));
+        if(current_process_info->first_thread_info == NULL){
+            vPortFree(new_task_tcb);
+            xTaskResumeAll();
+            return NULL;
+        }
+        current_thread_info = current_process_info->first_thread_info;
+        current_thread_info->tid = 0;
+    }else{
+        while(current_thread_info->next_info != NULL){
+            current_thread_info = current_thread_info->next_info;
+            tid_count++;
+        }
+        current_thread_info->next_info = pvPortMalloc(sizeof(threads_info));
+        if(current_thread_info->next_info == NULL){
+            vPortFree(new_task_tcb);
+            xTaskResumeAll();
+            return NULL;
+        }
+        current_thread_info = current_thread_info->next_info;
+        current_thread_info->tid = tid_count;
+    }
+    
+    current_thread_info->next_info = NULL;
+    current_thread_info->belong_PID = pid;
+    current_thread_info->task_handle = (TaskHandle_t)new_task_tcb;
+    current_thread_info->status = STATUS_RUNNING;
+    xTaskCreateStatic((TaskFunction_t) func,
+                                    thread_name, 
+                                    PAGE_SIZE, 
+                                    (void *)0, 
+                                    2,
+                                    (StackType_t *)stack_addr,
+                                    (StaticTask_t *)new_task_tcb);
+    new_task_tcb[2] &= 0xFFFFFFE0;
+    new_task_tcb[2] |= 0x10;
+    xTaskResumeAll();
+    return new_task_tcb;
+}
 
 int create_process(char *process_name, char *image_path){
     vTaskSuspendAll();
@@ -228,6 +350,9 @@ int create_process(char *process_name, char *image_path){
 
     setting:
     current_process_info->PID = pid_count;
+    current_process_info->sbrk = 0;
+    current_process_info->last_sbrk_seg_end = 0;
+    current_process_info->seg_fault_count = 0;
     current_process_info->next_info = NULL;
     current_process_info->first_thread_info = NULL;
     memcpy(current_process_info->process_name, process_name, configMAX_TASK_NAME_LEN);
@@ -237,7 +362,7 @@ int create_process(char *process_name, char *image_path){
         if(prev_process_info != NULL){
             prev_process_info->next_info = NULL;
         }
-        //vPortFree(current_process_info);
+        vPortFree(current_process_info);
         xTaskResumeAll();
         return -ENOMEM;
     }
@@ -252,239 +377,41 @@ int create_process(char *process_name, char *image_path){
         xTaskResumeAll();
         return status;
     }
-    //*((unsigned int *)0x300000) = 0x1234;
 
-    //printf("task test.\n");
-    void task_entry_point(unsigned int *entry_point);
-    //printf("entry_point:%08x,%08x\n",entry_point,*((unsigned int *)entry_point));
-    //xTaskResumeAll();
-    //return 1;
-    /*
-    int testfile;
-    //testfile = open("/test.elf",O_RDWR);
-    testfile = open("/testd", O_RDWR);
-    unsigned char *pstart = (unsigned char *) 0x6123456;
-    if(testfile > 0){
-        status = create_new_task_space_zone(get_current_running_task_pid(),
-                            testfile,
-                            10,
-                            "TSTF",
-                            ZONE_ATTR_R | ZONE_ATTR_W,
-                            (unsigned int )pstart,
-                            ((unsigned int )pstart) + 512*1024 );
-
-        printf("mmap:%d\n",status);
-
-        //dump_vm_spaces();
-        volatile unsigned char wrnum = 0;
-        volatile unsigned char *p = pstart;
-        if(status == 0){
-            
-            printf("prev WR.\n");
-            U8RAND = 1;*/
-            /*
-            for(int i=0;i<10;i++){
-                get_u8_rand(&U8RAND);
-            }*/
-            /*
-            for(p = pstart;p < (pstart + 512 * 1024); p++){
-                if(((unsigned int)p % 512) == 0){
-                    //printf("((unsigned int)p %% 512):%08X, p:%08x\n",((unsigned int)p % 512),p);
-                    //*p = get_u8_rand(&U8RAND);
-                    *p = wrnum++;
-                    ++wrnum;
-                }else{
-                    ++wrnum;
-                    //get_u8_rand(&U8RAND);
-                }                
-            }*/
-/*
-            p = pstart;
-            //printf("test rd:%02x\n",*((unsigned char *)pstart));
-            p+=4;
-            *p = 0x00;
-            
-
-            __asm__ volatile ("":::"memory");
-            
-            printf("prev RD\n");
-            
-            U8RAND = 1; 
-            for(int i=0;i<10;i++){
-                get_u8_rand(&U8RAND);
-            }
-            wrnum = 0;
-            for(p = pstart; p< (pstart + 512 * 1024); p++){
-                volatile unsigned char test_val;
-                test_val = (get_u8_rand(&U8RAND))&0xFF;
-                //test_val = wrnum++;
-                //test_val = p;
-                //printf("%02X == %02X \n",test_val,(*p & 0xFF) );
-                if(test_val != ((*p)&0xFF) ){
-                    printf("check fail at:%x, RB:%02x, TEST:%02x\n",p, (*p)  ,(test_val));
-                }
-            }
-            printf("test finish.\n");
-
-
+    current_process_info -> main_thread_task_handle = create_thread(pid_count, ( void *) entry_point, 0x80000, "main_thread");
+    if( current_process_info -> main_thread_task_handle == NULL )
+    {
+        if(prev_process_info != NULL){
+            prev_process_info->next_info = NULL;
         }
-    }*/
+        vPortFree(current_process_info);
+        xTaskResumeAll();
+        return -ENOMEM;
+    }
+ 
+    pid_count++;
 
 
-    //dump_vm_spaces();
-    /**pd = 0x186E0;
-    unsigned int *st = pd;
-    for(;st<pd + 10;st++){
-        printf("%08x:%08x\n",st,*st);
-    }*/
-   // xTaskCreateStatic((TaskFunction_t) task_entry_point, process_name, PAGE_SIZE, (void *)entry_point, 2,(StackType_t *) 0x80000,pvPortMalloc(sizeof(StaticTask_t )));
-    
-    
-    unsigned int *new_task_tcb = (unsigned int *)xTaskCreateStatic((TaskFunction_t) entry_point,
-                                                                    process_name, PAGE_SIZE, 
-                                                                    (void *)0, 
-                                                                    2,
-                                                                    (StackType_t *) 0x80000,
-                                                                    pvPortMalloc(sizeof(StaticTask_t)));
-    new_task_tcb[2] &= 0xFFFFFFE0;
-    new_task_tcb[2] |= 0x10;
+    dump_all_processes_info();
+
+    xTaskResumeAll(); 
+    return 0;
+}
+
 
 /*
-    for(int i=0;i<20;i++)
-        printf(" %02X",get_u8_rand(&U8RAND));
-    printf("\n");*/
-    //task_entry_point(entry_point);
-
-    pid_count++;
-    xTaskResumeAll();
-  
-   // dump_vm_spaces();
-      return 0;
-}
-
-volatile void swi(register unsigned int regs) __attribute__((naked));
-volatile void swi(register unsigned int regs)
-{
-
-    __asm__ volatile ("":::"memory");
-    __asm volatile("swi #0" :: "r"(regs));
-}
-
-
-volatile unsigned int syscall(unsigned int r0, unsigned int r1, unsigned int r2,
-	unsigned int r3, unsigned int r4, unsigned int r5, unsigned int r7)
-{
-    struct regs{
-        unsigned int r0;
-        unsigned int r1;
-        unsigned int r2;
-        unsigned int r3;
-        unsigned int r4;
-        unsigned int r5;
-        unsigned int r7;
-    } regs;
-    __asm__ volatile ("":::"memory");
-    regs.r0 = r0;
-    regs.r1 = r1;
-    regs.r2 = r2;
-    regs.r3 = r3;
-    regs.r4 = r4;
-    regs.r5 = r5;
-    regs.r7 = r7;
-    register unsigned int par __asm__("r0");
-    par = (unsigned int)&regs;
-    __asm__ volatile ("":::"memory");
-    swi(par);
-    return regs.r0;
-}
-
-
-
 void task_entry_point(unsigned int *___p){
     unsigned int *entry_point = ___p;
     asm volatile("mrs r1,cpsr");
     asm volatile("bic r1,r1,#0x1F");
     asm volatile("orr r1,r1,#0x10");
     asm volatile("msr cpsr,r1");
-    //syscall(200,0,0,0,0,0,SWI_NANOSLEEP);
-    
-    /*
 
-    */
-   //printf("dump 0x26510:%08x\n",*((unsigned int*)0x26510));
-   //(*((void (*)())(entry_point)))();
     printf("entry_point:%08x : %08x\n",entry_point,*entry_point);
-/*
-    float i=0;
-    while(1){
-        i+=0.1;
-		printf("hello world %f.\n",(float)i);
-        syscall(1,"testwrite\n",10,0,0,0,SWI_WRITE);
-        syscall(200,0,0,0,0,0,SWI_NANOSLEEP);
-    }
-*/
-/*
-	int k = 0;
-	char p[20];
-	while(1){
-		sprintf(p,"test:%d\n",k);
-		k++;
-		printf("hello world:%s\n",p);
-		syscall(600,0,0,0,0,0,SWI_NANOSLEEP);
-	}*/
 
     (*((void (*)())(entry_point)))();
 
-
-    /*
-    int *p = 0x26000;
-    //dump_vm_spaces();
-    for(p = 0x26000; p< 0x26400; p++){
-        printf("%08x\n",*p);
-        if(p % 4 == 0){
-            printf("\n");
-        }
-    }
-    printf("----\n",*p);
-    p = 0x26000;
-    *p = 0x12345678;
- for(p = 0x26000; p< 0x26400; p++){
-        printf("%08x\n",*p);
-                if(p % 4 == 0){
-            printf("\n");
-        }
-    }
-*/
-/*
-    uint8_t *p = 0x80000;
-    for(p<0x84000;p++){
-        *p = p;
-    }
-
-    for(p=0x80000;p<0x84000;p++){
-        printf("%02X ",*p);
-    }
-*/
-    //syscall(4000,0,0,0,0,0,SWI_NANOSLEEP);
-    /*
-    vTaskDelay(2000);
-    srand(1);
-    for(volatile unsigned char *p=0x70000;p<0x90000; p++){
-        *p = (rand() & 0xFF);
-        //*p = p;
-    }
-    __asm__ volatile ("":::"memory");
-    srand(1);
-    for(volatile unsigned char *p=0x70000;p<0x90000; p++){
-        volatile unsigned char test_val;
-        test_val = (rand() & 0xFF);
-        //test_val = p;
-        if(test_val != (*p & 0xFF)){
-            printf("check fail at:%x, RB:%02x, TEST:%02x\n",p, (*p & 0xFF) ,test_val);
-        }
-    }
-    printf("memchk finish.\n");
-*/
     vTaskDelete(NULL);
     while(1);
 }
+*/

@@ -7,11 +7,14 @@
 #include <stdio.h>
 #include "FreeRTOS.h"
 #include "task.h"
+#include "ProcessesMan.h"
+
+struct _reent *_impure_ptr;
 
 unsigned int src_c_swi_handler(unsigned int r0, unsigned int r1, unsigned int r2,
                                unsigned int r3, unsigned int r4, unsigned int r5, unsigned int r7) {
     unsigned int ret_value;
-	printf("SYSCALL: r0:%x r1:%x r2:%x r3:%x r4:%x r5:%x r7:%x\n",r0,r1,r2,r3,r4,r5,r7);
+	//printf("SYSCALL: r0:%x r1:%x r2:%x r3:%x r4:%x r5:%x r7:%x\n",r0,r1,r2,r3,r4,r5,r7);
     switch (r7) {
     // 20 functions from newlib. wait and isatty are not included here.
     case SWI_CLOSE:
@@ -27,7 +30,6 @@ unsigned int src_c_swi_handler(unsigned int r0, unsigned int r1, unsigned int r2
     case SWI_GETPID:
         ret_value = (unsigned int)_getpid_r(_impure_ptr);
         uartdbg_printf("GET_PID:%x\n",ret_value);
-        
         return ret_value;
     case SWI_GETTIMEOFDAY:
         return (unsigned int)_gettimeofday_r(_impure_ptr, (struct timeval *)r0, (void *)r1);
@@ -46,10 +48,12 @@ unsigned int src_c_swi_handler(unsigned int r0, unsigned int r1, unsigned int r2
     case SWI_RENAME:
         return (unsigned int)_rename_r(_impure_ptr, (const char *)r0, (const char *)r1);
     case SWI_BRK:
-		uartdbg_print_regs();
-		printf("sbrk:%08x\n",r0);
+        ret_value = (unsigned int)process_sbrk(get_current_running_task_pid(), r0);
+		//uartdbg_print_regs();
+		printf("sbrk ins:%08x rt:%08x\n",r0,ret_value);
+        return ret_value;
 		//return (unsigned int)pvPortMalloc(r0);
-		return 0x81000;
+		//return 0x81000;
         //return (unsigned int)_sbrk_r(_impure_ptr, (ptrdiff_t)r0);
 
 
@@ -65,10 +69,6 @@ unsigned int src_c_swi_handler(unsigned int r0, unsigned int r1, unsigned int r2
 	case SWI_EXIT:
 		printf("API: task exit.\n");
 		vTaskDelete(NULL);
-
-
-
-
 
     // Other system calls
     case SWI_FSYNC:
