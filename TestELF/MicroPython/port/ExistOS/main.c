@@ -26,7 +26,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 
 int main(int argc, char **argv) {
     mp_init();
-	printf("MP inited\n");
+	printf("MicroPython inited\n");
     do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
     do_str("for i in range(10):\n  print(i)", MP_PARSE_FILE_INPUT);
     mp_deinit();
