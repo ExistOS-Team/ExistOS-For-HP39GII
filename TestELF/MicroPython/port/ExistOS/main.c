@@ -8,6 +8,8 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/mperrno.h"
+#include "lib/utils/pyexec.h"
+
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     nlr_buf_t nlr;
@@ -25,10 +27,16 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 }
 
 int main(int argc, char **argv) {
+	//int ret = 0;
     mp_init();
+	
 	printf("MicroPython inited\n");
-    do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
-    do_str("for i in range(10):\n  print(i)", MP_PARSE_FILE_INPUT);
+	
+    do_str("import os",MP_PARSE_SINGLE_INPUT);
+    do_str("os.listdir()",MP_PARSE_SINGLE_INPUT);
+	//pyexec_friendly_repl();
+	//do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
+    //do_str("for i in range(10):\n  print(i)", MP_PARSE_FILE_INPUT);
     mp_deinit();
     return 0;
 }
@@ -73,6 +81,15 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     (void)r;
     #endif
 }
+
+int mp_hal_stdin_rx_chr(void) {
+	while(1){
+		;
+	}
+	//return 0;
+}
+
+
 
 /*
 int _lseek() {return 0;}

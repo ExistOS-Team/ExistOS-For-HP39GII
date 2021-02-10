@@ -113,8 +113,8 @@ int vm_load_exec_elf(PID_t pid, char * elf_path, unsigned int* enrty_point){
     status = create_new_task_space_zone(pid,get_page_file_fd(),0,
                             "DEFSTACK",
                             ZONE_ATTR_R | ZONE_ATTR_W,
-                            0x70000,
-                            0x80000);
+                            0x6FF00000,
+                            0x70000000);
     remove_task_space_zone(pid,"ELFIMAGE");
 
     printf("STACK:%d\n",status);
@@ -378,7 +378,7 @@ int create_process(char *process_name, char *image_path){
         return status;
     }
 
-    current_process_info -> main_thread_task_handle = create_thread(pid_count, ( void *) entry_point, 0x80000, "main_thread");
+    current_process_info -> main_thread_task_handle = create_thread(pid_count, ( void *) entry_point, 0x70000000, "main_thread");
     if( current_process_info -> main_thread_task_handle == NULL )
     {
         if(prev_process_info != NULL){

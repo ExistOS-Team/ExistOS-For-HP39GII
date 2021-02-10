@@ -24,7 +24,7 @@
  *
  * 1 tab == 4 spaces!
  */
-
+#include "keyboard.h"
 #include "display.h"
 #include "mmu.h"
 #include "portmacro.h"
@@ -94,42 +94,10 @@ void vTask1(void *pvParameters) {
         //printf("c\n");
     }
 }
-
-int *i2p(int i) {
-    return 0x100000 + 0x1040 + 4096 * i;
-}
-
+ 
 void vTask2(void *pvParameters) {
 
-    vTaskDelay(5000);
-    cdc_printf("\r\n\r\n");
-    vmLoadFile(0, 0x100000, 0x100000, NULL, 0, 1);
-    for (int i = 1; i < 10; i++) {
-        *i2p(i) = i;
-        cdc_clear();
-        cdc_printf("%d\r\n", i);
-        cdc_clear();
-        for (int j = 1; j <= i; j++) {
-            cdc_printf("%d: %d ", j, *i2p(j));
-            cdc_clear();
-        }
-        cdc_printf("\r\n");
-    }
-
-    // FIL f;
-    // FRESULT fr;
-    // if ((fr = f_open(&f, "/a.out", FA_READ | FA_WRITE)) != 0) {
-    //     cdc_printf("Open a.out failed with fr %d!\r\n", fr);
-    //     vTaskDelete(NULL);
-    // }
-
-    // vmLoadFile(0, 0x100000, (f_size(&f) / 0x1000 + 1) * 0x1000, &f, 0, 0); //瞎写的
-    // elf_t r;
-    // if (elf_newFile(0x100000, f_size(&f), &r) != 0) {
-    //     cdc_printf("Elf Newfile failed!\r\n");
-    //     vTaskDelete(NULL);
-    // }
-    // cdc_printf("Succeed!\r\n");
+    cdc_printf("Succeed!\r\n");
 
     for (;;) {
 
@@ -177,7 +145,6 @@ int main(void) {
     //xTaskCreate(vTask2, "test task2", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
     //xTaskCreate(vTask3, "Task Manager", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
-
 
     xTaskCreate(vServiceManger, "Service Host", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
     xTaskCreate(vInit, "init", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL);
@@ -242,6 +209,6 @@ static void prvSetupHardware(void) {
     printf("(CLKCTRL_HBUS,DIV), %08x\n", BF_RD(CLKCTRL_HBUS, DIV));
 
     LCD_init();
-    
+    keyboard_init(); //键盘初始化
 }
 /*-----------------------------------------------------------*/

@@ -53,8 +53,6 @@ void set_stack(unsigned int *newstackptr) __attribute__((naked));
 
 void _boot();
 
-volatile unsigned int HEAP_MEMORY_COARSE_TABLE[256] __attribute__((aligned(0x400))) __attribute__((section(".kernel_heap_memory")));
-
 //at 0x00000000
 volatile void _kernel_init() __attribute__((section(".init"))) __attribute__((naked));
 volatile void _kernel_init() {
@@ -135,18 +133,11 @@ void _boot() {
     set_stack(&SVC_STACK_ADDR); //设置系统管理模式下的栈地址
     exception_init();           //初始化异常向量
     irq_init();                 //初始化中断
-
-    keyboard_init(); //键盘初始化
+ 
     uartdbg_printf("next boot 1.\n");
     uartdbg_printf("test 1.\n");
     printf("Starting Kernel...\n");
-/*
-    save_1 = 0x23231234;
-    asm volatile("ldr r0,%0" : "=m"(save_1));
-    asm volatile("ldr r0,[r0]");
-    asm volatile("str pc,%0" : "=m"(save_1));
-    printf("save:%08x\n",save_1);
-*/
+ 
     MMU_UNMAP_SECTION_VIRT_RAM(0); //过河拆桥
     BF_WRn(DIGCTL_MPTEn_LOC, 5, LOC, 4005);
     flush_tlb();

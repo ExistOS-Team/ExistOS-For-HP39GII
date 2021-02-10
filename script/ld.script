@@ -17,17 +17,11 @@ SECTIONS
 	{
 		*(.exception_handler_table)
 	}	
-	
-	.kernel_heap_memory 0x00002000 : AT(0x2000) 
-	{
-		*(.kernel_heap_memory)
-	}
+ 
 
 
 
-
-
-	. = 0xC0003000;
+	. = 0xC0002000;
 	
 	__VRAM_BASE = .;
 	
