@@ -1136,12 +1136,12 @@ void NAND_init() {
     while ((BF_RD(APBH_CTRL0, RESET_CHANNEL) & 0x10))
         ; //等待DMA通道重置完成
 
-    BF_CS1(CLKCTRL_GPMI, DIV, 10); //设置主时钟分频
+    BF_CS1(CLKCTRL_GPMI, DIV, 20); //设置主时钟分频
     BF_CLR(CLKCTRL_GPMI, CLKGATE);
     //HW_CLKCTRL_GPMI(BM_CLKCTRL_GPMI_CLKGATE);
     while (BF_RD(CLKCTRL_GPMI, CLKGATE))
         ;
-    GPMI_clockFrequencyInHz = (480 / 10) * 1000000UL; //24MHz
+    GPMI_clockFrequencyInHz = (480 / 20) * 1000000UL; //24MHz
     GPMI_clockPeriodIn_ns = (1000000000UL / GPMI_clockFrequencyInHz);
     DeviceTimeOut_s = 1;
     DeviceTimeOutCycles = GPMI_clockFrequencyInHz / 4096;

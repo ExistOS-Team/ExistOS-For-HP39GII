@@ -3,13 +3,6 @@
 #include <sys/types.h>
 #include "swi_system_call.h"
 
-#ifdef __cplusplus
-extern "C"{
-#endif
-
-void __sync_synchronize() {
-	__asm__ volatile ("":::"memory");
-}
 
 volatile unsigned int swi(register unsigned int regs) __attribute__((naked));
 volatile unsigned int swi(register unsigned int regs)
@@ -46,13 +39,11 @@ volatile unsigned int syscall(unsigned int r0, unsigned int r1, unsigned int r2,
     return regs.r0;
 }
 
-_off_t _lseek(int file, _off_t offset, int whence)
-{
+_off_t _lseek(int file, _off_t offset, int whence) {
 	return syscall(file,offset,whence,0,0,0,SWI_LSEEK);
 }
 
-int _close(int fd)
-{
+int _close(int fd) {
 	return syscall(fd,0,0,0,0,0,SWI_CLOSE);
 }
  
@@ -61,13 +52,11 @@ void *_sbrk (ptrdiff_t incr)
 	return (void *)syscall(incr,0,0,0,0,0,SWI_BRK);
 }
 
-int _write(int r0, const void *r1, size_t r2)
-{
+int _write(int r0, const void *r1, size_t r2){
 	return syscall(r0,(unsigned int)r1,r2,0,0,0,SWI_WRITE);
 }
 
-_ssize_t _read(int fd, void *ptr, size_t len) 
-{
+_ssize_t _read(int fd, void *ptr, size_t len) {
     return syscall(fd,(unsigned int)ptr,len,0,0,0,SWI_READ);
 }
 
@@ -100,8 +89,3 @@ int _open(const char *file, int flags, int mode)
 void sleep(int ms){
 	syscall(ms,0,0,0,0,0,SWI_NANOSLEEP);
 }
-
-
-#ifdef __cplusplus
-}
-#endif

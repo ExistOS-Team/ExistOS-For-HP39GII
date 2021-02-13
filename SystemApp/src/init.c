@@ -29,75 +29,7 @@
 unsigned char *vbuf;
 
 GraphicMessage GM;
-GraphicTextOutArgs text1;
-BYTE work[FF_MAX_SS];
-
-extern unsigned int FSOK;
-
-void runInRecoverMode() {
-
-    //for (;;) {
-        //if (is_key_down(KEY_1)) {
-            GM.type = GRAPHIC_MSG_TYPE_CLEAR;
-            xQueueSend(GraphicQueue, &(GM.selfAddr), (TickType_t)0);
-            vTaskDelay(100);
-
-            if (isRawFlash()) {
-
-                //Hz16chOut((const unsigned char**)&HzString6,9,1+32,1 + 16 * 3);
-                //vTaskDelay(1000);
-                //resetFlashRegionInfo();
-                //flashMapReset();
-                goto next_loop;
-            }
-
-            FSOK = 0;
-
-            lockFmap(true);
-            flashMapClear();
-
-            printf("start earsing\n");
-            for (int i = getDataRegonStartBlock(); i < getDataRegonStartBlock() + getDataRegonTotalBlocks(); i++) {
-
-                xEraseFlashBlocks(i, 1, 5000);
-                vTaskDelay(1);
-            }
-
-            flashMapReset();
-
-            MKFS_PARM opt;
-            opt.fmt = FM_FAT;
-            opt.au_size = 2048;
-            opt.align = 2048;
-            opt.n_fat = 2;
-
-
-            FATFS fs;
-
-            int fr = f_mkfs("", &opt, work, sizeof work);
-            //int fr = f_mkfs("", 0, work, sizeof work);
-
-            printf("format :%d\n", fr);
-
-            f_mount(&fs, "/", 1);
-
-            lockFmap(false);
-            printf("format done.\n");
-            f_setlabel("HP 39GII");
-            FSOK = 1;
-
-            vTaskDelay(2000);
-
-            flashSyncNow();
-            //displayRecovery();
-        
-
-    for (;;) {
-    next_loop:
-
-        vTaskDelay(100);
-    }
-}
+GraphicTextOutArgs text1; 
 
 void vInit() {
     vTaskDelay(200);
@@ -164,7 +96,7 @@ void vInit() {
     vPortFree(Config_line_buf);
 */
     xTaskCreate(vServiceUSBDevice, "USB Device Service", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
-    
+
     if (!isfatFsInited()) {
         vTaskDelete(NULL);
     }
@@ -179,9 +111,7 @@ void vInit() {
     res = pageman_init(20,swapSizeMB);
     printf("init vm:%d\n",res);
     
-    
-    
-
+     
     void vm_test();
 
     vm_test();

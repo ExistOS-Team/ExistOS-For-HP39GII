@@ -1,7 +1,3 @@
-#ifndef SWI_SYSTEM_CALL_H
-#define SWI_SYSTEM_CALL_H
-
-
 // Supported modes
 #define SWIL_MODE_LINUX 0
 #define SWI_MODE_ARMEABI 1
@@ -688,12 +684,4 @@
 #define SWI_ARM_USR32 983044
 #define SWI_ARM_SET_TLS 983045
 
-
-
 #endif
-
-unsigned int src_c_swi_handler(unsigned int r0, unsigned int r1, unsigned int r2,
-                               unsigned int r3, unsigned int r4, unsigned int r5, unsigned int r7) ;
-
-#endif
-

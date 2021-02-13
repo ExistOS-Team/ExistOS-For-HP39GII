@@ -17,14 +17,14 @@
 //#include "swi_system_call.h"
 
 processes_info *processes_table;
-PID_t pid_count = 10;
-int current_running_pid = -1;
+int pid_count = 10;
+volatile int current_running_pid = -1;
 
-PID_t get_current_running_task_pid(){
+int get_current_running_task_pid(){
     return current_running_pid;
 }
 
-void set_current_running_pid(PID_t current_pid)
+void set_current_running_pid(int current_pid)
 {
     current_running_pid = current_pid;
 }
@@ -113,8 +113,8 @@ int vm_load_exec_elf(PID_t pid, char * elf_path, unsigned int* enrty_point){
     status = create_new_task_space_zone(pid,get_page_file_fd(),0,
                             "DEFSTACK",
                             ZONE_ATTR_R | ZONE_ATTR_W,
-                            0x6FF00000,
-                            0x70000000);
+                            0x70000,
+                            0x80000);
     remove_task_space_zone(pid,"ELFIMAGE");
 
     printf("STACK:%d\n",status);
@@ -200,7 +200,7 @@ void dump_all_processes_info(){
 
 #define BASE_HEAP_ADDR       0x10000000
 
-unsigned int* process_sbrk(PID_t pid, intptr_t increment)
+unsigned int* process_sbrk(int pid, intptr_t increment)
 {
     processes_info *current_process_info;
     int status;
@@ -255,7 +255,7 @@ unsigned int* process_sbrk(PID_t pid, intptr_t increment)
     return (unsigned int *)prev_incr;
 }
 
-unsigned int* create_thread(PID_t pid, void *func, unsigned int *stack_addr, char *thread_name ){
+TaskHandle_t create_thread(PID_t pid, void *func, unsigned int *stack_addr, char *thread_name ){
     vTaskSuspendAll();
     processes_info *current_process_info;
     threads_info *current_thread_info;
@@ -314,6 +314,8 @@ unsigned int* create_thread(PID_t pid, void *func, unsigned int *stack_addr, cha
     xTaskResumeAll();
     return new_task_tcb;
 }
+
+
 
 int create_process(char *process_name, char *image_path){
     vTaskSuspendAll();
@@ -378,7 +380,7 @@ int create_process(char *process_name, char *image_path){
         return status;
     }
 
-    current_process_info -> main_thread_task_handle = create_thread(pid_count, ( void *) entry_point, 0x70000000, "main_thread");
+    current_process_info -> main_thread_task_handle = create_thread(pid_count, ( void *) entry_point, 0x80000, "main_thread");
     if( current_process_info -> main_thread_task_handle == NULL )
     {
         if(prev_process_info != NULL){

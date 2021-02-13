@@ -56,8 +56,8 @@ void _boot();
 //at 0x00000000
 volatile void _kernel_init() __attribute__((section(".init"))) __attribute__((naked));
 volatile void _kernel_init() {
-
     volatile unsigned int *tlb_base = (unsigned int *)0x800C0000;
+ 
 
     BF_CS1n(DIGCTL_MPTEn_LOC, 0, LOC, 4000);
     BF_CS1n(DIGCTL_MPTEn_LOC, 1, LOC, 4001);
@@ -121,7 +121,13 @@ volatile void _kernel_init() {
 }
 
 
-//unsigned int save_1;
+volatile unsigned char VRAM[4096 * 9]
+    __attribute__((section(".vram"))) __attribute__((aligned(4096)));
+
+volatile unsigned int vram_l2_tab[256]
+    __attribute__((section(".vram"))) __attribute__((aligned(0x400)));
+
+
 //at 0xC0000000
 void _boot() {
     volatile unsigned int *tlb_base = (unsigned int *)0x800C0000;
@@ -136,11 +142,31 @@ void _boot() {
  
     uartdbg_printf("next boot 1.\n");
     uartdbg_printf("test 1.\n");
-    printf("Starting Kernel...\n");
+   
  
     MMU_UNMAP_SECTION_VIRT_RAM(0); //过河拆桥
-    BF_WRn(DIGCTL_MPTEn_LOC, 5, LOC, 4005);
+
     flush_tlb();
+
+    for(unsigned int i=0;i<256;i++){
+        vram_l2_tab[i] = 0;
+    }
+    uartdbg_printf("clear vram tab.\n");
+    BF_WRn(DIGCTL_MPTEn_LOC, 5, LOC, VRAM_MAP_ADDR >> 20);
+
+    
+    MMU_MAP_COARSE_RAM((unsigned int)VIR_TO_PHY_ADDR((uint8_t *)&vram_l2_tab), VRAM_MAP_ADDR);
+    for(int i=0;i<9;i++){
+        vram_l2_tab[i] = MMU_SMALL_PAGE_NONCACHED( ((unsigned int)VIR_TO_PHY_ADDR((uint8_t *)&VRAM)) + i*4096 );
+    }
+    
+    flush_tlb();
+    
+    printf("tlb_base[0xE0000000 >> 20]:%08x, %08x\n",tlb_base[0xE0000000 >> 20], &vram_l2_tab);
+    
+
+    uartdbg_printf("Starting Kernel...\n");
+    
     main(); //进入内核
 
     printf("System halt.\n");

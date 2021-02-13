@@ -34,7 +34,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "swi_system_call.h"
+#include "eabi_swi_system_call.h"
 
 #include <stdio.h>
 unsigned int faultAddress;
@@ -80,7 +80,7 @@ volatile void __handler_pabort(void) __attribute__((naked));
 volatile void __handler_pabort() {
 
     //asm volatile("ldr sp,=ABT_STACK_ADDR");
-    asm volatile("ldr sp,=ABT_STACK_ADDR");
+    //asm volatile("ldr sp,=ABT_STACK_ADDR");
     //portSAVE_CONTEXT_ASM;
     
     asm volatile("sub lr,lr,#4");
@@ -166,7 +166,7 @@ unsigned int fault_sp;
 volatile void __handler_dabort(void) __attribute__((naked));
 volatile void __handler_dabort() {
 
-    asm volatile("ldr sp,=ABT_STACK_ADDR");
+    //asm volatile("ldr sp,=ABT_STACK_ADDR");
     //asm volatile("ldr sp,=ABT_STACK_ADDR");
 
     //
@@ -198,7 +198,7 @@ volatile void __handler_dabort() {
     asm volatile("str r0,%0"
                  : "=m"(FSR));
     //vTaskSuspendAll();
-   // uartdbg_printf("DA faultAddress:%x insAddress:%x fsr:%x\n",faultAddress,insAddress,FSR);
+    //uartdbg_printf("DA faultAddress:%x insAddress:%x fsr:%x\n",faultAddress,insAddress,FSR);
     //uartdbg_printf("Page fault at 0x%x referenced memory at 0x%x, FSR:%x \n",insAddress,faultAddress,FSR);
         extern volatile uint32_t *pxCurrentTCB;
        // uartdbg_printf("swi contx:%x\n",pxCurrentTCB);   
@@ -228,7 +228,7 @@ volatile void __handler_dabort() {
         insAddress,
         FSR);
 */
-    PID_t current_PID;
+    int current_PID;
     current_PID = get_current_running_task_pid();
     //printf("fault current_PID:%d\n",current_PID);
     if(current_PID == -1){
@@ -317,14 +317,15 @@ volatile void __handler_swi(void) {
    asm volatile("ldr sp,=SVC_STACK_ADDR");
     __asm__ volatile ("":::"memory");
     volatile unsigned int *current_regs = ((unsigned int *)pxCurrentTCB[1]) - 16;
-    switch (  ((*(((unsigned int *) *((unsigned int *)pxCurrentTCB[1]-1)) - 2)) & 0x00FFFFFF)  )
+    int swi_num = ((*(((unsigned int *) *((unsigned int *)pxCurrentTCB[1]-1)) - 2)) & 0x00FFFFFF);
+    switch (  swi_num  )
     {
 
     case 1:
         vTaskSwitchContext();
         break;
     case 0:
-        //uartdbg_printf("SYSCALL\n");
+        uartdbg_printf("SYSCALL\n");
         current_regs[15] = ((unsigned int)swi_eabi_handler) + 4;
         pxCurrentTCB[130] = current_regs[-1];
         current_regs[-1] &= 0xFFFFFFE0;
@@ -332,6 +333,8 @@ volatile void __handler_swi(void) {
         break;
 
     default:
+
+        uartdbg_printf("SYSCALL %x\n",swi_num);
         break;
     }
     portRESTORE_CONTEXT_ASM;
@@ -368,7 +371,7 @@ void exception_init() {
 
     MMU_MAP_COARSE_RAM((unsigned int)VIR_TO_PHY_ADDR((uint8_t *)&exception_handler_map_table), EXCEPTION_VECTOR_TABLE_BASE_ADDR);
 
-    MMU_MAP_SMALL_PAGE_NONCACHED((unsigned int)VIR_TO_PHY_ADDR((uint8_t *)&exception_handler_table), EXCEPTION_VECTOR_TABLE_BASE_ADDR);
+    MMU_MAP_SMALL_PAGE_NONCACHED_PRIVILEGED((unsigned int)VIR_TO_PHY_ADDR((uint8_t *)&exception_handler_table), EXCEPTION_VECTOR_TABLE_BASE_ADDR);
 
     flush_tlb();
 
@@ -380,7 +383,7 @@ void exception_init() {
     exception_install(EXCEPTION_SWI, (unsigned int *)&__handler_swi);
     exception_install(EXCEPTION_PABORT, (unsigned int *)&__handler_pabort);
     exception_install(EXCEPTION_DABORT, (unsigned int *)&__handler_dabort);
-
+ 
     asm volatile("mrc p15, 0, r0, c1, c0, 0");
     //asm volatile ("bic r0,r0,#0x2000"); 				//设置使用低端向量表
     asm volatile("orr r0,r0,#0x2000"); //设置使用高端向量表

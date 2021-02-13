@@ -55,6 +55,7 @@
 #include "mmu.h"
 #include "regsapbh.h"
 #include "regsuartdbg.h"
+#include "regspower.h"
 #include "rtc.h"
 #include "tusb.h"
 
@@ -90,7 +91,11 @@ void vTask1(void *pvParameters) {
         //vTaskDelay(1);
         //printf("1");
         //a++;
+        for(unsigned int *i=0xFFFF0000,k=0;k<30;k++,i++){
+            printf("%d:%08x\n",k,*i);
+        }
         vTaskDelay(1000);
+        *((unsigned int *)0x23334500) = 0xFF;
         //printf("c\n");
     }
 }
@@ -167,24 +172,27 @@ int main(void) {
 
 static void prvSetupHardware(void) {
 
+    
+    BF_SETV(POWER_VDDDCTRL,TRG,26); // Set voltage = 1.45 V
+
     PLL_enable(1);
     
-    HCLK_set_div(0, 5);   //96 MHz
-    CPUCLK_set_div(0, 5); //96 MHz
+    HCLK_set_div(0, 4);   //120 MHz
+    CPUCLK_set_div(0, 1); //480 MHz
     CPUCLK_set_gating(0);
     CPUCLK_set_bypass(0);
 
-    /*
-	BF_CS1(CLKCTRL_HBUS, SLOW_DIV, 3);	
+    
+	BF_CS1(CLKCTRL_HBUS, SLOW_DIV, 1);	
 	BF_CS1(CLKCTRL_HBUS, APBHDMA_AS_ENABLE, 1);
 	BF_CS1(CLKCTRL_HBUS, APBXDMA_AS_ENABLE, 1);
-	BF_CS1(CLKCTRL_HBUS, CPU_DATA_AS_ENABLE, 1);
-	BF_CS1(CLKCTRL_HBUS, CPU_INSTR_AS_ENABLE, 1);
+	//BF_CS1(CLKCTRL_HBUS, CPU_DATA_AS_ENABLE, 1);
+	//BF_CS1(CLKCTRL_HBUS, CPU_INSTR_AS_ENABLE, 1);
 	BF_CS1(CLKCTRL_HBUS, TRAFFIC_JAM_AS_ENABLE, 1);
 	BF_CS1(CLKCTRL_HBUS, TRAFFIC_AS_ENABLE, 1);
     BF_CS1(CLKCTRL_HBUS, AUTO_SLOW_MODE, 1);
-   */
-
+   
+    
     //BF_CS1(CLKCTRL_PIX, DIV, 8);	//修正LCD控制器频率
 
     //BF_CS1(CLKCTRL_CLKSEQ, BYPASS_PIX, 0);	//修正LCD控制器频率
@@ -207,6 +215,7 @@ static void prvSetupHardware(void) {
 
     printf("(CLKCTRL_CPU,DIV_CPU), %08x\n", BF_RD(CLKCTRL_CPU, DIV_CPU));
     printf("(CLKCTRL_HBUS,DIV), %08x\n", BF_RD(CLKCTRL_HBUS, DIV));
+    printf("VDDD voltage:%.2f V\n", 0.8 + (BF_RD(POWER_VDDDCTRL,TRG)*0.025));
 
     LCD_init();
     keyboard_init(); //键盘初始化

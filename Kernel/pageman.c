@@ -9,6 +9,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "ProcessesMan.h"
+
 #include "uart_debug.h"
 
 #include "mmu.h"
@@ -183,7 +185,10 @@ int pageman_init(unsigned int cache_page_number,unsigned int vm_file_size_m)
     }
 
     mmu_set_RS(0b10);   //当AP = 00只读，AP =11 读写
-    mmu_set_domain_control_bit(0, 0b11);    //domain 0内的所有页任意访问
+
+    //mmu_set_domain_control_bit(0, 0b11);    //domain 0内的所有页任意访问
+    mmu_set_domain_control_bit(0, 0b01);    //domain 0内的所有页都需进行权限检查
+
     mmu_set_domain_control_bit(1, 0b01);    //domain 1内的所有页都需进行权限检查
 
     void dump_MPTE();
@@ -923,6 +928,11 @@ int load_cache_page_to_map_vm_space(unsigned int which_page, unsigned int *curre
 
     return 0;
 
+}
+
+void* mmap(void* start,size_t length,int prot,int flags,int fd,off_t offset){
+    
+    return NULL;
 }
 
 unsigned int fault_count = 0;

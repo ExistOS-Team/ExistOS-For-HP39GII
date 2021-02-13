@@ -1,4 +1,5 @@
-#include "swi_system_call.h"
+#include "eabi_swi_system_call.h"
+#include "existos_swi_system_call.h"
 #include "exception.h"
 #include "mmu.h"
 #include "syscall.h"
@@ -14,7 +15,7 @@ struct _reent *_impure_ptr;
 unsigned int src_c_swi_handler(unsigned int r0, unsigned int r1, unsigned int r2,
                                unsigned int r3, unsigned int r4, unsigned int r5, unsigned int r7) {
     unsigned int ret_value;
-	//printf("SYSCALL: r0:%x r1:%x r2:%x r3:%x r4:%x r5:%x r7:%x\n",r0,r1,r2,r3,r4,r5,r7);
+    //printf("SYSCALL: r0:%x r1:%x r2:%x r3:%x r4:%x r5:%x r7:%x\n",r0,r1,r2,r3,r4,r5,r7);
     switch (r7) {
     // 20 functions from newlib. wait and isatty are not included here.
     case SWI_CLOSE:
@@ -80,6 +81,13 @@ unsigned int src_c_swi_handler(unsigned int r0, unsigned int r1, unsigned int r2
         printf("API: SLEEP:%d ms.\n",r0);
 		vTaskDelay(r0);
 		return 0;
+
+    case SWI_GET_US_COUNT:
+        return HW_DIGCTL_MICROSECONDS_RD();
+
+    case SWI_MMAP2:
+        
+        return 0;
 
     default:
         uartdbg_printf("UNKNOWN SYSCALL: r0:%x r1:%x r2:%x r3:%x r4:%x r5:%x r7:%x\n",r0,r1,r2,r3,r4,r5,r7);

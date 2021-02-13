@@ -222,15 +222,33 @@ void pinctrl1_bank1_isr(){
 }
 
 void pinctrl0_key_on_isr(){
+    volatile unsigned int status, tmp_tog;
+    status = BF_RD(PINCTRL_IRQSTAT0, IRQSTAT);
+    delay_us(1000);
+    if(status != BF_RD(PINCTRL_IRQSTAT0,IRQSTAT)){
+        BF_CLR(PINCTRL_IRQSTAT0,IRQSTAT);
+        return ;
+    }
     BF_CLR(PINCTRL_IRQSTAT0,IRQSTAT); 
-    uartdbg_printf("key on irq\n");
+
+
+    tmp_tog = BF_RD(PINCTRL_IRQPOL0,IRQPOL);
+    tmp_tog ^=status;
+    BF_CS1(PINCTRL_IRQPOL0,IRQPOL,tmp_tog);
+    if(tmp_tog & status){
+        //POP ON
+        key_msg = KEY_ON << 8 | 0;
+        xQueueSendFromISR(key_msg_queue, &key_msg, NULL);
+    }else{  
+        //PUSH ON
+        key_msg = KEY_ON << 8 | 1;
+        xQueueSendFromISR(key_msg_queue, &key_msg, NULL);
+    }
+    //uartdbg_printf("key on irq:%x\n",tmp_tog & status);
 }
 
 void keyboard_init() {
     unsigned int tmp_DOUT, tmp_DOE;
-
-    
-    
 
     BF_CS6(
         PINCTRL_MUXSEL3,

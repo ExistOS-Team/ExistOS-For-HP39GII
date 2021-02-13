@@ -1,6 +1,8 @@
 #ifndef MEMORY_MAP_H
 #define MEMORY_MAP_H
 
+#define VRAM_MAP_ADDR       0xE0000000
+
 #define RAM_START_VIRT_ADDR 0xC0000000
 
 #define KHEAP_MAP_PHY_START 0x40000

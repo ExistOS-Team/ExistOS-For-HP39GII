@@ -180,7 +180,7 @@ void *pvReturn;
 
 	if( pvReturn == NULL )
 		{
-			uartdbg_printf("malloc fail.");
+			uartdbg_printf("\nk malloc fail.\n");
 			while(1);
 			
 		}

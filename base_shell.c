@@ -100,13 +100,23 @@ void parse_line(char *line) {
 
     if (strcmp(line, "usbon") == 0) {
         tud_connect();
+        shell_put_a_line("USB Connected.");
         return;
     }
     if (strcmp(line, "usboff") == 0) {
         tud_disconnect();
+        shell_put_a_line("USB Disconnected.");
+        return;
+    }
+    if (strcmp(line, "usbreload") == 0) {
+        tud_disconnect();
+        vTaskDelay(1000);
+        tud_connect();
+        shell_put_a_line("USB Reload.");
         return;
     }
     
+
 
     if (strcmp(line, "format") == 0) {
         shell_put_a_line("Start erasing...");
@@ -149,6 +159,7 @@ void parse_line(char *line) {
     if (strcmp(line, "help") == 0) {
         shell_put_a_line("commane list:");
         shell_put_a_line("menu    help    format    usbon    usboff");
+        shell_put_a_line("usbreload");
         return;
     }
 
@@ -169,7 +180,8 @@ void key_input(unsigned int key) {
                 type_in_buffer_line(to_letter);
             }
         } else {
-            switch (key >> 8) {
+            switch (key >> 8) 
+            {
             case KEY_BACKSPACE:
                 type_in_buffer_line(0);
                 break;
@@ -185,6 +197,8 @@ void key_input(unsigned int key) {
 
                 break;
             default:
+                    continue_type_in = 0;
+                    continue_type_in_cnt = 0;
                 break;
             }
         }

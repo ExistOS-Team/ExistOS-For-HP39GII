@@ -9,7 +9,7 @@
 
 #define SYSTEM_SPACE_PID    0
 
-#define MAX_L1_PTE_IN_USE   6
+#define MAX_L1_PTE_IN_USE   4
 #define L2_TABLE_NUMBER     MAX_L1_PTE_IN_USE
 
 #define ZONE_ATTR_R             0b0001

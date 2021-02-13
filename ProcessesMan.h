@@ -38,12 +38,12 @@ typedef struct ProcessesInfo
 
 
 
-PID_t get_pid_from_task_handle(TaskHandle_t task_handle);
+int get_pid_from_task_handle(TaskHandle_t task_handle);
 int create_process(char *process_name, char *image_path);
 
-PID_t get_current_running_task_pid();
-void set_current_running_pid(PID_t current_pid);
-unsigned int* process_sbrk(PID_t pid, intptr_t increment);
+int get_current_running_task_pid();
+void set_current_running_pid(int current_pid);
+unsigned int* process_sbrk(int pid, intptr_t increment);
 
 
 #endif

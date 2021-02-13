@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
-
+#include <sys/times.h>
 
 #include "console.h"
 #include "memory_map.h"
@@ -15,6 +15,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "vfsman.h"
+
+#include "regsdigctl.h"
 
 #undef errno
 extern int errno;
@@ -181,8 +183,14 @@ int _stat_r(struct _reent *pReent, const char *__restrict __path, struct stat *_
 }
 
 _CLOCK_T_ _times_r(struct _reent *pReent, struct tms *tbuf) {
-    pReent->_errno = ENOTSUP;
-    return -1;
+    unsigned int fr;
+    tbuf->tms_cstime = HW_DIGCTL_MICROSECONDS_RD();
+    tbuf->tms_cutime = HW_DIGCTL_MICROSECONDS_RD();
+    tbuf->tms_stime = HW_DIGCTL_MICROSECONDS_RD();
+    tbuf->tms_utime = HW_DIGCTL_MICROSECONDS_RD();
+    fr = HW_DIGCTL_MICROSECONDS_RD();
+    pReent->_errno = 0;
+    return fr;
 }
 
 int _unlink_r(struct _reent *pReent, const char *filename) {

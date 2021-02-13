@@ -28,8 +28,6 @@ struct s_kb_cb_list
 } *kb_cb_list;
 
 
-
-
 int register_keyboard_callback(void (*cb)(unsigned int)){
     struct s_kb_cb_list *current_info;
     
@@ -58,8 +56,7 @@ int register_keyboard_callback(void (*cb)(unsigned int)){
 
 
 }
-
-unsigned char key2alpha_lut[100];
+ 
 char key_map_to_alpha(keys key){
     switch (key)
     {
@@ -97,45 +94,11 @@ char key_map_to_alpha(keys key){
         return 0;
     }
 }
-
-void init_key_lut(){
-    key2alpha_lut[KEY_0] = '"';
-    key2alpha_lut[KEY_DOT] = ':';
-    key2alpha_lut[KEY_NEGATIVE] = ';';
-    key2alpha_lut[KEY_1] = 'X';
-    key2alpha_lut[KEY_2] = 'Y';
-    key2alpha_lut[KEY_3] = 'Z';
-    key2alpha_lut[KEY_PLUS] = ' ';
-    key2alpha_lut[KEY_4] = 'T';
-    key2alpha_lut[KEY_5] = 'U';
-    key2alpha_lut[KEY_6] = 'V';
-    key2alpha_lut[KEY_SUBTRACTION] = 'W';
-    key2alpha_lut[KEY_COMMA] = 'O';
-    key2alpha_lut[KEY_7] = 'P';
-    key2alpha_lut[KEY_8] = 'Q';
-    key2alpha_lut[KEY_9] = 'R';
-    key2alpha_lut[KEY_MULTIPLICATION] = 'S';
-    key2alpha_lut[KEY_X2] = 'J';
-    key2alpha_lut[KEY_XY] = 'K';
-    key2alpha_lut[KEY_LEFTBRACKET] = 'L';
-    key2alpha_lut[KEY_RIGHTBRACET] = 'M';
-    key2alpha_lut[KEY_DIVISION] = 'N';
-    key2alpha_lut[KEY_SIN] = 'E';
-    key2alpha_lut[KEY_COS] = 'F';
-    key2alpha_lut[KEY_TAN] = 'G';
-    key2alpha_lut[KEY_LN] = 'H';
-    key2alpha_lut[KEY_LOG] = 'I';
-    key2alpha_lut[KEY_VARS] = 'A';
-    key2alpha_lut[KEY_MATH] = 'B';
-    key2alpha_lut[KEY_ABC] = 'C';
-    key2alpha_lut[KEY_XTPHIN] = 'D';
-}
-
+ 
 void vServiceKeyboard(void *pvParameters) {
     struct s_kb_cb_list *current_info;
     key_msg_queue = xQueueCreate(128, sizeof(unsigned int));
-    init_key_lut();
-
+ 
     unsigned int key_msg;
     for (;;) {
         xQueueReceive( key_msg_queue, &( key_msg ), ( TickType_t ) portMAX_DELAY );
@@ -144,6 +107,6 @@ void vServiceKeyboard(void *pvParameters) {
             current_info->cb(key_msg);
             current_info=current_info->next;
         }
-        //printf("get key:%x\n",key_msg);
+        printf("get key:%x\n",key_msg);
     }
 }

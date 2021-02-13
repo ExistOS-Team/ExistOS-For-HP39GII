@@ -202,7 +202,7 @@ SECTIONS
   . = ALIGN(32 / 8);
   __end__ = .;
   _end = .; PROVIDE (end = .);
-  .stack         0x70000000 :
+  .stack         0x80000 :
   {
     _stack = .;
     *(.stack)
