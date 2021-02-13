@@ -92,7 +92,7 @@ void vTask1(void *pvParameters) {
         vTaskDelay(1000);
         printf("is_key_down 1:%08x\n",is_key_down(KEY_F1));
         printf("is_key_down 2:%08x\n",is_key_down(KEY_ON));*/
-        
+
         //a++;
     
         //printf("c\n");
@@ -145,7 +145,7 @@ int main(void) {
     prvSetupHardware();
     
     /* Create the tasks defined within this file. */
-    xTaskCreate( vTask1, "test task1", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
+    //xTaskCreate( vTask1, "test task1", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
     //xTaskCreate(vTask2, "test task2", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
     //xTaskCreate(vTask3, "Task Manager", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
