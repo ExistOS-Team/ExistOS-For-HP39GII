@@ -31,14 +31,19 @@ typedef struct ProcessesInfo
     TaskHandle_t main_thread_task_handle;
     task_status status;
     struct ThreadsInfo *first_thread_info;
+    unsigned int seg_fault_count;
+    unsigned int sbrk;
+    unsigned int last_sbrk_seg_end;
 }processes_info;
 
 
 
-PID_t get_pid_from_task_handle(TaskHandle_t task_handle);
+int get_pid_from_task_handle(TaskHandle_t task_handle);
 int create_process(char *process_name, char *image_path);
 
-PID_t get_current_running_task_pid();
+int get_current_running_task_pid();
+void set_current_running_pid(int current_pid);
+unsigned int* process_sbrk(int pid, intptr_t increment);
 
 
 #endif

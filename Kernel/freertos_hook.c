@@ -44,7 +44,7 @@ void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
 {
   (void) pxTask;
   (void) pcTaskName;
-	printf("%s\n",pcTaskName);
+	uartdbg_printf("%s\n",pcTaskName);
   taskDISABLE_INTERRUPTS();
   TU_ASSERT(false, );
   while(1);

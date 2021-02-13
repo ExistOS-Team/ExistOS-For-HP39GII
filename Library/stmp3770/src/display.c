@@ -37,8 +37,9 @@ volatile hw_lcdif_DmaDesc screen_parameter_dma_desc;
 
 unsigned int lcdScrollUpPix = 0;
 unsigned int isAutoSend;
-extern char __VRAM_BASE;
-unsigned char *screen_buffer = &__VRAM_BASE; //显存
+
+#define __VRAM_BASE 0xE0000000;
+unsigned char *screen_buffer = __VRAM_BASE; //显存
 unsigned int pos_y = 0;                      //屏幕信息位置
 
 volatile unsigned int LCD_is_busy() {

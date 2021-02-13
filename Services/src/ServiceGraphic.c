@@ -5,10 +5,12 @@
 /* System serive includes. */
 #include "ServiceGraphic.h"
 
+
 /* Library includes. */
 #include "display.h"
 #include "irq.h"
 #include "regsuartdbg.h"
+#include "memory_map.h"
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
@@ -17,11 +19,10 @@
 
 unsigned int tmp[8];
 
-extern unsigned int __VRAM_BASE;
+//extern unsigned int __VRAM_BASE;
 
 unsigned int *getVramAddress() {
-
-    return &__VRAM_BASE;
+    return VRAM_MAP_ADDR;
 }
 
 void vServiceGraphic(void *pvParameters) {

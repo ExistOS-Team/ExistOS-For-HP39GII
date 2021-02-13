@@ -19,8 +19,13 @@ reg8_t CPUCLK_set_div(reg8_t isFracEnabled, reg16_t divider) {
     } else {
         BF_CS1(CLKCTRL_CPU, DIV_CPU_FRAC_EN, isFracEnabled);
         BF_SETV(CLKCTRL_CPU, DIV_CPU, divider);
-        if (!(divider & 1))
+        //divider = ~divider;
+        //BF_CLRV(CLKCTRL_CPU, DIV_CPU, divider);
+        
+        if (!(divider & 1)){
+            //delay_us(100);
             BF_CLRV(CLKCTRL_CPU, DIV_CPU, 1);
+        }
         return 1;
     }
 }
@@ -40,9 +45,13 @@ reg8_t HCLK_set_div(reg8_t isFracEnabled, reg16_t divider) {
         BF_CS1(CLKCTRL_HBUS, DIV_FRAC_EN, isFracEnabled);
 
         BF_SETV(CLKCTRL_HBUS, DIV, divider);
-        if (!(divider & 1))
+        //divider = ~divider;
+        //BF_CLRV(CLKCTRL_HBUS, DIV, divider);
+        
+        if (!(divider & 1)){
+            //delay_us(100);
             BF_CLRV(CLKCTRL_HBUS, DIV, 1);
-
+            }
         return 1;
     }
 }

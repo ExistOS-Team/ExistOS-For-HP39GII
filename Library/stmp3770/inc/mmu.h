@@ -24,12 +24,15 @@
 #include <stdint.h>
 
 #define MMU_SECTION_RAM(a) (((a)&0xfff00000) | 0xc1e)
-#define MMU_SECTION_DEV(a) (((a)&0xfff00000) | 0xc12)
+#define MMU_SECTION_DEV(a) (((a)&0xfff00000) | 0x012 | 0x800)
 #define MMU_COARSE_PAGE(a) (((a)&0xfffffc00) | 0x011)
 
 #define MMU_SMALL_PAGE_CACHED(a) (((a)&0xfffff000) | 0xffe)
 #define MMU_SMALL_PAGE_CACHED_RO(a) (((a)&0xfffff000) | 0xaae)
 #define MMU_SMALL_PAGE_NONCACHED(a) (((a)&0xfffff000) | 0xff2)
+
+#define MMU_SMALL_PAGE_NONCACHED_PRIVILEGED(a) (((a)&0xfffff000) | 0x002 | 0xAA)
+
 #define MMU_SMALL_PAGE_UNMAP (0)
 
 #define MMU_LEVEL1_INDEX(virt) (((virt) >> 20) & 0xfff)
@@ -47,6 +50,7 @@
 #define MMU_MAP_SMALL_PAGE_CACHED_RO_WITH_L2(phys, virt, l2virt) (((unsigned int *)(l2virt))[MMU_LEVEL2_INDEX(virt)] = MMU_SMALL_PAGE_CACHED_RO(phys))
 
 #define MMU_MAP_SMALL_PAGE_NONCACHED(phys, virt) (((unsigned int *)(tlb_base[MMU_LEVEL1_INDEX(virt)] & 0xfffffc00))[MMU_LEVEL2_INDEX(virt)] = MMU_SMALL_PAGE_NONCACHED(phys))
+#define MMU_MAP_SMALL_PAGE_NONCACHED_PRIVILEGED(phys, virt) (((unsigned int *)(tlb_base[MMU_LEVEL1_INDEX(virt)] & 0xfffffc00))[MMU_LEVEL2_INDEX(virt)] = MMU_SMALL_PAGE_NONCACHED_PRIVILEGED(phys))
 #define MMU_MAP_SMALL_PAGE_NONCACHED_WITH_L2(phys, virt, l2virt) (((unsigned int *)(l2virt))[MMU_LEVEL2_INDEX(virt)] = MMU_SMALL_PAGE_NONCACHED(phys))
 
 #define MMU_MAP_SMALL_PAGE_UNMAP(virt) (((unsigned int *)(tlb_base[MMU_LEVEL1_INDEX(virt)] & 0xfffffc00))[MMU_LEVEL2_INDEX(virt)] = MMU_SMALL_PAGE_UNMAP)

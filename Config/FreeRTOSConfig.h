@@ -42,10 +42,11 @@
 #include "memory.h"
 
 
+
 #define configUSE_TIME_SLICING 1
 
 #define configUSE_PREEMPTION		1
-#define configUSE_PORT_OPTIMISED_TASK_SELECTION		0
+#define configUSE_PORT_OPTIMISED_TASK_SELECTION		1
 #define configUSE_IDLE_HOOK			0
 #define configUSE_TICK_HOOK			0
 #define configCPU_CLOCK_HZ			( ( unsigned long ) 96000000 ) /* Timer clock. */
@@ -116,6 +117,8 @@ to exclude the API function. */
 #define INCLUDE_xTaskGetHandle                  1
 #define INCLUDE_xTaskResumeFromISR              1
 
+void vAssertCalled();
 
+//#define configASSERT( x )   if( x == 0){vAssertCalled();}
 
 #endif /* FREERTOS_CONFIG_H */

@@ -22,6 +22,25 @@
 #include "regsuartdbg.h"
 #include "utils.h"
 #include <stdarg.h>
+#include "uart_debug.h"
+volatile unsigned int dump_regs[18];
+
+void uartdbg_dump_regs() __attribute__((naked));
+void uartdbg_dump_regs()
+{
+    asm volatile("push {R0-R12,LR}");
+    asm volatile("ldr R12,=dump_regs");
+    asm volatile("stmia r12,{r0-lr}");
+    asm volatile("pop {R0-R12,LR}");
+    asm volatile("bx lr");
+}
+
+void uartdbg_print_dumpregs(){
+    uartdbg_printf("R0  =%X,  R1 =%X, R2  =%X, R3  =%X\n", dump_regs[0], dump_regs[1], dump_regs[2], dump_regs[3]);
+    uartdbg_printf("R4  =%X,  R5 =%X, R6  =%X, R7  =%X\n", dump_regs[4], dump_regs[5], dump_regs[6], dump_regs[7]);
+    uartdbg_printf("R8  =%X,  R9 =%X, R10 =%X, R11 =%X\n", dump_regs[8], dump_regs[9], dump_regs[10], dump_regs[11]);
+    uartdbg_printf("R12 =%X, R13 =%X, R14 =%X, R15 =%X\n\n", dump_regs[12], dump_regs[13], dump_regs[14], dump_regs[15]);
+}
 
 void uartdbg_putc(char ch) {
     int loop = 0;
@@ -129,13 +148,8 @@ void uartdbg_print_regs() {
     unsigned int mode;
 
     mode = get_mode();
-    /*
-	asm volatile ("mrc p15, 0, r0, c0, c0, 0");
-	asm volatile ("str r0,%0" :"=m"(cp[0]));
-	asm volatile ("mrc p15, 0, r0, c1, c0, 0");
-	asm volatile ("str r0,%0" :"=m"(cp[1]));
-	asm volatile ("mrc p15, 0, r0, c2, c0, 0");
-	asm volatile ("str r0,%0" :"=m"(cp[2]));*/
+    
+
 
     asm volatile("str r0,%0"
                  : "=m"(regs[0]));
@@ -169,6 +183,13 @@ void uartdbg_print_regs() {
                  : "=m"(regs[14]));
     asm volatile("str r15,%0"
                  : "=m"(regs[15]));
+
+	asm volatile ("mrc p15, 0, r0, c0, c0, 0");
+	asm volatile ("str r0,%0" :"=m"(cp[0]));
+	asm volatile ("mrc p15, 0, r0, c1, c0, 0");
+	asm volatile ("str r0,%0" :"=m"(cp[1]));
+	asm volatile ("mrc p15, 0, r0, c2, c0, 0");
+	asm volatile ("str r0,%0" :"=m"(cp[2]));
 
     uartdbg_printf("PC: (R15) = %X\n", regs[15]);
     switch (mode) {

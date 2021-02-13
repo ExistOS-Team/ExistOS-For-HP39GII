@@ -19,6 +19,7 @@ void dump_vfs_descriptor_chains();
 int vfs_open(const char *path, int flags, int mode);
 int vfs_read(int fd, void *buf, size_t nbytes);
 int vfs_write(int fd, const void *buf, size_t nbytes);
+int vfs_tell(int fd);
 off_t vfs_lseek(int fd, off_t offset, int whence);
 int vfs_stat(const char *path, struct stat *st);
 int vfs_fstat(int fd, struct stat *st);

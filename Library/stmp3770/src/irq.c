@@ -26,7 +26,10 @@
 #include "regsuartdbg.h"
 #include "uart_debug.h"
 
-unsigned int *irq_vector_table_base = (unsigned int *)IRQ_VECTOR_TABLE_BASE_ADDR; //中断向量表基址
+//unsigned int *irq_vector_table_base = (unsigned int *)IRQ_VECTOR_TABLE_BASE_ADDR; //中断向量表基址
+
+unsigned int irq_vector_table_base[64] __attribute__((aligned(4)));;
+
 volatile unsigned int current_irq_number;                                         //当前发生中断的中断号
 
 void irq_dummy(void) { //没有注册但是发生的中断会跳转到这里执行
@@ -86,11 +89,11 @@ void irq_install_service(unsigned int irq_n, unsigned int *service_program) {
     irq_vector_table_base[irq_n] = (unsigned int)service_program;
 }
 
-
+extern volatile uint32_t *pxCurrentTCB;
 void __irq_service() __attribute__((naked));
 void volatile __irq_service() {
 
-    //asm volatile ("subs lr, lr, #4");			//计算中断结束后应返回的地址
+    //asm volatile ("sub lr, lr, #4");			//计算中断结束后应返回的地址
     //asm volatile ("stmdb sp!, {r0-r12, lr} ");	//保存现场
 
     //
@@ -154,7 +157,7 @@ void irq_init() { //中断系统的初始化
                       BM_ICOLL_CTRL_IRQ_FINAL_ENABLE |
                       BM_ICOLL_CTRL_ARM_RSE_MODE |
                       BM_ICOLL_CTRL_NO_NESTING);
-    BF_CS1(ICOLL_VBASE, TABLE_ADDRESS, IRQ_VECTOR_TABLE_BASE_ADDR); //设置中断控制器内部的中断向量表地址
+    BF_CS1(ICOLL_VBASE, TABLE_ADDRESS, &irq_vector_table_base); //设置中断控制器内部的中断向量表地址
     BW_ICOLL_CTRL_VECTOR_PITCH(BV_ICOLL_CTRL_VECTOR_PITCH__BY16);
 
     uartdbg_printf("irq inited.\n");

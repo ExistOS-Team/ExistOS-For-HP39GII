@@ -308,6 +308,14 @@ int vfs_fsync(int fd){
 
 }
 
+int vfs_tell(int fd){
+    FRESULT fr;
+    FIL *fatfs_fd;
+    fatfs_fd = fd_to_fatfs_obj(fd);
+    if(fatfs_fd == NULL)return -ENXIO;   
+    return f_tell(fatfs_fd);
+}
+
 int vfs_fclose(int fd){
     FRESULT fr;
     FIL *fatfs_fd;
@@ -364,6 +372,7 @@ int vfs_stat(const char *path, struct stat *st)
     if(file_info == NULL){
         return -ENOMEM;
     }
+    
     fr = f_stat(path, file_info);
     if(fr == FR_OK){
 		st->st_size = file_info->fsize;		//文件大小

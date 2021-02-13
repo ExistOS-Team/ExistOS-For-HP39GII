@@ -27,7 +27,7 @@ section (0) {
 	
 	//call inputFile:_kernel_init ();
 	
-	jump 0xC000;
+	jump 0x0000;
 	
 	//load inputFile;
 	//call inputFile;

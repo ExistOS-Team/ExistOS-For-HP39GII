@@ -39,10 +39,11 @@ void vUsbDeviceTask() {
 
 void vServiceUSBDevice(void *pvParameters) {
     //CDCCmdLineQueue = xQueueCreate(32, 64);
-    vTaskDelay(3000);
+    vTaskDelay(600);
     
     xTaskCreateStatic(vUsbDeviceTask, "usbd", USBD_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, usb_device_stack, &usb_device_taskdef);
     xTaskCreate(vCDC_Console, "CDC Console", configMINIMAL_STACK_SIZE, NULL, 3, NULL);
+    vTaskDelete(NULL);
     for (;;) {
         vTaskSuspend(NULL);
     }

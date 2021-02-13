@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/times.h>
 
 #include "console.h"
 #include "memory_map.h"
@@ -12,6 +15,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "vfsman.h"
+
+#include "regsdigctl.h"
 
 #undef errno
 extern int errno;
@@ -75,9 +80,27 @@ int _fork_r(struct _reent *pReent) {
 int _fstat_r(struct _reent *pReent, int file, struct stat *st) {
     int fr;
     vTaskSuspendAll();
-    //st->st_mode = S_IFCHR;
-    fr = vfs_fstat(file, st);
-    pReent->_errno = fr;
+    if(file > 2){
+        fr = vfs_fstat(file, st);
+        pReent->_errno = fr;
+    }else{
+        switch (file)
+        {
+        case STDOUT_FILENO:
+            st->st_size = 2048;
+            st->st_mode = S_IFCHR;
+            st->st_blksize = 2048;
+            st->st_blocks = 1;
+            pReent->_errno = 0;
+            fr = 0;
+            break;
+        case STDIN_FILENO:
+            break;
+
+        default:
+            break;
+        }
+    }
     xTaskResumeAll();
     return fr;
 }
@@ -149,18 +172,25 @@ _ssize_t _rename_r(struct _reent *pReent, const char *oldname, const char *newna
 
 void *_sbrk_r(struct _reent *pReent, int incr);
 
-int _stat_r(struct _reent *pReent, const char *path, struct stat *st) {
+int _stat_r(struct _reent *pReent, const char *__restrict __path, struct stat *__restrict __sbuf )
+{
     int fr;
     vTaskSuspendAll();
-    fr = vfs_stat(path, st);
+    fr = vfs_stat(__path, __sbuf);
     pReent->_errno = fr;
     xTaskResumeAll();
     return fr;
 }
 
 _CLOCK_T_ _times_r(struct _reent *pReent, struct tms *tbuf) {
-    pReent->_errno = ENOTSUP;
-    return -1;
+    unsigned int fr;
+    tbuf->tms_cstime = HW_DIGCTL_MICROSECONDS_RD();
+    tbuf->tms_cutime = HW_DIGCTL_MICROSECONDS_RD();
+    tbuf->tms_stime = HW_DIGCTL_MICROSECONDS_RD();
+    tbuf->tms_utime = HW_DIGCTL_MICROSECONDS_RD();
+    fr = HW_DIGCTL_MICROSECONDS_RD();
+    pReent->_errno = 0;
+    return fr;
 }
 
 int _unlink_r(struct _reent *pReent, const char *filename) {
@@ -192,6 +222,7 @@ _ssize_t _write_r(struct _reent *pReent, int fd, const void *buf, size_t nbytes)
         }
     }
     xTaskResumeAll();
+    //uartdbg_print_regs();
     return i;
 }
 

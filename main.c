@@ -24,7 +24,7 @@
  *
  * 1 tab == 4 spaces!
  */
-
+#include "keyboard.h"
 #include "display.h"
 #include "mmu.h"
 #include "portmacro.h"
@@ -55,6 +55,7 @@
 #include "mmu.h"
 #include "regsapbh.h"
 #include "regsuartdbg.h"
+#include "regspower.h"
 #include "rtc.h"
 #include "tusb.h"
 
@@ -87,49 +88,20 @@ void vTask1(void *pvParameters) {
     
     for (;;) {
         //static char c = '1';
-        //vTaskDelay(1);
-        //printf("1");
-        //a++;
+        /*
         vTaskDelay(1000);
+        printf("is_key_down 1:%08x\n",is_key_down(KEY_F1));
+        printf("is_key_down 2:%08x\n",is_key_down(KEY_ON));*/
+
+        //a++;
+    
         //printf("c\n");
     }
 }
-
-int *i2p(int i) {
-    return 0x100000 + 0x1040 + 4096 * i;
-}
-
+ 
 void vTask2(void *pvParameters) {
 
-    vTaskDelay(5000);
-    cdc_printf("\r\n\r\n");
-    vmLoadFile(0, 0x100000, 0x100000, NULL, 0, 1);
-    for (int i = 1; i < 10; i++) {
-        *i2p(i) = i;
-        cdc_clear();
-        cdc_printf("%d\r\n", i);
-        cdc_clear();
-        for (int j = 1; j <= i; j++) {
-            cdc_printf("%d: %d ", j, *i2p(j));
-            cdc_clear();
-        }
-        cdc_printf("\r\n");
-    }
-
-    // FIL f;
-    // FRESULT fr;
-    // if ((fr = f_open(&f, "/a.out", FA_READ | FA_WRITE)) != 0) {
-    //     cdc_printf("Open a.out failed with fr %d!\r\n", fr);
-    //     vTaskDelete(NULL);
-    // }
-
-    // vmLoadFile(0, 0x100000, (f_size(&f) / 0x1000 + 1) * 0x1000, &f, 0, 0); //瞎写的
-    // elf_t r;
-    // if (elf_newFile(0x100000, f_size(&f), &r) != 0) {
-    //     cdc_printf("Elf Newfile failed!\r\n");
-    //     vTaskDelete(NULL);
-    // }
-    // cdc_printf("Succeed!\r\n");
+    cdc_printf("Succeed!\r\n");
 
     for (;;) {
 
@@ -165,7 +137,7 @@ void vTask3(void *pvParameters) {
 		*/
     }
 }
-
+extern volatile uint32_t saved_svc_sp;
 /* Create all the demo application tasks, then start the scheduler. */
 int main(void) {
     /* Perform any hardware setup necessary. */
@@ -178,14 +150,13 @@ int main(void) {
 
     //xTaskCreate(vTask3, "Task Manager", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
 
-
     xTaskCreate(vServiceManger, "Service Host", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
     xTaskCreate(vInit, "init", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL);
 
     //vStartBlockingQueueTasks(1);
-    //vStartGenericQueueTasks(1);
-
+    //vStartGenericQueueTasks(1); 
     printf("pdMS_TO_TICKS(500)=%d\n", pdMS_TO_TICKS(500));
+    
     uartdbg_print_regs();
 
     vTaskStartScheduler();
@@ -200,24 +171,27 @@ int main(void) {
 
 static void prvSetupHardware(void) {
 
-    PLL_enable(1);
+    
+    BF_SETV(POWER_VDDDCTRL,TRG,26); // Set voltage = 1.45 V
 
-    HCLK_set_div(0, 5);   //96 MHz
-    CPUCLK_set_div(0, 5); //96 MHz
+    PLL_enable(1);
+    
+    HCLK_set_div(0, 4);   //120 MHz
+    CPUCLK_set_div(0, 1); //480 MHz
     CPUCLK_set_gating(0);
     CPUCLK_set_bypass(0);
 
-    /*
-	BF_CS1(CLKCTRL_HBUS, SLOW_DIV, 3);	
+    
+	BF_CS1(CLKCTRL_HBUS, SLOW_DIV, 1);	
 	BF_CS1(CLKCTRL_HBUS, APBHDMA_AS_ENABLE, 1);
 	BF_CS1(CLKCTRL_HBUS, APBXDMA_AS_ENABLE, 1);
-	BF_CS1(CLKCTRL_HBUS, CPU_DATA_AS_ENABLE, 1);
-	BF_CS1(CLKCTRL_HBUS, CPU_INSTR_AS_ENABLE, 1);
+	//BF_CS1(CLKCTRL_HBUS, CPU_DATA_AS_ENABLE, 1);
+	//BF_CS1(CLKCTRL_HBUS, CPU_INSTR_AS_ENABLE, 1);
 	BF_CS1(CLKCTRL_HBUS, TRAFFIC_JAM_AS_ENABLE, 1);
 	BF_CS1(CLKCTRL_HBUS, TRAFFIC_AS_ENABLE, 1);
     BF_CS1(CLKCTRL_HBUS, AUTO_SLOW_MODE, 1);
-   */
-
+   
+    
     //BF_CS1(CLKCTRL_PIX, DIV, 8);	//修正LCD控制器频率
 
     //BF_CS1(CLKCTRL_CLKSEQ, BYPASS_PIX, 0);	//修正LCD控制器频率
@@ -240,8 +214,9 @@ static void prvSetupHardware(void) {
 
     printf("(CLKCTRL_CPU,DIV_CPU), %08x\n", BF_RD(CLKCTRL_CPU, DIV_CPU));
     printf("(CLKCTRL_HBUS,DIV), %08x\n", BF_RD(CLKCTRL_HBUS, DIV));
+    printf("VDDD voltage:%.2f V\n", 0.8 + (BF_RD(POWER_VDDDCTRL,TRG)*0.025));
 
     LCD_init();
-    
+    keyboard_init(); //键盘初始化
 }
 /*-----------------------------------------------------------*/

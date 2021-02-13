@@ -12,7 +12,7 @@ set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
 
-add_compile_options(-mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -Os -pipe -ffunction-sections -fcommon)
+add_compile_options(-mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -Os -pipe -fdata-sections -ffunction-sections -fcommon)
 add_link_options(-T ${CMAKE_SOURCE_DIR}/script/ld.script -Wl,--gc-sections -Wl,--wrap=malloc  -Wl,--wrap=free -Wl,--wrap=_malloc_r)
 
 SET(BUILD_SHARED_LIBRARIES OFF)
@@ -47,18 +47,6 @@ add_subdirectory(Services)
 add_subdirectory(SystemApp)
 add_subdirectory(TestApp)
 
-ExternalProject_Add(testelf
-                    SOURCE_DIR ${CMAKE_SOURCE_DIR}/TestELF
-                    BINARY_DIR ${CMAKE_BINARY_DIR}/TestELF
-                    INSTALL_COMMAND ""
-                    EXCLUDE_FROM_ALL 1)
-    
-ExternalProject_Add_Step(testelf forceconfigure
-    COMMAND ${CMAKE_COMMAND} -E echo "Force configure of project"
-    DEPENDEES update
-    DEPENDERS configure
-    ALWAYS 1)
-  
 aux_source_directory(. DIR_SRCS)
 add_executable(rom.elf ${DIR_SRCS})
 target_link_libraries(rom.elf config kernel libraries services testapp systemapp -lm)
