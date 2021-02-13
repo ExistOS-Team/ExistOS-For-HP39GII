@@ -186,9 +186,9 @@ void pinctrl1_bank1_isr(){
         set_row_line(i);
         for(int j = 0; j<5; j++){
             rd_col_line = read_col_line(j);
-            if(rd_col_line != !key_matrix[j][i])
+            if(rd_col_line != !key_matrix_last_state[j][i])
             {
-                key_matrix[j][i] = !rd_col_line;
+                key_matrix_last_state[j][i] = !rd_col_line;
                 act_x = i;
                 act_y = j;
                 //uartdbg_printf("row:%x col:%x ",i,j);
@@ -205,8 +205,10 @@ void pinctrl1_bank1_isr(){
     //uartdbg_printf("key irq:%x ",wline);
     if(tmp_tog & wline){
         key_status = 1;
+        key_matrix[act_x][act_y] = 1;
     }else{
         key_status = 0;
+        key_matrix[act_x][act_y] = 0;
     }
 
     if(key_msg_queue != NULL){
@@ -238,11 +240,16 @@ void pinctrl0_key_on_isr(){
     if(tmp_tog & status){
         //POP ON
         key_msg = KEY_ON << 8 | 0;
-        xQueueSendFromISR(key_msg_queue, &key_msg, NULL);
+        key_matrix[0][10] = 1;
+        if(key_msg_queue != NULL)
+            xQueueSendFromISR(key_msg_queue, &key_msg, NULL);
+
     }else{  
         //PUSH ON
         key_msg = KEY_ON << 8 | 1;
-        xQueueSendFromISR(key_msg_queue, &key_msg, NULL);
+        key_matrix[0][10] = 0;
+        if(key_msg_queue != NULL)
+            xQueueSendFromISR(key_msg_queue, &key_msg, NULL);
     }
     //uartdbg_printf("key on irq:%x\n",tmp_tog & status);
 }
@@ -350,9 +357,9 @@ void keyboard_init() {
 }
 
 unsigned int is_key_ON_down() {
-    return ((BF_RD(PINCTRL_DIN0, DIN) >> 14) & 1);
+    return key_matrix[0][10];
 }
-
+/*
 void key_scan() {
 
     for (int y = 0; y < 10; y++) {
@@ -364,5 +371,11 @@ void key_scan() {
 
     key_matrix[0][10] = ((BF_RD(PINCTRL_DIN0, DIN) >> 14) & 1);
 };
+*/
 
-unsigned int is_key_down(keys key) { return key_matrix[key % 8][key >> 3]; };
+unsigned int is_key_down(keys key) { 
+    return key_matrix[key % 8][key >> 3]; 
+    };
+
+
+

@@ -88,14 +88,13 @@ void vTask1(void *pvParameters) {
     
     for (;;) {
         //static char c = '1';
-        //vTaskDelay(1);
-        //printf("1");
-        //a++;
-        for(unsigned int *i=0xFFFF0000,k=0;k<30;k++,i++){
-            printf("%d:%08x\n",k,*i);
-        }
+        /*
         vTaskDelay(1000);
-        *((unsigned int *)0x23334500) = 0xFF;
+        printf("is_key_down 1:%08x\n",is_key_down(KEY_F1));
+        printf("is_key_down 2:%08x\n",is_key_down(KEY_ON));*/
+        
+        //a++;
+    
         //printf("c\n");
     }
 }
@@ -146,7 +145,7 @@ int main(void) {
     prvSetupHardware();
     
     /* Create the tasks defined within this file. */
-    //xTaskCreate( vTask1, "test task1", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
+    xTaskCreate( vTask1, "test task1", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
     //xTaskCreate(vTask2, "test task2", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
     //xTaskCreate(vTask3, "Task Manager", configMINIMAL_STACK_SIZE, NULL, 4, NULL);
