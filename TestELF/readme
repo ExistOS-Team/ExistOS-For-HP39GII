@@ -1,9 +1,0 @@
-For cmake, this target(TestELF) can also be built using 
-
-cmake .. --build --target testelf 
-
-or something like 
-
-make testelf
-
-in the main project build directory. Please note this target is not built by default.
