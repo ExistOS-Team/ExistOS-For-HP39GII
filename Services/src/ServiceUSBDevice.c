@@ -42,7 +42,9 @@ void vServiceUSBDevice(void *pvParameters) {
     vTaskDelay(600);
     
     xTaskCreateStatic(vUsbDeviceTask, "usbd", USBD_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, usb_device_stack, &usb_device_taskdef);
+#if CFG_TUD_CDC > 0
     xTaskCreate(vCDC_Console, "CDC Console", configMINIMAL_STACK_SIZE, NULL, 3, NULL);
+#endif
     vTaskDelete(NULL);
     for (;;) {
         vTaskSuspend(NULL);

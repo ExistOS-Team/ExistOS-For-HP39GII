@@ -8,6 +8,7 @@
 #include "ServiceRawFlash.h"
 #include "ServiceSTMPPartition.h"
 #include "ServiceKeyboard.h"
+#include "ServiceUSBHID.h"
 #include "display.h"
 #include "keyboard.h"
 #include "tusb.h"
@@ -115,10 +116,27 @@ void parse_line(char *line) {
         shell_put_a_line("USB Reload.");
         return;
     }
-    
 
+    if (strcmp(line, "hms") == 0) {
+        for (size_t i = 0; i < 5; i++)
+        {
+          HID_mouse_move(10, 10, 0);
+          vTaskDelay(300/portTICK_RATE_MS);
+        }
+        HID_mouse_click(MOUSE_BUTTON_LEFT);
+        vTaskDelay(300 / portTICK_RATE_MS);
+        HID_mouse_click(MOUSE_BUTTON_RIGHT);
+        shell_put_a_line("okay");
+        return;
+    }
 
-    if (strcmp(line, "format") == 0) {
+    if (strcmp(line, "hkb") == 0) {
+      HID_kbd_print("Hello world!");
+      shell_put_a_line("okay");
+      return;
+    }
+
+      if (strcmp(line, "format") == 0) {
         shell_put_a_line("Start erasing...");
         extern unsigned int FSOK;
         FSOK = 0;
@@ -159,13 +177,13 @@ void parse_line(char *line) {
     if (strcmp(line, "help") == 0) {
         shell_put_a_line("commane list:");
         shell_put_a_line("menu    help    format    usbon    usboff");
-        shell_put_a_line("usbreload");
+        shell_put_a_line("usbreload hms hkb");
         return;
     }
 
     shell_put_a_line("command not found. type 'help' to check the");
     shell_put_a_line("commane list.");
-}
+    }
 
 void key_input(unsigned int key) {
     unsigned char to_alpha;

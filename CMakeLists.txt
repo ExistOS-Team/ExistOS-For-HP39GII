@@ -12,8 +12,9 @@ set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
 
-add_compile_options(-mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -Os -pipe -fdata-sections -ffunction-sections -fcommon)
-add_link_options(-T ${CMAKE_SOURCE_DIR}/script/ld.script -Wl,--gc-sections -Wl,--wrap=malloc  -Wl,--wrap=free -Wl,--wrap=_malloc_r)
+add_compile_options(-mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -Os -pipe -fdata-sections -ffunction-sections -fcommon) #--target=arm-none-eabi --rtlib=libgcc)
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fno-threadsafe-statics -fexceptions -frtti")
+add_link_options(-T ${CMAKE_SOURCE_DIR}/script/ld.script -Wl,--gc-sections -Wl,--wrap=malloc  -Wl,--wrap=free -Wl,--wrap=_malloc_r --specs=nano.specs --specs=nosys.specs)
 
 SET(BUILD_SHARED_LIBRARIES OFF)
 SET(CMAKE_EXE_LINKER_FLAGS "-static")
