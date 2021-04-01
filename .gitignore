@@ -68,6 +68,7 @@ CMakeFiles/
 build/
 build/.cmake/
 .cache/
+compile_commands.json
 
 # Tools
 elftosb
