@@ -67,6 +67,7 @@ CMakeFiles/
 .cmake/
 build/
 build/.cmake/
+.cache/
 
 # Tools
 elftosb

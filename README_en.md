@@ -22,8 +22,10 @@ This firmware project is created by a group of calculator enthusiasts, used some
 - [x] FLASH Driver
 - [x] FATFS
 - [x] Multitasking
-- [ ] Virtual memory
-- [ ] Process, ELF loading
+- [x] Virtual memory
+- [x] Process, ELF loading
+- [x] Minimal MicroPython implement
+- [ ] Process switch, terminate, ELF unload
 - [ ] GUI
 - [ ] Power management
 - [ ] Linux 5.4 half-virtualization dual-kernel implementation
@@ -31,31 +33,7 @@ This firmware project is created by a group of calculator enthusiasts, used some
 
 Current development status: Most of the OS kernel and some necessary hardware drivers have been implemented. But due to the lacking of knowledge about the upgrading method, we still need to use the offical upgrade tool in Windows 7/XP to flash the firmware. And no GUI provided, currently we are focusing on implementing virtual memory management and process loading. The GUI and so on are under discussion. If you have advice, please tell us at Issues.
 
-## Installing
-
-### GNU Make
-
-**Currently only Windows is supported by this method**
-
-1. Download the code.
-
-2. Go to [https://github.com/Repeerc/ExistOS-For-HP39GII/releases/tag/0.0.1](https://github.com/Repeerc/ExistOS-For-HP39GII/releases/tag/0.0.1) to download toolchain.
-
-3. Place the source directory and toolchain directory in a same directory, like this:
-   ```
-   Working directory
-   |
-   ┝ hp39gii 
-   |
-   ┝ tools
-   ```
-
-   
-
-4. Double click to run the console.bat in the hp39gii directory.
-
-5. Use `make` to compile, `make flash` to upload the firmware to calculator.
-
+## Compile/Flash
 
 ### CMake
 
@@ -72,7 +50,7 @@ Current development status: Most of the OS kernel and some necessary hardware dr
 
 3. For non-Windows system, please compile /tools/sbtools first (no need to install)
 
-4. For Windows, download [Ninja](https://github.com/ninja-build/ninja/releases) and add the .exe file to PATH.
+4. For Windows, download [Ninja](https://github.com/ninja-build/ninja/releases) and add the .exe file to PATH. GNU Make is also supported but it is slower and harder to install.
 
 5.  execute these commands in the terminal in this directory.
     ```bash
@@ -80,7 +58,7 @@ Current development status: Most of the OS kernel and some necessary hardware dr
     cd ./build
     cmake ..
     make (or ninja)   # Compile
-    make flash (or ninja flash)   # Flash into RAM
+    make flash (or ninja flash)   # Flash into RAM (Please completely poweroff the calculator(remove battery), then plug the usb cable while holding the ON/C button to enter flashing mode, before using this command)
     ```
 
 Notice: Please install drivers of HP39GII by yourself.
