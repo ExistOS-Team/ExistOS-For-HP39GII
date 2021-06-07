@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.16)
+
+include(ExternalProject)
 
 set(CMAKE_TOOLCHAIN_FILE toolchain.cmake)
 project(ExistOS-for-HP39gii VERSION 0.1.0)
@@ -46,8 +48,6 @@ add_subdirectory(SystemApp)
 add_subdirectory(TestApp)
 
 aux_source_directory(. DIR_SRCS)
-
-
 add_executable(rom.elf ${DIR_SRCS})
 target_link_libraries(rom.elf config kernel libraries services testapp systemapp -lm)
 

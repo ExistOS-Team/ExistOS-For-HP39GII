@@ -35,31 +35,7 @@
 目前工作进展：已经完成了操作系统大部分内核和一些必要的硬件驱动。但由于未弄清STMP3770固件刷入机制，因此需要在Win7\WinXP环境下用计算器官方的固件升级软件刷入本固件。同时还没有用户界面，现在的工作重心是实现虚拟内存管理和进程加载。关于用户界面GUI等还在讨论中，如有宝贵意见可于Issues提出。
 
 
-## 安装
-
-### GNU Make
-
-**此方式目前仅支持Windows平台**
-
-1. 使用任意方法把本项目源码下载到您的电脑上的任意位置。
-
-2. 前往[https://github.com/Repeerc/ExistOS-For-HP39GII/releases/tag/0.0.1](https://github.com/Repeerc/ExistOS-For-HP39GII/releases/tag/0.0.1)下载编译工具链。
-
-3. 使本项目源码文件夹和编译工具链文件夹处于同级。如下所示
-
-   ```
-   工作目录
-   |
-   ┝ hp39gii 
-   |
-   ┝ tools
-   ```
-
-   
-
-4. 双击运行hp39gii文件夹下的console.bat
-
-5. 使用`make`进行编译、`make flash`刷入编译好的固件。
+## 固件编译/安装
 
 ### CMake
 
@@ -76,7 +52,7 @@
 
 3. 对于非Windows系统, 请先编译 /tools/sbtools (无需安装)
 
-4. 对于Windows系统, 下载[Ninja](https://github.com/ninja-build/ninja/releases)并将exe文件添加至PATH变量
+4. 对于Windows系统, 下载[Ninja](https://github.com/ninja-build/ninja/releases)并将exe文件添加至PATH变量. 也可以使用GNU Make, 但是编译速度会慢一点并且安装会麻烦一点。
 
 5. 在此文件夹中, 执行
     ```bash
@@ -84,7 +60,7 @@
     cd ./build
     cmake ..
     make (或ninja)   #编译固件
-    make flash (或ninja flash)   #将固件刷入RAM
+    make flash (或ninja flash)   #将固件刷入RAM (刷入前请将计算器完全断电(抠电池), 之后在按住ON/C按键的同时插入USB线，即可进入刷写模式)
     ```
 
 注意：HP39GII的相关驱动程序请自行安装。

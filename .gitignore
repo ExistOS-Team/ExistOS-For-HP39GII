@@ -64,8 +64,15 @@ Makefile
 CMakeCache.txt
 cmake_install.cmake
 CMakeFiles/
+.cmake/
+build/
 build/.cmake/
+.cache/
+compile_commands.json
 
 # Tools
 elftosb
 sbloader
+elftosb1
+rsrctool
+sbtoelf
