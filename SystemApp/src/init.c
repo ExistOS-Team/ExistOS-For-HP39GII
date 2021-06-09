@@ -114,7 +114,7 @@ void vInit() {
      
     void vm_test();
 
-    vm_test();
+    //vm_test();  //BUG
 
     vTaskDelete(NULL);
     for (;;) {
