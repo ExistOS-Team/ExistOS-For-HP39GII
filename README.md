@@ -58,7 +58,7 @@
     ```bash
     mkdir ./build
     cd ./build
-    cmake ..
+    cmake .. （或cmake .. -G Ninja）
     make (或ninja)   #编译固件
     make flash (或ninja flash)   #将固件刷入RAM (刷入前请将计算器完全断电(抠电池), 之后在按住ON/C按键的同时插入USB线，即可进入刷写模式)
     ```
