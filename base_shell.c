@@ -157,14 +157,14 @@ void parse_line(char *line) {
     }
 
     if (strcmp(line, "help") == 0) {
-        shell_put_a_line("commane list:");
+        shell_put_a_line("command list:");
         shell_put_a_line("menu    help    format    usbon    usboff");
         shell_put_a_line("usbreload");
         return;
     }
 
     shell_put_a_line("command not found. type 'help' to check the");
-    shell_put_a_line("commane list.");
+    shell_put_a_line("command list.");
 }
 
 void key_input(unsigned int key) {
