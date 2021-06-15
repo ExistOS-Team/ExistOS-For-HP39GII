@@ -39,7 +39,7 @@
 
 ### CMake
 
-1. 安装 arm-none-eabi-gcc. Linux系统可以用包管理器安装，Windows系统可以从[这里](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads)下载. 对于Windows系统,请将安装目录下的./bin路径添加至PATH环境变量.
+1. 安装 gcc-arm-none-eabi. Linux系统可以用包管理器安装，Windows系统可以从[这里](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads)下载. 对于Windows系统,请将安装目录下的./bin路径添加至PATH环境变量.
 
 2. 对于Linux系统, 请将99-hp39gii.rules复制到/etc/udev/rules.d/  
     之后执行
