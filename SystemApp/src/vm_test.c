@@ -84,7 +84,7 @@ void vFaultTask(void *pvParameters) {
 
 void vm_test(){
 
-    xTaskCreate(vFaultTask,"Falut Task", configMINIMAL_STACK_SIZE*3, NULL, 2, NULL);
+    xTaskCreate(vFaultTask,"Fault Task", configMINIMAL_STACK_SIZE*3, NULL, 2, NULL);
     vTaskDelay(3000);
     //dump_vm_spaces();
     malloc_stats();
