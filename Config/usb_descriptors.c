@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  *
  */
-
+#include <inttypes.h>
 #include "tusb.h"
 
 /* A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
@@ -71,18 +71,42 @@ uint8_t const * tud_descriptor_device_cb(void)
 }
 
 //--------------------------------------------------------------------+
+// HID Report Descriptor
+//--------------------------------------------------------------------+
+
+#define EPNUM_HID1 0x81
+#define EPNUM_HID2 0x82
+
+uint8_t const desc_hid_report1[] = {TUD_HID_REPORT_DESC_KEYBOARD()};
+
+uint8_t const desc_hid_report2[] = {TUD_HID_REPORT_DESC_MOUSE()};
+
+// Invoked when received GET HID REPORT DESCRIPTOR
+// Application return pointer to descriptor
+// Descriptor contents must exist long enough for transfer to complete
+
+uint8_t const *tud_hid_descriptor_report_cb(uint8_t itf) {
+  if (itf == 0) {
+    return desc_hid_report1;
+  } else if (itf == 1) {
+    return desc_hid_report2;
+  }
+  return NULL;
+}
+//--------------------------------------------------------------------+
 // Configuration Descriptor
 //--------------------------------------------------------------------+
 
-enum
-{
-  ITF_NUM_CDC = 0,
-  ITF_NUM_CDC_DATA,
-  ITF_NUM_MSC,
+enum {
+  // ITF_NUM_CDC = 0,
+  // ITF_NUM_CDC_DATA,
+  //ITF_NUM_MSC,
+  ITF_NUM_HID1,
+  ITF_NUM_HID2,
   ITF_NUM_TOTAL
 };
 
-#define CONFIG_TOTAL_LEN    (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_MSC_DESC_LEN)
+#define CONFIG_TOTAL_LEN    (TUD_CONFIG_DESC_LEN  + TUD_HID_DESC_LEN*2 )
 
 #if CFG_TUSB_MCU == OPT_MCU_LPC175X_6X || CFG_TUSB_MCU == OPT_MCU_LPC177X_8X || CFG_TUSB_MCU == OPT_MCU_LPC40XX
   // LPC 17xx and 40xx endpoint type (bulk/interrupt/iso) are fixed by its number
@@ -120,26 +144,19 @@ uint8_t const desc_fs_configuration[] =
   TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100),
 
   // Interface number, string index, EP notification address and size, EP data address (out, in) and size.
-  TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, 4, EPNUM_CDC_NOTIF, 8, EPNUM_CDC_OUT, EPNUM_CDC_IN, 64),
+  //TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, 4, EPNUM_CDC_NOTIF, 8, EPNUM_CDC_OUT, EPNUM_CDC_IN, 64),
 
   // Interface number, string index, EP Out & EP In address, EP size
   
+  //TUD_MSC_DESCRIPTOR(ITF_NUM_MSC, 4, EPNUM_MSC_OUT, EPNUM_MSC_IN, 64),
   
-  TUD_MSC_DESCRIPTOR(ITF_NUM_MSC, 5, EPNUM_MSC_OUT, EPNUM_MSC_IN, 64),
+  // Interface number, string index, protocol, report descriptor len, EP In address, size & polling interval
+  TUD_HID_DESCRIPTOR(ITF_NUM_HID1, 4, HID_PROTOCOL_KEYBOARD, sizeof(desc_hid_report1), EPNUM_HID1, CFG_TUD_HID_EP_BUFSIZE, 30),
+  TUD_HID_DESCRIPTOR(ITF_NUM_HID2, 5, HID_PROTOCOL_MOUSE, sizeof(desc_hid_report2), EPNUM_HID2, CFG_TUD_HID_EP_BUFSIZE, 30)
 };
 
 #if TUD_OPT_HIGH_SPEED
-uint8_t const desc_hs_configuration[] =
-{
-  // Config number, interface count, string index, total length, attribute, power in mA
-  TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100),
-
-  // Interface number, string index, EP notification address and size, EP data address (out, in) and size.
-  TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, 4, EPNUM_CDC_NOTIF, 8, EPNUM_CDC_OUT, EPNUM_CDC_IN, 512),
-
-  // Interface number, string index, EP Out & EP In address, EP size
-  TUD_MSC_DESCRIPTOR(ITF_NUM_MSC, 5, EPNUM_MSC_OUT, EPNUM_MSC_IN, 512),
-};
+uint8_t* const desc_hs_configuration = desc_fs_configuration;
 #endif
 
 // Invoked when received GET CONFIGURATION DESCRIPTOR
@@ -148,7 +165,7 @@ uint8_t const desc_hs_configuration[] =
 uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
 {
   (void) index; // for multiple configurations
-
+  return desc_fs_configuration;
 #if TUD_OPT_HIGH_SPEED
   // Although we are highspeed, host may be fullspeed.
   return (tud_speed_get() == TUSB_SPEED_HIGH) ?  desc_hs_configuration : desc_fs_configuration;
@@ -162,14 +179,16 @@ uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
 //--------------------------------------------------------------------+
 
 // array of pointer to string descriptors
-char const* string_desc_arr [] =
-{
-  (const char[]) { 0x09, 0x04 }, // 0: is supported language is English (0x0409)
-  "Hewlett-Packard",                     // 1: Manufacturer
-  "HP 39GII Calc",              // 2: Product
-  "39GII",                      // 3: Serials, should use chip ID
-  "Console CDC",                 // 4: CDC Interface
-  "USB MSC",                 // 5: MSC Interface
+char const *string_desc_arr[] = {
+    (const char[]){0x09, 0x04}, // 0: is supported language is English (0x0409)
+    "Hewlett-Packard",          // 1: Manufacturer
+    "HP 39GII Calc",            // 2: Product
+    "39GII",                    // 3: Serials, should use chip ID
+    //"Console CDC",                 // 4: CDC Interface
+    //"USB MSC",      // 5: MSC Interface
+    "USB HID Keyboard", // 6: HID Keyboard Interface
+    "USB HID Mouse" // 7: HID Mouse Interface
+
 };
 
 static uint16_t _desc_str[32];
