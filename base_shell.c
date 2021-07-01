@@ -117,21 +117,27 @@ void parse_line(char *line) {
         return;
     }
 
-    if (strcmp(line, "hms") == 0) {
-        for (size_t i = 0; i < 5; i++)
-        {
-          HID_mouse_move(10, 10, 0);
-          vTaskDelay(300/portTICK_RATE_MS);
+    if (strcmp(line, "hidmouse") == 0) {
+        while(!is_key_ON_down()){
+            if(is_key_down(KEY_UP)){
+                HID_mouse_move(0,-10,0);
+            }
+            if(is_key_down(KEY_DOWN)){
+                HID_mouse_move(0,10,0);
+            }
+            if(is_key_down(KEY_LEFT)){
+                HID_mouse_move(-10,0,0);
+            }
+            if(is_key_down(KEY_RIGHT)){
+                HID_mouse_move(10,0,0);
+            }
+             vTaskDelay(30/portTICK_RATE_MS);
         }
-        HID_mouse_click(MOUSE_BUTTON_LEFT);
-        vTaskDelay(300 / portTICK_RATE_MS);
-        HID_mouse_click(MOUSE_BUTTON_RIGHT);
-        shell_put_a_line("okay");
         return;
     }
 
-    if (strcmp(line, "hkb") == 0) {
-      HID_kbd_print("Hello world!");
+    if (strcmp(line, "hidkbd") == 0) {
+      enable_service_usb_keyboard_transparent();
       shell_put_a_line("okay");
       return;
     }
@@ -177,7 +183,7 @@ void parse_line(char *line) {
     if (strcmp(line, "help") == 0) {
         shell_put_a_line("commane list:");
         shell_put_a_line("menu    help    format    usbon    usboff");
-        shell_put_a_line("usbreload hms hkb");
+        shell_put_a_line("usbreload hidmouse hidkbd");
         return;
     }
 

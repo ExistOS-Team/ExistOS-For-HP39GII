@@ -74,24 +74,27 @@ uint8_t const * tud_descriptor_device_cb(void)
 // HID Report Descriptor
 //--------------------------------------------------------------------+
 
-#define EPNUM_HID1 0x81
-#define EPNUM_HID2 0x82
 
-uint8_t const desc_hid_report1[] = {TUD_HID_REPORT_DESC_KEYBOARD()};
+enum
+{
+  REPORT_ID_KEYBOARD = 1,
+  REPORT_ID_MOUSE,
+  REPORT_ID_CONSUMER_CONTROL,
+  REPORT_ID_GAMEPAD,
+  REPORT_ID_COUNT
+};
 
-uint8_t const desc_hid_report2[] = {TUD_HID_REPORT_DESC_MOUSE()};
-
+uint8_t const desc_hid_report[] =
+{
+  TUD_HID_REPORT_DESC_KEYBOARD( HID_REPORT_ID(REPORT_ID_KEYBOARD         )),
+  TUD_HID_REPORT_DESC_MOUSE   ( HID_REPORT_ID(REPORT_ID_MOUSE            ))
+};
 // Invoked when received GET HID REPORT DESCRIPTOR
 // Application return pointer to descriptor
 // Descriptor contents must exist long enough for transfer to complete
 
-uint8_t const *tud_hid_descriptor_report_cb(uint8_t itf) {
-  if (itf == 0) {
-    return desc_hid_report1;
-  } else if (itf == 1) {
-    return desc_hid_report2;
-  }
-  return NULL;
+uint8_t const *tud_hid_descriptor_report_cb() {
+  return desc_hid_report;
 }
 //--------------------------------------------------------------------+
 // Configuration Descriptor
@@ -101,12 +104,11 @@ enum {
   // ITF_NUM_CDC = 0,
   // ITF_NUM_CDC_DATA,
   //ITF_NUM_MSC,
-  ITF_NUM_HID1,
-  ITF_NUM_HID2,
+  ITF_NUM_HID,
   ITF_NUM_TOTAL
 };
 
-#define CONFIG_TOTAL_LEN    (TUD_CONFIG_DESC_LEN  + TUD_HID_DESC_LEN*2 )
+#define CONFIG_TOTAL_LEN    (TUD_CONFIG_DESC_LEN  + TUD_HID_DESC_LEN )
 
 #if CFG_TUSB_MCU == OPT_MCU_LPC175X_6X || CFG_TUSB_MCU == OPT_MCU_LPC177X_8X || CFG_TUSB_MCU == OPT_MCU_LPC40XX
   // LPC 17xx and 40xx endpoint type (bulk/interrupt/iso) are fixed by its number
@@ -129,6 +131,8 @@ enum {
   #define EPNUM_MSC_IN      0x85
 
 #else
+  #define EPNUM_HID 0x81
+ 
   #define EPNUM_CDC_NOTIF   0x81
   #define EPNUM_CDC_OUT     0x02
   #define EPNUM_CDC_IN      0x82
@@ -151,8 +155,7 @@ uint8_t const desc_fs_configuration[] =
   //TUD_MSC_DESCRIPTOR(ITF_NUM_MSC, 4, EPNUM_MSC_OUT, EPNUM_MSC_IN, 64),
   
   // Interface number, string index, protocol, report descriptor len, EP In address, size & polling interval
-  TUD_HID_DESCRIPTOR(ITF_NUM_HID1, 4, HID_PROTOCOL_KEYBOARD, sizeof(desc_hid_report1), EPNUM_HID1, CFG_TUD_HID_EP_BUFSIZE, 30),
-  TUD_HID_DESCRIPTOR(ITF_NUM_HID2, 5, HID_PROTOCOL_MOUSE, sizeof(desc_hid_report2), EPNUM_HID2, CFG_TUD_HID_EP_BUFSIZE, 30)
+   TUD_HID_DESCRIPTOR(ITF_NUM_HID, 0, HID_PROTOCOL_NONE, sizeof(desc_hid_report), EPNUM_HID, CFG_TUD_HID_EP_BUFSIZE, 5)
 };
 
 #if TUD_OPT_HIGH_SPEED
@@ -165,7 +168,6 @@ uint8_t* const desc_hs_configuration = desc_fs_configuration;
 uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
 {
   (void) index; // for multiple configurations
-  return desc_fs_configuration;
 #if TUD_OPT_HIGH_SPEED
   // Although we are highspeed, host may be fullspeed.
   return (tud_speed_get() == TUSB_SPEED_HIGH) ?  desc_hs_configuration : desc_fs_configuration;
@@ -186,8 +188,7 @@ char const *string_desc_arr[] = {
     "39GII",                    // 3: Serials, should use chip ID
     //"Console CDC",                 // 4: CDC Interface
     //"USB MSC",      // 5: MSC Interface
-    "USB HID Keyboard", // 6: HID Keyboard Interface
-    "USB HID Mouse" // 7: HID Mouse Interface
+    "USB HID KeyboardMouse", // 6: HID Interface
 
 };
 

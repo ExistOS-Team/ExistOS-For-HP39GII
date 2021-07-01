@@ -27,7 +27,7 @@
 // Invoked when received GET_REPORT control request
 // Application must fill buffer report's content and return its length.
 // Return zero will cause the stack to STALL request
-uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id,
+uint16_t tud_hid_get_report_cb( uint8_t report_id,
                                hid_report_type_t report_type, uint8_t *buffer,
                                uint16_t reqlen) {
   // TODO not Implemented
@@ -39,7 +39,7 @@ uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id,
   return 0;
 }
 
-void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id,
+void tud_hid_set_report_cb( uint8_t report_id,
                            hid_report_type_t report_type, uint8_t const *buffer,
                            uint16_t bufsize) {
   // TODO set LED based on CAPLOCK, NUMLOCK etc...
@@ -68,8 +68,8 @@ void HID_mouse_move(signed char x, signed char y, signed char wheel){
   if(tud_suspended()){
     tud_remote_wakeup();
   }
-  while(!tud_hid_n_ready(1)) vTaskDelay(10/portTICK_RATE_MS);
-  tud_hid_n_mouse_report(1,REPORT_ID_MOUSE,_buttons,x,y,wheel,0);
+  while(!tud_hid_ready()) vTaskDelay(10/portTICK_RATE_MS);
+  tud_hid_mouse_report(REPORT_ID_MOUSE,_buttons,x,y,wheel,0);
 }
 
 void HID_mouse_press(uint8_t btn) { buttons(_buttons | btn); }
@@ -81,13 +81,27 @@ bool HID_mouse_isPressed(uint8_t btn){
 }
 
 static KeyReport _keyReport;
+extern void shell_put_a_line(char *text);
 static void sendReport(KeyReport *keys) {
   if (tud_suspended()) {
     tud_remote_wakeup();
   }
-  while (tud_hid_n_ready(0)) vTaskDelay(10/portTICK_RATE_MS);
-  tud_hid_n_keyboard_report(0,REPORT_ID_KEYBOARD, keys->modifiers, keys->keys);
+  while (!tud_hid_ready()) vTaskDelay(10/portTICK_RATE_MS);
+  tud_hid_keyboard_report(REPORT_ID_KEYBOARD, keys->modifiers, keys->keys);
   vTaskDelay(2/portTICK_RATE_MS);
+}
+
+void HID_kbd_send_raw(uint8_t HID_keycode){
+  _keyReport.keys[0] = HID_keycode;
+  _keyReport.keys[1] = 0;
+  _keyReport.keys[2] = 0;
+  _keyReport.keys[3] = 0;
+  _keyReport.keys[4] = 0;
+  _keyReport.keys[5] = 0;
+  _keyReport.modifiers = 0;
+  sendReport(&_keyReport);
+  _keyReport.keys[0] = 0;
+  sendReport(&_keyReport);
 }
 #define SHIFT 0x80
 const uint8_t _asciimap[128] = {
@@ -337,9 +351,14 @@ size_t HID_kbd_print(char* str){
   return HID_kbd_write(str,strlen(str));
 }
 
-void usb_keyboard_transparent_isr(unsigned int k) {
+void usb_keyboard_transparent_isr(unsigned int keyCode) {
+  uint8_t actx = keyCode >>11;
+  uint8_t acty = (keyCode >>8) & 0x07;
+  uint16_t k = (actx << 3) + acty;
+  if(!is_key_down(k)) return;   //按键抬起也会有回调
+  
   if (k == KEY_SHIFT || k == KEY_ALPHA)
-    return; // not used individual.
+    return; // not used individually.
   uint8_t out;
   if (is_key_down(KEY_ALPHA)) {
     out = key_map_to_alpha(k);
@@ -349,63 +368,78 @@ void usb_keyboard_transparent_isr(unsigned int k) {
   } else if (!is_key_down(KEY_SHIFT)) {
     switch (k) {
     case KEY_F1: {
-      out = HID_KEY_F1;
+      HID_kbd_send_raw(HID_KEY_F1);
+      return;
       break;
     }
     case KEY_F2: {
-      out = HID_KEY_F2;
+      HID_kbd_send_raw(HID_KEY_F2);
+      return;
       break;
     }
     case KEY_F3: {
-      out = HID_KEY_F3;
+      HID_kbd_send_raw(HID_KEY_F3);
+      return;
       break;
     }
     case KEY_F4: {
-      out = HID_KEY_F4;
+      HID_kbd_send_raw(HID_KEY_F4);
+      return;
       break;
     }
     case KEY_F5: {
-      out = HID_KEY_F5;
+      HID_kbd_send_raw(HID_KEY_F5);
+      return;
       break;
     }
     case KEY_F6: {
-      out = HID_KEY_F6;
+      HID_kbd_send_raw(HID_KEY_F6);
+      return;
       break;
     }
     case KEY_UP:{
-      out = HID_KEY_UP_ARROW;
+      HID_kbd_send_raw(HID_KEY_ARROW_UP);
+      return;
       break;
     }
     case KEY_DOWN:{
-      out = HID_KEY_DOWN_ARROW;
+      HID_kbd_send_raw(HID_KEY_ARROW_DOWN);
+      return;
       break;
     }
     case KEY_RIGHT: {
-      out = HID_KEY_RIGHT_ARROW;
+      HID_kbd_send_raw(HID_KEY_ARROW_RIGHT);
+      return;
       break;
     }
     case KEY_LEFT: {
-      out = HID_KEY_LEFT_ARROW;
+      HID_kbd_send_raw(HID_KEY_ARROW_LEFT);
+      return;
       break;
     }
     case KEY_SYMB: {
-      out = HID_KEY_MEDIA_EDIT;
+      HID_kbd_send_raw(HID_KEY_MEDIA_EDIT);
+      return;
       break;
     }
     case KEY_PLOT: {
-      out = HID_KEY_MEDIA_WWW;
+      HID_kbd_send_raw(HID_KEY_MEDIA_WWW);
+      return;
       break;
     }
     case KEY_NUM: {
-      out = HID_KEY_MEDIA_CALC;
+      HID_kbd_send_raw(HID_KEY_MEDIA_CALC);
+      return;
       break;
     }
     case KEY_HOME: {
-      out = HID_KEY_HOME;
+      HID_kbd_send_raw(HID_KEY_HOME);
+      return;
       break;
     }
     case KEY_APPS: {
-      out = HID_KEY_LEFT_GUI; // windows键/super键/command键
+      HID_kbd_send_raw(HID_KEY_GUI_LEFT);
+      return; // windows键/super键/command键
       break;
     }
     case KEY_VIEWS: {
@@ -418,7 +452,8 @@ void usb_keyboard_transparent_isr(unsigned int k) {
       return;
     }
     case KEY_MATH: {
-      out = HID_KEY_MEDIA_CALC;
+      HID_kbd_send_raw(HID_KEY_MEDIA_CALC);
+      return;
       break;
     }
     case KEY_ABC: {
@@ -430,7 +465,8 @@ void usb_keyboard_transparent_isr(unsigned int k) {
       break;
     }
     case KEY_BACKSPACE: {
-      out = HID_KEY_BACKSPACE;
+      HID_kbd_send_raw(HID_KEY_BACKSPACE);
+      return;
       break;
     }
     case KEY_SIN: {
@@ -538,83 +574,100 @@ void usb_keyboard_transparent_isr(unsigned int k) {
       break;
     }
     case KEY_ENTER: {
-      out = HID_KEY_KEYPAD_ENTER;
+      HID_kbd_send_raw(HID_KEY_KEYPAD_ENTER);
+      return;
       break;
     }
     }
-  }else{
+  } else {
     switch (k) {
     case KEY_F1: {
-      out = HID_KEY_F1;
+      HID_kbd_send_raw(HID_KEY_F1);
+      return;
       break;
     }
     case KEY_F2: {
-      out = HID_KEY_F2;
+      HID_kbd_send_raw(HID_KEY_F2);
+      return;
       break;
     }
     case KEY_F3: {
-      out = HID_KEY_F3;
+      HID_kbd_send_raw(HID_KEY_F3);
+      return;
       break;
     }
     case KEY_F4: {
-      out = HID_KEY_F4;
+      HID_kbd_send_raw(HID_KEY_F4);
+      return;
       break;
     }
     case KEY_F5: {
-      out = HID_KEY_F5;
+      HID_kbd_send_raw(HID_KEY_F5);
+      return;
       break;
     }
     case KEY_F6: {
-      out = HID_KEY_F6;
+      HID_kbd_send_raw(HID_KEY_F6);
+      return;
       break;
     }
     case KEY_UP: {
-      out = HID_KEY_PAGE_UP;
+      HID_kbd_send_raw(HID_KEY_PAGE_UP);
+      return;
       break;
     }
     case KEY_DOWN: {
-      out = HID_KEY_PAGE_DOWN;
+      HID_kbd_send_raw(HID_KEY_PAGE_DOWN);
+      return;
       break;
     }
     case KEY_RIGHT: {
-      out = HID_KEY_END;
+      HID_kbd_send_raw(HID_KEY_END);
+      return;
       break;
     }
     case KEY_LEFT: {
-      out = HID_KEY_HOME;
+      HID_kbd_send_raw(HID_KEY_HOME);
+      return;
       break;
     }
     //setups
     case KEY_SYMB: {
-      out = HID_KEY_MEDIA_PREVIOUSSONG;
+      HID_kbd_send_raw(HID_KEY_MEDIA_PREVIOUSSONG);
+      return;
       break;
     }
     case KEY_PLOT: {
-      out = HID_KEY_MEDIA_PLAYPAUSE;
+      HID_kbd_send_raw(HID_KEY_MEDIA_PLAYPAUSE);
+      return;
       break;
     }
     case KEY_NUM: {
-      out = HID_KEY_MEDIA_NEXTSONG;
+      HID_kbd_send_raw(HID_KEY_MEDIA_NEXTSONG);
+      return;
       break;
     }
     //modes,info,help
     case KEY_HOME: {
-      out = HID_KEY_MEDIA_VOLUMEDOWN;
+      HID_kbd_send_raw(HID_KEY_MEDIA_VOLUMEDOWN);
+      return;
       break;
     }
     case KEY_APPS: {
-      out = HID_KEY_MEDIA_VOLUMEUP;
+      HID_kbd_send_raw(HID_KEY_MEDIA_VOLUMEUP);
+      return;
       break;
     }
     case KEY_VIEWS: {
-      out = HID_KEY_HELP;
+      HID_kbd_send_raw(HID_KEY_HELP);
+      return;
       break;
     }
     case KEY_VARS: {
       return;
     }
     case KEY_MATH: {  //cmds
-      HID_kbd_press(HID_KEY_LEFT_GUI);
+      HID_kbd_press(HID_KEY_GUI_LEFT);
       vTaskDelay(100/portTICK_RATE_MS);
       HID_kbd_press(HID_KEY_R);
       vTaskDelay(200 / portTICK_RATE_MS);
@@ -640,12 +693,13 @@ void usb_keyboard_transparent_isr(unsigned int k) {
       return;
     }
     case KEY_BACKSPACE: {
-      HID_kbd_press(HID_KEY_LEFT_CTRL);
+      HID_kbd_press(HID_KEY_CONTROL_LEFT);
       vTaskDelay(100 / portTICK_RATE_MS);
       HID_kbd_press(HID_KEY_A);
       vTaskDelay(100 / portTICK_RATE_MS);
       HID_kbd_releaseAll();
-      out = HID_KEY_BACKSPACE;
+      HID_kbd_send_raw(HID_KEY_BACKSPACE);
+      return;
       break;
     }
     case KEY_SIN: {
@@ -677,11 +731,13 @@ void usb_keyboard_transparent_isr(unsigned int k) {
       return;
     }
     case KEY_LEFTBRACKET: {
-      out = HID_KEY_COPY;
+      HID_kbd_send_raw(HID_KEY_COPY);
+      return;
       break;
     }
     case KEY_RIGHTBRACET: {
-      out = HID_KEY_PASTE;
+      HID_kbd_send_raw(HID_KEY_PASTE);
+      return;
       break;
     }
     case KEY_DIVISION: {
@@ -766,7 +822,7 @@ void usb_keyboard_transparent_isr(unsigned int k) {
 
 /**
  * @brief Turn your 39gii into a math keyboard.
- * @note Untested!
+ * @note Not fully tested!
  */
 void enable_service_usb_keyboard_transparent() {
   register_keyboard_callback(usb_keyboard_transparent_isr);

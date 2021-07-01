@@ -32,19 +32,8 @@ bool HID_mouse_isPressed(uint8_t btn); // check LEFT by default
 //  Note these are different in some respects to the TinyUSB codes but
 //  are compatible with Arduino Keyboard.h API
 
-#define HID_KEY_LEFT_CTRL 0x80
-#define HID_KEY_LEFT_SHIFT 0x81
-#define HID_KEY_LEFT_ALT 0x82
-#define HID_KEY_LEFT_GUI 0x83
-#define HID_KEY_RIGHT_CTRL 0x84
-#define HID_KEY_RIGHT_SHIFT 0x85
-#define HID_KEY_RIGHT_ALT 0x86
-#define HID_KEY_RIGHT_GUI 0x87
 
-#define HID_KEY_UP_ARROW 0xDA
-#define HID_KEY_DOWN_ARROW 0xD9
-#define HID_KEY_LEFT_ARROW 0xD8
-#define HID_KEY_RIGHT_ARROW 0xD7
+
 #define HID_KEY_ESC 0xB1
 
 
