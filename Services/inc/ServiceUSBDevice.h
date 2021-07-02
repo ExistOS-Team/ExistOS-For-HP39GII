@@ -16,7 +16,7 @@ void vServiceUSBDevice(void *pvParameters);
 void cdc_printf(const char *fmt, ...);
 void cdc_putchar(const char c);
 
-extern int usbd_enabled_itfs[5];
+extern uint8_t* usbd_desc;
 
 enum {
   ITF_NUM_CDC = 1,

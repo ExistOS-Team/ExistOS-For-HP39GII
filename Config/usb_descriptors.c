@@ -101,43 +101,6 @@ uint8_t const *tud_hid_descriptor_report_cb() {
 // Configuration Descriptor
 //--------------------------------------------------------------------+
 
-
-
-
-#if CFG_TUSB_MCU == OPT_MCU_LPC175X_6X || CFG_TUSB_MCU == OPT_MCU_LPC177X_8X || CFG_TUSB_MCU == OPT_MCU_LPC40XX
-  // LPC 17xx and 40xx endpoint type (bulk/interrupt/iso) are fixed by its number
-  // 0 control, 1 In, 2 Bulk, 3 Iso, 4 In, 5 Bulk etc ...
-  #define EPNUM_CDC_NOTIF   0x81
-  #define EPNUM_CDC_OUT     0x02
-  #define EPNUM_CDC_IN      0x82
-
-  #define EPNUM_MSC_OUT     0x05
-  #define EPNUM_MSC_IN      0x85
-
-#elif CFG_TUSB_MCU == OPT_MCU_SAMG
-  // SAMG doesn't support a same endpoint number with different direction IN and OUT
-  //    e.g EP1 OUT & EP1 IN cannot exist together
-  #define EPNUM_CDC_NOTIF   0x81
-  #define EPNUM_CDC_OUT     0x02
-  #define EPNUM_CDC_IN      0x83
-
-  #define EPNUM_MSC_OUT     0x04
-  #define EPNUM_MSC_IN      0x85
-
-#else
- 
-  #define EPNUM_CDC_NOTIF   0x81
-  #define EPNUM_CDC_OUT     0x02
-  #define EPNUM_CDC_IN      0x82
-
-  #define EPNUM_MSC_OUT     0x03
-  #define EPNUM_MSC_IN      0x83
-
-  #define EPNUM_HID         0x81
-
-#endif
-
-
 // Invoked when received GET CONFIGURATION DESCRIPTOR
 // Application return pointer to descriptor
 // Descriptor contents must exist long enough for transfer to complete
@@ -145,80 +108,7 @@ uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
 {
   (void) index; // for multiple configurations
 
-  int itf_num = 0;
-  int itf_desc_num = sizeof(usbd_enabled_itfs) / sizeof(usbd_enabled_itfs[0]);
-  int config_len = TUD_CONFIG_DESC_LEN;
-  size_t desc_size = 0;
-  bool usb_hs = (tud_speed_get() == TUSB_SPEED_HIGH)? true:false;
-  uint8_t itf_idx_cdc,itf_idx_msc,itf_idx_hid;
-  for (int i = 0; i < itf_desc_num; ++i) {
-    switch (usbd_enabled_itfs[i]) {
-    case ITF_NUM_CDC:
-      itf_idx_cdc = i;
-      break;
-    case ITF_NUM_MSC:
-      itf_idx_msc = i;
-      break;
-    case ITF_NUM_HID:
-      itf_idx_hid = i;
-      break;
-    default:
-      break;
-    }
-  }
-
-  uint8_t cdc_desc[] = {TUD_CDC_DESCRIPTOR(itf_idx_cdc, 4, EPNUM_CDC_NOTIF, 8, EPNUM_CDC_OUT, EPNUM_CDC_IN, usb_hs? 512:64)};
-  uint8_t msc_desc[] = {TUD_MSC_DESCRIPTOR(itf_idx_msc, 5, EPNUM_MSC_OUT, EPNUM_MSC_IN, usb_hs? 512:64)};
-  uint8_t hid_desc[] = {TUD_HID_DESCRIPTOR(itf_idx_hid, 6, HID_PROTOCOL_NONE,sizeof(desc_hid_report), EPNUM_HID, CFG_TUD_HID_EP_BUFSIZE, 5)};
-
-  for (size_t i = 0; i < itf_desc_num; i++) {
-    switch (usbd_enabled_itfs[i]) {
-    case ITF_NUM_CDC:
-      itf_num += 2;
-      desc_size += sizeof(cdc_desc);
-      config_len += TUD_CDC_DESC_LEN;
-      break;
-    case ITF_NUM_MSC:
-      itf_num++;
-      desc_size += sizeof(msc_desc);
-      config_len += TUD_MSC_DESC_LEN;
-      break;
-    case ITF_NUM_HID:
-      itf_num++;
-      desc_size += sizeof(hid_desc);
-      config_len += TUD_HID_DESC_LEN;
-      break;
-    default:
-      break;
-    }
-  }
-  uint8_t config_desc[] = {TUD_CONFIG_DESCRIPTOR(1, itf_num, 0, config_len, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100)};
-  desc_size += sizeof(config_desc);
-
-  uint8_t* desc = (uint8_t*)malloc(desc_size);  //GCC YES
-  size_t desc_ptr = 0;
-  memcpy(desc,config_desc,sizeof(config_desc));
-  desc_ptr += sizeof(config_desc);
-  for (int i = 0; i < itf_desc_num; ++i){
-     switch (usbd_enabled_itfs[i]) {
-    case ITF_NUM_CDC:
-      memcpy(&desc[desc_ptr], cdc_desc, sizeof(cdc_desc));
-      desc_ptr += sizeof(cdc_desc);
-      break;
-    case ITF_NUM_MSC:
-      memcpy(&desc[desc_ptr], msc_desc, sizeof(msc_desc));
-      desc_ptr += sizeof(msc_desc);
-      break;
-    case ITF_NUM_HID:
-      memcpy(&desc[desc_ptr], hid_desc, sizeof(hid_desc));
-      desc_ptr += sizeof(hid_desc);
-      break;
-    default:
-      break;
-    }
-  }
-
-  return desc;
+  return usbd_desc;
 }
 
 //--------------------------------------------------------------------+
