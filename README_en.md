@@ -19,6 +19,8 @@ This firmware project is created by a group of calculator enthusiasts, used some
 - [x] RTC
 - [x] USB MSC mode
 - [x] USB CDC(Virtual serial port) mode
+- [x] USB HID keyboard mouse mode
+- [x] USB dynamic configuration
 - [x] FLASH Driver
 - [x] FATFS
 - [x] Multitasking

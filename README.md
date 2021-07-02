@@ -20,6 +20,8 @@
 - [x] RTC时钟
 - [x] USB大容量存储模式
 - [x] USB串口控制台
+- [x] USB模拟键盘鼠标
+- [x] USB功能动态配置
 - [x] FLASH驱动
 - [x] FATFS文件系统
 - [x] 多任务
