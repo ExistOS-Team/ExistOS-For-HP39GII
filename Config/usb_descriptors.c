@@ -124,7 +124,6 @@ char const *string_desc_arr[] = {
     "Console CDC",                 // 4: CDC Interface
     "USB MSC",      // 5: MSC Interface
     "USB HID Keyboard Mouse" // 6: HID Interface
-
 };
 
 static uint16_t _desc_str[32];

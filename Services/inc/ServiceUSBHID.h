@@ -19,10 +19,38 @@ enum {
 #define MOUSE_MIDDLE 4
 #define MOUSE_ALL (MOUSE_LEFT | MOUSE_RIGHT | MOUSE_MIDDLE)
 
+/**
+ * @brief Click a mouse button
+ * 
+ * @param btn button. Can be MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE.
+ */
 void HID_mouse_click(uint8_t btn);
+
+/**
+ * @brief Move mouse 
+ * 
+ * @param x delta x
+ * @param y delta y
+ * @param wheel 
+ */
 void HID_mouse_move(signed char x, signed char y, signed char wheel);
+/**
+ * @brief Press a mouse button. Won't release until HID_mouse_release() is called.
+ * 
+ * @param btn button. Can be MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE.
+ */
 void HID_mouse_press(uint8_t btn);     // press LEFT by default
+/**
+ * @brief Release a mouse button.
+ * 
+ * @param btn button. Can be MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE.
+ */
 void HID_mouse_release(uint8_t btn);   // release LEFT by default
+/**
+ * @brief Get if a mouse button is pressed.
+ * 
+ * @param btn button. Can be MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE.
+ */
 bool HID_mouse_isPressed(uint8_t btn); // check LEFT by default
 
 /******************************
@@ -171,11 +199,37 @@ typedef struct {
   uint8_t keys[6];
 } KeyReport;
 
+/**
+ * @brief Write string to keyboard.
+ * 
+ * @param buffer pointer to target string.
+ * @param size size.
+ * @return size_t number of characters written.
+ */
 size_t HID_kbd_write(const uint8_t *buffer, size_t size);
+/**
+ * @brief Write string to keyboard
+ * 
+ * @param str target string.
+ * @return size_t number of characters written.
+ */
 size_t HID_kbd_print(char *str);
+/**
+ * @brief Press a keyboard button. Won't release until HID_mouse_release() is called.
+ * 
+ * @param k an ASCII character.
+ * @return size_t 
+ */
 size_t HID_kbd_press(uint8_t k);
 size_t HID_kbd_release(uint8_t k);
 void HID_kbd_releaseAll(void);
+
+/**
+ * @brief Send a raw keycode and release the key. Use this if you want to use special keys.
+ * 
+ * @param HID_keycode Raw HID key code.
+ */
+void HID_kbd_send_raw(uint8_t HID_keycode);
 
 #ifdef __cplusplus
 }
