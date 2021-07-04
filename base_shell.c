@@ -41,6 +41,25 @@ void shell_put_a_line(char *text) {
     LCD_dma_flush_buffer();
 }
 
+void write_to_shell(char *text) {  // ��shell����ַ���β��Ҫһ������ַ�����Զ�����.
+    int length = strlen(text) - 1; // text �ĳ���
+    int nowpos = 0;                // ��ǰλ
+    while (nowpos < length) {
+        int chars_thisline; // ��ǰ��Ҫ��ʾ���ַ����
+        if (length - nowpos >= max_line_chars) {
+            chars_thisline = max_line_chars;
+        } else {
+            chars_thisline = length - nowpos;
+        }
+
+        char current_line[80]; // ��ǰ��
+        strncpy(current_line, text + nowpos, chars_thisline);
+        shell_put_a_line(current_line);
+
+        nowpos += chars_thisline;
+    }
+}
+
 char last_ch;
 void type_in_buffer_line(char ch) {
     last_ch = ch;
@@ -99,22 +118,22 @@ void blink_call_back() {
 BYTE work[FF_MAX_SS];
 void parse_line(char *line) {
     char text_buf[64];
-
+    
     if (strcmp(line, "usbon") == 0) {
         tud_connect();
-        shell_put_a_line("USB Connected.");
+        shell_put_a_line("-> USB Connected.");
         return;
     }
     if (strcmp(line, "usboff") == 0) {
         tud_disconnect();
-        shell_put_a_line("USB Disconnected.");
+        shell_put_a_line("-> USB Disconnected.");
         return;
     }
     if (strcmp(line, "usbreload") == 0) {
         tud_disconnect();
         vTaskDelay(1000);
         tud_connect();
-        shell_put_a_line("USB Reload.");
+        shell_put_a_line("-> USB Reload.");
         return;
     }
 
@@ -180,17 +199,18 @@ void parse_line(char *line) {
 
       if (strcmp(line, "format") == 0) {
         shell_put_a_line("Start erasing...");
+
         extern unsigned int FSOK;
         FSOK = 0;
-        shell_put_a_line("Lock disk...");
+        shell_put_a_line("-> Lock disk...");
         lockFmap(true);
         flashMapClear();
-        shell_put_a_line("Erasing...");
+        shell_put_a_line("-> Erasing...");
         for (int i = getDataRegonStartBlock(); i < getDataRegonStartBlock() + getDataRegonTotalBlocks(); i++) {
                 xEraseFlashBlocks(i, 1, 5000);
                 vTaskDelay(1);
         }
-        shell_put_a_line("Reset Mapping...");
+        shell_put_a_line("-> Reset Mapping...");
         flashMapReset();
         MKFS_PARM opt;
         opt.fmt = FM_FAT;
@@ -199,15 +219,15 @@ void parse_line(char *line) {
         opt.n_fat = 2;
         FATFS fs;
         int fr = f_mkfs("", &opt, work, sizeof(work));
-        sprintf(text_buf,"Format result:%d\n", fr);
+        sprintf(text_buf,"-> Format result:%d\n", fr);
         shell_put_a_line(text_buf);
-        shell_put_a_line("Mounting...");
+        shell_put_a_line("-> Mounting...");
         f_mount(&fs, "/", 1);
         lockFmap(false);
         FSOK = 1;
         vTaskDelay(2000);
         flashSyncNow();
-        shell_put_a_line("Format finish...");
+        shell_put_a_line("-> Format finish...");
         return;
     }
 
@@ -217,16 +237,15 @@ void parse_line(char *line) {
     }
 
     if (strcmp(line, "help") == 0) {
-        shell_put_a_line("command list:");
-        shell_put_a_line("menu    help    format  ");
-        shell_put_a_line("usbon   usboff   usbreload");
-        shell_put_a_line("usbcdc usbmsc usbhid hidmouse hidkbd");
+        write_to_shell("-> Command list:$");
+        write_to_shell("-> menu    help    format    usbon    usboff    usbreload.$");
+        write_to_shell("-> usbcdc  usbmsc  usbhid    hidmouse hidkbd.$");
         return;
     }
 
-    shell_put_a_line("command not found. type 'help' to check the");
-    shell_put_a_line("command list.");
-    }
+    write_to_shell("-> Command not found. To view the command list, please type 'help'.$");
+}
+
 
 void key_input(unsigned int key) {
     unsigned char to_alpha;
