@@ -8,6 +8,8 @@
 #include "ServiceRawFlash.h"
 #include "ServiceSTMPPartition.h"
 #include "ServiceKeyboard.h"
+#include "ServiceUSBHID.h"
+#include "ServiceUSBDevice.h"
 #include "display.h"
 #include "keyboard.h"
 #include "tusb.h"
@@ -115,10 +117,68 @@ void parse_line(char *line) {
         shell_put_a_line("USB Reload.");
         return;
     }
-    
 
+    if (strcmp(line, "usbcdc") == 0) {
+        usbd_set_itf(ITF_NUM_CDC);
+        shell_put_a_line("USB Function set to CDC Serial");
+        return;
+    }
+    if (strcmp(line, "usbmsc") == 0) {
+        usbd_set_itf(ITF_NUM_MSC);
+        shell_put_a_line("USB Function set to MSC Storage");
+        return;
+    }
+    if (strcmp(line, "usbhid") == 0) {
+        usbd_set_itf(ITF_NUM_HID);
+        shell_put_a_line("USB Function set to HID Keyboard mouse");
+        return;
+    }
 
-    if (strcmp(line, "format") == 0) {
+    if (strcmp(line, "hidmouse") == 0) {
+        shell_put_a_line("Mouse enabled. Press ON to quit.");
+        shell_put_a_line("Use the arrow keys and F4-F6");
+
+        while(!is_key_ON_down()){
+            if(is_key_down(KEY_UP)){
+                HID_mouse_move(0,-10,0);
+            }
+            if(is_key_down(KEY_DOWN)){
+                HID_mouse_move(0,10,0);
+            }
+            if(is_key_down(KEY_LEFT)){
+                HID_mouse_move(-10,0,0);
+            }
+            if(is_key_down(KEY_RIGHT)){
+                HID_mouse_move(10,0,0);
+            }
+            if(is_key_down(KEY_F4)){
+                HID_mouse_press(MOUSE_BUTTON_LEFT);
+                while(is_key_down(KEY_F4));
+                HID_mouse_release(MOUSE_BUTTON_LEFT);
+            }
+            if(is_key_down(KEY_F5)){
+                HID_mouse_press(MOUSE_BUTTON_MIDDLE);
+                while(is_key_down(KEY_F5));
+                HID_mouse_release(MOUSE_BUTTON_MIDDLE);
+            }
+            if(is_key_down(KEY_F6)){
+                HID_mouse_press(MOUSE_BUTTON_RIGHT);
+                while(is_key_down(KEY_F6));
+                HID_mouse_release(MOUSE_BUTTON_RIGHT);
+            }
+            
+             vTaskDelay(30/portTICK_RATE_MS);
+        }
+        return;
+    }
+
+    if (strcmp(line, "hidkbd") == 0) {
+      enable_service_usb_keyboard_transparent();
+      shell_put_a_line("Keyboard started. Have fun!");
+      return;
+    }
+
+      if (strcmp(line, "format") == 0) {
         shell_put_a_line("Start erasing...");
         extern unsigned int FSOK;
         FSOK = 0;
@@ -158,14 +218,15 @@ void parse_line(char *line) {
 
     if (strcmp(line, "help") == 0) {
         shell_put_a_line("command list:");
-        shell_put_a_line("menu    help    format    usbon    usboff");
-        shell_put_a_line("usbreload");
+        shell_put_a_line("menu    help    format  ");
+        shell_put_a_line("usbon   usboff   usbreload");
+        shell_put_a_line("usbcdc usbmsc usbhid hidmouse hidkbd");
         return;
     }
 
     shell_put_a_line("command not found. type 'help' to check the");
     shell_put_a_line("command list.");
-}
+    }
 
 void key_input(unsigned int key) {
     unsigned char to_alpha;
