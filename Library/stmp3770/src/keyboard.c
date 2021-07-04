@@ -374,8 +374,8 @@ void key_scan() {
 */
 
 unsigned int is_key_down(keys key) { 
-    return key_matrix[key % 8][key >> 3]; 
-    };
+    return key_matrix[key >> 3][key % 8]; 
+};
 
 
 

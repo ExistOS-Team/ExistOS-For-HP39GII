@@ -8,6 +8,8 @@
 #include "ServiceRawFlash.h"
 #include "ServiceSTMPPartition.h"
 #include "ServiceKeyboard.h"
+#include "ServiceUSBHID.h"
+#include "ServiceUSBDevice.h"
 #include "display.h"
 #include "keyboard.h"
 #include "tusb.h"
@@ -39,18 +41,18 @@ void shell_put_a_line(char *text) {
     LCD_dma_flush_buffer();
 }
 
-void write_to_shell(char *text) {  // ÏòshellÊä³ö×Ö·û´®£¬½áÎ²ÐèÒªÒ»¸ö¶îÍâ×Ö·û£¬¿ÉÒÔ×Ô¶¯»»ÐÐ.
-    int length = strlen(text) - 1; // text µÄ³¤¶È
-    int nowpos = 0;                // µ±Ç°Î»
+void write_to_shell(char *text) {  // ï¿½ï¿½shellï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½Î²ï¿½ï¿½ÒªÒ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½.
+    int length = strlen(text) - 1; // text ï¿½Ä³ï¿½ï¿½ï¿½
+    int nowpos = 0;                // ï¿½ï¿½Ç°Î»
     while (nowpos < length) {
-        int chars_thisline; // µ±Ç°ÐÐÒªÏÔÊ¾µÄ×Ö·ûÊýÁ¿
+        int chars_thisline; // ï¿½ï¿½Ç°ï¿½ï¿½Òªï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½
         if (length - nowpos >= max_line_chars) {
             chars_thisline = max_line_chars;
         } else {
             chars_thisline = length - nowpos;
         }
 
-        char current_line[80]; // µ±Ç°ÐÐ
+        char current_line[80]; // ï¿½ï¿½Ç°ï¿½ï¿½
         strncpy(current_line, text + nowpos, chars_thisline);
         shell_put_a_line(current_line);
 
@@ -134,9 +136,70 @@ void parse_line(char *line) {
         shell_put_a_line("-> USB Reload.");
         return;
     }
-    
-    if (strcmp(line, "format") == 0) {
-        shell_put_a_line("-> Start erasing...");
+
+    if (strcmp(line, "usbcdc") == 0) {
+        usbd_set_itf(ITF_NUM_CDC);
+        shell_put_a_line("USB Function set to CDC Serial");
+        return;
+    }
+    if (strcmp(line, "usbmsc") == 0) {
+        usbd_set_itf(ITF_NUM_MSC);
+        shell_put_a_line("USB Function set to MSC Storage");
+        return;
+    }
+    if (strcmp(line, "usbhid") == 0) {
+        usbd_set_itf(ITF_NUM_HID);
+        shell_put_a_line("USB Function set to HID Keyboard mouse");
+        return;
+    }
+
+    if (strcmp(line, "hidmouse") == 0) {
+        shell_put_a_line("Mouse enabled. Press ON to quit.");
+        shell_put_a_line("Use the arrow keys and F4-F6");
+
+        while(!is_key_ON_down()){
+            if(is_key_down(KEY_UP)){
+                HID_mouse_move(0,-10,0);
+            }
+            if(is_key_down(KEY_DOWN)){
+                HID_mouse_move(0,10,0);
+            }
+            if(is_key_down(KEY_LEFT)){
+                HID_mouse_move(-10,0,0);
+            }
+            if(is_key_down(KEY_RIGHT)){
+                HID_mouse_move(10,0,0);
+            }
+            if(is_key_down(KEY_F4)){
+                HID_mouse_press(MOUSE_BUTTON_LEFT);
+                while(is_key_down(KEY_F4));
+                HID_mouse_release(MOUSE_BUTTON_LEFT);
+            }
+            if(is_key_down(KEY_F5)){
+                HID_mouse_press(MOUSE_BUTTON_MIDDLE);
+                while(is_key_down(KEY_F5));
+                HID_mouse_release(MOUSE_BUTTON_MIDDLE);
+            }
+            if(is_key_down(KEY_F6)){
+                HID_mouse_press(MOUSE_BUTTON_RIGHT);
+                while(is_key_down(KEY_F6));
+                HID_mouse_release(MOUSE_BUTTON_RIGHT);
+            }
+            
+             vTaskDelay(30/portTICK_RATE_MS);
+        }
+        return;
+    }
+
+    if (strcmp(line, "hidkbd") == 0) {
+      enable_service_usb_keyboard_transparent();
+      shell_put_a_line("Keyboard started. Have fun!");
+      return;
+    }
+
+      if (strcmp(line, "format") == 0) {
+        shell_put_a_line("Start erasing...");
+
         extern unsigned int FSOK;
         FSOK = 0;
         shell_put_a_line("-> Lock disk...");
@@ -176,11 +239,13 @@ void parse_line(char *line) {
     if (strcmp(line, "help") == 0) {
         write_to_shell("-> Command list:$");
         write_to_shell("-> menu    help    format    usbon    usboff    usbreload.$");
+        write_to_shell("-> usbcdc  usbmsc  usbhid    hidmouse hidkbd.$");
         return;
     }
 
     write_to_shell("-> Command not found. To view the command list, please type 'help'.$");
 }
+
 
 void key_input(unsigned int key) {
     unsigned char to_alpha;
