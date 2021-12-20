@@ -37,3 +37,8 @@ jobs:
       with:
         name: firmware
         path: ./firmware.sb
+    - name: Upload rom.bin
+      uses: actions/upload-artifact@v2.2.2
+      with:
+        name: rom.bin
+        path: ./rom.bin
