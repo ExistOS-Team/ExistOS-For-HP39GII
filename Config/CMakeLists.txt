@@ -1,2 +1,0 @@
-AUX_SOURCE_DIRECTORY(. DIR_Config_SRCS)
-ADD_LIBRARY(config ${DIR_Config_SRCS})

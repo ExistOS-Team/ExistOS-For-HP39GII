@@ -1,3 +1,0 @@
-include_directories(.)
-AUX_SOURCE_DIRECTORY(. DIR_FreeRTOS-Plus-CLI_SRCS)
-ADD_LIBRARY(FreeRTOS-Plus-CLI ${DIR_FreeRTOS-Plus-CLI_SRCS})

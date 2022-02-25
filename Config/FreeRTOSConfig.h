@@ -39,65 +39,63 @@
  *
  * See http://www.freertos.org/a00110.html
  *----------------------------------------------------------*/
-#include "memory.h"
-
-
 
 #define configUSE_TIME_SLICING 1
-
-#define configUSE_PREEMPTION		1
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION		1
-#define configUSE_IDLE_HOOK			0
-#define configUSE_TICK_HOOK			0
-#define configCPU_CLOCK_HZ			( ( unsigned long ) 96000000 ) /* Timer clock. */
-#define configTICK_RATE_HZ			( ( TickType_t ) 1000 )
-#define configMAX_PRIORITIES		( 5 )
-#define configMINIMAL_STACK_SIZE	( ( unsigned short ) 400 )
+#define configUSE_PREEMPTION			1
+#define configUSE_IDLE_HOOK				0
+#define configUSE_TICK_HOOK				0
+//#define configCPU_CLOCK_HZ				( ( unsigned long ) 24000000 )
+//#define configCPU_PERIPH_HZ				( ( unsigned long ) 12000000 )
+#define configTICK_RATE_HZ				( ( TickType_t ) 100 )
+#define configMAX_PRIORITIES			( 5 )
+#define configMINIMAL_STACK_SIZE		( ( unsigned short ) 400 )
+//#define configTOTAL_HEAP_SIZE			( ( size_t ) 52000 )
+#define configMAX_TASK_NAME_LEN			( 32 )
+#define configUSE_TRACE_FACILITY		1
+#define configUSE_16_BIT_TICKS			0
+#define configIDLE_SHOULD_YIELD			1
+#define configUSE_MUTEXES				1
 
-#define configMAX_TASK_NAME_LEN		( 20 )
-#define configUSE_MUTEXES                       1
-#define configUSE_RECURSIVE_MUTEXES             1
-#define configUSE_COUNTING_SEMAPHORES           1
 
-#define configUSE_NEWLIB_REENTRANT				1
 
-#define configCHECK_FOR_STACK_OVERFLOW          0
+#define configUSE_TIMERS				1
+#define configTIMER_TASK_PRIORITY       3
+#define configTIMER_QUEUE_LENGTH        32
+#define configTIMER_TASK_STACK_DEPTH    configMINIMAL_STACK_SIZE
 
-#define configUSE_16_BIT_TICKS		0
-#define configIDLE_SHOULD_YIELD		0
+#define configCHECK_FOR_STACK_OVERFLOW  2
 
-#define portCRITICAL_NESTING_IN_TCB 1
+#define configUSE_NEWLIB_REENTRANT	    1
+#define configGENERATE_RUN_TIME_STATS 	1
 
-#define configUSE_TRACE_FACILITY          	1
-#define configGENERATE_RUN_TIME_STATS 		1
-#define configUSE_STATS_FORMATTING_FUNCTIONS 		1
+#define portCRITICAL_NESTING_IN_TCB     1
+#define portCONTEXT_REGS_IN_TCB         1
+
 
 extern volatile unsigned long ulHighFrequencyTimerTicks;
  
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() ( ulHighFrequencyTimerTicks = 0UL )
 #define portGET_RUN_TIME_COUNTER_VALUE()	ulHighFrequencyTimerTicks
 
-
-/* Software timer related definitions. */
-#define configUSE_TIMERS                       1
-#define configTIMER_TASK_PRIORITY              (configMAX_PRIORITIES-2)
-#define configTIMER_QUEUE_LENGTH               32
-#define configTIMER_TASK_STACK_DEPTH           configMINIMAL_STACK_SIZE
-
 #define configAPPLICATION_ALLOCATED_HEAP		1
 #define configSUPPORT_STATIC_ALLOCATION         1
 #define configSUPPORT_DYNAMIC_ALLOCATION        1
+#define configUSE_MALLOC_FAILED_HOOK            1
 
 /* Co-routine definitions. */
-#define configUSE_CO_ROUTINES 		0
+#define configUSE_CO_ROUTINES 			0
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
 
+void vAssertCalled(char *file, int line);
+#define configASSERT( x ) if( ( x ) == 0 ) vAssertCalled( (__FILE__), (__LINE__) )
 
-#define configCOMMAND_INT_MAX_OUTPUT_SIZE		2048
+//#define portASSERT_IF_IN_ISR()  configASSERT(0)
+
+#define configPRINTF( X )  printf( X )
 
 /* Set the following definitions to 1 to include the API function, or zero
 to exclude the API function. */
-
 
 #define INCLUDE_vTaskPrioritySet                1
 #define INCLUDE_uxTaskPriorityGet               1
@@ -112,13 +110,16 @@ to exclude the API function. */
 #define INCLUDE_xTaskGetIdleTaskHandle          0
 #define INCLUDE_eTaskGetState                   0
 #define INCLUDE_xEventGroupSetBitFromISR        1
-#define INCLUDE_xTimerPendFunctionCall          0
+#define INCLUDE_xTimerPendFunctionCall          1
 #define INCLUDE_xTaskAbortDelay                 0
 #define INCLUDE_xTaskGetHandle                  1
 #define INCLUDE_xTaskResumeFromISR              1
 
-void vAssertCalled();
 
-//#define configASSERT( x )   if( x == 0){vAssertCalled();}
+/* This demo makes use of one or more example stats formatting functions.  These
+format the raw data provided by the uxTaskGetSystemState() function in to human
+readable ASCII form.  See the notes in the implementation of vTaskList() within 
+FreeRTOS/Source/tasks.c for limitations. */
+#define configUSE_STATS_FORMATTING_FUNCTIONS	1
 
 #endif /* FREERTOS_CONFIG_H */

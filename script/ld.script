@@ -1,32 +1,9 @@
 OUTPUT_ARCH(arm)
 
-ENTRY(_kernel_init)
+ENTRY(_init)
 
 SECTIONS
 {
- 
-	
-	. = 0xC0000000;
-	. = . + 0x300;
-	ABT_STACK_ADDR = .;
-	
-	. = . + 0x300;
-	UND_STACK_ADDR = .;
-	
-	. = . + 0x300;
-	FIQ_STACK_ADDR = .;
-	
-	. = . + 0x300;
-	IRQ_STACK_ADDR = .;	
-	
-	. = . + 0x300;
-	SVC_STACK_ADDR = .;		
-	
-	. = . + 0x300;
-	SYS_STACK_ADDR = .;		
-	
-	. = 0x00000000; 
-	
 	.init.text : AT(0x0000) 
 	{ 
 		*(.init)
@@ -35,27 +12,11 @@ SECTIONS
 	{
 		*(.init.data)
 	}
-
-	.usb_ram 0xC0001000 : AT(0x1000) 
-	{
-		*(.usb_ram)
-	}
 	
-	.text 0xC0003000 : AT(0x3000) 
-	{ 
+	.text :	{
 		*(.text)
 	}
 	
-
-	
-	__bss_start__ = .;
-	
-	.bss  : { 
-		*(.bss) 
-	}
-	
-	
-	__bss_end__ = .;
 
 	__data_start__ = .;
 	
@@ -66,9 +27,30 @@ SECTIONS
 	
 	__data_end__ = .;
 
-	__exidx_start = .;
+
+	.rodata : 
+	{
+		*(.rodata) 
+	}
 
 
-	__exidx_end = .;
+  
+
+  .bss  ALIGN(4) :
+  {
+	__bss_start = .;
+   *(.dynbss)
+   *(.bss .bss.* .gnu.linkonce.b.*)
+   *(COMMON)
+   /* Align here to ensure that the .bss section occupies space up to
+      _end.  Align after .bss to ensure correct alignment even if the
+      .bss section disappears because there are no input sections.  */
+   . = ALIGN(32 / 8);
+   __bss_end = .;
+  }
+  . = ALIGN(32 / 8);
+  
+	
+	__HEAP_START = .;
 
 }

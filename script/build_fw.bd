@@ -4,9 +4,9 @@ flags = 0x0;
 
 buildNumber = 0x1;
 
-productVersion = "5.0.0";
+productVersion = "1.0.0";
 
-componentVersion = "5.0.0";
+componentVersion = "1.0.0";
 
 driveTag = 0x50;
 

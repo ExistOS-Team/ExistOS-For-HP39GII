@@ -1,7 +1,0 @@
-#ifndef _EXISTOS_SWI_SYSTEMCALL_CALL
-#define _EXISTOS_SWI_SYSTEMCALL_CALL
-
-#define SWI_GET_US_COUNT    40000
-
-#endif
-

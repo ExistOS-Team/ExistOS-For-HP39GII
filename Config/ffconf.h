@@ -1,8 +1,11 @@
+#include "FreeRTOS.h"
+#include "semphr.h"
+
 /*---------------------------------------------------------------------------/
 /  FatFs Functional Configurations
 /---------------------------------------------------------------------------*/
 
-#define FFCONF_DEF	80196	/* Revision ID */
+#define FFCONF_DEF	86631	/* Revision ID */
 
 /*---------------------------------------------------------------------------/
 / Function Configurations
@@ -25,15 +28,7 @@
 /   3: f_lseek() function is removed in addition to 2. */
 
 
-#define FF_USE_STRFUNC	1
-/* This option switches string functions, f_gets(), f_putc(), f_puts() and f_printf().
-/
-/  0: Disable string functions.
-/  1: Enable without LF-CRLF conversion.
-/  2: Enable with LF-CRLF conversion. */
-
-
-#define FF_USE_FIND		2
+#define FF_USE_FIND		0
 /* This option switches filtered directory read functions, f_findfirst() and
 /  f_findnext(). (0:Disable, 1:Enable 2:Enable with matching altname[] too) */
 
@@ -42,33 +37,57 @@
 /* This option switches f_mkfs() function. (0:Disable or 1:Enable) */
 
 
-#define FF_USE_FASTSEEK	1
+#define FF_USE_FASTSEEK	0
 /* This option switches fast seek function. (0:Disable or 1:Enable) */
 
 
-#define FF_USE_EXPAND	1
+#define FF_USE_EXPAND	0
 /* This option switches f_expand function. (0:Disable or 1:Enable) */
 
 
-#define FF_USE_CHMOD	1
+#define FF_USE_CHMOD	0
 /* This option switches attribute manipulation functions, f_chmod() and f_utime().
 /  (0:Disable or 1:Enable) Also FF_FS_READONLY needs to be 0 to enable this option. */
 
 
-#define FF_USE_LABEL	1
+#define FF_USE_LABEL	0
 /* This option switches volume label functions, f_getlabel() and f_setlabel().
 /  (0:Disable or 1:Enable) */
 
 
-#define FF_USE_FORWARD	1
+#define FF_USE_FORWARD	0
 /* This option switches f_forward() function. (0:Disable or 1:Enable) */
+
+
+#define FF_USE_STRFUNC	1
+#define FF_PRINT_LLI	0
+#define FF_PRINT_FLOAT	0
+#define FF_STRF_ENCODE	0
+/* FF_USE_STRFUNC switches string functions, f_gets(), f_putc(), f_puts() and
+/  f_printf().
+/
+/   0: Disable. FF_PRINT_LLI, FF_PRINT_FLOAT and FF_STRF_ENCODE have no effect.
+/   1: Enable without LF-CRLF conversion.
+/   2: Enable with LF-CRLF conversion.
+/
+/  FF_PRINT_LLI = 1 makes f_printf() support long long argument and FF_PRINT_FLOAT = 1/2
+   makes f_printf() support floating point argument. These features want C99 or later.
+/  When FF_LFN_UNICODE >= 1 with LFN enabled, string functions convert the character
+/  encoding in it. FF_STRF_ENCODE selects assumption of character encoding ON THE FILE
+/  to be read/written via those functions.
+/
+/   0: ANSI/OEM in current CP
+/   1: Unicode in UTF-16LE
+/   2: Unicode in UTF-16BE
+/   3: Unicode in UTF-8
+*/
 
 
 /*---------------------------------------------------------------------------/
 / Locale and Namespace Configurations
 /---------------------------------------------------------------------------*/
 
-#define FF_CODE_PAGE	936
+#define FF_CODE_PAGE	437
 /* This option specifies the OEM code page to be used on the target system.
 /  Incorrect code page setting can cause a file open failure.
 /
@@ -97,7 +116,7 @@
 */
 
 
-#define FF_USE_LFN		0
+#define FF_USE_LFN		3
 #define FF_MAX_LFN		255
 /* The FF_USE_LFN switches the support for LFN (long file name).
 /
@@ -117,7 +136,7 @@
 /  ff_memfree() exemplified in ffsystem.c, need to be added to the project. */
 
 
-#define FF_LFN_UNICODE	2
+#define FF_LFN_UNICODE	0
 /* This option switches the character encoding on the API when LFN is enabled.
 /
 /   0: ANSI/OEM in current CP (TCHAR = char)
@@ -137,20 +156,7 @@
 /  on character encoding. When LFN is not enabled, these options have no effect. */
 
 
-#define FF_STRF_ENCODE	3
-/* When FF_LFN_UNICODE >= 1 with LFN enabled, string I/O functions, f_gets(),
-/  f_putc(), f_puts and f_printf() convert the character encoding in it.
-/  This option selects assumption of character encoding ON THE FILE to be
-/  read/written via those functions.
-/
-/   0: ANSI/OEM in current CP
-/   1: Unicode in UTF-16LE
-/   2: Unicode in UTF-16BE
-/   3: Unicode in UTF-8
-*/
-
-
-#define FF_FS_RPATH		2
+#define FF_FS_RPATH		0
 /* This option configures support for relative path.
 /
 /   0: Disable relative path and remove related functions.
@@ -163,13 +169,12 @@
 / Drive/Volume Configurations
 /---------------------------------------------------------------------------*/
 
-#define FF_VOLUMES		1
+#define FF_VOLUMES		2
 /* Number of volumes (logical drives) to be used. (1-10) */
 
 
 #define FF_STR_VOLUME_ID	2
-#define FF_VOLUME_STRS		"FLASH"
-//,"RAM","CF","SD","SD2","USB","USB2","USB3"
+#define FF_VOLUME_STRS		"DATA","SYS"
 /* FF_STR_VOLUME_ID switches support for volume ID in arbitrary strings.
 /  When FF_STR_VOLUME_ID is set to 1 or 2, arbitrary strings can be used as drive
 /  number in the path name. FF_VOLUME_STRS defines the volume ID strings for each
@@ -182,7 +187,7 @@
 */
 
 
-#define FF_MULTI_PARTITION	0
+#define FF_MULTI_PARTITION	1
 /* This option switches support for multiple volumes on the physical drive.
 /  By default (0), each logical drive number is bound to the same physical drive
 /  number and only an FAT volume found on the physical drive will be mounted.
@@ -191,11 +196,11 @@
 /  funciton will be available. */
 
 
-#define FF_MIN_SS		512
+#define FF_MIN_SS		2048
 #define FF_MAX_SS		2048
 /* This set of options configures the range of sector size to be supported. (512,
 /  1024, 2048 or 4096) Always set both 512 for most systems, generic memory card and
-/  harddisk. But a larger value may be required for on-board flash memory and some
+/  harddisk, but a larger value may be required for on-board flash memory and some
 /  type of optical media. When FF_MAX_SS is larger than FF_MIN_SS, FatFs is configured
 /  for variable sector size mode and disk_ioctl() function needs to implement
 /  GET_SECTOR_SIZE command. */
@@ -236,9 +241,8 @@
 
 
 #define FF_FS_NORTC		1
-
-#define FF_NORTC_MON	12
-#define FF_NORTC_MDAY	24
+#define FF_NORTC_MON	   1
+#define FF_NORTC_MDAY	1
 #define FF_NORTC_YEAR	2020
 /* The option FF_FS_NORTC switches timestamp functiton. If the system does not have
 /  any RTC function or valid timestamp is not needed, set FF_FS_NORTC = 1 to disable
@@ -275,13 +279,9 @@
 
 
 /* #include <somertos.h>	// O/S definitions */
-#include <FreeRTOS.h>
-#include <semphr.h>
-
 #define FF_FS_REENTRANT	1
 #define FF_FS_TIMEOUT	1000
-#define FF_SYNC_t		SemaphoreHandle_t
-//HANDLE
+#define FF_SYNC_t		   SemaphoreHandle_t
 /* The option FF_FS_REENTRANT switches the re-entrancy (thread safe) of the FatFs
 /  module itself. Note that regardless of this option, file access to different
 /  volume is always re-entrant and volume control functions, f_mount(), f_mkfs()
