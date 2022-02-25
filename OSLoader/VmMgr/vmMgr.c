@@ -1,0 +1,7 @@
+
+
+void vmMgr_init()
+{
+    
+
+}

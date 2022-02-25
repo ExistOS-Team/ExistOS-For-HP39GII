@@ -1,0 +1,54 @@
+
+MEMORY
+{
+  vmRAM    (rwx) : ORIGIN = 0x00200000, LENGTH = 1024K
+  vmROM    (rx ) : ORIGIN = 0x00100000, LENGTH = 1024K
+}
+
+OUTPUT_ARCH(arm)
+ENTRY(_init)
+SECTIONS
+{
+
+	.init.text :
+	{ 
+		*(.init)
+	} >vmROM
+	.init.data :
+	{
+		*(.init.data)
+	} >vmROM
+	
+	.text :	
+	{
+		*(.text)
+	} >vmROM
+	
+	.data : 
+	{
+		*(.data) 
+	} >vmROM
+	
+	.rodata : 
+	{
+		*(.rodata) 
+	} >vmROM
+
+
+  
+  	
+  
+    .bss : {
+		. = ALIGN(4);
+        _sbss = ABSOLUTE(.);
+        *(.bss .bss.*)
+        *(.gnu.linkonce.b.*)
+        *(COMMON)
+        . = ALIGN(4);
+        _ebss = ABSOLUTE(.);
+    } > vmRAM
+ 
+	
+	__HEAP_START = .;
+
+}
