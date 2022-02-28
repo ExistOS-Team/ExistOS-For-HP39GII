@@ -1,9 +1,11 @@
 
 #include <string.h>
-
+#include <stdio.h>
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "timers.h"
+
+#include "board_up.h"
 
 #include "llapi.h"
 #include "llapi_code.h"
@@ -58,11 +60,19 @@ void LLAPI_Task()
                 xTimerStart(xTimer, 0);
                 break;
             
-            case LL_SWI_WRITE_STRING:
+            case LL_SWI_WRITE_STRING1:
                 *currentCall.pRet = strlen((char *)currentCall.para0);
                 printf("%s", (char *)currentCall.para0);
                 vTaskResume(currentCall.task);
                 break;
+
+            case LL_SWI_WRITE_STRING2:
+                for(int i=0;i<currentCall.para1;i++){
+                    putchar(((char *)currentCall.para0)[i]);
+                }
+                vTaskResume(currentCall.task);
+                break;
+
             
             case LL_SWI_PUT_CH:
                 *currentCall.pRet = 1;
@@ -70,6 +80,10 @@ void LLAPI_Task()
                 vTaskResume(currentCall.task);
                 break;
             
+            case LL_SWI_GET_TIME_US:
+                *currentCall.pRet = portBoardGetTime_us();
+                vTaskResume(currentCall.task);
+                break;
 
 
             default:

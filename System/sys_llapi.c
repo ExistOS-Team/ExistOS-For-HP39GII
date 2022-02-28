@@ -4,11 +4,11 @@
 #include <stdio.h>
 
 
-#include "sys_llapi_code.h"
+#include "llapi_code.h"
 #include "sys_llapi.h"
 
 
-uint32_t inline syscall_1(uint32_t nr, uint32_t p1)
+static uint32_t inline syscall_1(uint32_t nr, uint32_t p1)
 {
     register uint32_t r0 asm("r0") = p1;
     __asm volatile("svc %[nr]\n"
@@ -18,7 +18,18 @@ uint32_t inline syscall_1(uint32_t nr, uint32_t p1)
     return (uint32_t) r0;
 }
 
-uint32_t inline syscall_4(uint32_t nr, uint32_t p1, uint32_t p2, uint32_t p3, uint32_t p4)
+static uint32_t inline syscall_2(uint32_t nr, uint32_t p1, uint32_t p2)
+{
+    register uint32_t r0 asm("r0") = p1;
+    register uint32_t r1 asm("r1") = p2;
+    __asm volatile("svc %[nr]\n"
+        : "=r" (r0)
+        : [nr] "i" (nr), "r" (r0), "r" (r1)
+        : "memory", "r2", "r3", "r12", "lr");
+    return (uint32_t) r0;
+}
+
+static uint32_t inline syscall_4(uint32_t nr, uint32_t p1, uint32_t p2, uint32_t p3, uint32_t p4)
 {
     register uint32_t r0 asm("r0") = p1;
     register uint32_t r1 asm("r1") = p2;
@@ -39,10 +50,21 @@ void ll_delay(uint32_t ms)
 
 uint32_t ll_putStr(char *s)
 {
-    syscall_1(LL_SWI_WRITE_STRING, (uint32_t)s);
+    return syscall_1(LL_SWI_WRITE_STRING1, (uint32_t)s);
+}
+
+uint32_t ll_putStr2(char *s, uint32_t len)
+{
+    return syscall_2(LL_SWI_WRITE_STRING2, (uint32_t)s, len);
 }
 
 uint32_t ll_putChr(char c)
 {
-    syscall_1(LL_SWI_PUT_CH, c);
+    return syscall_1(LL_SWI_PUT_CH, c);
 }
+
+uint32_t ll_gettime_us()
+{
+    return syscall_1(LL_SWI_GET_TIME_US, 0);
+}
+

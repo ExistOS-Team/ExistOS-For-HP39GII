@@ -21,8 +21,8 @@
 #define VM_BKPT()  __asm volatile (".int 0xF7BBBBBB")
 
 
-#define VM_INFO(...) do{printf(__VA_ARGS__);}while(0)
-//#define VM_INFO(...) 
+//#define VM_INFO(...) do{printf(__VA_ARGS__);}while(0)
+#define VM_INFO(...) 
 #define VM_ERR(...) do{printf(__VA_ARGS__);}while(0)
 
 

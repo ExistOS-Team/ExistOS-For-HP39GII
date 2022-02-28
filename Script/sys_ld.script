@@ -24,20 +24,22 @@ SECTIONS
 		*(.text)
 	} >vmROM
 	
-	.data : 
-	{
-		*(.data) 
-	} >vmROM
-	
 	.rodata : 
 	{
 		*(.rodata) 
+		rodata_end = .;
 	} >vmROM
 
+	.data : 
+	{
+		data_start = .;
+		*(.data .data.* .gnu.linkonce.d.*)
+		data_end = .;
+	} >vmRAM AT >vmROM
 
-  
-  	
-  
+    data_size = SIZEOF(.data);
+    data_load_start = LOADADDR(.data);
+
     .bss : {
 		. = ALIGN(4);
         _sbss = ABSOLUTE(.);

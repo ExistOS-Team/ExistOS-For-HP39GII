@@ -255,8 +255,8 @@ void mmu_init()
     memset(L2PTE, 0, sizeof(L2PTE));
 
     SetMPTELoc(0, 0);
-    SetL1PTE(0      , L1PTE_INTERPRET_SECTION, 0         , OSLOADER_MEMORY_DOMAIN, AP_SYSRW_USRRW, false, false);
-    SetL1PTE(0x800  , L1PTE_INTERPRET_SECTION, 0x80000000, HARDWARE_MEMORY_DOMAIN, AP_SYSRW_USRRW, false, false);
+    SetL1PTE(0      , L1PTE_INTERPRET_SECTION, 0         , OSLOADER_MEMORY_DOMAIN, AP_SYSRW_USROR, false, false);
+    SetL1PTE(0x800  , L1PTE_INTERPRET_SECTION, 0x80000000, HARDWARE_MEMORY_DOMAIN, AP_SYSRW_USROR, false, false);
     
     uint32_t j = 0;
     for(int i = 0; i < VM_ROM_NUM_SEG; i++)

@@ -2,6 +2,9 @@
 #include "regsclkctrl.h"
 #include "regsdigctl.h"
 #include "board_up.h"
+
+#include "regspower.h"
+
 #define PLL_FREQ_HZ    480000000
 
 
@@ -54,8 +57,13 @@ uint32_t portGetCoreFreqHz()
 void portCLKCtrlInit(void)
 {
     PLLEnable(true);
-    setCPUDivider(8);
-    setHCLKDivider(1);
+
+    BF_SETV(POWER_VDDDCTRL,TRG,26); // Set voltage = 1.45 V
+
+    setCPUDivider(2);
+    setHCLKDivider(2);
+
+
     setCPU_HFreqDomain(true);
     enableUSBClock(true);
     

@@ -61,7 +61,7 @@ void vTask1(void *pvParameters) {
     //printf("Start vTask1\n");
     for (;;) {
 		    
-		vTaskDelay(pdMS_TO_TICKS(10000));
+		vTaskDelay(pdMS_TO_TICKS(17000));
 		printTaskList();
     }
 }

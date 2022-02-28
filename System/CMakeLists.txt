@@ -1,7 +1,9 @@
 include_directories(./include)
+include_directories(./coremarkTest)
 
 
-aux_source_directory(. SYS_SRCS)
+aux_source_directory(.                SYS_SRCS)
+aux_source_directory(./coremarkTest   SYS_SRCS)
 
 add_executable(sys.elf ${SYS_SRCS})
 
@@ -12,10 +14,11 @@ target_link_options(sys.elf PRIVATE
 )
 target_link_libraries(sys.elf -lm -lc -nostartfiles)
 
+target_compile_options(sys.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian
+-O3 -pipe -fdata-sections -ffunction-sections -fcommon)
+
 add_custom_target(
   ExistOS.sys ALL
   COMMAND ${CMAKE_OBJCOPY} -I elf32-little -O binary -R .note -R .comment -S ${CMAKE_CURRENT_BINARY_DIR}/sys.elf ${CMAKE_CURRENT_BINARY_DIR}/ExistOS.sys 
   DEPENDS sys.elf 
   )
-
-
