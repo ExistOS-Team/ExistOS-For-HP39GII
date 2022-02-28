@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 
+#include "SystemConfig.h"
 
 #include "FreeRTOS.h"
 #include "queue.h"
@@ -14,36 +15,34 @@
 #include "mtd_up.h"
 #include "FTL_up.h"
 #include "display_up.h"
-
 #include "keyboard_up.h"
 
 #include "../debug.h"
 
 #include "stmp_NandControlBlock.h"
+#include "stmp37xxNandConf.h"
+
+#include "OSloaderMenu.h"
+#include "vmMgr.h"
 
 
-uint8_t LDLB2[144] = {
-	0x03, 0x02, 0x01, 0x00, 0x0B, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x06, 0x00, 0x00, 0x00, 
-	0x2A, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x50, 0x00, 0x00, 0x00, 0x31, 0x00, 0x00, 0x00, 
-	0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x60, 0x00, 0x00, 0x00, 
-	0x31, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x47, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 
-	0x70, 0x00, 0x00, 0x00, 0x31, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x78, 0x00, 0x00, 0x00, 
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x47, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-	0xA9, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 
-	0x00, 0x00, 0x00, 0x00, 0xF0, 0x03, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 
-	0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF8, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF
-};
 
 
 PARTITION VolToPart[FF_VOLUMES] = {
     {0, 1},     /* "0:" ==> 1st partition on the pd#0 */
-    {0, 2}     /* "1:" ==> 2nd partition on the pd#0 */
+    {0, 2}      /* "1:" ==> 2nd partition on the pd#0 */
 };
 
 
-static bool diskInit = false;
+
+
+
+
 uint32_t CurMount = 0;
 uint32_t FTL_status = 0;
+
+static bool fileSystemOK = false;
+static bool diskInit = false;
 
 char pcWriteBuffer[2048];
 void printTaskList() {
@@ -71,60 +70,6 @@ void vTask1(void *pvParameters) {
 
 
 
-bool flushInd;
-char stList[] = {'\\', '|', '/', '-'};
-void vTaskIndicate(void *pvParameters)
-{
-  flushInd = true;
-  for (;;) {
-    for(int i = 0; i < sizeof(stList); i++){
-        if(flushInd)
-          DisplayPutChar(31*8,0,stList[i],0,255, 16);
-        vTaskDelay(pdMS_TO_TICKS(300));
-    }
-  }
-}
-
-char *MenuItems[] = 
-{
-  "Status",
-  "Boot ExistOS",
-  "Mount USB MSC",
-  "Install System",
-  "Format Flash",
-  "Restore IMG",
-  "Shutdown",  
-  "Reboot"
-};
-
-char *StatusItems[] = 
-{
-  "System File Not",
-  "Found.",
-  "Manual Configure.",
-  "Disk Format Error.",
-};
-
-#define MenuItemNum  (sizeof(MenuItems)/sizeof(uint32_t))
-
-void RenderMainW(uint32_t selectMenu)
-{
-    flushInd = false;
-
-    DisplayPutStr(0,0," Exist OS Loader Configuration ",0,255, 16);
-    DisplayBox(0,0,255,125, 255);
-    DisplayVLine(16, 125, 102, 255);
-    
-
-    for(int i = 0; i < sizeof(MenuItems) / sizeof(uint32_t); i++){
-      if(i == selectMenu)
-        DisplayPutStr(2, (i + 1)*13 + 5, MenuItems[i], 0, 255, 12);
-      else
-        DisplayPutStr(2, (i + 1)*13 + 5, MenuItems[i], 255, 0, 12);
-    }
-
-    flushInd = true;
-}
 
 
 void EraseWithDisp(uint32_t startBlock)
@@ -151,181 +96,30 @@ void EraseWithDisp(uint32_t startBlock)
 
 }
 
+
 void GetPartitionInfo(uint32_t p, uint32_t *start, uint32_t *sectors)
 {
-  uint8_t *buf;
-  buf = pvPortMalloc(FTL_GetSectorSize());
-  FTL_ReadSector(0, 1, buf);
-
-  switch (p)
-  {
-  case 0:
-    //*start   = *(uint32_t *)&buf[0x1C6];
-    //*sectors = *(uint32_t *)&buf[0x1CA];
-    memcpy(start  , &buf[0x1C6], 4);
-    memcpy(sectors, &buf[0x1CA], 4);
-    break;
-  case 1:
-    //*start   = *(uint32_t *)&buf[0x1D6];
-    //*sectors = *(uint32_t *)&buf[0x1DA];
-    memcpy(start  , &buf[0x1D6], 4);
-    memcpy(sectors, &buf[0x1DA], 4);
-    break;
-  default:
-    break;
-  }
-
-  vPortFree(buf);
+  PartitionInfo_t *PartitionInfo = FTL_GetPartitionInfo();
+  *start = PartitionInfo->SectorStart[p];
+  *sectors = PartitionInfo->Sectors[p];
 }
 
 uint32_t MSCpartStartSector;
 uint32_t MSCpartSectors;
 void setMountPartition(uint32_t p)
 {
+  if(p == 2){
+    MSCpartStartSector = 0;
+    MSCpartSectors = FTL_GetSectorCount();
+    return;
+  }
   GetPartitionInfo(p, &MSCpartStartSector, &MSCpartSectors);
 }
 
-void mkNCB(uint32_t inBlock)
-{
-  mtdInfo_t *info = MTD_getDeviceInfo();
-  
-  uint8_t *pageBuff = pvPortMalloc(info->PageSize_B);
-  
-  uint8_t *metaBuff = pvPortMalloc(info->MetaSize_B);
-
-	memset(pageBuff, 0xff, info->PageSize_B);
-	memset(metaBuff, 0xff, info->MetaSize_B);
-
-  NAND_Control_Block *NCB = (NAND_Control_Block *)pageBuff;
-
-	NCB->m_u32Fingerprint1 = 0x504D5453;
-	NCB->NAND_Timing.m_u8DataSetup = 0x10;
-	NCB->NAND_Timing.m_u8DataHold = 0x0C;
-	NCB->NAND_Timing.m_u8AddressSetup = 0x14;
-	NCB->NAND_Timing.m_u8DSAMPLE_TIME = 0x06;
-	NCB->m_u32DataPageSize = 0x800;
-	NCB->m_u32TotalPageSize = 0x840;
-	NCB->m_u32SectorsPerBlock = 0x40;
-	NCB->m_u32SectorInPageMask = 0;
-	NCB->m_u32SectorToPageShift = 0;
-	NCB->m_u32NumberOfNANDs = 1;
-	
-	NCB->m_u32Fingerprint2 = 0x2042434E;
-	
-	NCB->m_u32NumRowBytes = 2;
-	NCB->m_u32NumColumnBytes = 2;
-	NCB->m_u32TotalInternalDie = 1;
-	NCB->m_u32InternalPlanesPerDie = 1;
-	NCB->m_u32CellType = 2;
-	NCB->m_u32ECCType = 0;
-	NCB->m_u32Read1stCode = 0x00;
-	NCB->m_u32Read2ndCode = 0x30;
-	NCB->m_u32Fingerprint3 = 0x4E494252;
-
-	
-	metaBuff[2] = 0x42;
-	metaBuff[3] = 0x43;
-	metaBuff[4] = 0x42;
-	metaBuff[5] = 0x20;
-
-  MTD_ErasePhyBlock(inBlock);
-
-/*
-  MTD_WritePhyPageMeta(inBlock * info->PagesPerBlock, info->MetaSize_B, metaBuff);
-  MTD_WritePhyPage(inBlock * info->PagesPerBlock, pageBuff);
-*/
-
-  MTD_WritePhyPageWithMeta(inBlock * info->PagesPerBlock, info->MetaSize_B, pageBuff, metaBuff);
-
-  vPortFree(pageBuff);
-  vPortFree(metaBuff);
-
-}
-
-void mkDBBT(uint32_t inBlock)
-{
-  mtdInfo_t *info = MTD_getDeviceInfo();
-  uint8_t *pageBuff = pvPortMalloc(info->PageSize_B);
-  uint8_t *metaBuff = pvPortMalloc(info->MetaSize_B);
-
-	memset(pageBuff, 0x00, info->PageSize_B);
-	memset(metaBuff, 0xff, info->MetaSize_B);
-
-  DiscoveredBadBlockTable_t *DBBT = (DiscoveredBadBlockTable_t *)pageBuff;
-
-  DBBT->m_u32Fingerprint1 = 0x504D5453;
-  DBBT->m_u32Number2KPagesBB_NAND0 = 1;
-  DBBT->m_u32Number2KPagesBB_NAND1 = 1;
-  DBBT->m_u32Number2KPagesBB_NAND2 = 1;
-  DBBT->m_u32Number2KPagesBB_NAND3 = 1;
-
-  DBBT->m_u32Fingerprint2 = 0x54424244;
-  DBBT->m_u32Fingerprint3 = 0x44494252;
-
-  memset(&metaBuff[2], 0, 6);
-
-  MTD_ErasePhyBlock(inBlock);
-
-  MTD_WritePhyPageWithMeta(inBlock * info->PagesPerBlock, info->MetaSize_B, pageBuff, metaBuff);
-
-  vPortFree(pageBuff);
-  vPortFree(metaBuff);
-
-}
-
-void mkLDLB(uint32_t inBlock, uint32_t fwPageOffset, uint32_t fwPageTotal, uint32_t DBBT1_page, uint32_t DBBT2_page)
-{
-  mtdInfo_t *info = MTD_getDeviceInfo();
-  uint8_t *pageBuff = pvPortMalloc(info->PageSize_B);
-  uint8_t *metaBuff = pvPortMalloc(info->MetaSize_B);
-
-	memset(pageBuff, 0xff, info->PageSize_B);
-	memset(metaBuff, 0xff, info->MetaSize_B);
-
-	LogicalDriveLayoutBlock_t *LDLB = (LogicalDriveLayoutBlock_t *)pageBuff;
-			
-	LDLB->m_u32Fingerprint1	= 0x504D5453;
-	LDLB->LDLB_Version.m_u16Major = 1;
-	LDLB->LDLB_Version.m_u16Minor = 0;
-	LDLB->LDLB_Version.m_u16Sub = 0;
-	
-	LDLB->m_u32Fingerprint2 = 0x424C444C;
-	LDLB->m_u32Firmware_startingNAND = 0;
-	LDLB->m_u32Firmware_startingSector = fwPageOffset;
-	LDLB->m_u32Firmware_sectorStride = 0;
-	LDLB->m_u32SectorsInFirmware = fwPageTotal;
-
-	LDLB->m_u32Firmware_StartingNAND2 = 0;
-	LDLB->m_u32Firmware_StartingSector2 = fwPageOffset;
-	LDLB->m_u32Firmware_SectorStride2 = 0;
-	LDLB->m_u32SectorsInFirmware2 = fwPageTotal;
-	
-	LDLB->FirmwareVersion.m_u16Major = 1;
-	LDLB->FirmwareVersion.m_u16Minor = 0;
-	LDLB->FirmwareVersion.m_u16Sub = 0;
-	
-	LDLB->m_u32DiscoveredBBTableSector = DBBT1_page;
-	LDLB->m_u32DiscoveredBBTableSector2 = DBBT2_page;
-
-	LDLB->m_u32Fingerprint3 = 0x4C494252;
-
-	metaBuff[2] = 0x42; //B
-	metaBuff[3] = 0x43; //C
-	metaBuff[4] = 0x42; //B
-	metaBuff[5] = 0x20; //' '
-
-  MTD_ErasePhyBlock(inBlock);
-
-  MTD_WritePhyPageWithMeta(inBlock * info->PagesPerBlock, info->MetaSize_B, pageBuff, metaBuff);
-
-  vPortFree(pageBuff);
-  vPortFree(metaBuff);
-
-}
 
 
 
-void vTask2(void *pvParameters) 
+void vMainThread(void *pvParameters) 
 {
     Keys_t key;
     int selectItem = 0;
@@ -336,25 +130,116 @@ void vTask2(void *pvParameters)
     bool keyEnter = false;
     bool needClean = false;
 
+
     mtdInfo_t *nand_info;    
 
     DisplayInit();
-    RenderMainW(selectItem);
-    xTaskCreate(vTaskIndicate, "RenderInd", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
 
+    if(kb_isKeyPress(KEY_BACKSPACE) == true){
+      AbortRes = 1;
+      diskInit = false;
+      if(!FTL_status){
+        FTL_ScanPartition();
+        diskInit = true;
+      }
+
+      goto Configuration;
+    }
 
     if(FTL_status){
       diskInit = false;
       AbortRes = 2;
       goto Configuration;
-    }else{
-      diskInit = true;
+    }
 
+    if(!FTL_ScanPartition()){
+      diskInit = false;
+      AbortRes = 2;
+      goto Configuration;
+    }
+
+    {
+      diskInit = true;
+      FRESULT fres;
+      FATFS *fs = pvPortMalloc(sizeof(FATFS));
+      fres = f_mount(fs, "/SYS/", 1);
+      INFO("Test Mount 1:%d\n", fres);
+      if(fres != FR_OK){
+        AbortRes = 2;
+        vPortFree(fs);
+        goto Configuration;
+      }
+      f_unmount("/SYS/");
+/*
+      fres = f_mount(fs, "/DATA/", 1);
+      INFO("Test Mount 2:%d\n", fres);
+      if(fres != FR_OK){
+        AbortRes = 2;
+        vPortFree(fs);
+        goto Configuration;
+      }
+      f_unmount("/DATA/");
+*/
+      vPortFree(fs);
+    }
+
+    /* Normal Boot */
+    fileSystemOK = true;  
+
+    FRESULT ret;
+    FILINFO sysFinfo;
+    FATFS *fs = pvPortMalloc(sizeof(FATFS));
+    f_mount(fs, "/SYS/", 1);
+    ret = f_stat("/SYS/ExistOS.sys", &sysFinfo);
+    INFO("fsize:%lu \n",sysFinfo.fsize);
+    INFO("f_stat:%d\n",ret);
+    if(ret != FR_OK){
+        f_unmount("/SYS/");
+        vPortFree(fs);
+        AbortRes = 0;
+        goto Configuration;
+    }
+
+    FIL *sysFile = pvPortMalloc(sizeof(FIL));
+    ret = f_open(sysFile, "/SYS/ExistOS.sys" ,FA_READ);
+    INFO("f_open:%d\n",ret);
+    if(ret != FR_OK){
+        f_unmount("/SYS/");
+        vPortFree(fs);
+        vPortFree(sysFile);
+        AbortRes = 0;
+        goto Configuration;
+    }
+
+
+    void vVMMgrSvc(void *pvParameters);
+    xTaskCreate( vVMMgrSvc, "VM Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
+
+    while(!vmMgrInited()){
+      vTaskDelay(pdMS_TO_TICKS(10));
+    }
+
+    vmMgr_mapFile(sysFile, PERM_R, VM_ROM_BASE, 0, (sysFinfo.fsize + PAGE_SIZE) & 0xFFFFF000);
+
+    void testFaultTaskLoader(void *par);
+    xTaskCreate( testFaultTaskLoader, "testFaultTask", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
+
+
+
+    while(1)
+    {
+      vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
 
 
     Configuration:
+
+    RenderMainW(selectItem);
+    xTaskCreate(vTaskIndicate, "RenderInd", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
+
+
+    
     
     nand_info = MTD_getDeviceInfo();
 
@@ -365,29 +250,8 @@ void vTask2(void *pvParameters)
       {
       case 0:
         inSubLevel = 0;
-        switch (AbortRes)
-        {
-        case 0:   //Status
-          DisplayFillBox(103, 17, 254, 124, 0);
-          DisplayPutStr(104,18,"Boot Aborted:",255,0, 12);
-          DisplayPutStr(104 + 6 * 4,18 + 12 * 1,StatusItems[0] ,255,0, 12);
-          DisplayPutStr(104 + 6 * 4,18 + 12 * 2,StatusItems[1] ,255,0, 12);
-          break;
-        case 1:
-          DisplayFillBox(103, 17, 254, 124, 0);
-          DisplayPutStr(104,18,"Boot Aborted:",255,0, 12);
-          DisplayPutStr(104 + 6 * 4,18 + 12 * 1,StatusItems[2] ,255,0, 12);
-          break;
-        case 2:
-          DisplayFillBox(103, 17, 254, 124, 0);
-          DisplayPutStr(104,18,"Boot Aborted:",255,0, 12);
-          DisplayPutStr(104 + 6 * 4,18 + 12 * 1,StatusItems[3] ,255,0, 12);
-          break;
-        default:
-          break;
-        }
-        DisplayPutStr(104,18 + 12 * 6,"Version: 0.1.0.1",255,0, 12);
-      break;
+        RenderFaultReason(AbortRes);
+        break;
       case 1: //Boot ExistOS
         inSubLevel = 0;
         DisplayFillBox(103, 17, 254, 124, 0);
@@ -399,15 +263,89 @@ void vTask2(void *pvParameters)
         DisplayFillBox(103, 17, 254, 124, 0);
         if(diskInit)
         {
-          if( inSubLevel> 3){
-            inSubLevel = 3;
+          if( inSubLevel > 4){
+            inSubLevel = 1;
           }
           DisplayPutStr(104,18 + 12 * 0,"Select which Partition",255,0, 12);
           DisplayPutStr(104,18 + 12 * 1,"to mount on USB MSC.",255,0, 12);
 
           DisplayPutStr(104 + 10         ,18 + 12 * 3,"NONE",(inSubLevel == 1) ? 0 : 255,(inSubLevel == 1) ? 255 : 0, 12);
-          DisplayPutStr(104 + 10 + (8*6) ,18 + 12 * 3,"DATA",(inSubLevel == 2) ? 0 : 255,(inSubLevel == 2) ? 255 : 0, 12);
-          DisplayPutStr(104 + 10 + (16*6),18 + 12 * 3,"SYS ",(inSubLevel == 3) ? 0 : 255,(inSubLevel == 3) ? 255 : 0, 12);
+          DisplayPutStr(104 + 10 + (6*6) ,18 + 12 * 3,"DATA",(inSubLevel == 2) ? 0 : 255,(inSubLevel == 2) ? 255 : 0, 12);
+          DisplayPutStr(104 + 10 + (12*6),18 + 12 * 3,"SYS ",(inSubLevel == 3) ? 0 : 255,(inSubLevel == 3) ? 255 : 0, 12);
+          DisplayPutStr(104 + 10 + (17*6),18 + 12 * 3,"ALL ",(inSubLevel == 4) ? 0 : 255,(inSubLevel == 4) ? 255 : 0, 12);
+
+          if(keyEnter && (inSubLevel > 0)){
+            CurMount = inSubLevel - 1;
+            switch (CurMount)
+            {
+            case 0:
+              tud_disconnect();
+              FTL_Sync();
+              vTaskDelay(pdMS_TO_TICKS(500));
+              tud_connect();
+              break;
+            case 1:
+              {
+                tud_disconnect();
+                setMountPartition(0);
+                vTaskDelay(pdMS_TO_TICKS(500));
+                tud_connect();
+              }
+
+              break;
+            case 2:
+              {
+                tud_disconnect();
+                setMountPartition(1);
+                vTaskDelay(pdMS_TO_TICKS(500));
+                tud_connect();
+              }
+              break;
+            
+            case 3:
+              {
+                tud_disconnect();
+                setMountPartition(2);
+                vTaskDelay(pdMS_TO_TICKS(500));
+                tud_connect();
+              }
+              break;
+
+
+            default:
+              break;
+            }
+          }
+
+            switch (CurMount)
+            {
+            case 0:
+              DisplayPutStr(104 + 10          ,18 + 12 * 4,"^^^^",255,0, 12);
+              break;
+            case 1:
+              DisplayPutStr(104 + 10 + (6*6)  ,18 + 12 * 4,"^^^^",255,0, 12);
+              break;
+            case 2:
+              DisplayPutStr(104 + 10 + (12*6) ,18 + 12 * 4,"^^^^",255,0, 12);
+              break;
+            case 3:
+              DisplayPutStr(104 + 10 + (17*6) ,18 + 12 * 4,"^^^^",255,0, 12);
+              break;  
+            default:
+              break;
+            }
+
+        }else{
+          
+          DisplayPutStr(104,18 + 12 * 0,"Flash not Formatted, ",255,0, 12);
+          DisplayPutStr(104,18 + 12 * 1,"please format before",255,0, 12);
+          DisplayPutStr(104,18 + 12 * 2,"mount DATA or SYS",255,0, 12);
+          DisplayPutStr(104,18 + 12 * 3,"partition.",255,0, 12);
+          if( inSubLevel > 2){
+            inSubLevel = 1;
+          }
+          DisplayPutStr(104 + 10          ,18 + 12 * 5,"NONE",(inSubLevel == 1) ? 0 : 255,(inSubLevel == 1) ? 255 : 0, 12);
+          DisplayPutStr(104 + 10 + (14*6) ,18 + 12 * 5,"ALL ",(inSubLevel == 2) ? 0 : 255,(inSubLevel == 2) ? 255 : 0, 12);
 
           if(keyEnter && (inSubLevel > 0)){
             CurMount = inSubLevel - 1;
@@ -421,38 +359,24 @@ void vTask2(void *pvParameters)
             case 1:
               {
                 tud_disconnect();
-                setMountPartition(0);
+                setMountPartition(2);
                 vTaskDelay(pdMS_TO_TICKS(500));
-
-
                 tud_connect();
               }
 
               break;
-            case 2:
-              {
-                tud_disconnect();
-                setMountPartition(1);
-                vTaskDelay(pdMS_TO_TICKS(500));
-                tud_connect();
-              }
-              break;
-
             default:
               break;
             }
-          }
 
+          }
             switch (CurMount)
             {
             case 0:
-              DisplayPutStr(104 + 10          ,18 + 12 * 4,"^^^^",255,0, 12);
+              DisplayPutStr(104 + 10          ,18 + 12 * 6,"^^^^",255,0, 12);
               break;
             case 1:
-              DisplayPutStr(104 + 10 + (8*6)  ,18 + 12 * 4,"^^^^",255,0, 12);
-              break;
-            case 2:
-              DisplayPutStr(104 + 10 + (16*6) ,18 + 12 * 4,"^^^^",255,0, 12);
+              DisplayPutStr(104 + 10 + (14*6)  ,18 + 12 * 6,"^^^^",255,0, 12);
               break;
             default:
               break;
@@ -460,12 +384,6 @@ void vTask2(void *pvParameters)
 
 
 
-
-        }else{
-          inSubLevel = 0;
-          DisplayPutStr(104,18 + 12 * 0,"Flash not Formatted, ",255,0, 12);
-          DisplayPutStr(104,18 + 12 * 1,"please format before",255,0, 12);
-          DisplayPutStr(104,18 + 12 * 2,"mount.",255,0, 12);
         }
         break;
       
@@ -526,9 +444,6 @@ void vTask2(void *pvParameters)
             break;
           }
 
-
-
-
           uint8_t *pgbuff = pvPortMalloc(nand_info->PageSize_B);
           uint8_t *mtbuff = pvPortMalloc(nand_info->MetaSize_B);
 
@@ -547,9 +462,7 @@ void vTask2(void *pvParameters)
           for(int i = 0; i < fwSectors; i++)
           {
             memset(pgbuff, 0xFF, nand_info->PageSize_B);
-
             ret = f_read(f, pgbuff, nand_info->PageSize_B, &br);
-            
             MTD_WritePhyPageWithMeta(22 * nand_info->PagesPerBlock + i, nand_info->MetaSize_B, pgbuff, mtbuff);
           }
           
@@ -609,7 +522,7 @@ void vTask2(void *pvParameters)
             FTL_ClearAllSector();
             {
 
-              LBA_t plist[] = {80, 20, 0};
+              LBA_t plist[] = DISK_PARTITION;
               MKFS_PARM opt;
               FRESULT ret;
               ret = f_fdisk(0, plist, NULL);
@@ -633,6 +546,10 @@ void vTask2(void *pvParameters)
                 DisplayPutStr(40 + 6*4,31 + 12 * 1,"Format ERROR!",255,0, 12);
                 diskInit = false;
               }else{
+
+                FTL_Sync();
+                FTL_MapInit();
+
                 DisplayPutStr(40 + 6*4,31 + 12 * 1,"Format Finish.",255,0, 12);
                 diskInit = true;
               }
@@ -645,6 +562,7 @@ void vTask2(void *pvParameters)
           default:
             break;
           }
+          FTL_ScanPartition();
         }
 
         break;
@@ -741,16 +659,7 @@ void vTask2(void *pvParameters)
           mkLDLB(8,  22 * 64, fwSectors, 16 * 64, 19 * 64);
           mkLDLB(12, 22 * 64, fwSectors, 16 * 64, 19 * 64);
 
-          memset(pgbuff, 0xFF, nand_info->PageSize_B);
-          memcpy(pgbuff, LDLB2, sizeof(LDLB2));
-          memset(mtbuff, 0xFF, nand_info->MetaSize_B);
-        	mtbuff[2] = 0x42; //B
-	        mtbuff[3] = 0x43; //C
-	        mtbuff[4] = 0x42; //B
-	        mtbuff[5] = 0x20; //' ' 
-          MTD_WritePhyPageWithMeta(8*64+1, nand_info->MetaSize_B, pgbuff, mtbuff);
-          MTD_WritePhyPageWithMeta(12*64+1, nand_info->MetaSize_B, pgbuff, mtbuff);
-
+          RestoreLDLB2();
 
           f_close(f);
           f_unmount("/DATA/");
@@ -764,7 +673,7 @@ void vTask2(void *pvParameters)
 
           DisplayFillBox(40, 30, 220, 80, 0);
           DisplayBox(40, 30, 220, 80, 0xFF);
-          DisplayPutStr(40 + 1*4,31 + 12 * 1,"Install Completed.",255,0, 12);
+          DisplayPutStr(40 + 1*4,31 + 12 * 1,"Restore Completed?",255,0, 12);
 
         }
 
@@ -799,6 +708,7 @@ void vTask2(void *pvParameters)
       if(needClean)
       {
         DisplayClean();
+        RenderMainW(selectItem);
         needClean = false;
       }
       
@@ -807,7 +717,7 @@ void vTask2(void *pvParameters)
       case KEY_DOWN:
         if(!inSubMenu && (inSubLevel == 0)){
           selectItem++;
-          if(selectItem > MenuItemNum - 1)
+          if(selectItem > getMenuItemNum() - 1)
             selectItem = 0;
           RenderMainW(selectItem);
         }
@@ -817,7 +727,7 @@ void vTask2(void *pvParameters)
         if(!inSubMenu && (inSubLevel == 0)){
           selectItem--;
           if(selectItem < 0)
-            selectItem = MenuItemNum - 1;
+            selectItem = getMenuItemNum() - 1;
           RenderMainW(selectItem);
         }
         break;
@@ -873,6 +783,58 @@ void vKeysSvc(void *pvParameters)
   
 }
 
+
+
+void testFaultTask()
+{
+
+
+
+
+}
+
+
+uint32_t *bootAddr = (uint32_t *)VM_ROM_BASE;
+
+void testFaultTaskLoader(void *par)
+{
+
+
+  //vTaskDelay(pdMS_TO_TICKS(1000));
+/*
+  for(int i =0; i<20; i++){
+    INFO("ROM[%d]:%08x\n",i, bootAddr[i]);
+  }
+*/
+  __asm volatile("mrs r1,cpsr_all");
+  __asm volatile("bic r1,r1,#0x1f");
+  __asm volatile("orr r1,r1,#0x10");
+  __asm volatile("msr cpsr_all,r1");
+
+  __asm volatile("ldr r0,=bootAddr");
+  __asm volatile("ldr r0,[r0]");
+  __asm volatile("mov pc,r0");
+  
+  while(1);
+
+
+}
+
+
+
+void vVMMgrSvc(void *pvParameters)
+{
+  while(!fileSystemOK)
+    vTaskDelay(pdMS_TO_TICKS(100));
+
+  vmMgr_init();
+
+
+  for(;;){
+    vmMgr_task();
+  }
+}
+
 extern int bootTimes;
 void _startup(){
 
@@ -885,8 +847,10 @@ void _startup(){
 	xTaskCreate( vFTLSvc, "FTL Svc", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
 	xTaskCreate( vKeysSvc, "Keys Svc", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
 
-	xTaskCreate( vTask1, "test task1", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
-	xTaskCreate( vTask2, "Main Thread", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
+	//xTaskCreate( vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
+
+
+	xTaskCreate( vMainThread, "Main Thread", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
 
 
 

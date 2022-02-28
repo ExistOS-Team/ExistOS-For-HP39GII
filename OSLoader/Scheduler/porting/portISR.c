@@ -55,7 +55,7 @@ volatile uint32_t ulCriticalNesting = 9999UL;
 void vPortISRStartFirstTask( void );
 /*-----------------------------------------------------------*/
 
-void vPortISRStartFirstTaskc( void )
+void vPortISRStartFirstTask( void )
 {
 	/* Simply start the scheduler.  This is included here as it can only be
 	called from ARM mode. */
@@ -85,7 +85,6 @@ void vPortISRStartFirstTaskc( void )
 	/* correct address. */												\
 	"SUBS PC, LR, #4											\n\t"	\
 	);			
-
 }
 
 /*
@@ -123,7 +122,7 @@ void vPortISRStartFirstTaskc( void )
 
 #endif /* THUMB_INTERWORK */
 /*-----------------------------------------------------------*/
-#if 0
+#if 1
 void vPortEnterCritical( void )
 {
 	/* Disable interrupts as per portDISABLE_INTERRUPTS(); 							*/

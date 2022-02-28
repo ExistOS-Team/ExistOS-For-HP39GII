@@ -31,7 +31,15 @@ typedef struct
     int32_t *StatusBuf;
 }FTL_Operates;
 
+typedef struct PartitionInfo_t
+{
+  uint32_t Partitions;
+  uint32_t SectorStart[4];
+  uint32_t Sectors[4];
+}PartitionInfo_t;
+
 int FTL_init(void);
+void FTL_MapInit(void);
 bool FTL_inited(void);
 void FTL_task(void);
 
@@ -44,5 +52,7 @@ int FTL_TrimSector(uint32_t sector);
 int FTL_Sync(void);
 void FTL_ClearAllSector(void);
 
+bool FTL_ScanPartition(void);
+PartitionInfo_t *FTL_GetPartitionInfo(void);
 
 #endif

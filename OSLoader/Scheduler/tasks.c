@@ -260,7 +260,7 @@ typedef struct tskTaskControlBlock       /* The old naming convention is used to
     
     #if ( portCONTEXT_REGS_IN_TCB == 1 )
         volatile StackType_t * pxTopOfREGFrameStack;
-        uint32_t REGFrame[17 * 3];
+        uint32_t REGFrame[portCONTEXT_FRAME_SIZE / sizeof(uint32_t)];
     #endif
 
     ListItem_t xStateListItem;                  /*< The list that the state list item of a task is reference from denotes the state of that task (Ready, Blocked, Suspended ). */
@@ -778,6 +778,7 @@ static void prvAddNewTaskToReadyList( TCB_t * pxNewTCB ) PRIVILEGED_FUNCTION;
                     if( pxNewTCB != NULL )
                     {
                         /* Store the stack location in the TCB. */
+                        memset(pxNewTCB, 0, sizeof(TCB_t));
                         pxNewTCB->pxStack = pxStack;
                     }
                     else

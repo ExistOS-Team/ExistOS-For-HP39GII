@@ -101,7 +101,7 @@ Keys_t portGetChangedKey(void);
 
 Keys_t kb_waitAnyKeyPress();
 void kb_waitKeyPress(Keys_t key);
-
+bool kb_isKeyPress(Keys_t key);
 
 void key_task();
 void key_svcInit();

@@ -18,7 +18,7 @@
 
 
 static uint32_t _randSeed = 1;
-uint32_t _randSetSeed(uint32_t seed)
+void _randSetSeed(uint32_t seed)
 {
   _randSeed = seed;
 }
@@ -41,6 +41,112 @@ uint32_t _rand(void)
     value |= (_randSeed >> 16) & 0x03FF;
     //Return the random value
     return value;
+}
+
+
+
+void memTest()
+{
+  volatile uint32_t *testaddr = (uint32_t *)0x00300000;
+  volatile uint32_t chkVal = 0;
+  uint32_t seedx = 2344;
+  for(;;)
+  {
+    
+  INFO("START RANDOM WRITE MEM\n");
+  INFO("TEST 1\n");
+  INFO("TEST 1\n");
+  INFO("TEST 1\n");
+  INFO("TEST 1\n");
+  vTaskDelay(pdMS_TO_TICKS(5000));
+  seedx++;
+
+
+    _randSetSeed(seedx);
+    for(int i=0; i<1*4*1024/4;i++){
+      uint32_t p =  (_rand() & 0xFFFFF) * 2 / 4;
+      //INFO("WR ADDR:%08x\n", &testaddr[p] );
+      testaddr[p] = _rand();
+
+      if((i % (1 * 1024 / 4)) == 0){ 
+        INFO("Random WR:%d/%d\n", i, 1*4*1024/4);
+      }
+
+    }
+
+    _randSetSeed(seedx);
+    for(int i=0; i<1*4*1024/4;i++){
+      uint32_t p =  (_rand() & 0xFFFFF) * 2 / 4;
+      //INFO("RD ADDR:%08x\n", &testaddr[p] );
+      chkVal = _rand();
+      if(testaddr[p] != chkVal){
+        INFO("RAND TestERRORAt:%08x  %08x==%08x\n", &testaddr[p/4], testaddr[p/4],   chkVal  );
+      }
+
+      if((i % (1 * 1024 / 4)) == 0){ 
+        INFO("Random RB:%d/%d\n", i, 1*4*1024/4);
+      }
+
+    }
+
+  INFO("TEST FINISH 1\n");
+  INFO("TEST FINISH 1\n");
+  INFO("TEST FINISH 1\n");
+  INFO("TEST FINISH 1\n");
+
+
+  INFO("START WRITE MEM\n");
+  _randSetSeed(seedx);
+  for(int i = 0; i < (1*1024 * 1024 / 4) ; i+=(4096+1024)){
+    testaddr[i] = _rand();
+    if((i % (32 * 1024 / 4)) == 0){
+      INFO("WR:%d/%d\n", i, (1 * 1024 * 1024 / 4));
+    }
+  }
+
+  INFO("MEM WRITE Finish, readback test\n");
+
+  _randSetSeed(seedx);
+  for(int i = 0; i < (1*1024 * 1024 / 4) ; i+=(4096+1024)){
+    chkVal =  _rand();
+    if(testaddr[i] != chkVal){
+      INFO("TestERRORAt:%08x  %08x==%08x\n", &testaddr[i], testaddr[i],   chkVal  );
+    }
+    if((i % (32 * 1024 / 4)) == 0){
+      INFO("RB TEST:%d/%d\n", i, (1 * 1024 * 1024 / 4));
+    }
+  }
+
+
+  INFO("TEST FINISH 2\n");
+  INFO("TEST FINISH 2\n");
+  INFO("TEST FINISH 2\n");
+  INFO("TEST FINISH 2\n");
+seedx++;
+
+  INFO("START WRITE MEM\n");
+  _randSetSeed(seedx);
+  for(int i = 0; i < (1*4 * 1024 / 4) ; i++){
+    testaddr[i] = _rand();
+    if((i % (1 * 1024 / 4)) == 0){
+      INFO("WR:%d/%d\n", i, (1 * 4 * 1024 / 4));
+    }
+  }
+
+  INFO("MEM WRITE Finish, readback test\n");
+
+  _randSetSeed(seedx);
+  for(int i = 0; i < (1*4 * 1024 / 4) ; i++){
+    chkVal =  _rand();
+    if(testaddr[i] != chkVal){
+      INFO("TestERRORAt:%08x  %08x==%08x\n", &testaddr[i], testaddr[i],   chkVal  );
+    }
+    if((i % (1 * 1024 / 4)) == 0){
+      INFO("RB TEST:%d/%d\n", i, (1 * 4 * 1024 / 4));
+    }
+  }
+    vTaskDelay(pdMS_TO_TICKS(1000));
+  }
 }
 
 void checkFlash()

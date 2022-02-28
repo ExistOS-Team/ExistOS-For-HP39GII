@@ -123,6 +123,7 @@ bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, boo
       CurMount = 0;
       MSCpartStartSector = 0;
       MSCpartSectors = 0;
+      FTL_Sync();
 
     }
   }

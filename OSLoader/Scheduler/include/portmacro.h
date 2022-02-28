@@ -29,6 +29,7 @@
 #ifndef PORTMACRO_H
 #define PORTMACRO_H
 #include <stdint.h>
+#include "FreeRTOSConfig.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -78,7 +79,6 @@ typedef unsigned long UBaseType_t;
 
 
 #if ( portCONTEXT_REGS_IN_TCB == 1 )
-
 
 #define portRESTORE_CONTEXT()\
 {\
@@ -244,9 +244,13 @@ extern void vTaskSwitchContext( void );
 
 extern void vTaskEnterCritical( void );
 extern void vTaskExitCritical( void );
+extern void vPortEnterCritical( void );
+extern void vPortExitCritical( void );
 
 #define portENTER_CRITICAL()	vTaskEnterCritical();//	vPortEnterCritical();
+//#define portENTER_CRITICAL()	vPortEnterCritical();
 #define portEXIT_CRITICAL()		vTaskExitCritical();//	vPortExitCritical();
+//#define portEXIT_CRITICAL()		vPortExitCritical();
 /*-----------------------------------------------------------*/
 
 /* Task utilities. */

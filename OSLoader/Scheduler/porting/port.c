@@ -198,7 +198,7 @@ extern void vPortISRStartFirstTask( void );
 	up_TimerSetup();
 	
 	/* Start the first task. */
-
+#if ( portCONTEXT_REGS_IN_TCB == 1 )
 	__asm volatile ("LDR	R0, =pxCurrentTCB");
 	__asm volatile ("LDR	R0, [R0]");
 	__asm volatile ("ADD	R0, R0, #4");
@@ -224,18 +224,11 @@ extern void vPortISRStartFirstTask( void );
 	__asm volatile ("SUBS 	PC, LR, #4");
 
 
+#else
 
+	vPortISRStartFirstTask();	
+#endif
 
-
-	//__asm volatile ("LDMIA	LR!, {#68}");
-
-
-
-
-
-
-
-	//vPortISRStartFirstTask();	
 
 	/* Should not get here! */
 	return 0;

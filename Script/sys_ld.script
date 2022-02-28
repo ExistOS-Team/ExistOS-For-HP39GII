@@ -1,8 +1,8 @@
 
 MEMORY
 {
-  vmRAM    (rwx) : ORIGIN = 0x00200000, LENGTH = 1024K
-  vmROM    (rx ) : ORIGIN = 0x00100000, LENGTH = 1024K
+  vmRAM    (rwx) : ORIGIN = 0x00300000, LENGTH = 2048K
+  vmROM    (rx ) : ORIGIN = 0x00100000, LENGTH = 2048K
 }
 
 OUTPUT_ARCH(arm)

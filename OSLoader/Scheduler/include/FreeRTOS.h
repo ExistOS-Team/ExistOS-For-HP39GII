@@ -1168,7 +1168,7 @@ typedef struct xSTATIC_TCB
         xMPU_SETTINGS xDummy2;
     #endif
     #if ( portCONTEXT_REGS_IN_TCB == 1 )
-        UBaseType_t uxDummy2[1 + 17 * 3];
+        UBaseType_t uxDummy2[1 + portCONTEXT_FRAME_SIZE / sizeof(UBaseType_t)];
     #endif
     StaticListItem_t xDummy3[ 2 ];
     UBaseType_t uxDummy5;
