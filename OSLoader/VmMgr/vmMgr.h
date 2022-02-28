@@ -37,7 +37,7 @@ QueueHandle_t PageFaultQueue;
 void vmMgr_init(void);
 void vmMgr_task(void);
 bool vmMgrInited(void);
-
+void vmMgr_mapSwap(void);
 
 uint32_t vmMgr_mapFile(FIL *file, uint32_t perm, uint32_t MemAddrStart, uint32_t FileAddrStart, uint32_t memSize);
 

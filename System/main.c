@@ -1,43 +1,20 @@
 
 #include <stdint.h>
+#include <stdio.h>
 
-char s[] = "012345678901234567890123456789012345678901234567890123456789\n";
 
-    volatile uint8_t *p = (uint8_t *)0x80070000;
-    volatile uint32_t *t = (uint32_t *)0x80070018;
+#include "sys_llapi.h"
 
-    volatile uint32_t *digms = (uint32_t *)0x8001C0C0;
+char s[] = "Check for working CXX compiler: D:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.07/bin/arm-none-eabi-g++.exe - skipped\n";
 
-volatile void delay(uint32_t us)
-{
-    uint32_t start = *digms;
-
-    while((*digms - start) < us)
-    {
-        ;
-    }
-}
 
 void main()
 {
-    uint32_t i = 0;
     for(;;){
-        while(*t & 4);
-        delay(1000);
-        *p = s[i++];
-
-        if(i > sizeof(s))
-        {
-            i = 0;
-        }
+        ll_delay(1000);
+        ll_putStr(s);
     }
-/*
-    for(int i =0; i<sizeof(s); i++){
-        while(*t & 4);
 
-        *p = s[i];
-    }
-*/
     while(1);
 
 

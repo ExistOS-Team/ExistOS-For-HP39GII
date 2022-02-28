@@ -12,6 +12,9 @@
 
 #include "vmMgr.h"
 
+#include "llapi.h"
+#include "llapi_code.h"
+
 extern volatile void * volatile pxCurrentTCB;	
 extern volatile uint32_t ulCriticalNesting;	
 
@@ -86,10 +89,21 @@ void arm_vector_swi()
     ((uint32_t *)pxCurrentTCB)[0] = SWI_REGS_Frame[13];                         //Reset task stack pointer
 
 
-    if(SWI_REGS_Frame[0] == 0xFE002200){
-        
-    }
+    uint32_t SWINum = *((uint32_t *)(pRegFram[17] - 8)) & 0x00FFFFFF;
 
+    if((SWINum >= LL_SWI_BASE) && (SWINum < LL_SWI_BASE + LL_SWI_NUM))
+    {
+        LLAPI_CallInfo_t LLSWI;
+        BaseType_t SwitchContext;
+        LLSWI.para0 = SWI_REGS_Frame[0];
+        LLSWI.para1 = SWI_REGS_Frame[1];
+        LLSWI.para2 = SWI_REGS_Frame[2];
+        LLSWI.para3 = SWI_REGS_Frame[3];
+        LLSWI.pRet = (uint32_t *)&pRegFram[2]; //R0
+        LLSWI.task = xTaskGetCurrentTaskHandle();
+        LLSWI.SWINum = SWINum;
+        xQueueSendFromISR(LLAPI_Queue, &LLSWI, &SwitchContext);
+    }
 
 	vTaskSwitchContext();
 

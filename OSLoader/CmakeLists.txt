@@ -15,6 +15,7 @@ include_directories(./HAL/Hardware)
 include_directories(./HAL)
 include_directories(./HAL/Hardware/registers)
 include_directories(./VmMgr)
+include_directories(./LowLevelAPI)
 include_directories(./Scheduler/porting)
 include_directories(./Component3rd/tinyusb)
 include_directories(./Component3rd/tinyusb/device)
@@ -24,6 +25,7 @@ include_directories(./Component3rd/FatFs)
 aux_source_directory(.                                  LOADER_SRCS)
 aux_source_directory(./Scheduler                        LOADER_SRCS)
 aux_source_directory(./VmMgr                            LOADER_SRCS)
+aux_source_directory(./LowLevelAPI                      LOADER_SRCS)
 aux_source_directory(./Scheduler/porting                LOADER_SRCS)
 aux_source_directory(./HAL                              LOADER_SRCS)
 aux_source_directory(./HAL/Hardware                     LOADER_SRCS)
@@ -64,7 +66,7 @@ add_custom_target(
   DEPENDS OSLoader.sb
   )
 else()
-if(EXISTS ${CMAKE_SOURCE_DIR}/tools/sbtools/elftosb)
+if(EXISTS ${CMAKE_SOURCE_DIR}/tools/sbtools/  )
 add_custom_target(
   OSLoader.sb ALL
   COMMAND ${CMAKE_SOURCE_DIR}/tools/sbtools/elftosb -z -c ${CMAKE_SOURCE_DIR}/Script/build_fw.bd -o ${CMAKE_CURRENT_BINARY_DIR}/OSLoader.sb ${CMAKE_CURRENT_BINARY_DIR}/rom.bin

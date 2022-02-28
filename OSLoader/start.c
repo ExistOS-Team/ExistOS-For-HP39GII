@@ -25,7 +25,7 @@
 #include "OSloaderMenu.h"
 #include "vmMgr.h"
 
-
+#include "llapi.h"
 
 
 PARTITION VolToPart[FF_VOLUMES] = {
@@ -36,7 +36,7 @@ PARTITION VolToPart[FF_VOLUMES] = {
 
 
 
-
+TaskHandle_t pSysTask;
 
 uint32_t CurMount = 0;
 uint32_t FTL_status = 0;
@@ -44,7 +44,7 @@ uint32_t FTL_status = 0;
 static bool fileSystemOK = false;
 static bool diskInit = false;
 
-char pcWriteBuffer[2048];
+char pcWriteBuffer[4096];
 void printTaskList() {
     vTaskList((char *)&pcWriteBuffer);
     printf("=============================================\r\n");
@@ -61,10 +61,8 @@ void vTask1(void *pvParameters) {
     //printf("Start vTask1\n");
     for (;;) {
 		    
-		vTaskDelay(pdMS_TO_TICKS(5000));
+		vTaskDelay(pdMS_TO_TICKS(10000));
 		printTaskList();
-		printf("task 111\n");
-		
     }
 }
 
@@ -117,6 +115,61 @@ void setMountPartition(uint32_t p)
 }
 
 
+uint32_t *bootAddr = (uint32_t *)VM_ROM_BASE;
+void SystemTask(void *par)
+{
+  __asm volatile("mrs r1,cpsr_all");
+  __asm volatile("bic r1,r1,#0x1f");
+  __asm volatile("orr r1,r1,#0x10");
+  __asm volatile("msr cpsr_all,r1");
+
+  __asm volatile("ldr r0,=bootAddr");
+  __asm volatile("ldr r0,[r0]");
+  __asm volatile("mov pc,r0");
+  
+  while(1);
+}
+
+bool bootSystem()
+{
+
+    FRESULT ret;
+    FILINFO sysFinfo;
+    FATFS *fs = pvPortMalloc(sizeof(FATFS));
+    f_mount(fs, "/SYS/", 1);
+    ret = f_stat("/SYS/ExistOS.sys", &sysFinfo);
+    INFO("fsize:%lu \n",sysFinfo.fsize);
+    INFO("f_stat:%d\n",ret);
+    if(ret != FR_OK){
+        f_unmount("/SYS/");
+        vPortFree(fs);
+        return false;
+    }
+
+    FIL *sysFile = pvPortMalloc(sizeof(FIL));
+    ret = f_open(sysFile, "/SYS/ExistOS.sys" ,FA_READ);
+    INFO("f_open:%d\n",ret);
+    if(ret != FR_OK){
+        f_unmount("/SYS/");
+        vPortFree(fs);
+        vPortFree(sysFile);
+        return false;
+    }
+
+    while(!vmMgrInited()){
+      vTaskDelay(pdMS_TO_TICKS(10));
+    }
+
+
+    vmMgr_mapSwap();
+    vmMgr_mapFile(sysFile, PERM_R, VM_ROM_BASE, 0, (sysFinfo.fsize + PAGE_SIZE) & 0xFFFFF000);
+
+    vTaskResume(pSysTask);
+    
+
+    return true;
+
+}
 
 
 void vMainThread(void *pvParameters) 
@@ -186,44 +239,10 @@ void vMainThread(void *pvParameters)
     /* Normal Boot */
     fileSystemOK = true;  
 
-    FRESULT ret;
-    FILINFO sysFinfo;
-    FATFS *fs = pvPortMalloc(sizeof(FATFS));
-    f_mount(fs, "/SYS/", 1);
-    ret = f_stat("/SYS/ExistOS.sys", &sysFinfo);
-    INFO("fsize:%lu \n",sysFinfo.fsize);
-    INFO("f_stat:%d\n",ret);
-    if(ret != FR_OK){
-        f_unmount("/SYS/");
-        vPortFree(fs);
+    if(bootSystem() == false){
         AbortRes = 0;
         goto Configuration;
     }
-
-    FIL *sysFile = pvPortMalloc(sizeof(FIL));
-    ret = f_open(sysFile, "/SYS/ExistOS.sys" ,FA_READ);
-    INFO("f_open:%d\n",ret);
-    if(ret != FR_OK){
-        f_unmount("/SYS/");
-        vPortFree(fs);
-        vPortFree(sysFile);
-        AbortRes = 0;
-        goto Configuration;
-    }
-
-
-    void vVMMgrSvc(void *pvParameters);
-    xTaskCreate( vVMMgrSvc, "VM Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
-
-    while(!vmMgrInited()){
-      vTaskDelay(pdMS_TO_TICKS(10));
-    }
-
-    vmMgr_mapFile(sysFile, PERM_R, VM_ROM_BASE, 0, (sysFinfo.fsize + PAGE_SIZE) & 0xFFFFF000);
-
-    void testFaultTaskLoader(void *par);
-    xTaskCreate( testFaultTaskLoader, "testFaultTask", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
-
 
 
     while(1)
@@ -257,6 +276,19 @@ void vMainThread(void *pvParameters)
         DisplayFillBox(103, 17, 254, 124, 0);
         DisplayPutStr(104,18 + 12 * 0,"Press ENTER to",255,0, 12);
         DisplayPutStr(104,18 + 12 * 1,"Boot /SYS/ExistOS.sys",255,0, 12);
+
+        if(keyEnter)
+        {
+          if(bootSystem() == false){
+            DisplayFillBox(40, 30, 220, 80, 0);
+            DisplayBox(40, 30, 220, 80, 0xFF);
+            DisplayPutStr(40 + 1*4,31 + 12 * 1,"Boot failed.",255,0, 12);
+          }else{
+            DisplayClean();
+            vTaskDelete(xTaskGetCurrentTaskHandle());
+          }
+        }
+
         break;
       
       case 2: //Mount USB MSC
@@ -785,53 +817,23 @@ void vKeysSvc(void *pvParameters)
 
 
 
-void testFaultTask()
-{
-
-
-
-
-}
-
-
-uint32_t *bootAddr = (uint32_t *)VM_ROM_BASE;
-
-void testFaultTaskLoader(void *par)
-{
-
-
-  //vTaskDelay(pdMS_TO_TICKS(1000));
-/*
-  for(int i =0; i<20; i++){
-    INFO("ROM[%d]:%08x\n",i, bootAddr[i]);
-  }
-*/
-  __asm volatile("mrs r1,cpsr_all");
-  __asm volatile("bic r1,r1,#0x1f");
-  __asm volatile("orr r1,r1,#0x10");
-  __asm volatile("msr cpsr_all,r1");
-
-  __asm volatile("ldr r0,=bootAddr");
-  __asm volatile("ldr r0,[r0]");
-  __asm volatile("mov pc,r0");
-  
-  while(1);
-
-
-}
-
-
 
 void vVMMgrSvc(void *pvParameters)
 {
-  while(!fileSystemOK)
-    vTaskDelay(pdMS_TO_TICKS(100));
 
   vmMgr_init();
 
-
   for(;;){
     vmMgr_task();
+  }
+}
+
+void vLLAPISvc(void *pvParameters)
+{
+
+  LLAPI_init();
+  for(;;){
+    LLAPI_Task();
   }
 }
 
@@ -842,17 +844,19 @@ void _startup(){
 
   boardInit();
 
-	xTaskCreate( vTaskTinyUSB, "TinyUSB", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
-	xTaskCreate( vMTDSvc, "MTD Svc", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
-	xTaskCreate( vFTLSvc, "FTL Svc", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
-	xTaskCreate( vKeysSvc, "Keys Svc", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
+	xTaskCreate( vTaskTinyUSB, "TinyUSB", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
+	xTaskCreate( vMTDSvc, "MTD Svc", configMINIMAL_STACK_SIZE, NULL, 5, NULL );
+	xTaskCreate( vFTLSvc, "FTL Svc", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
+	xTaskCreate( vKeysSvc, "Keys Svc", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
 
-	//xTaskCreate( vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
+	xTaskCreate( vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
 
+	xTaskCreate( vMainThread, "Main Thread", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
+  xTaskCreate( vVMMgrSvc, "VM Svc", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
+  xTaskCreate( vLLAPISvc, "LLAPI Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
 
-	xTaskCreate( vMainThread, "Main Thread", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
-
-
+  xTaskCreate( SystemTask, "SystemTask", configMINIMAL_STACK_SIZE, NULL, 1, &pSysTask);
+  vTaskSuspend(pSysTask);
 
 	vTaskStartScheduler();
 	printf("booting fail.\n");

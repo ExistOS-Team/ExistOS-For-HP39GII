@@ -225,11 +225,12 @@ static void mkswap()
 
     SwapPartSectorStart = p->SectorStart[2];
     SwapPartSectors = p->Sectors[2];
-    
+    /*
     for(int i = p->SectorStart[2]; i < p->SectorStart[2] + p->Sectors[2]; i++)
     {
         FTL_TrimSector(i);
-    }
+    }*/
+
     VM_INFO("Swap FTL_TrimSector Fin\n");
     
 }
@@ -314,6 +315,19 @@ void vmMgr_task()
     }
 }
 
+void vmMgr_mapSwap()
+{
+    //vmMgr_createSwapfile();
+    mkswap();
+    mapList_AddPartitionMap(
+        2,
+        PERM_R | PERM_W,
+        VM_RAM_BASE,
+        SwapPartSectorStart,
+        SIZE_SWAPAREA_MB * 1048576
+        );
+}
+
 void vmMgr_init()
 {
     PageFaultQueue = xQueueCreate(32, sizeof(pageFaultInfo_t));
@@ -330,23 +344,7 @@ void vmMgr_init()
         CachePageInfo[i].mapToVirtAddr = 0xFFFFFFFF;
     }
     
-    //vmMgr_createSwapfile();
-    mkswap();
-
     mapListInit();
-
-    //mapList_AddFileMap(&fswap, PERM_R | PERM_W, VM_RAM_BASE, 0, SIZE_SWAPAREA_MB * 1048576);
-    
-
-    mapList_AddPartitionMap(
-        2,
-        PERM_R | PERM_W,
-        VM_RAM_BASE,
-        SwapPartSectorStart,
-        SIZE_SWAPAREA_MB * 1048576
-        );
-    
-
     mmu_init();
 
 
@@ -355,7 +353,7 @@ void vmMgr_init()
         VM_INFO("CACHE_PAGEn_BASE:%d,%08x\n",i,CACHE_PAGEn_BASE(i));
 
     }
-    VM_INFO("Virtual Memory Enable.\n");
+    INFO("Virtual Memory Enable.\n");
     vmMgrInit = true;
 
 
