@@ -104,8 +104,6 @@ volatile void mmu_set_rs(uint32_t rs) {
 void mmu_SetDomainPermCheck(uint32_t domain, bool check)
 {
     register uint32_t c3 asm("r2");
-    __asm volatile("PUSH {R0-R2}");
-
     __asm volatile("mrc p15,0,%0,c3,c0,0" ::"r"(c3)); 
 
 
@@ -119,7 +117,6 @@ void mmu_SetDomainPermCheck(uint32_t domain, bool check)
     }
 
     __asm volatile("mcr p15,0,%0,c3,c0,0" ::"r"(c3)); 
-    __asm volatile("pop {R0-R2}");
 }
 
 void mmu_enable(uint32_t base)
@@ -284,7 +281,7 @@ void mmu_init()
     mmu_enable(DFLPT_BASE);
 
 
-    INFO("L2 PTE Size:%d\n",sizeof(L2PTE));
+    VM_INFO("L2 PTE Size:%d\n",sizeof(L2PTE));
     mmu_dumpMapInfo();
 }
 

@@ -10,8 +10,9 @@
 #define LL_SWI_WRITE_STRING1           (LL_SWI_BASE + 3)
 #define LL_SWI_WRITE_STRING2           (LL_SWI_BASE + 4)
 
-
 #define LL_SWI_GET_TIME_US             (LL_SWI_BASE + 5)
+
+
 
 
 

@@ -324,8 +324,8 @@ void portDispFlushAreaBuf(uint32_t x_start, uint32_t y_start, uint32_t x_end, ui
         LCDIF_CMD8(0x2C);
         LCDIF_WriteDAT(buf, (xend - xstart + 1) * (yend - ystart + 1) );
         return;
-    }*/
-
+    }
+*/
     uint32_t p = 0;
     for(uint32_t line_i = ystart; line_i <= yend; line_i++)
     { 

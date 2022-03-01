@@ -29,8 +29,7 @@ void DisplayClean(void);
 
 void Display_InterfaceInit(void);
 void DisplayInit(void);
-
-
+void DisplayTask(void);
 
 #endif
 

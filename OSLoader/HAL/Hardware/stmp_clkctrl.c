@@ -63,7 +63,6 @@ void portCLKCtrlInit(void)
     setCPUDivider(2);
     setHCLKDivider(2);
 
-
     setCPU_HFreqDomain(true);
     enableUSBClock(true);
     

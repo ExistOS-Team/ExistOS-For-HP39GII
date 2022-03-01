@@ -10,9 +10,7 @@ void main()
 {
 
     printf("Core Mark Testing..\n");
-
     coremain();
-
     printf("Core Mark Test Finish\n");
 
     for(;;){

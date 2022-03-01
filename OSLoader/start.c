@@ -116,7 +116,7 @@ void setMountPartition(uint32_t p)
 
 
 uint32_t *bootAddr = (uint32_t *)VM_ROM_BASE;
-void SystemTask(void *par)
+void System(void *par)
 {
   __asm volatile("mrs r1,cpsr_all");
   __asm volatile("bic r1,r1,#0x1f");
@@ -163,9 +163,9 @@ bool bootSystem()
 
     vmMgr_mapSwap();
     vmMgr_mapFile(sysFile, PERM_R, VM_ROM_BASE, 0, (sysFinfo.fsize + PAGE_SIZE) & 0xFFFFF000);
-
     vTaskResume(pSysTask);
     
+    vTaskDelete(xTaskGetCurrentTaskHandle());
 
     return true;
 
@@ -186,7 +186,7 @@ void vMainThread(void *pvParameters)
 
     mtdInfo_t *nand_info;    
 
-    DisplayInit();
+    
 
     if(kb_isKeyPress(KEY_BACKSPACE) == true){
       AbortRes = 1;
@@ -534,7 +534,7 @@ void vMainThread(void *pvParameters)
         DisplayPutStr(104,18 + 12 * 0,"Select only Erase ",255,0, 12);
         DisplayPutStr(104,18 + 12 * 1,"or format flash.",255,0, 12);
 
-        DisplayPutStr(104 +10        , 18 + 12 * 3,  "Erase",(inSubLevel == 1) ? 0 : 255,(inSubLevel == 1) ? 255 : 0, 12);
+        DisplayPutStr(104 + 10         , 18 + 12 * 3,"Erase ",(inSubLevel == 1) ? 0 : 255,(inSubLevel == 1) ? 255 : 0, 12);
         DisplayPutStr(104 + 10 + (12*6) ,18 + 12 * 3,"Format",(inSubLevel == 2) ? 0 : 255,(inSubLevel == 2) ? 255 : 0, 12);
         if(keyEnter)
         {
@@ -837,6 +837,15 @@ void vLLAPISvc(void *pvParameters)
   }
 }
 
+void vDispSvc(void *pvParameters)
+{
+
+  DisplayInit();
+  for(;;){
+    DisplayTask();
+  }
+}
+
 extern int bootTimes;
 void _startup(){
 
@@ -844,18 +853,20 @@ void _startup(){
 
   boardInit();
 
-	xTaskCreate( vTaskTinyUSB, "TinyUSB", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
 	xTaskCreate( vMTDSvc, "MTD Svc", configMINIMAL_STACK_SIZE, NULL, 5, NULL );
 	xTaskCreate( vFTLSvc, "FTL Svc", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
-	xTaskCreate( vKeysSvc, "Keys Svc", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
 
-	xTaskCreate( vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
-
-	xTaskCreate( vMainThread, "Main Thread", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
   xTaskCreate( vVMMgrSvc, "VM Svc", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
-  xTaskCreate( vLLAPISvc, "LLAPI Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
+	xTaskCreate( vTaskTinyUSB, "TinyUSB", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
 
-  xTaskCreate( SystemTask, "SystemTask", configMINIMAL_STACK_SIZE, NULL, 1, &pSysTask);
+	xTaskCreate( vKeysSvc, "Keys Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
+	xTaskCreate( vDispSvc, "Display Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
+  xTaskCreate( vLLAPISvc, "LLAPI Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
+  
+	xTaskCreate( vMainThread, "Main Thread", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
+  xTaskCreate( System, "System", configMINIMAL_STACK_SIZE, NULL, 1, &pSysTask);
+	xTaskCreate( vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, 0, NULL );
+
   vTaskSuspend(pSysTask);
 
 	vTaskStartScheduler();
