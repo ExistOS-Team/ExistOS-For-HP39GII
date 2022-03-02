@@ -106,8 +106,8 @@ bool kb_isKeyPress(Keys_t key);
 void key_task();
 void key_svcInit();
 
-
-
+uint8_t key_getChanged();
+void kb_isAnyKeyPress(Keys_t *key, bool *press);
 
 #endif
 

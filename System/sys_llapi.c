@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-
+#include <stdbool.h>
 
 #include "llapi_code.h"
 #include "sys_llapi.h"
@@ -66,5 +66,51 @@ uint32_t ll_putChr(char c)
 uint32_t ll_gettime_us()
 {
     return syscall_1(LL_SWI_GET_TIME_US, 0);
+}
+
+void ll_irq_set_Vector(void *p)
+{
+    syscall_1(LL_SWI_SET_IRQ_VECTOR, (uint32_t)p);
+}
+
+void ll_irq_set_Stack(void *p)
+{
+    syscall_1(LL_SWI_SET_IRQ_STACK, (uint32_t)p);
+}
+
+void ll_irq_enable(bool enable)
+{
+    if(enable){
+        syscall_1(LL_SWI_ENABLE_IRQ, 0);
+    }else{
+        syscall_1(LL_SWI_DISABLE_IRQ, 0);
+    }
+}
+
+void ll_irq_get_context(uint32_t *save)
+{
+    syscall_1(LL_SWI_IRQ_GET_CONTEXT, (uint32_t)save);
+}
+
+void ll_irq_set_context(uint32_t *load)
+{
+    syscall_1(LL_SWI_IRQ_SET_CONTEXT, (uint32_t)load);
+}
+
+
+void ll_irq_restore_context() __attribute__((naked));
+void ll_irq_restore_context()
+{
+    syscall_1(LL_SWI_IRQ_RESTORE_CONTEXT, 0);
+}
+
+void ll_systick_set_period(uint32_t periodMs)
+{
+    syscall_1(LL_SWI_SYSTICK_SET_PERIOD, periodMs);
+}
+
+void ll_systick_enable(bool enable)
+{
+    syscall_1(LL_SWI_ENABLE_IRQ, enable);
 }
 

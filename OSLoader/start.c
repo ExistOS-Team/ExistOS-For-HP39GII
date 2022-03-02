@@ -26,6 +26,7 @@
 #include "vmMgr.h"
 
 #include "llapi.h"
+#include "llapi_code.h"
 
 
 PARTITION VolToPart[FF_VOLUMES] = {
@@ -37,6 +38,7 @@ PARTITION VolToPart[FF_VOLUMES] = {
 
 
 TaskHandle_t pSysTask;
+TaskHandle_t pLLAPITask;
 
 uint32_t CurMount = 0;
 uint32_t FTL_status = 0;
@@ -61,7 +63,7 @@ void vTask1(void *pvParameters) {
     //printf("Start vTask1\n");
     for (;;) {
 		    
-		vTaskDelay(pdMS_TO_TICKS(17000));
+		vTaskDelay(pdMS_TO_TICKS(5000));
 		printTaskList();
     }
 }
@@ -163,9 +165,11 @@ bool bootSystem()
 
     vmMgr_mapSwap();
     vmMgr_mapFile(sysFile, PERM_R, VM_ROM_BASE, 0, (sysFinfo.fsize + PAGE_SIZE) & 0xFFFFF000);
+    vTaskResume(pLLAPITask);
     vTaskResume(pSysTask);
     
-    vTaskDelete(xTaskGetCurrentTaskHandle());
+    DisplayClean();
+    
 
     return true;
 
@@ -243,6 +247,8 @@ void vMainThread(void *pvParameters)
         AbortRes = 0;
         goto Configuration;
     }
+    
+    vTaskDelete(xTaskGetCurrentTaskHandle());
 
 
     while(1)
@@ -284,7 +290,6 @@ void vMainThread(void *pvParameters)
             DisplayBox(40, 30, 220, 80, 0xFF);
             DisplayPutStr(40 + 1*4,31 + 12 * 1,"Boot failed.",255,0, 12);
           }else{
-            DisplayClean();
             vTaskDelete(xTaskGetCurrentTaskHandle());
           }
         }
@@ -811,7 +816,9 @@ void vKeysSvc(void *pvParameters)
 {
   key_svcInit();
   for(;;)
+  {
     key_task();
+  }
   
 }
 
@@ -828,14 +835,33 @@ void vVMMgrSvc(void *pvParameters)
   }
 }
 
+void vLLKkbd(void *pvParameters)
+{
+    uint8_t curKey;
+    bool press;
+    for(;;){
+      kb_isAnyKeyPress(&curKey, &press);
+      if(curKey != 255){
+        LLIRQ_PostIRQ(LL_IRQ_KEYBOARD, curKey, press, 0);
+      }
+      vTaskDelay(1);
+    }
+}
+
 void vLLAPISvc(void *pvParameters)
 {
 
-  LLAPI_init();
+  LLAPI_init(pSysTask);
+  
+  xTaskCreate(LLIRQ_task, "LLIRQ Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
+  xTaskCreate(vLLKkbd, "LLKbd Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
+
   for(;;){
     LLAPI_Task();
   }
 }
+
+
 
 void vDispSvc(void *pvParameters)
 {
@@ -861,13 +887,16 @@ void _startup(){
 
 	xTaskCreate( vKeysSvc, "Keys Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
 	xTaskCreate( vDispSvc, "Display Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
-  xTaskCreate( vLLAPISvc, "LLAPI Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
+  xTaskCreate( vLLAPISvc, "LLAPI Svc", configMINIMAL_STACK_SIZE, NULL, 2, &pLLAPITask );
+  
   
 	xTaskCreate( vMainThread, "Main Thread", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
   xTaskCreate( System, "System", configMINIMAL_STACK_SIZE, NULL, 1, &pSysTask);
-	xTaskCreate( vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, 0, NULL );
+
+	xTaskCreate( vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
 
   vTaskSuspend(pSysTask);
+  vTaskSuspend(pLLAPITask);
 
 	vTaskStartScheduler();
 	printf("booting fail.\n");
