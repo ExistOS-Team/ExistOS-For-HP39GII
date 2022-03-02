@@ -23,7 +23,7 @@ static bool LLInIRQ;
 
 static TaskHandle_t upSystem;
 
-static uint32_t savedContext[16];
+static volatile uint32_t savedContext[16];
 
 static uint32_t LL_IRQVector;
 static uint32_t LL_IRQStack;
@@ -36,6 +36,7 @@ static void LL_TrapInIRQ(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t
 {
     uint32_t *r;
     vTaskSuspend(upSystem);
+    portYIELD();
     LLInIRQ = true;
     r = (uint32_t *)(((uint32_t *)upSystem)[1]) - 16;
     memcpy(savedContext, r, sizeof(savedContext));
@@ -46,8 +47,9 @@ static void LL_TrapInIRQ(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t
     r[2] = par2;
     r[3] = par3;
 
+
     r[13] = LL_IRQStack;
-    r[15] = LL_IRQVector;
+    r[15] = LL_IRQVector + 4; // against   "SUBS  PC,R14,#4"
 
     vTaskResume(upSystem);
 }
@@ -78,7 +80,7 @@ void LLAPI_TimerCallBack(TimerHandle_t xTimer)
     TaskHandle_t task = lltmr->forTask;
     vPortFree(lltmr->self);
     if(!LLInIRQ)
-    vTaskResume(task);
+        vTaskResume(task);
     xTimerDelete(xTimer, 0);
 }
 
@@ -95,7 +97,7 @@ void LLIRQ_task(void *pvParameters)
         while(xQueueReceive(LLIRQ_Queue, &curIRQ, portMAX_DELAY) == pdTRUE){
             if(LLEnableIRQ){
                 if(LLInIRQ == false){
-                    //INFO("LL_TrapInIRQ\n");
+                    //LLAPI_INFO("LL_TrapInIRQ\n");
                     LL_TrapInIRQ(curIRQ.IRQNum, curIRQ.r1, curIRQ.r2, curIRQ.r3);
                 }
             }
@@ -107,7 +109,7 @@ void LLIRQ_task(void *pvParameters)
 void LLIRQ_PostIRQ(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t par3)
 {
     LLIRQ_Info_t n;
-    //INFO("LLIRQ_PostIRQ\n");
+    //LLAPI_INFO("LLIRQ_PostIRQ\n");
     n.IRQNum = IRQNum;
     n.r1 = par1;
     n.r2 = par2;
@@ -151,7 +153,7 @@ void LLAPI_Task()
             
 
 /*
-            INFO("task:[%s] SWI NUM:%06x, r0:%08x, r1:%08x, r2:%08x, r3:%08x\n",
+            LLAPI_INFO("task:[%s] SWI NUM:%06x, r0:%08x, r1:%08x, r2:%08x, r3:%08x\n",
                 pcTaskGetName(currentCall.task), currentCall.SWINum, currentCall.para0,
                 currentCall.para1, currentCall.para2, currentCall.para3);
 */
@@ -197,7 +199,7 @@ void LLAPI_Task()
 
             case LL_SWI_ENABLE_IRQ:
                 vTaskSuspend(currentCall.task);
-                //INFO("IRQ ENABLE\n");
+                //LLAPI_INFO("IRQ ENABLE\n");
                 LLEnableIRQ = true;
                 vTaskResume(currentCall.task);
                 break;
@@ -205,7 +207,7 @@ void LLAPI_Task()
 
             case LL_SWI_DISABLE_IRQ:
                 vTaskSuspend(currentCall.task);
-                //INFO("IRQ DISABLE\n");
+                //LLAPI_INFO("IRQ DISABLE\n");
                 LLEnableIRQ = false;
                 vTaskResume(currentCall.task);
                 break;
@@ -213,12 +215,13 @@ void LLAPI_Task()
             case LL_SWI_SET_IRQ_VECTOR:
                 vTaskSuspend(currentCall.task);
                 LL_IRQVector = *currentCall.pRet;
+                LLAPI_INFO("SET IRQ VECTOR:%08x\n", LL_IRQVector);
                 vTaskResume(currentCall.task);
                 break;
 
             case LL_SWI_IRQ_RESTORE_CONTEXT:
                 vTaskSuspend(currentCall.task);
-                //INFO("IRQ RESTORE\n");
+                LLAPI_INFO("IRQ RESTORE\n");
                 LL_IRQReturn();
                 vTaskResume(currentCall.task);
                 break;
@@ -238,6 +241,7 @@ void LLAPI_Task()
             case LL_SWI_SET_IRQ_STACK:
                 vTaskSuspend(currentCall.task);
                 LL_IRQStack = *currentCall.pRet;
+                LLAPI_INFO("SET IRQ STACK:%08x\n", LL_IRQStack);
                 vTaskResume(currentCall.task);
                 break;
 

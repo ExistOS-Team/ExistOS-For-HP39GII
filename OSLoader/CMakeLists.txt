@@ -41,7 +41,7 @@ aux_source_directory(./Component3rd/FatFs               LOADER_SRCS)
 
 add_executable(rom.elf ${LOADER_SRCS})
 
-target_link_libraries(rom.elf -lm -lc -nostartfiles)
+target_link_libraries(rom.elf -lm -lc_nano -nostartfiles)
 
 target_compile_options(rom.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian
 -Os -pipe -fdata-sections -ffunction-sections -fcommon)

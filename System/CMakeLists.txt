@@ -12,10 +12,11 @@ target_link_options(sys.elf PRIVATE
 -T ${CMAKE_SOURCE_DIR}/Script/sys_ld.script 
 -Wl,--gc-sections
 )
-target_link_libraries(sys.elf -lm -lc -nostartfiles)
+target_link_libraries(sys.elf -lm -lc -lstdc++ -nostartfiles)
 
-target_compile_options(sys.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian
--O3 -pipe -fdata-sections -ffunction-sections -fcommon)
+
+target_compile_options(sys.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian 
+-O0 -pipe -fdata-sections -ffunction-sections -fcommon)
 
 add_custom_target(
   ExistOS.sys ALL

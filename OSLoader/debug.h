@@ -25,6 +25,8 @@
 #define VM_INFO(...) 
 #define VM_ERR(...) do{printf(__VA_ARGS__);}while(0)
 
+#define LLAPI_INFO(...)
+//#define LLAPI_INFO(...) do{printf(__VA_ARGS__);}while(0)
 
 
 void _randSetSeed(uint32_t seed);

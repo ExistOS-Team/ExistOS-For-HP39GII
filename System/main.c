@@ -7,12 +7,12 @@
 
 int coremain(void);
 
+void testcpp();
 
 uint32_t IRQ_Context[16];
+void IRQ_ISR(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t par3) __attribute__((naked));
 void IRQ_ISR(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t par3)
 {
-    ll_irq_get_context(IRQ_Context);
-
     //printf("IRQNum:%d, par1:%d, par2:%d, par3:%d\n",IRQNum, par1, par2, par3);
     switch (IRQNum)
     {
@@ -25,30 +25,40 @@ void IRQ_ISR(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t par3)
     default:
         break;
     }
-
-    ll_irq_set_context(IRQ_Context);
-
-
     ll_irq_restore_context();
 
 }
 
+void delayms(uint32_t ms)
+{
+    uint32_t startTime = ll_gettime_us();
+    while((ll_gettime_us() - startTime) < (ms * 1000))
+    {
+        ;
+    }
+
+}
+
+
 void main()
 {
 
-    ll_irq_set_Stack((uint32_t *)0x004A0000);
+    ll_irq_set_Stack((uint32_t *)0x004F0000);
     ll_irq_set_Vector(IRQ_ISR);
     ll_irq_enable(true);
 
     ll_systick_set_period(1000);
     ll_systick_enable(true);
+
 /*
     printf("Core Mark Testing..\n");
     coremain();
     printf("Core Mark Test Finish\n");
 */
+   
     for(;;){
-        ll_delay(1000);
+        testcpp();
+        delayms(1000);
     }
 
 }

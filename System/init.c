@@ -16,7 +16,7 @@ void _init()
     unsigned int *dst = &data_start;
     unsigned int size = ((unsigned int)&data_size) / 4;
     
-    __asm volatile("mov r13,#0x4F0000");
+    __asm volatile("mov r13,#0x4A0000");
 
     for(char *i = (char *)&_sbss; i < (char *)&_ebss; i++){
 		*i = 0;		//clear bss
@@ -26,8 +26,17 @@ void _init()
         *dst++ = *src++;    //copy data
     }
     
+    typedef void(*pfunc)();
+    extern pfunc __ctors_start__[];
+    extern pfunc __ctors_end__[];
+    pfunc *p;
+
+    for (p = __ctors_start__; p < __ctors_end__; p++)
+        (*p)();
          
     main();
+
+
 
     while(1);
 

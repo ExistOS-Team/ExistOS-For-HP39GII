@@ -18,7 +18,11 @@ extern int errno;
 extern unsigned int __HEAP_START;
 static void *heap = NULL;
 
-
+void __sync_synchronize()  __attribute__((naked));
+void __sync_synchronize()
+{
+    asm volatile("" : : : "memory");
+}
 
 caddr_t _sbrk ( int incr )
 {

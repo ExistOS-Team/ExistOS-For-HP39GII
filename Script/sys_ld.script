@@ -13,6 +13,11 @@ SECTIONS
 	.init.text :
 	{ 
 		*(.init)
+		PROVIDE(__ctors_start__ = .);
+		KEEP (*(SORT(.init_array.*)))
+		KEEP (*(.init_array))
+		PROVIDE(__ctors_end__ = .);	
+		
 	} >vmROM
 	.init.data :
 	{
@@ -28,6 +33,12 @@ SECTIONS
 	{
 		*(.rodata) 
 		rodata_end = .;
+	} >vmROM
+
+	.ARM.exidx : {
+	    __exidx_start = .;
+	    *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+	    __exidx_end = .;
 	} >vmROM
 
 	.data : 

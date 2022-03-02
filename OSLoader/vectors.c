@@ -214,7 +214,7 @@ void arm_vector_und()
 
 
 
-    printf("ERROR: Undefind Instruction AT:%08x\n", UND_REGS_Frame[14]);
+    printf("ERROR: [%s] Undefind Instruction AT:%08x\n",pcTaskGetName(xTaskGetCurrentTaskHandle()) , UND_REGS_Frame[14]);
 
     for(int i =0; i< 18; i++)
     {

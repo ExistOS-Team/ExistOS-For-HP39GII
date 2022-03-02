@@ -5,7 +5,7 @@
 #define LL_SWI_NUM                      (255)
 
 
-#define LL_SWI_DELAY_MS                (LL_SWI_BASE + 1)
+#define LL_SWI_DELAY_MS                (LL_SWI_BASE + 1)    //NO USE
 #define LL_SWI_PUT_CH                  (LL_SWI_BASE + 2)
 #define LL_SWI_WRITE_STRING1           (LL_SWI_BASE + 3)
 #define LL_SWI_WRITE_STRING2           (LL_SWI_BASE + 4)
