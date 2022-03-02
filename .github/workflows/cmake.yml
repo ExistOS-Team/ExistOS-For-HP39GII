@@ -30,18 +30,13 @@ jobs:
       run: cmake .
     - name : Cmake build
       run: cmake --build .
-    - name: Upload firmware.sb
+    - name: Upload OSLoader.sb
       uses: actions/upload-artifact@v2.2.2
       with:
-        name: firmware
-        path: ./firmware.sb
-    - name: Upload rom.bin
+        name: OSLoader.sb
+        path: ./OSLoader/OSLoader.sb
+    - name: Upload ExistOS.sys
       uses: actions/upload-artifact@v2.2.2
       with:
-        name: rom.bin
-        path: ./rom.bin
-    - name: Upload rom.elf
-      uses: actions/upload-artifact@v2.2.2
-      with:
-        name: rom.elf
-        path: ./rom.elf
+        name: ExistOS.sys
+        path: ./System/ExistOS.sys
