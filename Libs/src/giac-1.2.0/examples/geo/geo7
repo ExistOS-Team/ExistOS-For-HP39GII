@@ -1,0 +1,7 @@
+C1:=cercle(A,B-A);
+perpendiculaire(B,droite(A,B));
+C2:=cercle(C,A);
+E:=inter(C1,C2);
+droite(E[0],C);
+droite(E[1],C); 
+

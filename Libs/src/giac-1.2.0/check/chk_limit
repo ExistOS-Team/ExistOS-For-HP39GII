@@ -1,0 +1,4 @@
+#! /bin/sh
+../src/icas testlimit > limit.tst
+diff limit.tst limit.out
+

@@ -1,0 +1,19 @@
+# -*- mode:Makefile -*-
+GIACOBJS = input_lexer.o sym2poly.o gausspol.o threaded.o moyal.o maple.o ti89.o mathml.o misc.o permu.o quater.o desolve.o input_parser.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o intgab.o risch.o lin.o series.o subst.o vecteur.o csturm.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o plot3d.o rpn.o prog.o pari.o cocoa.o usual.o identificateur.o gen.o unary.o tinymt32.o first.o
+LIBS = 
+STATLIBS = 
+DYNLIBS =  
+# For windows: remove -ldl in LIBS above and uncomment WLIBS below, + -DWIN32
+# For linux: add -ldl in LIBS and comment WLIBS
+libgiac.so:	$(GIACOBJS)
+	$(CXX) -shared $(GIACOBJS) -nostdlib -Wl,-soname -Wl,libgiac.so.0 -o libgiac.so.0.0.0 && ln -sf libgiac.so.0.0.0 libgiac.so.0 && ln -sf libgiac.so.0.0.0 libgiac.so
+libgiac.a:	$(GIACOBJS)
+	$(AR) cru libgiac.a $(GIACOBJS) 
+	$(RANLIB) libgiac.a
+.cc.o:
+	$(CXX) $(CXXFLAGS) -c $<
+.c.o:
+	$(CXX) $(CXXFLAGS) -c $<
+clean:
+	rm -f $(OBJS)
+

@@ -311,7 +311,7 @@ void arm_vector_dab()
         break;
     }
 
-    printf("TASK [%s] DAB. AT:%08x access %08x, FSR:%08x\n", pcTaskGetName(NULL), DAB_REGS_Frame[16], faultAddress, FSR);
+    //printf("TASK [%s] DAB. AT:%08x access %08x, FSR:%08x\n", pcTaskGetName(NULL), DAB_REGS_Frame[16], faultAddress, FSR);
 
     BaseType_t SwitchContext;
 
@@ -378,7 +378,7 @@ void arm_vector_pab()
 
 
     insAddress = pRegFram[17];
-    printf("TASK [%s] PAB. AT %08x, faultAddress:%08x\n", pcTaskGetName(NULL), insAddress, faultAddress);
+    //printf("TASK [%s] PAB. AT %08x, faultAddress:%08x\n", pcTaskGetName(NULL), insAddress, faultAddress);
 
 
     pageFaultInfo_t FaultInfo;

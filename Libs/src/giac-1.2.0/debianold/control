@@ -1,0 +1,72 @@
+Source: giac
+Section: math
+Priority: optional
+Maintainer: Carleos Artime <carleos@uniovi.es>
+Build-Depends: debhelper, libgmp3-dev, libreadline-dev, libgsl0-dev, hevea
+Standards-Version: 3.6.2
+
+Package: giac
+Section: math
+Architecture: any
+Depends: ${shlibs:Depends}
+Recommends: giac-doc, python3-giacpy, python-giacpy
+Suggests: texmacs, menu
+Description: computer algebra system with nice GUI
+ Giac Is A Cas (computer algebra system) library written in C++ by
+ Bernard Parisse, the main author of the CAS of HP40G and HP49G 
+ calculators.
+ .
+ This package includes both a command line interface (accessible thru
+ TeXmacs) and a FLTK-based graphical user interfaces.  The GUI is
+ rather comprehensive, and features graphical output of formulas, a
+ matrix editor, geometric canvas, turtle graphics, etc.
+
+Package: giac-doc
+Section: math
+Architecture: any
+Depends: ${shlibs:Depends}
+Recommends: giac
+Description: computer algebra system with nice GUI
+ Giac Is A Cas (computer algebra system) library written in C++ by
+ Bernard Parisse, the main author of the CAS of HP40G and HP49G 
+ calculators.
+ .
+ This package includes documentation in English and Spanish.
+
+Package: giac-doc-nonfree
+Section: non-free/math
+Architecture: any
+Depends: ${shlibs:Depends}
+Recommends: giac
+Description: computer algebra system with nice GUI
+ Giac Is A Cas (computer algebra system) library written in C++ by
+ Bernard Parisse, the main author of the CAS of HP40G and HP49G 
+ calculators.
+ .
+ This package includes extensive documentation in French with a
+ non-commercial-only license.
+
+Package: libgiac0
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: computer algebra system C++ library
+ Giac Is A Cas (computer algebra system) C++ library written by
+ Bernard Parisse, the main author of the CAS of HP40G and HP49G 
+ calculators.
+ .
+ This package provides the shared libraries required to run programs
+ compiled with Giac.
+
+Package: libgiac0-dev
+Section: libdevel
+Architecture: any
+Depends: libgiac0 (= ${Source-Version})
+Suggests: giac-doc
+Description: computer algebra system C++ library
+ Giac Is A Cas (computer algebra system) written in C++ by
+ Bernard Parisse, the main author of the CAS of HP40G and HP49G 
+ calculators.
+ .
+ This package contains the header files, static libraries and symbolic
+ links that developers using Giac will need.

@@ -1,0 +1,4 @@
+#! /bin/sh
+unset LANG
+../src/icas xavier.cas > xavier.tst
+diff xavier.tst xavier.out

@@ -1,0 +1,12 @@
+A:= point(-1.2*i); 
+B:= point(3.7-1.5*i);
+C:= point(1.5+1.1*i);
+t:=angle(A,B,C)/3;
+D1:=droite(A,A+(B-A)*exp(i*t));
+D2:=droite(A,A+2*(B-A)*exp(i*t*2));
+D3:=droite(A,A+(B-A)*exp(i*(t+pi/3)));
+D4:=droite(A,A+2*(B-A)*exp(i*2*(t+pi/3)));
+D5:=droite(A,A+(B-A)*exp(i*(t+2*pi/3)));
+D6:=droite(A,A+(B-A)*exp(i*(2*t+pi/3)));
+couleur(droite(A,B),1);
+couleur(droite(A,C),1);

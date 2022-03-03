@@ -1,0 +1,13 @@
+//a*y+b*x+c
+enveloppe3(a,b,c):={
+local ld,ld1,dd1,M;
+ld:=[a,b,c];
+ld1:=derive(ld,t);
+dd1:=ld[0]*ld1[1]-ld[1]*ld1[0];
+if (dd1!=0) {
+ M:=(i*(-ld[2]*ld1[1]+ld[1]*ld1[2])+(ld[2]*ld1[0]-ld[0]*ld1[2]))/dd1;
+ plotparam(M,t);
+} else {
+ return("droites paralleles");
+}
+}

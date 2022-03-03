@@ -1,0 +1,3 @@
+for j from 1 to 100 do
+   print(factorial(1000 + j)/factorial(900 + j));
+end_for;

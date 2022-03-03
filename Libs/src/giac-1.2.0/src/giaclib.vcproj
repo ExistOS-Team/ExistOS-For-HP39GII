@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9,00"
+	Name="giaclib"
+	ProjectGUID="{C797CAF1-BC91-4E72-BBF2-583AD3D45097}"
+	RootNamespace="giaclib"
+	Keyword="Win32Proj"
+	TargetFrameworkVersion="196613"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="4"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				DebugInformationFormat="4"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				IgnoreAllDefaultLibraries="true"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="4"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				EnableIntrinsicFunctions="true"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<Filter
+			Name="Fichiers sources"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\alg_ext.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\cocoa.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\csturm.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\derive.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\desolve.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\ezgcd.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\first.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\gauss.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\gausspol.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\gen.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\global.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\help.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\identificateur.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\ifactor.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\index.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\input_lexer.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\input_parser.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\intg.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\intgab.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\isom.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\lin.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\maple.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\mathml.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\misc.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\modfactor.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\modpoly.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\moyal.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\pari.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\permu.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\plot.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\plot3d.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\prog.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\quater.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\risch.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\rpn.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\series.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\solve.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\subst.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\sym2poly.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\symbolic.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\tex.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\threaded.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\ti89.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\unary.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\usual.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\vecteur.cc"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Fichiers d&apos;en-tête"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\alg_ext.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\cocoa.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\csturm.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\derive.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\desolve.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\dispatch.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\ezgcd.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\first.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\fraction.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\gauss.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\gausspol.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\gen.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\giac.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\giacintl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\global.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\help.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\identificateur.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\ifactor.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\index.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\input_lexer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\input_parser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\intg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\intgab.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\isom.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\lexer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\libintl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\lin.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\maple.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\mathml.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\misc.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\modfactor.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\modpoly.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\monomial.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\moyal.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\pari.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\path.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\permu.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\plot.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\plot3d.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\poly.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\prog.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\quater.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\risch.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\rpn.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\series.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\solve.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\subst.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\sym2poly.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\symbolic.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\tex.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\threaded.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\ti89.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\unary.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\usual.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\..\..\..\cygwin\home\Bernard Parisse\giac-0.8.3\src\vecteur.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Fichiers de ressources"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			>
+		</Filter>
+		<File
+			RelativePath=".\ReadMe.txt"
+			>
+		</File>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

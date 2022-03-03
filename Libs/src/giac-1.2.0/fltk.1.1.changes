@@ -1,0 +1,11 @@
+# FLVW
+friend -> friend class in declaration in FL/Flv_Style.H
+commented #define fl_inactive inactive in FL/Flv_List.H (should be in 
+reversed order?)
+added -lfltk to makeinclude
+# GIAC
+src/plotfltk.cc xcas_output->copy(0) instead of xcas_output->copy()
+src/xcas.fl: add Fl::visible_focus(0); before return Fl::run();
+(or change in FLTK 1.1
+src/Fl_Button.cxx: commented line 75 and 107 to avoid taking focus by
+pressing a button)

@@ -1,0 +1,25 @@
+2000-10-24  Richard B. Kreckel  <kreckel@ginac.de>
+
+	* src/polygauss.cc: in sym2r(): imul_todo was never initialized.
+	* src/polygauss.cc: removed dependency on private data structures,
+	  except for expairseq::seq, since it didn't work.   :-(
+	* include/power.h, include/utils.h, include/numeric.h: removed.
+
+2000-10-20  Richard B. Kreckel  <kreckel@ginac.de>
+
+	* configure.in, Makefile.am and all that belongs to it: added.
+	* ./*: moved all files around, headers to ./include/, source files
+	  to ./src, in order to ease autoconfication.
+
+2000-10-19  Bernard Parisse  <Bernard.Parisse@ujf-grenoble.fr>
+
+	* ./*: packed it again
+
+2000-09-22  Bernard Parisse  <Bernard.Parisse@ujf-grenoble.fr>
+
+	* ./*: released version 0.2.
+	* ./*: added optional support for NTL.
+
+2000-08-23  Bernard Parisse  <Bernard.Parisse@ujf-grenoble.fr>
+
+	* ./*: released version 0.1.

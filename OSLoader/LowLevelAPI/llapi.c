@@ -4,6 +4,7 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "timers.h"
+#include "semphr.h"
 
 #include "board_up.h"
 
@@ -23,7 +24,7 @@ static bool LLInIRQ;
 
 static TaskHandle_t upSystem;
 
-static volatile uint32_t savedContext[16];
+static uint32_t savedContext[16];
 
 static uint32_t LL_IRQVector;
 static uint32_t LL_IRQStack;
@@ -31,25 +32,33 @@ static uint32_t LL_IRQStack;
 static xTimerHandle LL_SYSTimer;
 static uint32_t LL_SYSTimerPeriod;
 
+static SemaphoreHandle_t LL_upSysContextMutex;
 
 static void LL_TrapInIRQ(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t par3)
 {
     uint32_t *r;
     vTaskSuspend(upSystem);
     portYIELD();
+
+    taskENTER_CRITICAL();
+
     LLInIRQ = true;
     r = (uint32_t *)(((uint32_t *)upSystem)[1]) - 16;
     memcpy(savedContext, r, sizeof(savedContext));
 
-
+    
     r[0] = IRQNum;
     r[1] = par1;
     r[2] = par2;
     r[3] = par3;
 
 
+    LLAPI_INFO("SYS STACK:%08x\n", r[13]);
     r[13] = LL_IRQStack;
+
+    LLAPI_INFO("IRQ STACK:%08x\n", r[13]);
     r[15] = LL_IRQVector + 4; // against   "SUBS  PC,R14,#4"
+    taskEXIT_CRITICAL();
 
     vTaskResume(upSystem);
 }
@@ -59,12 +68,13 @@ static void LL_IRQReturn()
     uint32_t *r;
     vTaskSuspend(upSystem);
     portYIELD();
+    taskENTER_CRITICAL();
     r = (uint32_t *)(((uint32_t *)upSystem)[1]) - 16;
 
     LL_IRQStack = r[13];
 
     memcpy(r, savedContext, sizeof(savedContext));
-
+    taskEXIT_CRITICAL();
     vTaskResume(upSystem);
     LLInIRQ = false;
 
@@ -97,8 +107,10 @@ void LLIRQ_task(void *pvParameters)
         while(xQueueReceive(LLIRQ_Queue, &curIRQ, portMAX_DELAY) == pdTRUE){
             if(LLEnableIRQ){
                 if(LLInIRQ == false){
-                    //LLAPI_INFO("LL_TrapInIRQ\n");
+                    LLAPI_INFO("LL_TrapInIRQ\n");
+                    xSemaphoreTake(LL_upSysContextMutex, portMAX_DELAY);
                     LL_TrapInIRQ(curIRQ.IRQNum, curIRQ.r1, curIRQ.r2, curIRQ.r3);
+                    xSemaphoreGive(LL_upSysContextMutex);
                 }
             }
         }
@@ -109,7 +121,7 @@ void LLIRQ_task(void *pvParameters)
 void LLIRQ_PostIRQ(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t par3)
 {
     LLIRQ_Info_t n;
-    //LLAPI_INFO("LLIRQ_PostIRQ\n");
+    LLAPI_INFO("LLIRQ_PostIRQ\n");
     n.IRQNum = IRQNum;
     n.r1 = par1;
     n.r2 = par2;
@@ -137,6 +149,7 @@ void LLAPI_init(TaskHandle_t upSys)
 
     LLAPI_Queue = xQueueCreate(32, sizeof(LLAPI_CallInfo_t));
     LLIRQ_Queue = xQueueCreate(32, sizeof(LLIRQ_Info_t));
+    LL_upSysContextMutex = xSemaphoreCreateMutex();
 
     LL_SYSTimer = xTimerCreate("LLSYSTimer", LL_SYSTimerPeriod, pdTRUE, NULL, LL_SysTimerCallBack);
     
@@ -150,7 +163,7 @@ void LLAPI_Task()
     for(;;)
     {
         while(xQueueReceive(LLAPI_Queue, &currentCall, portMAX_DELAY) == pdTRUE){
-            
+            xSemaphoreTake(LL_upSysContextMutex, portMAX_DELAY);
 
 /*
             LLAPI_INFO("task:[%s] SWI NUM:%06x, r0:%08x, r1:%08x, r2:%08x, r3:%08x\n",
@@ -268,6 +281,9 @@ void LLAPI_Task()
             default:
                 break;
             }
+
+            xSemaphoreGive(LL_upSysContextMutex);
+            
         }
         
     }

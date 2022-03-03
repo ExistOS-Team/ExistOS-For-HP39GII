@@ -1,0 +1,37 @@
+#! /bin/bash
+export CFLAGS='-m32 -O2'
+export CXXFLAGS='-m32 -O2'
+export CPPFLAGS='-m32 -O2'
+#export LDFLAGS='-L/usr/X11/lib'
+# export LIBS="$LIBS -framework AGL -framework OpenGL -framework ApplicationServices -framework Cocoa -isysroot /Developer/SDKs/MacOSX10.6.sdk"
+#./configure --prefix=/Applications/usr
+make
+cd src
+sh mkstat
+make
+sh mkhist
+make install
+rm -rf /Applications/usr/bin/xcas.app
+cp -f xcas /Applications/usr/bin/
+rm -f /Applications/usr/lib/libgiac.a
+#cp -f icas /Applications/usr/bin
+cd ~/64/newgiac/src
+sh mkdylib
+cp ~/64/newgiac/src/.libs/libgiac.0.dylib /Applications/usr/lib
+cp ~/64/newgiac/src/.libs/libgiac.la /Applications/usr/lib
+sh mkdyn
+cp icas /Applications/usr/bin
+install_name_tool -change "/usr/64/local/lib/libpari.dylib" "/Applications/usr/64/local/lib/libpari.dylib" /Applications/usr/lib/libgiac.0.dylib
+install_name_tool -change "/usr/64/local/lib/libgsl.0.dylib" "/Applications/usr/64/local/lib/libgsl.0.dylib" /Applications/usr/lib/libgiac.0.dylib
+install_name_tool -change "/usr/64/local/lib/libgslcblas.0.dylib" "/Applications/usr/64/local/lib/libgslcblas.0.dylib" /Applications/usr/lib/libgiac.0.dylib
+install_name_tool -change "/usr/64/local/lib/libintl.8.dylib" "/Applications/usr/64/local/lib/libintl.8.dylib" /Applications/usr/lib/libgiac.0.dylib
+install_name_tool -change "/usr/64/local/lib/libmpfr.4.dylib" "/Applications/usr/64/local/lib/libmpfr.4.dylib" /Applications/usr/lib/libgiac.0.dylib
+install_name_tool -change "/usr/64/local/lib/libgmp.10.dylib" "/Applications/usr/64/local/lib/libgmp.10.dylib" /Applications/usr/lib/libgiac.0.dylib
+install_name_tool -change "/usr/64/local/lib/libmpfi.0.dylib" "/Applications/usr/64/local/lib/libmpfi.0.dylib"  /Applications/usr/lib/libgiac.0.dylib
+install_name_tool -change "/usr/64/local/lib/libgmp.10.dylib" "/Applications/usr/64/local/lib/libgmp.10.dylib"  /Applications/usr/64/local/lib/libmpfr.4.dylib
+#cd ~/64/newgiac/giacpy-nox-0.4.4
+#sh mkgiacpy
+cd /Applications/usr/bin
+fltk-config --post xcas
+install_name_tool -change "/usr/local/lib/libao.4.dylib" "/Applications/usr/lib/libao.4.dylib"  /Applications/usr/bin/xcas.app/Contents/MacOS/xcas
+open ~/Desktop/xcas.pmdoc

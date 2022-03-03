@@ -1,0 +1,202 @@
+//dessine l'arc de centre c passant par a et d'angle au centre alpha
+arc(c,a,alpha):={
+local u;
+u:=arg(a-c);
+plotparam(c+abs(a-c)*exp(i*t),t,u,u+alpha);
+return c+(a-c)*exp(i*alpha)};
+
+//dessine l'arc passant par a et b d'angle au centre alpha>0 (de centre c) 
+arcab(a,b,alpha):={
+local c,u;
+c:=simplify((b-a*exp(i*alpha))/(1-exp(i*alpha)));
+u:=arg(a-c);
+plotparam(c+abs(a-c)*exp(i*t),t,u,u+alpha);
+return c;
+};
+
+//arc de centre x debutant par y de +pi/3
+arcg(x,y):={
+local a;
+a:=evalf(arg(y-x));
+return cercle(x,y-x,a,a+pi/3);
+};
+//arc de centre x debutant par y de -pi/3
+arcd(x,y):={
+local a;
+a:=evalf(arg(y-x));
+return cercle(x,y-x,a,a-pi/3);
+};
+// courbe de peano avec des arcs par ex peanod(-2-2*i,2-2*i,3)
+peanod(x,y,n):={
+local c1,b,c,d,e1,f,g,h,i1,j,k,l,m;
+if (n==0) {
+//arcd(x+(y-x)*exp(evalf(-pi)*i/3),x);
+arcab(y,x,pi/3);
+}
+else {
+c1:=x+(y-x)*exp(evalf(pi)*2*i/3)/3;
+b:=x+(y-x)/3*exp(evalf(pi)*i/3);
+c:=x+(y-x)/3*2*exp(evalf(pi)*i/3);
+d:=c+(y-x)/3;
+e1:=b+2*(y-x)/3;
+f:=c1+(y-x)*(15+i*sqrt(3))/18;
+g:=c1+(y-x)*(6+i*sqrt(3))/9;
+h:=f-(y-x)/3;
+i1:=h-i*(y-x)/9*sqrt(3);
+j:=i1+(y-x)/3;
+k:=g-i*2*(y-x)/9*sqrt(3);
+l:=x+(y-x)/3;
+m:=x+2*(y-x)/3;
+peanog(x,b,n-1);
+peanod(b,c,n-1);
+peanod(c,d,n-1);
+peanod(d,e1,n-1);
+peanod(e1,f,n-1);
+peanog(f,g,n-1);
+peanog(g,h,n-1);
+peanog(h,i1,n-1);
+peanod(i1,j,n-1);
+peanod(j,k,n-1);
+peanog(k,l,n-1);
+peanog(l,m,n-1);
+peanod(m,y,n-1);
+}
+};
+peanog(x,y,n):={
+local c1,b,c,d,e1,f,g,h,i1,j,k,l,m;
+if (n==0) {
+//arcg(x+(y-x)*exp(evalf(pi)*i/3),x);
+arcab(x,y,pi/3);
+}
+else {
+c1:=x+(y-x)*exp(evalf(-2*pi)*i/3)/3;
+b:=x+(y-x)/3*exp(evalf(-pi)*i/3);
+c:=x+(y-x)/3*2*exp(evalf(-pi)*i/3);
+d:=c+(y-x)/3;
+e1:=b+2*(y-x)/3;
+f:=c1+(y-x)*(15-i*sqrt(3))/18;
+g:=c1+(y-x)*(6-i*sqrt(3))/9;
+h:=f-(y-x)/3;
+i1:=h+i*(y-x)/9*sqrt(3);
+j:=i1+(y-x)/3;
+k:=g+i*2*(y-x)/9*sqrt(3);
+l:=x+(y-x)/3;
+m:=x+2*(y-x)/3;
+peanod(x,b,n-1);
+peanog(b,c,n-1);
+peanog(c,d,n-1);
+peanog(d,e1,n-1);
+peanog(e1,f,n-1);
+peanod(f,g,n-1);
+peanod(g,h,n-1);
+peanod(h,i1,n-1);
+peanog(i1,j,n-1);
+peanog(j,k,n-1);
+peanod(k,l,n-1);
+peanod(l,m,n-1);
+peanog(m,y,n-1);
+}
+};
+//dessine l'arc passant par a et b d'angle au centre pi/2>0 (de centre c) 
+arcabd(a,b):={
+local c,u;
+c:=simplify((b-a*i)/(1-i));
+u:=arg(a-c);
+plotparam(c+abs(a-c)*exp(i*t),t,u,u+pi/2);
+return c;
+};
+bases(x,y):={
+local a,b,c,d,e1,f,g,h,i1,k;
+h:=(y-x)/3;
+a:=x+h/2+i*h/2;
+b:=a+i*h;
+c:=b+i*h;
+d:=c+h
+e1:=b+h;
+f:=a+h;
+g:=f+h;
+k:=e1+h;
+i1:=d+h;
+arcabd(a,b);
+arcabd(c,b);
+arcabd(d,c);
+arcabd(e1,d);
+arcabd(e1,f);
+arcabd(f,g);
+arcabd(g,k);
+arcabd(i1,k);
+};
+un(x,y):={
+local h,a;
+h:=(y-x)/3;
+a:=x+h/2+i*h/2;
+arcabd(a-h,a);
+bases(x,y);
+};
+deux(x,y):={
+local h,a;
+h:=(y-x)/3;
+a:=x+h/2+i*h/2;
+arcabd(a,a-h*i);
+bases(x,y);
+};
+
+//courbe qui remplit un carre  peano0(-1,2,1)   peano0(-1,2,3)  
+peano0(x,y,n):={
+local a,h;
+if (n==0) {
+bases(x,y);
+}
+else {
+h:=(y-x)/3;
+a:=x+h;
+peano0(x,a,n-1);
+peano2(a+i*h,a,n-1);
+peano1(a+h,y,n-1);
+peano1(y+i*h,y+2*i*h,n-1);
+peano1(a+h+2*i*h,a+2*i*h,n-1);
+peano2(a+i*h,a+2*i*h,n-1);
+peano2(x+2*i*h,a+2*i*h,n-1);
+peano2(a+3*i*h,a+2*i*h,n-1);
+peano1(a+h+2*i*h,y+2*i*h,n-1);
+}
+};
+
+peano1(x,y,n):={
+local a,h;
+if (n==0) {
+un(x,y);
+}
+else {
+h:=(y-x)/3;
+a:=x+h;
+peano1(x,a,n-1);
+peano2(a+i*h,a,n-1);
+peano1(a+h,y,n-1);
+peano1(y+i*h,y+2*i*h,n-1);
+peano1(a+h+2*i*h,a+2*i*h,n-1);
+peano2(a+i*h,a+2*i*h,n-1);
+peano2(x+2*i*h,a+2*i*h,n-1);
+peano2(a+3*i*h,a+2*i*h,n-1);
+peano1(a+h+2*i*h,y+2*i*h,n-1);
+}
+};
+peano2(x,y,n):={
+local a,h;
+if (n==0) {
+deux(x,y);
+}
+else {
+h:=(y-x)/3;
+a:=x+h;
+peano2(x,a,n-1);
+peano2(a+i*h,a,n-1);
+peano1(a+h,y,n-1);
+peano1(y+i*h,y+2*i*h,n-1);
+peano1(a+h+2*i*h,a+2*i*h,n-1);
+peano2(a+i*h,a+2*i*h,n-1);
+peano2(x+2*i*h,a+2*i*h,n-1);
+peano2(a+3*i*h,a+2*i*h,n-1);
+peano1(a+h+2*i*h,y+2*i*h,n-1);
+}
+};

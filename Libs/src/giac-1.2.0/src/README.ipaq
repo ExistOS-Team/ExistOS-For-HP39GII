@@ -1,0 +1,39 @@
+Binary distribution
+===================
+This binary distribution has been tested with Familiar 0.8.3, with the gpe
+tarball.
+Copy xcas_ipaq.tgz to the /tmp directory of your ipaq, then as root type
+# cd /
+# tar xvfz /tmp/xcas_ipaq.tgz
+Edit e.g. with vi a file /usr/bin/xcas and change to the correct 
+export LANGUAGE=es_ES:es or fr_FR:fr
+Unfortunately localization does not seem to work right now:-(
+
+Note: it is important that you run xcas from a RAM directory otherwise you
+will have speed penalties and/or hardware problems since files 
+would be saved in flash ROM. See the /usr/bin/xcas file and adapt.
+
+You can of course modify your window manager to include xcas in the menu
+
+Thanks to Pierre Coupard at LINEO, the binary distribution should also work 
+on the Sharp Zaurus unchanged provided you have installed X11 on it. See
+the instructions from http://www.zauruszone.com/, section Downloads,
+then Zaurus X11 Applications
+
+Giac/Xcas homepage:
+http://www-fourier.ujf-grenoble.fr/~parisse/giac.html (English)
+http://www-fourier.ujf-grenoble.fr/~parisse/giac_fr.html (French)
+http://www-fourier.ujf-grenoble.fr/~parisse/giac_es.html (Spanish)
+
+***************************************************************************
+Build: 
+======
+* install the cross compiler from www.handhelds.org, get ipkg
+for developpement and ar x them then tar xvfz data.tar.gz to the
+/skiff directory, make a link from /skiff/local to
+/usr/local/arm/3.4.1/ and usr to local
+* Untar giac.tgz and go to giac directory, edit config.h to suit
+your need (include GSL or not, include PARI or not) or 
+cp config.h.ipaq config.h
+then go in the src directory and type
+make -f Makefile.ipaq

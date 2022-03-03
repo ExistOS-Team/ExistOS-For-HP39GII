@@ -1,0 +1,4 @@
+#! /bin/sh
+unset LANG
+../src/icas TP21-sol.cas > TP21.tst
+diff TP21.tst TP21-sol.cas.out1

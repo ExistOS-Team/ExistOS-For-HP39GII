@@ -1,0 +1,12 @@
+export CC=/usr/bin/arm-none-eabi-gcc
+export CC_FOR_BUILD=/usr/bin/gcc
+export LIBS='-lc -lgcc -lnosys'
+
+export CFLAGS='-Os -mthumb -march=armv7e-m -mfloat-abi=hard  -mcpu=cortex-m7 -mfpu=fpv5-sp-d16  -fdata-sections -ffunction-sections -fno-strict-aliasing -nostdlib -L/usr/lib/gcc/arm-none-eabi/7.3.1/thumb/v7e-m/fpv4-sp/hard/ -I/home/parisse/numworks/include'
+./configure --host=arm-none-eabi 
+conftest.c:(.text.gcc303+0xe): undefined reference to `__aeabi_d2uiz'
+collect2: error: ld returned 1 exit status
+symbole defini dans arm-none-eabi-objdump -D _arm_fixunsdfsi.o 
+de la librairie
+/usr/lib/gcc/arm-none-eabi/7.3.1/thumb/v7e-m/fpv4-sp/hard/libgcc.a
+export LDFLAGS='-L/usr/lib/gcc/arm-none-eabi/7.3.1/thumb/v7e-m/fpv4-sp/hard/ -lgcc'

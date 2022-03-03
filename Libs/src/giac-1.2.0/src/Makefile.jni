@@ -1,0 +1,145 @@
+# This Makefile script should compile giac on Mac OS X 10.6 or 10.8.
+# @author Bernard Parisse <bernard.parisse@ujf-grenoble.fr>
+# @author Zoltan Kovacs <zoltan@geogebra.org>
+
+GIAC=unstable
+GIAC_VER=1.1.0
+GIAC_URL=http://www-fourier.ujf-grenoble.fr/~parisse/giac/
+PREFIX=/usr/local
+
+GIAC_TGZ=giac_$(GIAC).tgz
+GIAC_DIR=giac-$(GIAC_VER)
+
+LIBDIR=$(PREFIX)/lib
+
+JNILIB=$(GIAC_DIR)/src/libjavagiac.jnilib
+
+GMP_VER=5.1.2
+GMP_URL=ftp://ftp.gmplib.org/pub/gmp/gmp-$(GMP_VER).tar.bz2
+GMP=$(LIBDIR)/libgmp.dylib
+
+GSL_VER=1.16
+GSL_URL=http://tweedo.com/mirror/gnu/gsl/gsl-$(GSL_VER).tar.gz
+GSL=$(LIBDIR)/libgsl.dylib
+
+MPFR_VER=3.1.2
+MPFR_URL=http://www.mpfr.org/mpfr-current/mpfr-$(MPFR_VER).tar.bz2
+MPFR=$(LIBDIR)/libmpfr.dylib
+
+GETTEXT_VER=0.18.3
+GETTEXT_URL=http://ftp.gnu.org/pub/gnu/gettext/gettext-$(GETTEXT_VER).tar.gz
+GETTEXT=$(LIBDIR)/libintl.dylib
+
+#SDK=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
+SDK=/Developer/SDKs/MacOSX10.6.sdk
+
+all: prereq $(JNILIB)
+
+prereq: xcode-check $(GMP) $(GSL) $(MPFR) $(GETTEXT)
+
+xcode-check:
+	which xcodebuild
+	xcodebuild -version
+
+$(GMP): gmp-$(GMP_VER)
+	cd gmp-$(GMP_VER) && \
+	 ./configure --with-pic && \
+	 make && \
+	 sudo make install
+
+$(GSL): gsl-$(GSL_VER)
+	cd gsl-$(GSL_VER) && \
+	 ./configure && \
+	 make && \
+	 sudo make install
+
+$(MPFR): mpfr-$(MPFR_VER)
+	cd mpfr-$(MPFR_VER) && \
+	 ./configure && \
+	 make && \
+	 sudo make install
+
+$(GETTEXT): gettext-$(GETTEXT_VER)
+	cd gettext-$(GETTEXT_VER) && \
+	 ./configure && \
+	 make && \
+	 sudo make install
+
+gmp-$(GMP_VER):
+	curl -o gmp-$(GMP_VER).tar.bz2 $(GMP_URL)
+	tar xjf gmp-$(GMP_VER).tar.bz2
+
+gsl-$(GSL_VER):
+	curl -o gsl-$(GSL_VER).tar.gz $(GSL_URL)
+	tar xzf gsl-$(GSL_VER).tar.gz
+
+mpfr-$(MPFR_VER):
+	curl -o mpfr-$(MPFR_VER).tar.bz2 $(MPFR_URL)
+	tar xjf mpfr-$(MPFR_VER).tar.bz2
+
+gettext-$(GETTEXT_VER):
+	curl -o gettext-$(GETTEXT_VER).tar.gz $(GETTEXT_URL)
+	tar xzf gettext-$(GETTEXT_VER).tar.gz
+
+# Download and compile giac
+$(GIAC_TGZ):
+	curl -o $(GIAC_TGZ) $(GIAC_URL)/$(GIAC_TGZ)
+$(GIAC_DIR): $(GIAC_TGZ)
+	tar xzf $(GIAC_TGZ)
+untar: $(GIAC_DIR)
+
+$(GIAC_DIR)/Makefile:
+	cd $(GIAC_DIR) && \
+	 ./configure --prefix=/Applications/usr \
+         CFLAGS="-m64 -O2 -I$(PREFIX)/include -g -isysroot $(SDK) -DGIAC_GENERIC_CONSTANTS -DSMARTPTR64 -DIN_GIAC" \
+         CXXFLAGS="-m64 -O2 -I$(PREFIX)/include -g -isysroot $(SDK) -DGIAC_GENERIC_CONSTANTS -DSMARTPTR64 -DIN_GIAC" \
+         CPPFLAGS="-m64 -O2 " \
+         LIBS="-framework AGL -framework ApplicationServices -isysroot $(SDK) -lmpfr -lpthread -lz -lgsl -lgslcblas -lm -lgmp" \
+         LDFLAGS="-L$(LIBDIR)" \
+         --no-recursion
+
+$(GIAC_DIR)/src/libgiac.la: $(GIAC_DIR)/Makefile $(GIAC_DIR)/src
+	cd $(GIAC_DIR)/src && \
+	 make libgiac.la
+
+$(GIAC_DIR)/src/giac_wrap.cxx: $(GIAC_DIR) ../giac_wrap.cxx
+	cp ../giac_wrap.cxx $(GIAC_DIR)/src
+
+$(GIAC_DIR)/src/giac_wrap.o: $(GIAC_DIR)/src/giac_wrap.cxx $(GIAC_DIR)/src/libgiac.la
+	cd $(GIAC_DIR)/src/; \
+         g++ -m64 -fPIC -c giac_wrap.cxx -I/System/Library/Frameworks/JavaVM.framework/Headers\
+          -I/System/Library/Frameworks/JavaVM.framework/Headers -I$(PREFIX)/include
+
+$(GIAC_DIR)/src/static:
+	rm -fR $(GIAC_DIR)/src/static
+	mkdir -p $(GIAC_DIR)/src/static
+	for i in gmp gsl gslcblas intl mpfr; do \
+	 cp $(LIBDIR)/lib$$i.a $(GIAC_DIR)/src/static; \
+	 done
+
+$(JNILIB): $(GIAC_DIR)/src/giac_wrap.o $(GIAC_DIR)/src/static
+	cd $(GIAC_DIR)/src/; \
+	 g++ -Wl,-search_paths_first -m64 tinymt32.o threaded.o sym2poly.o gausspol.o mathml.o ti89.o maple.o moyal.o misc.o permu.o \
+	  quater.o desolve.o input_parser.o symbolic.o index.o modfactor.o modpoly.o ezgcd.o derive.o solve.o risch.o intgab.o \
+	  intg.o lin.o series.o subst.o csturm.o vecteur.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot3d.o plot.o \
+	  rpn.o prog.o TmpFGLM.o TmpLESystemSolver.o cocoa.o pari.o usual.o identificateur.o gen.o unary.o input_lexer.o first.o giac_wrap.o \
+	 -liconv -lncurses -lm -lz -lgmp -lgsl -lgslcblas -lmpfr -lpthread -lintl -Lstatic \
+	 -dynamiclib -framework Accelerate -framework CoreFoundation \
+	 -o libjavagiac.jnilib
+
+clean-libs:
+	test -r $(GMP) && sudo mv $(GMP) $(GMP).old
+	test -r $(GSL) && sudo mv $(GSL) $(GSL).old
+	test -r $(MPFR) && sudo mv $(MPFR) $(MPFR).old
+	test -r $(GETTEXT) && sudo mv $(GETTEXT) $(GETTEXT).old
+
+clean:
+	cd $(GIAC_DIR)/src; \
+	 make clean
+
+test: $(JNILIB)
+	ls -l $(JNILIB)
+	otool -L $(JNILIB)
+
+clean-jnilib:
+	rm $(JNILIB)

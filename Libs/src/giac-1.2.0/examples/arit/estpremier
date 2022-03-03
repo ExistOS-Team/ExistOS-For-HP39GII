@@ -1,0 +1,34 @@
+estprem(n):={
+//teste si n est premier
+  local prem,j,k;
+  if ((irem(n,2)==0) or (irem(n,3)===0) or (n==1)) {
+     return(false);
+  }
+  if ((n==2) or (n==3)) {
+     return(true);
+  }
+  prem:=true;
+  k:=5;
+  while ((k*k<=n) and prem) {
+     if (irem(n,k)==0 or irem(n,k+2)==0) {
+        prem:=false;
+     }
+     else {
+        k:=k+6;
+     }
+  }
+  return(prem);
+};
+estpremc(n):={
+//utilise la fonction crible (fichier erathostene) pour tester si n est premier
+local prem,s;
+prem:=crible(floor(sqrt(n)));
+s:=size(prem);
+if (n==1) return(false);
+for (k:=0;k<s;k++){
+ if (irem(n,prem[k])==0){
+    return(false);
+ } 
+}
+return(true);
+};

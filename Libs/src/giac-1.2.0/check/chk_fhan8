@@ -1,0 +1,4 @@
+#! /bin/sh
+export LANG=en_US.UTF8
+../src/icas TP08-sol.cas > TP08.tst
+diff TP08.tst TP08-sol.cas.out1

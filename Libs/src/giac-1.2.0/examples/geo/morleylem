@@ -1,0 +1,10 @@
+switch_axes(0);
+A:=point(3*i);
+B:=point(-2);
+C:=point(1-i);
+triangle(A,B,C);
+J:=inter(bissectrice(A,B,C),bissectrice(B,C,A))[0];
+//J:=centre(inscrit(A,B,C));
+segment(A,J);
+segment(B,J);
+segment(C,J);

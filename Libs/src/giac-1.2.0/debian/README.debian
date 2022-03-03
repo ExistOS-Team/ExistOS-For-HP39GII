@@ -1,0 +1,32 @@
+giac for Debian
+---------------
+
+> Frederic Han
+control file:
+# The following tex packages were added for make install on ubuntu  14.04
+#    but were not needed on ubuntu 12.04
+#    texlive, texlive-math-extra, texlive-pstricks
+Build-Depends: debhelper, libgmp-dev, libreadline-dev, libgsl0-dev, libpng12-dev, libjpeg-dev, libpari-dev, libntl-dev, libmpfr-dev, liblapack-dev, libfltk1.3-dev, libgl1-mesa-dev, libxft-dev, libx11-dev, libxt-dev, libao-dev, libmpfi-dev, texlive, texlive-math-extra, texlive-pstricks
+
+
+I think I should split this package in at least one library (libgiac), 
+two binaries (cas, xcas) and a development (libgiac-dev).
+
+The Spanish documentation in TeXinfo is poorly compiled; the DVI does
+not show accented characters. I guess that the sources must be modified
+to use the @' commands of TeXinfo, except when the words are menu entries
+(?).
+
+-- Carleos Artime <carleos@pinon.ccu.uniovi.es>, Fri, 26 Jul 2002 20:01:40 +0200
+If you are using recent version of autoconf and automake, run
+  cp -f configure.in.debian configure.in
+  autoconf
+To build debian package go one directory up, remove config.status and issue
+       dpkg-buildpackage -rfakeroot
+To build with mpfr on debian with GMP older than 4, install gmp-4.1.2 and 
+remove libgmp.so* from /usr/local/lib, then use e.g.
+       export CXXFLAGS='-L/usr/local/lib -g'
+To build with pari, you must first copy pariinl.h from the giac directory
+to /usr/include/pari. If you have pari installed and don't want to modify
+your installation, then add --disable-pari to the configure command in the
+rules file.

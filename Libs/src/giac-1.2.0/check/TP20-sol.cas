@@ -1,0 +1,57 @@
+ restart;maple_mode(1);cas_setup(0,0,0,1,0,1e-10,10,[1,50,0,25],0,0,0); #radians,pas de cmplx, pas de  Sqrt
+/* -----------------------------------------------Exercice-----------------------------------*/
+ L:=[];d:=2;purge(x);
+for i from 0 to d do for j from 0 to d-i do L:=[op(L),x[1]^i*x[2]^j] od; od; 
+/* On prend une liste de 5 points entiers, dont (1,1), et on cherche la conique£passant par ces points.*/
+ M:=[[1,1],[-3,2],[2,2],[1,5],[-6,3],[x,y]];
+f1:=unapply(L,x);
+ P:=det(matrix([seq(f1(M[i]),i=1..6)]));
+ D2:=unapply(diff(P,y),x,y);
+ D1:=unapply(diff(P,x),x,y);
+ v:=[-D2(1,1),D1(1,1)];
+/* On rajoute un point sur la tangente dependant de t, et 2 autre point au£hazard. On s'assurera que la situation est assez generale, par exemple, pas 4£points alignes. Le determinant trouve est divisible par t, et on en cherche la£limite lorsque t tend vers 0, autrement dit, on cheche le coeff de t du determinant.*/
+ M:=[op(M),[1,1]+t*v,[-3,1],[3,4]];
+ L:=[];d:=3;purge(x);
+for i from 0 to d do for j from 0 to d-i do L:=[op(L),x[1]^i*x[2]^j] od; od; 
+f1:=unapply(L,x);
+ (matrix([seq(f1(M[i]),i=1..9)]));
+ EQ:=matrix([seq(f1(M[i]),i=1..9)]);
+ Q:=coeff(det(EQ),t);#pour que 0 soit racine double.
+/*  Autre m\'ethode pour trouver Q avec une tangente imposee en 1,1, on derive par£ rapport a t la ligne correspondante, et l'on remplace.*/
+ EQ[7]:=unapply(diff(EQ[7],t),t)(0);
+ simplify(det(EQ)/Q); # c'est bien constant.
+ P:=normal(z^2*subs(y=y/z,x=x/z,P));
+ Q:=normal(z^3*subs(y=y/z,x=x/z,Q));
+DP:=implicitplot(subs(z=1,P),x=-5..5,y=-5..5,couleur=bleu):
+DQ:=implicitplot(subs(z=1,Q),x,y,xstep=0.01,ystep=0.01):
+
+/*  On cree les fonctions de x,y,z avec unapply. attention avec cette syntaxe£ ([x,y,z]), P1 sera une fonction de (x,y,z) et non d'un vecteur: [x,y,z], d'ou£ le op(v) dans la suite.*/
+ P1:=unapply(P,[x,y,z]);
+ Q1:=unapply(Q,[x,y,z]);
+ v:=t*[a1,b1,c1]+[a2,b2,c2];
+ P1(op(v));
+ R:=resultant(P1(op(v)),Q1(op(v)),t);
+ P1:=unapply(P,[x,y,z]);
+ Q1:=unapply(Q,[x,y,z]);
+ vv:=[a1,b1,c1]+t*[a2,b2,c2];
+ simplify(resultant(P1(op(vv)),Q1(op(vv)),t)/R);
+ M:=matrix([[a1,b1,c1],[a2,b2,c2]]);
+/* Pour creer une matrice  en rayant une colonne, on utilise delcols. Pour£convertir une matrice en une liste, il y a mat2list.*/
+ 
+ det(delcols(M,2..2));
+ mat2list(M); 
+ L:=[A-det(delcols(M,3..3)),B-det(delcols(M,2..2)),C-det(delcols(M,1..1))];
+GBL:=gbasis(L,mat2list(M));
+/* sous maple on utilise gbasis et normalf du paquet Grobner*/
+duale:=greduce(R,GBL,mat2list(M));
+/* On obtient bien une equation de degre: dP.dQ dont les facteurs irrreductibles£sur C sont les equations des droites duales des points solutions du systeme:£P(x,y)=Q(x,y)=0. */
+ 
+ factor(duale);
+/*  On enleve le gros coefficient constant en divisant par le contenu du£ polynome*/
+duale:=quo(duale,content(duale,A));
+ factor(duale);
+/*  Pour le dessin implicite, il vaut mieux bien mieux donner une forme£ FACTORISEE, sinon c'est trop long, et pire on abandonne si on lui fait£ chercher les bornes en A et B sans les donner avec A= ..*/
+ 
+implicitplot(subs(C=1,factor(duale)),A,B):
+/*  soit M un point du plan, et LM l'equation de la droite duale de M. la£ multiplicite de M dans l'intersection de P et Q sera par definition la£ multiplicite du facteur LM dans le polynome R de degre dP.dQ en A,B,C. Par£ construction, le theoreme de Bezout sera vrai avec cette definition.*/
+ 

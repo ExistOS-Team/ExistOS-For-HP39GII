@@ -1,0 +1,7 @@
+xcas
+	command=/usr/bin/xcas
+	name=Xcas
+	can_open_multiple_files=true
+	expects_uris=false
+	requires_terminal=false
+	mime_types=application/x-xcas;

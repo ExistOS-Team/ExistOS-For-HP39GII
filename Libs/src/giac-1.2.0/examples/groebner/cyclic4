@@ -1,0 +1,9 @@
+cyclic4:=[x1+x2+x3+x4,x1*x2+x1*x3+x2*x3+x4*x1+x4*x2+x4*x3,x1*x2*x3+x1*x2*x4+x1*x3*x4+x2*x3*x4,x1*x2*x3*x4-1];
+time(gb:=gbasis(cyclic4,indets(cyclic4),with_cocoa=false));
+gb;
+time(gb:=gbasis(cyclic4,indets(cyclic4),tdeg,with_cocoa=false));
+gb;
+time(gb:=gbasis(cyclic4,indets(cyclic4),revlex,with_cocoa=false));
+gb;
+time(gb:=gbasis(cyclic4,indets(cyclic4),with_cocoa=true));
+gb;

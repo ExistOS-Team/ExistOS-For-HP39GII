@@ -1,0 +1,57 @@
+ (M)-> 
+{ local pivo,jc,k,j,nl,nc,temp,l,a,noyau; 
+  nl:=nrows(M);  
+  nc:=ncols(M);  
+  jc:=0;  
+  while((jc<nc) && (jc<nl)){ 
+      k:=jc;  
+      while(((M[k,jc])==0) && (k<(nl-1))){ 
+          k:=k+1;  
+        };  
+      if ((M[k,jc])!=0) { 
+          pivo:=M[k,jc];  
+          for (l:=jc;l<nc;l:=l+1) { 
+              temp:=M[jc,l];  
+              M[jc,l]:=M[k,l];  
+              M[k,l]:=temp;  
+            };  
+          for (l:=0;l<nc;l:=l+1) { 
+              M[jc,l]:=(M[jc,l])/pivo;  
+            };  
+          for (k:=0;k<jc;k:=k+1) { 
+              a:=M[k,jc];  
+              for (l:=0;l<nc;l:=l+1) { 
+                  M[k,l]:=M[k,l]-M[jc,l]*a;  
+                };  
+            };  
+          for (k:=jc+1;k<nl;k:=k+1) { 
+              a:=M[k,jc];  
+              for (l:=jc;l<nc;l:=l+1) { 
+                  M[k,l]:=M[k,l]-M[jc,l]*a;  
+                };  
+            };  
+        } 
+       else { 
+          if (jc<(nc-1)) { 
+              for (j:=nl;j>jc;j:=j-1) { 
+                  M[j]:=M[j-1];  
+                };  
+              M[jc]:=makelist(0,1,nc);  
+              nl:=nl+1;  
+            };  
+        };; ;  
+      jc:=jc+1;  
+      if ((jc==nl) && (jc<nc)) { 
+          M[nl]:=makelist(0,1,nc);  
+          nl:=nl+1;  
+        };  
+    };  
+  noyau:=[];  
+  M:=M-idn(nc);  
+  for (j:=0;j<nc;j:=j+1) { 
+      if ((M[j,j])==(-1)) { 
+          noyau:=append(noyau,tran(M)[j]);  
+        };  
+    };  
+  return(noyau);  
+}

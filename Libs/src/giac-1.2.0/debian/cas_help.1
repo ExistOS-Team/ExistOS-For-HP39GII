@@ -1,0 +1,71 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH GIAC 1 "2014-4-6"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+giac \- computer algebra system
+.SH SYNOPSIS
+.B cas_help
+.RI " keyword" 
+.br
+.B en_cas_help
+.RI " keyword" 
+.br
+.B es_cas_help
+.RI " keyword" 
+.br
+.B fr_cas_help
+.RI " keyword" 
+
+.SH DESCRIPTION
+.PP
+.\" TeX users may be more comfortable with the \fB<whatever>\fP and
+.\" \fI<whatever>\fP escape sequences to invode bold face and italics, 
+.\" respectively.
+This is the help engine of the symbolic and numeric calculator \fBgiac\fP  by
+Bernard Parisse. It is avaible in some different languages.
+
+.br
+.SH EXAMPLE
+.B cas_help 
+gcd
+.TP
+Help for gcd:
+.br
+gcd((Intg(a) or Poly),(Intg(b) or Poly))
+.br 
+Returns the greatest common divisor of 2 polynomials of several variables or of 2 integers or of 2 rationals.
+.br
+See also: 1/ lcm 2/ euler 2/ modgcd 3/ ezgcd 4/ psrgcd 5/ heugcd 6/ Gcd 
+.br
+Ex1:gcd(45,75)
+.br
+Ex2:gcd(15/7,50/9)
+.br
+Ex3:gcd(x^2-2*x+1,x^3-1)
+.br
+Ex4:gcd(t^2-2*t+1,t^2+t-2)
+.br
+Ex5:gcd((x^2-1)*(y^2-1)*z^2,x^3*y^3*z+(-(y^3))*z+x^3*z-z)
+.br
+
+.SH SEE ALSO
+.B giac (1)
+.B icas (1)
+.B xcas (1)
+.br
+.SH COPYRIGHT
+These files are part of the (GPLv3+) giac sofware.

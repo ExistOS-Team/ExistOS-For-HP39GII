@@ -1,0 +1,83 @@
+ restart;maple_mode(1);cas_setup(0,0,0,1,0,1e-10,10,[1,50,0,25],0,0,0); #radians,pas de cmplx, pas de  Sqrt
+/*  ------------------------------------------------Exercice---------------------------------------------*/
+  
+ time(p:=nextprime(10^50)):
+ time(isprime(p)):
+ time(is_pseudoprime(p)):
+/*  le temps de isprime est trop long pour avoir ete utilise pour£ trouver le nombre premier avec nextprime. La doc confirme bien que£ nextprime donne un pseudopremier.*/
+ i:=20;n:=nextprime(10^i)*nextprime(20^i); 
+ ifactor(n);
+/*  a partir de i=30 ca ne repond plus?*/
+ p:=nextprime(nextprime(10^30)*nextprime(20^30));
+ifactor(p-1); #ca marche souvent
+pari():;
+pari_isprime(p,1);
+/* Les grands nombres premiers apparaissant dans le certificat sont eux£m\^eme certifi\'es, ce qui explique les crochets emboit\'es.*/
+/*  On a cree n avec de petits facteurs, on arrive a le factoriser*/
+ i:=0;l:=[];
+  while i<1 do
+  n:=1;for j from 1 to 10 do n:=n*(1+rand(10000)) od;
+  if is_pseudoprime(n+1)>0 then p:=n+1;i++; fi;
+  od;
+Divn:=transpose(ifactors(p-1)[2]);
+divn:=Divn[1];
+expn:=Divn[2];
+/* On cherche maintenant le certificat. Pour chaque premier divisant p-1 on trouve£un element d'ordre la puissance maximale  de ce diviseur qui divise p-1. On£utilisera factors et powmod*/
+certifs:=[];
+for i in divn do
+a:=2;
+while powermod(a,(p-1)/i,p)=1 do a:=1+rand(p-1) od;
+certifs:=[op(certifs),a];
+od;
+ g:=1;
+ for i from 1 to dim(divn) do g:=mods(g*powmod(certifs[i],(p-1)/(divn[i]^expn[i]),p),p) od;
+/*   seq(powmod(g,i,p),i=divisors(p-1));# NON! ne pas le faire trop de diviseurs!*/
+ maple_mode(0); // on bascule en mode xcas et l'on cree le 1 de Z/pZ
+ unp:= 1 % p; 
+ maple_mode(1); #on retourne en mode maple.
+ unp:=makemod(1,p); #la meme chose directement, mais c'est mal documente.
+pari():; #on charge pari une fois pour toute.
+ unp:=Mod(1,p); #via pari, mais apres avoir charge pari avec: pari(); 
+/* On peut maitenant multiplier un entier par ce nombre modulaire pour passer£automatiquement dans Z/pZ*/
+gzp:=g*unp;
+znorder(gzp);# ou bien on pouvait faire directement:
+if znorder(Mod(g,p))==p-1 then print("ca fait bien p-1") fi;
+ p:=nextprime(10^13);i:=0;l:=[];
+ while i<10 do
+ if is_pseudoprime(4*p+1)>0 then l:=[op(l),4*p+1];i++; fi;
+ p:=nextprime(p);
+ od:l;
+p:=nextprime(10^13+100);
+g:=pari_znprimroot(p);
+pari_znlog(3,Mod(g,p)); #il reussit
+ifactor(p-1);
+/* p-1 a de petits facteurs premiers, on peut donc resoudre le probleme£du log discret. Dans le cas suivant ca ne marche plus.*/
+ pdifficile:=l[3];
+p:=pdifficile;
+ g:=pari_znprimroot(p);
+#pari_znlog(3,Mod(g,p)); #depasse la memoire max de pari
+/* Le nombre de genereurs de (Z/pZ)^x est le nombre d'inversibles dans Z/(p-1)Z,£c'est donc phi(p-1). la Proba de trouver un generateur en piochant au hasard£est donc de s=phi(p-1)/p. On a au moins 95 pour cent de chance d'avoir un£generateur en n tirages ssi (1-s)^n<0.05 ssi n>ln(0.05)/ln(1-s).£ Autre maniere de commencer avec une liste vide, on utilise le symbole: NULL*/
+l:=NULL;for i from 1 to 30 do p:=nextprime(rand(10^20)); l:=l,evalf(euler(p-1)/p) od;
+seq(log(0.05)/log(1-s),s=[l]);
+/* Lorsque pari_znprimroot ne retourne pas 2, son ordre est bien different de£p-1. On peut donc conjecturer que pari essaye successivement des petits£entiers. Cependant il faut remarquer que le temps de znprimroot est directement£relie au temps de factorisation de p-1. Donc pari semble avoir factorise p-1*/
+ l:=NULL;for i from 1 to 30 do p:=nextprime(rand(10^20)); l:=l,[pari_znprimroot(p),p-znorder(Mod(2,p))] od;
+p1:=100000000003677906312417649500520066316186689905131;
+time(ifactor(p1-1)):
+time(znprimroot(p1)):
+time(znorder(Mod(2,p1))):
+p2:=nextprime(p1);
+time(ifactor(p2-1)):
+time(znprimroot(p2)):
+time(znorder(Mod(2,p2))):
+/*  -------------------------------------EXERCICE---------------------------------------------*/
+ p:=pdifficile;
+/*  b,e pas trop petits par rapport a p, pour que le modulo p melange£ vraiment.*/
+ message:="ABCDA, Remarquez que des lettres identiques ne sont pas codees de la meme maniere!";asc(message);
+ asc(messsage)-[seq(65,i=1..length(message))];
+ b:=12345;e:=54321; igcd(e,p-1); B:=powmod(b,e,p);
+ l:=asc(message);k:=[seq(rand(50),i=1..length(message))];
+ C:=[seq([(b^k[i]) mod p,(l[i]*B^k[i]) mod p],i=1..length(message))];#le message crypte
+ee:=p-1-e;#c'est -e [p-1] qui nous interesse 
+/*  L'astuce est que (B^k)=((b^e)^k) qui vaut par commutativit\'e  des la£ composition des application B:x->x^k et A:x->x^e  ((b^k)^e). £Le principe a retenir, est qu'en crypto on a juste besoin£d'operations A,B qui  commutent, et que la donnee de A de donne pas£A^(-1)  */
+ decrypt:=[seq(irem(powmod(C[i][1],ee,p)*C[i][2],p),i=1..length(message))];
+ char(decrypt);

@@ -1,0 +1,341 @@
+--> variables globales embetantes <--
+Toutes les variables relatives au lexer/parser -> on ne peut pas parser en 
+parallele dans des threads
+// gausspol.cc
+  bool ingcd=false;
+Relatif a l'affichage pendant le pgcd de polynomes, pas grave
+// identificateur.cc
+  bool local_eval;
+Cf. class unary_function_eval, modifs a faire dans l'evaluation pour 
+tenir compte du contexte
+// vecteur.cc
+  int printcell_current_row=0,printcell_current_col=0;
+  int spread_Row=0,spread_Col=0;
+Relatif a l'evaluation du tableur
+---> Liste des var globales exceptes unary_function_ptr et const string <---
+// File Eqw.cc
+  vector<string> completion_tab;
+// File alg_ext.cc
+  rootmap symbolic_rootof_list(ptr_fun(islesscomplex));
+// File derive.cc
+// File desolve.cc
+  identificateur laplace_var(" s");
+// File eqw.cc
+// File ezgcd.cc
+// File first.cc
+// File gauss.cc
+// File gausspol.cc
+  bool ingcd=false;
+  int inspectdim=12;
+// File gen.cc
+  bool expand_re_im=true;
+  // bool is_inevalf=false;
+  //  throw(std::runtime_error("Parse error"));
+  int decimal_digits=12;
+  gen zero(0);
+  gen minus_one(-1);
+  gen plus_one(1);
+  gen plus_two(2);
+  gen plus_three(3);
+  gen cst_i(0,1);
+  double rad2deg_d(180/M_PI);
+  double deg2rad_d(M_PI/180);
+  gen rad2deg_g(rad2deg_d);
+  gen deg2rad_g(deg2rad_d);
+  const vecteur null_vector;
+  list<__mpz_struct> zint_list;
+// File global.cc
+  bool secure_run=true;
+  bool center_history=false;
+  bool in_texmacs=false;
+  bool block_signal=false;
+  int history_begin_level=0; 
+  int first_error_line=-1;
+  string error_token_name;
+  int debug_infolevel=0;
+  double epsilon=100*numeric_limits<double>::epsilon();
+  double epsilon=1e-10;
+  int threads=1;
+  bool increasing_power=false;
+  string cas_suffixe(".cas");
+  int TEST_PROBAB_PRIME=25;
+  int GCDHEU_MAXTRY=5;
+  int GCDHEU_DEGREE=100;
+  int MODFACTOR_PRIMES =5;
+  int HENSEL_QUADRATIC_POWER=25;
+  int KARAMUL_SIZE=17;
+  int INT_KARAMUL_SIZE=300;
+  int MAX_ALG_EXT_ORDER_SIZE = 5;
+  int TRY_FU_UPRIME=5;
+  int SOLVER_MAX_ITERATE=25;
+  const int BUFFER_SIZE=16384;
+  pid_t parent_id=getpid();
+  volatile bool signal_plot_parent=false; 
+  volatile bool child_busy=false,data_ready=false;
+  volatile bool ctrl_c=false;
+  char buf[BUFFER_SIZE];
+  bool running_file=false;
+  string xcasrc("xcas.rc");
+  string xcasrc(".xcasrc");
+  bool synchronize_history=true;
+// File help.cc
+  multimap<string,string> html_mtt,html_mall;
+  std::vector<std::string> html_vtt,html_vall;
+  int language=1;
+  const int BUFFER_SIZE=16383;
+  string subdir_strings[]={"casflan","casgeo","casrouge","cassim","tutoriel"};
+  int subdir_taille=5;
+// File identificateur.cc
+  bool variables_are_files=false;
+  string string_pi("pi");
+  identificateur _IDNT_pi(string_pi,(double) M_PI);
+  gen cst_pi(_IDNT_pi);
+  string string_infinity("infinity");
+  identificateur _IDNT_infinity(string_infinity);
+  gen unsigned_inf(_IDNT_infinity);
+  gen cst_two_pi(symbolic(at_prod,makevecteur(2,cst_pi)));
+  gen cst_pi_over_2(_FRAC2_SYMB(cst_pi,2));
+  gen plus_inf(symbolic(at_plus,_IDNT_infinity));
+  gen minus_inf(symbolic(at_neg,_IDNT_infinity));
+  string string_undef("undef");
+  identificateur _IDNT_undef(string_undef);
+  gen undef(_IDNT_undef);
+  identificateur a__IDNT("a");
+  gen a__IDNT_e(a__IDNT);
+  identificateur b__IDNT("b");
+  gen b__IDNT_e(b__IDNT);
+  identificateur c__IDNT("c");
+  gen c__IDNT_e(c__IDNT);
+  identificateur d__IDNT("d");
+  gen d__IDNT_e(d__IDNT);
+  identificateur e__IDNT("e",(double) M_E);
+  gen e__IDNT_e(e__IDNT);
+  identificateur e__IDNT_("maple_e");
+  gen e__IDNT_e_(e__IDNT_);
+  identificateur f__IDNT("f");
+  gen f__IDNT_e(f__IDNT);
+  identificateur g__IDNT("g");
+  gen g__IDNT_e(g__IDNT);
+  identificateur h__IDNT("h");
+  gen h__IDNT_e(h__IDNT);
+  identificateur i__IDNT("i");
+  gen i__IDNT_e(i__IDNT);
+  identificateur I__IDNT("I");
+  gen I__IDNT_e(I__IDNT);
+  identificateur j__IDNT("j");
+  gen j__IDNT_e(j__IDNT);
+  identificateur k__IDNT("k");
+  gen k__IDNT_e(k__IDNT);
+  identificateur l__IDNT("l");
+  gen l__IDNT_e(l__IDNT);
+  identificateur m__IDNT("m");
+  gen m__IDNT_e(m__IDNT);
+  identificateur n__IDNT("n");
+  gen n__IDNT_e(n__IDNT);
+  identificateur o__IDNT("o");
+  gen o__IDNT_e(o__IDNT);
+  identificateur p__IDNT("p");
+  gen p__IDNT_e(p__IDNT);
+  identificateur q__IDNT("q");
+  gen q__IDNT_e(q__IDNT);
+  identificateur r__IDNT("r");
+  gen r__IDNT_e(r__IDNT);
+  identificateur s__IDNT("s");
+  gen s__IDNT_e(s__IDNT);
+  identificateur t__IDNT("t");
+  gen t__IDNT_e(t__IDNT);
+  identificateur u__IDNT("u");
+  gen u__IDNT_e(u__IDNT);
+  identificateur v__IDNT("v");
+  gen v__IDNT_e(v__IDNT);
+  identificateur w__IDNT("w");
+  gen w__IDNT_e(w__IDNT);
+  identificateur x__IDNT("x");
+  gen x__IDNT_e(x__IDNT);
+  gen vx_var(x__IDNT_e);
+  identificateur y__IDNT("y");
+  gen y__IDNT_e(y__IDNT);
+  identificateur z__IDNT("z");
+  gen z__IDNT_e(z__IDNT);
+  identificateur CST__IDNT("CST");
+  gen CST__IDNT_e(CST__IDNT);
+  identificateur PICT__IDNT("PICT");
+  gen PICT__IDNT_e(PICT__IDNT);
+  gen tab_one_char__IDNT[]={a__IDNT_e,b__IDNT_e,c__IDNT_e,d__IDNT_e,e__IDNT_e,f__IDNT_e,g__IDNT_e,h__IDNT_e,i__IDNT_e,I__IDNT_e,j__IDNT_e,k__IDNT_e,l__IDNT_e,m__IDNT_e,n__IDNT_e,o__IDNT_e,p__IDNT_e,q__IDNT_e,r__IDNT_e,s__IDNT_e,t__IDNT_e,u__IDNT_e,v__IDNT_e,w__IDNT_e,x__IDNT_e,y__IDNT_e,z__IDNT_e,CST__IDNT_e,PICT__IDNT_e,zero};
+  vecteur list_one_letter__IDNT(tab2vecteur(tab_one_char__IDNT));
+  string string_break("break");
+  identificateur _IDNT_break(string_break);
+  string string_continue("continue");
+  identificateur _IDNT_continue(string_continue);
+  bool local_eval=true;
+// File ifactor.cc
+// File index.cc
+// File intg.cc
+  bool do_lnabs=true;
+  extern unary_function_ptr primitive_tab_op[];
+  extern unary_function_ptr inverse_tab_op[];
+  gen_op primitive_tab_primitive[]={giac::int_sin,giac::int_cos,giac::int_tan,giac::exp,giac::cosh,giac::sinh,giac::int_tanh,giac::int_asin,giac::int_acos,giac::int_atan,giac::xln_x};
+// File isom.cc
+// File lin.cc
+// File maple.cc
+  extern unary_function_ptr at_count;
+// File mathml.cc
+  using namespace giac;
+  double horiz_mathml=12.;
+  double vert_mathml=12.;
+  string mathml_preamble("<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN\"\n\"http://www.w3.org/TR/MathML2/dtd/xhtml-math11-f.dtd\" [\n<!ENTITY mathml \"http://www.w3.org/1998/Math/MathML\">\n]>\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<body>\n");
+  string mathml_end("\n</body>\n</html>");
+  string math_begin("<math mode=\"display\" xmlns=\"http://www.w3.org/1998/Math/MathML\">\n");
+  string math_end("</math>");
+  string provisoire_mbox_begin("<mi>");
+  string provisoire_mbox_end("</mi>");
+  //   return "\\overline{"+gen2tex(g)+"}";
+// File misc.cc
+// File modfactor.cc
+// File modpoly.cc
+  int debuglevel=0;
+  clock_t debut_time,fin_time;
+// File moyal.cc
+// File pari.cc
+  long pari_maxprime=100000;
+// File permu.cc
+// File plot.cc
+  int LEGENDE_SIZE=36;
+  int COORD_SIZE=26;
+  int PARAM_STEP=18;
+  int LEGENDE_SIZE=44;
+  int COORD_SIZE=30;
+  int PARAM_STEP=20;
+  vecteur plot_instructions,graph_instructions;
+  int plot_instructionsh=300,plot_instructionsw=300;
+  bool shift_on=false;
+  bool run_modif=false;
+  bool win9x=false;
+  int run_modif_pos;
+  pid_t gnuplot_pid=0;
+  string gnuplot_name(giac_gnuplot_location);
+  int gnuplot_fileno=0;
+  int gnuplot_pipe[2];
+  string gnuplot_filename("graph3d");
+  int _GROUP__VECT_subtype[]={_GROUP__VECT,_LINE__VECT,_VECTOR__VECT,0};
+  double gnuplot_xmin=-4,gnuplot_xmax=4,gnuplot_ymin=-5,gnuplot_ymax=2,gnuplot_zmin=-10,gnuplot_zmax=10,gnuplot_tmin=-1,gnuplot_tmax=6,gnuplot_tstep=0.07;
+  double gnuplot_xmin=-5,gnuplot_xmax=5,gnuplot_ymin=-5,gnuplot_ymax=2,gnuplot_zmin=-10,gnuplot_zmax=10,gnuplot_tmin=-1,gnuplot_tmax=6,gnuplot_tstep=0.07;
+  double window_xmin(gnuplot_xmin),window_xmax(gnuplot_xmax),window_ymin(-2),window_ymax(gnuplot_ymax);
+  double x_tick(1.0),y_tick(1.0);
+  double class_minimum(0.0),class_size(1.0);
+  int gnuplot_pixels_per_eval=2;
+  bool autoscale=true;
+  bool show_axes=true;
+  bool has_gnuplot=true;
+  bool as_function_of_mode=false;
+  bool redraw_mouse_position_only=false;
+  bool fastcurveprint=false;
+  string PICTautoname("A");
+// File prog.cc
+  modules_tab giac_modules_tab;
+  int indent_spaces=0;
+  bool complex_mode=false,angle_radian=true,complex_variables=false,approx_mode=false;
+  vecteur args_stack;
+  bool debug_mode=false;
+  bool debug_allowed=true;
+  vector<int> current_instruction_stack;
+  int current_instruction;
+  vector< vector<int> > sst_at_stack;
+  vector<int> sst_at;
+  gen debug_info,fast_debug_info;
+  bool debug_refresh=false;
+  gen sorting_function;
+  bool user_screen=false;
+  int user_screen_io_x=0,user_screen_io_y=0;
+  int user_screen_fontsize=14;
+  gen current_folder_name;
+// File quater.cc
+// File rpn.cc
+  vecteur history_in,history_out;
+  bool rpn_mode=false;
+// File series.cc
+  bool inside_limit=false;
+  vecteur sincosinf; 
+  gen default_ordre=20;
+// File solve.cc
+  int NEWTON_DEFAULT_ITERATION=20;
+  int intvar_counter=0;
+  int realvar_counter=0;
+  gen (* isolate_fcns[] ) (const gen &,int) = { isolate_exp,isolate_ln,isolate_sin,isolate_cos,isolate_tan,isolate_asin,isolate_acos,isolate_atan};
+// File subst.cc
+  bool quote_subst=false;
+// File sym2poly.cc
+// File symbolic.cc
+  string last_evaled_function_name;
+// File tex.cc
+  double horiz_latex=12.;
+  double vert_latex=12.;
+  string tex_preamble("\\documentclass{article} \n \\usepackage{pstricks} \n \\begin{document} \n");
+  string tex_end("\n\\end{document}");
+  string mbox_begin("\\mbox{");
+  string mbox_end("}");
+// File ti89.cc
+  vecteur zoom_save;
+// File unary.cc
+// File usual.cc
+  string messages_to_print ;
+  bool signal_store=true;
+  vector<unary_function_ptr > solve_fcns_v(solve_fcns,solve_fcns+8);
+  gen cst_two_pi(symbolic(at_prod,makevecteur(2,cst_pi)));
+  gen cst_pi_over_2(_FRAC2_SYMB(cst_pi,2));
+  gen plus_inf(symbolic(at_plus,_IDNT_infinity));
+  gen minus_inf(symbolic(at_neg,_IDNT_infinity));
+  gen plus_one_half(fraction(1,2));
+  gen minus_one_half(-symb_inv(2));
+  gen plus_sqrt3(sqrt(3));
+  gen plus_sqrt2(sqrt(2));
+  gen minus_sqrt3_2(-_FRAC2_SYMB(plus_sqrt3,2));
+  gen minus_sqrt2_2(-_FRAC2_SYMB(plus_sqrt2,2));
+  gen minus_sqrt3_3(-_FRAC2_SYMB(plus_sqrt3,3));
+  gen minus_sqrt3(-plus_sqrt3);
+  gen minus_sqrt2(-plus_sqrt2);
+  gen plus_sqrt3_2(_FRAC2_SYMB(plus_sqrt3,2));
+  gen plus_sqrt2_2(_FRAC2_SYMB(plus_sqrt2,2));
+  gen plus_sqrt3_3(_FRAC2_SYMB(plus_sqrt3,3));
+  gen rad2deg_e(_FRAC2_SYMB(180,cst_pi));
+  gen deg2rad_e(_FRAC2_SYMB(cst_pi,180));
+  vector<unary_function_ptr> sincostan_v(sincostan_tab,sincostan_tab+3);
+  vector<unary_function_ptr> asinacosatan_v(asinacosatan_tab,asinacosatan_tab+3);
+  vector<unary_function_ptr> sinhcoshtanh_v(sinhcoshtanh_tab,sinhcoshtanh_tab+3);
+  vector <unary_function_ptr> sincostansinhcoshtanh_v(merge(sincostan_v,sinhcoshtanh_v));
+  vector<unary_function_ptr> exp_v(1,at_exp);
+  vector<unary_function_ptr> tan_v(1,at_tan);
+  vector<unary_function_ptr> asin_v(1,at_asin);
+  vector<unary_function_ptr> acos_v(1,at_acos);
+  vector<unary_function_ptr> atan_v(1,at_atan);
+  vector<unary_function_ptr> pow_v(1,at_pow);
+  gen_op halftan_tab[]={sin2tan2,cos2tan2,tan2tan2};
+  gen_op hyp2exp_tab[]={sinh2exp,cosh2exp,tanh2exp};
+  gen_op trig2exp_tab[]={sin2exp,cos2exp,tan2exp};
+  gen_op atrig2ln_tab[]={asin2ln,acos2ln,atan2ln};
+  vector< gen_op > halftan_v(halftan_tab,halftan_tab+3);
+  vector< gen_op > hyp2exp_v(hyp2exp_tab,hyp2exp_tab+3);
+  vector< gen_op > trig2exp_v(trig2exp_tab,trig2exp_tab+3);
+  vector< gen_op > halftan_hyp2exp_v(merge(halftan_v,hyp2exp_v));
+  vector< gen_op > exp2sincos_v(1,exp2sincos);
+  vector< gen_op > tan2sincos_v(1,tantosincos);
+  vector< gen_op > tan2sincos2_v(1,tantosincos2);
+  vector< gen_op > tan2cossin2_v(1,tantocossin2);
+  vector< gen_op > asin2acos_v(1,asintoacos);
+  vector< gen_op > asin2atan_v(1,asintoatan);
+  vector< gen_op > acos2asin_v(1,acostoasin);
+  vector< gen_op > acos2atan_v(1,acostoatan);
+  vector< gen_op > atan2asin_v(1,atantoasin);
+  vector< gen_op > atan2acos_v(1,atantoacos);
+  vector< gen_op > atrig2ln_v(atrig2ln_tab,atrig2ln_tab+3);
+  vector< gen_op > trigcos_v(1,trigcospow);
+  vector< gen_op > trigsin_v(1,trigsinpow);
+  vector< gen_op > trigtan_v(1,trigtanpow);
+  vector< gen_op > powexpand_v(1,powtopowexpand);
+  vector< gen_op > exp2power_v(1,exptopower);
+  vector< unary_function_ptr > gamma_v(1,at_gamma);
+  vector< gen_op > gamma2factorial_v(1,gammatofactorial);
+  vector<unary_function_ptr> inequality_sommets(inequality_tab,inequality_tab+sizeof(inequality_tab)/sizeof(unary_function_ptr));
+// File vecteur.cc
+  int printcell_current_row=0,printcell_current_col=0;
+  int spread_Row=0,spread_Col=0;

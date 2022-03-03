@@ -1,0 +1,6 @@
+?package(giac):needs="text" section="Applications/Math"\
+  title="giac" command="/usr/bin/giac"
+?package(giac):needs="X11" section="Applications/Math"\
+  title="Xcas" command="/usr/bin/xcas"
+?package(giac):needs="X11" section="Applications/Math"\
+  title="Xcas/Texmacs" command="/usr/bin/xgiac"

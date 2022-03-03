@@ -1,0 +1,3 @@
+#! /bin/sh
+../src/icas testpartfrac > partfrac.tst
+diff partfrac.tst partfrac.out

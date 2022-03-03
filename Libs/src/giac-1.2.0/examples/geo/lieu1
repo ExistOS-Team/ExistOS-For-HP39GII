@@ -1,0 +1,5 @@
+D:=parallele(A,droite(B,C));
+t:=element(-5..5);
+P:=element(D,t);
+G:=isobarycentre(P,B,C);
+lieu(G,M);

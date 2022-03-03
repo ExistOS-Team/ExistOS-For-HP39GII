@@ -1,0 +1,6 @@
+#! /bin/tcsh
+#autoconf
+#autoheader
+setenv CXXFLAGS -g
+./configure --enable-debug --enable-sscl
+make

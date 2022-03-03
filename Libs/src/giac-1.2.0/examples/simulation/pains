@@ -1,0 +1,90 @@
+pain(n) :={
+  local T,r,A;
+  A:=makelist(x->192,1,n,1);
+  for (j:=0;j<n;j++){
+    r:=rand(2); 
+    T:=0;
+    for (k:=0;k<12;k++){
+      if (r==1){
+        T:=T+1;
+      }
+    r:=rand(2);
+    }
+  A[j]:=A[j]+T;
+  }
+return(A);
+}; 
+client(p,n):={
+  local pj,A,P,j,m;
+  P:=makelist(x->0,0,12,1);
+  A:=pain(n);
+  S:=0;
+  for (k:=0;k<p;k++){
+    //A:=pain(n);
+    j:=rand(n);	
+    pj:=A[j];
+    S:=S+pj;
+    pj:=pj-192;
+    P[pj]:=P[pj]+1;
+  };
+  m:=evalf(S/p);
+  xyztrange(-0.2,12.2,-1,36.0,-10.0,10.0,-10.0,-10.0,-0.2,12.2,-1,36.0,1);
+  switch_axes(NULL);
+  return([A,P,m,segment(0,i*P[0]),segment(1,1+i*P[1]),segment(2,2+i*P[2]),segment(3,3+i*P[3]),segment(4,4+i*P[4]),segment(5,5+i*P[5]),segment(6,6+i*P[6]),segment(7,7+i*P[7]),segment(8,8+i*P[8]),segment(9,9+i*P[9]),segment(10,10+i*P[10]),segment(11,11+i*P[11]),segment(12,12+i*P[12])]);
+};   
+chouchou(p,n):={
+  local pj,A,P,j,m;
+  P:=makelist(x->0,0,12,1);
+  A:=pain(n);
+  S:=0;
+  for (k:=0;k<p;k++){
+    //A:=pain(n);
+    j:=rand(n);	
+    pj:=A[j];
+    while (pj<200) {j:=rand(n); pj:=A[j];}
+    S:=S+pj;
+    pj:=pj-192;
+    P[pj]:=P[pj]+1;
+  };
+  m:=evalf(S/p);
+  xyztrange(-0.2,12.2,-1,60.0,-10.0,10.0,-10.0,-10.0,-0.2,12.2,-1,60.0,1);
+  switch_axes(NULL);
+  return([A,P,m,segment(0,i*P[0]),segment(1,1+i*P[1]),segment(2,2+i*P[2]),segment(3,3+i*P[3]),segment(4,4+i*P[4]),segment(5,5+i*P[5]),segment(6,6+i*P[6]),segment(7,7+i*P[7]),segment(8,8+i*P[8]),segment(9,9+i*P[9]),segment(10,10+i*P[10]),segment(11,11+i*P[11]),segment(12,12+i*P[12])]);
+};   
+chousuper(p,n):={
+  local pj,A,P,j,m;
+  P:=makelist(x->0,0,12,1);
+  A:=pain(n);
+  S:=0;
+  for (k:=0;k<p;k++){
+    //A:=pain(n);
+    j:=rand(n);	
+    aj:=A[j];
+    if (aj<203) {pj:=aj+2;} else pj:=aj;
+    S:=S+pj;
+    pj:=pj-192;
+    P[pj]:=P[pj]+1;
+  };
+  m:=evalf(S/p);
+  xyztrange(-0.2,12.2,-1,60.0,-10.0,10.0,-10.0,-10.0,-0.2,12.2,-1,60.0,1);
+  switch_axes(NULL);
+  return([A,P,m,legende(point(8+20*i),m),legende(point(8-0.1*i),"20O"),segment(0,i*P[0]),segment(1,1+i*P[1]),segment(2,2+i*P[2]),segment(3,3+i*P[3]),segment(4,4+i*P[4]),segment(5,5+i*P[5]),segment(6,6+i*P[6]),segment(7,7+i*P[7]),segment(8,8+i*P[8]),segment(9,9+i*P[9]),segment(10,10+i*P[10]),segment(11,11+i*P[11]),segment(12,12+i*P[12])]);
+};   
+chou(p,n):={
+  local pj,A,P,j,m;
+  P:=makelist(x->0,0,12,1);
+  A:=pain(n);
+  S:=0;
+  for (k:=0;k<p;k++){
+    //A:=pain(n);
+    j:=rand(4);	
+    pj:=199+j;
+    S:=S+pj;
+    pj:=pj-192;
+    P[pj]:=P[pj]+1;
+  };
+  m:=evalf(S/p);
+  xyztrange(-0.2,12.2,-1,60.0,-10.0,10.0,-10.0,-10.0,-0.2,12.2,-1,60.0,1);
+  switch_axes(NULL);
+  return([A,P,m,legende(point(8+20*i),m),legende(point(8-0.1*i),"20O"),segment(0,i*P[0]),segment(1,1+i*P[1]),segment(2,2+i*P[2]),segment(3,3+i*P[3]),segment(4,4+i*P[4]),segment(5,5+i*P[5]),segment(6,6+i*P[6]),segment(7,7+i*P[7]),segment(8,8+i*P[8]),segment(9,9+i*P[9]),segment(10,10+i*P[10]),segment(11,11+i*P[11]),segment(12,12+i*P[12])]);
+};   

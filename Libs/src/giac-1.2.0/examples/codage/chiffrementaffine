@@ -1,0 +1,133 @@
+cod1(c,a,b):={
+local n;
+n:=(asc(c))[0]-32;
+n:=irem(a*n+b,96);
+return(char(n+32));
+};
+codm1(m,a,b):={
+local r,c,s;
+r:="";
+s:=size(m);
+for (k:=0;k<s;k++){
+c:=m[k];
+r:=concat(r,cod1(c,a,b));
+}
+return(r);
+};
+decopara(para):={
+//decopara permet de trouver les parametres de decodage
+local bez,a,b;
+a:=para[0];
+b:=para[1];
+bez:=bezout(a,96);
+a:=irem(bez[0],96);
+if (a<0) a:=a+96;
+b:=irem(-b*a,96);
+if (b<0) b:=b+96;
+return([a,b]);
+};
+bonpara(para):={
+//teste si a est premier avec 96
+if (pgcd(para[0],96)==1) return(decopara(para)); else return(false);
+};
+codm(mess,para):={
+//codage par chiffrement affine de parametres para=[a,b] mod 96
+//codm code le message mess (="....") avec para=[a,b]
+local l,lc,sl,a,b,c;
+a:=para[0];
+b:=para[1];
+l:=asc(mess);
+sl:=size(l);
+for (k:=0;k<sl;k++){
+//les caracteres de code compris entre 0 et 31 ne sont pas lisibles
+l[k]:=l[k]-32;
+}
+lc:=[];
+for (j:=0;j<sl;j++){
+c:=irem(a*l[j]+b,96);
+lc:=concat(lc,32+c);
+}
+return(char(lc));
+};
+
+decopara3(para):={
+//=le parametrage de decodage du parametrage para (liste).
+local a,b,l;
+a:=para[0];
+b:=para[1];
+l:=bezout(a,96^3);
+if (l[2]!=1) return(false);
+a:=l[0];
+if (a<0) a:=a+96^3;
+b:=-irem(b*a,96^3)+96^3;
+return([a,b]);
+};
+mot2n(s):={
+//transforme un mot s de 3 lettres en n d'ecriture s en base 96 
+local l,n;
+l:=asc(s);
+n:=(l[0]-32)*96^2+(l[1]-32)*96+l[2]-32;
+return(n);
+};
+ecritu96(n):={
+//transforme l'entier n en la chaine s=l'ecriture de n en base 96
+local s,r;
+//n est un entier et b=96, ecritu96 est une fonction iterative 
+//ecritu96(n)=le mot de caracteres l'ecriture de n en base 96 
+s:="";
+while (n>=96){
+r:=irem(n,96);
+r:=char(r+32);
+s:=r+s;
+n:=iquo(n,96);
+}
+n:=char(n+32);
+s:=n+s;
+return(s);
+};
+
+n2mot(n):={
+local mot,s;
+mot:=ecritu96(n);
+s:=size(mot);
+//on suppose n<96^3 on transforme n en un mot de 3 caracteres
+//on rajoute des espaces si le mot n'a pas 3 lettres
+if (s==2) {mot:=" "+mot;}
+else {
+if (s==1) {mot:="  "+mot;}
+}
+return(mot); 
+};
+codmot3(mot,para):={
+//codage d'un mot de 3 lettres avec le parametrage para
+local n,m,a,b;
+//para:[569,2] mod 96^3
+//decopara3=[674825, 419822]
+a:=para[0];
+b:=para[1];
+n:=mot2n(mot);
+m:=irem(a*n+b,96^3);
+return(n2mot(m));
+};
+codmess3(mess,para):={
+//code le message mess,parametrage para et paquet de 3 lettres 
+  local s,messcod,mess3;
+  s:=size(mess);
+  if (irem(s,3)==2){ 
+    mess:=mess+" ";
+    s:=s+1;
+  }
+  else {
+    if (irem(s,3)==1) { 
+       mess:=mess+"  ";
+       s:=s+2;
+    }
+  } 
+  messcod:="";
+  for (k:=0;k<s;k:=k+3){
+    mess3:=mess[k..k+2];
+    mess3:=codmot3(mess3,para);
+    messcod:=messcod+mess3;
+  }
+return(messcod);
+};

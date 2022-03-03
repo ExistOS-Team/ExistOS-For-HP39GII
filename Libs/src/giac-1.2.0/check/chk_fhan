@@ -1,0 +1,46 @@
+#! /bin/sh
+unset LANG
+../src/icas TP00-sol.cas > TP00.tst
+diff TP00.tst TP00-sol.cas.out1
+../src/icas TP01-sol.cas > TP01.tst
+diff TP01.tst TP01-sol.cas.out1
+../src/icas TP02-sol.cas > TP02.tst
+diff TP02.tst TP02-sol.cas.out1
+../src/icas TP03-sol.cas > TP03.tst
+diff TP03.tst TP03-sol.cas.out1
+../src/icas TP04-sol.cas > TP04.tst
+diff TP04.tst TP04-sol.cas.out1
+../src/icas TP05-sol.cas > TP05.tst
+diff TP05.tst TP05-sol.cas.out1
+../src/icas TP06-sol.cas > TP06.tst
+diff TP06.tst TP06-sol.cas.out1
+../src/icas TP07-sol.cas > TP07.tst
+diff TP07.tst TP07-sol.cas.out1
+../src/icas TP08-sol.cas > TP08.tst
+diff TP08.tst TP08-sol.cas.out1
+../src/icas TP09-sol.cas > TP09.tst
+diff TP09.tst TP09-sol.cas.out1
+../src/icas TP10-sol.cas > TP10.tst
+diff TP10.tst TP10-sol.cas.out1
+../src/icas TP11-sol.cas > TP11.tst
+diff TP11.tst TP11-sol.cas.out1
+../src/icas TP12-sol.cas > TP12.tst
+diff TP12.tst TP12-sol.cas.out1
+../src/icas TP13-sol.cas > TP13.tst
+diff TP13.tst TP13-sol.cas.out1
+../src/icas TP14-sol.cas > TP14.tst
+diff TP14.tst TP14-sol.cas.out1
+../src/icas TP15-sol.cas > TP15.tst
+diff TP15.tst TP15-sol.cas.out1
+../src/icas TP16-sol.cas > TP16.tst
+diff TP16.tst TP16-sol.cas.out1
+../src/icas TP17-sol.cas > TP17.tst
+diff TP17.tst TP17-sol.cas.out1
+../src/icas TP18-sol.cas > TP18.tst
+diff TP18.tst TP18-sol.cas.out1
+../src/icas TP19-sol.cas > TP19.tst
+diff TP19.tst TP19-sol.cas.out1
+../src/icas TP20-sol.cas > TP20.tst
+diff TP20.tst TP20-sol.cas.out1
+../src/icas TP21-sol.cas > TP21.tst
+diff TP21.tst TP21-sol.cas.out1

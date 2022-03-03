@@ -1,0 +1,149 @@
+
+--------------060604050303000103020704
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+
+Voilà
+
+Le 26/01/2013 20:09, Parisse Bernard a écrit :
+> On 26/01/2013 17:15, Yvan Duron wrote:
+>> Si vous voulez l'incorporer à votre paquet Debian, il suffit 
+>> d'appeler ce script dans votre paquet debian (plus besoin de 
+>> db_installmime, db_desktop, xcas.desktop, giac.sharedmimeinfo).
+> Merci! Par contre je pense que c'est plus compliqué que juste créer un 
+> postinst, car je soupçonne que les commandes dh_* du fichier rules 
+> créent un preinst/postinst. La commande que j'utilise est 
+> dpkg-buildpackage qui est certainement de plus haut niveau
+> que |dpkg-deb --build
+> |
+En effet... je ne connais pas les db_*/rules etc... Je viens de jeter un 
+coup d'oeil, mais je pense qu'on peut procéder comme ceci :
+* créer un dossier icons par exemple contenant les icônes jointes 
+(xcas_256.png, xcas_128.png etc)
+* mettre à jour les fichiers xcas.xpm, xcas.applications xcas.desktop, 
+debian/giac.mime, debian/giac.sharedmimeinfo (depuis les fichiers joints)
+* décommenter dh_installmime dans debian/rules
+* ajouter les lignes suivantes dans Makefile.am :
+     for SIZE in 256 128 64 32 16; do cp icons/xcas_$${SIZE}.png 
+$(DESTDIR)/$(prefix)/share/icons/hicolor/$${SIZE}x$${SIZE}/apps/xcas.png; done
+     for SIZE in 256 128 64 32 16; do cp icons/x-xcas_$${SIZE}.png 
+$(DESTDIR)/$(prefix)/share/icons/hicolor/$${SIZE}x$${SIZE}/mimetypes/application-x-xcas.png; 
+done
+(pour copier les icones du dossier icons dans le paquet debian)
+* ajouter dh_icons dans debian/rules (pour mettre à jour le cache des 
+icônes freedesktop)
+
+Ajouter dans EXTRA_DIST (Makefile.am) les fichiers icons/* càd :
+icons/xcas_256.png
+icons/xcas_128.png
+icons/xcas_64.png
+icons/xcas_32.png
+icons/xcas_16.png
+icons/x-xcas_256.png
+icons/x-xcas_128.png
+icons/x-xcas_64.png
+icons/x-xcas_32.png
+icons/x-xcas_16.png
+
+Je peux tester le paquet debian une fois généré si vous voulez.
+
+> ||
+>> Pour l'incorporer à un paquet debian, il semble qu'il suffise 
+>> d'appeler ce script juste après l'installation du paquet (utiliser le 
+>> script postinst cf 
+>> http://alp.developpez.com/tutoriels/debian/creer-paquet/#LI-D)
+>>
+>> Je peux facilement générer des icônes de xcas dans d'autres formats, 
+>> ico par exemple pour windows si ça vous intéresse.
+> je n'utilise pas windows sauf pour porter xcas, il faudrait quelqu'un 
+> utilisant windows pour savoir ce qui manque.
+Ok je regarderai peut-être à l'occasion...
+
+
+--------------060604050303000103020704
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  </head>
+  <body text="#000000" bgcolor="#FFFFFF">
+    <div class="moz-cite-prefix">Voilà<br>
+      <br>
+      Le 26/01/2013 20:09, Parisse Bernard a écrit :<br>
+    </div>
+    <blockquote cite="mid:51042A00.7050703@orange.fr" type="cite">
+      <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+      <div class="moz-cite-prefix">On 26/01/2013 17:15, Yvan Duron
+        wrote:<br>
+      </div>
+      <blockquote cite="mid:5104012D.1060508@gmail.com" type="cite">Si
+        vous voulez l'incorporer à votre paquet Debian, il suffit
+        d'appeler ce script dans votre paquet debian (plus besoin de
+        db_installmime, db_desktop, xcas.desktop, giac.sharedmimeinfo).
+        <br>
+      </blockquote>
+      Merci! Par contre je pense que c'est plus compliqué que juste
+      créer un postinst, car je soupçonne que les commandes dh_* du
+      fichier rules créent un preinst/postinst. La commande que
+      j'utilise est dpkg-buildpackage qui est certainement de plus haut
+      niveau<br>
+      que <code id="contenuCoded0e315" class="contenuCode">dpkg-deb
+        --build<br>
+      </code></blockquote>
+    En effet... je ne connais pas les db_*/rules etc... Je viens de
+    jeter un coup d'oeil, mais je pense qu'on peut procéder comme ceci :<br>
+    * créer un dossier icons par exemple contenant les icônes jointes
+    (xcas_256.png, xcas_128.png etc)<br>
+    * mettre à jour les fichiers xcas.xpm, xcas.applications
+    xcas.desktop, debian/giac.mime, debian/giac.sharedmimeinfo (depuis
+    les fichiers joints)<br>
+    * décommenter dh_installmime dans debian/rules<br>
+    * ajouter les lignes suivantes dans Makefile.am :<br>
+        for SIZE in 256 128 64 32 16; do cp icons/xcas_$${SIZE}.png
+    $(DESTDIR)/$(prefix)/share/icons/hicolor/$${SIZE}x$${SIZE}/apps/xcas.png;
+    done<br>
+        for SIZE in 256 128 64 32 16; do cp icons/x-xcas_$${SIZE}.png
+    $(DESTDIR)/$(prefix)/share/icons/hicolor/$${SIZE}x$${SIZE}/mimetypes/application-x-xcas.png;
+    done<br>
+    (pour copier les icones du dossier icons dans le paquet debian)<br>
+    * ajouter dh_icons dans debian/rules (pour mettre à jour le cache
+    des icônes freedesktop)<br>
+    <br>
+    Ajouter dans EXTRA_DIST (Makefile.am) les fichiers icons/* càd :<br>
+    icons/xcas_256.png<br>
+    icons/xcas_128.png<br>
+    icons/xcas_64.png<br>
+    icons/xcas_32.png<br>
+    icons/xcas_16.png<br>
+    icons/x-xcas_256.png<br>
+    icons/x-xcas_128.png<br>
+    icons/x-xcas_64.png<br>
+    icons/x-xcas_32.png<br>
+    icons/x-xcas_16.png<br>
+    <br>
+    Je peux tester le paquet debian une fois généré si vous voulez.<br>
+    <br>
+    <blockquote cite="mid:51042A00.7050703@orange.fr" type="cite"><code
+        id="contenuCoded0e315" class="contenuCode"> </code>
+      <blockquote cite="mid:5104012D.1060508@gmail.com" type="cite">Pour
+        l'incorporer à un paquet debian, il semble qu'il suffise
+        d'appeler ce script juste après l'installation du paquet
+        (utiliser le script postinst cf <a moz-do-not-send="true"
+          class="moz-txt-link-freetext"
+          href="http://alp.developpez.com/tutoriels/debian/creer-paquet/#LI-D">http://alp.developpez.com/tutoriels/debian/creer-paquet/#LI-D</a>)
+        <br>
+        <br>
+        Je peux facilement générer des icônes de xcas dans d'autres
+        formats, ico par exemple pour windows si ça vous intéresse. <br>
+      </blockquote>
+      je n'utilise pas windows sauf pour porter xcas, il faudrait
+      quelqu'un utilisant windows pour savoir ce qui manque.<br>
+    </blockquote>
+    Ok je regarderai peut-être à l'occasion...<br>
+    <br>
+  </body>
+</html>
+
+--------------060604050303000103020704--

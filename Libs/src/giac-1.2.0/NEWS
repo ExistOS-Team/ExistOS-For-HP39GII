@@ -1,0 +1,22 @@
+This file records noteworthy changes.
+
+0.3.0 (due in a couple of months)
+First really public version.
+ 
+0.2.2 (current)
+* limit/series (mrv)
+* factorization over Z[i], over alg. extension
+
+0.2.2 (first version December 2000)
+* removed GiNaC dependencies. NTL support is broken, but a future
+implemetation of lll + knapsack should make it unnecessary. GiNaC
+import/export is now waiting for a stable interface format.
+
+0.2.1 (20 October 2000)
+* GNUified the build-environment.
+
+0.2 (22 September 2000)
+* Added optional support for NTL.
+
+0.1 (23. August 2000)
+* Started using versions.  ;-)

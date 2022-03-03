@@ -1,0 +1,2354 @@
+make  check-TESTS
+make[1]: entrant dans le répertoire « /home/parisse/tmp/giac-1.2.0/check »
+// Using locale /usr/share/locale/
+// PASS: chk_integrate
+// Using locale /usr/share/locale/
+// fr_FR.UTF-8
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/fr/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/fr/aide_cas not found
+Added 174 synonyms
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.06
+// Total time 0.09
+PASS: chk_factor
+// Using locale /usr/share/locale/
+// fr_FR.UTF-8
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/fr/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/fr/aide_cas not found
+Added 174 synonyms
+// Time 0.01
+// Time 0.01
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.18
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+
+Temps mis pour l'évaluation: 2.39
+// Time 2.39
+// Total time 2.6
+PASS: chk_normalize
+// Using locale /usr/share/locale/
+// fr_FR.UTF-8
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/fr/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/fr/aide_cas not found
+Added 174 synonyms
+// Time 0.01
+// Total time 0.01
+PASS: chk_partfrac
+// Using locale /usr/share/locale/
+// fr_FR.UTF-8
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/fr/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/fr/aide_cas not found
+Added 174 synonyms
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0.02
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0.02
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.08
+// Time 0
+// Time 0.01
+// Total time 0.23
+PASS: chk_limit
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Success
+// Success
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+Unable to build a single algebraic extension for simplifying. Trying rational simplification only.
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+Warning, argument is not an equation, solving x^2-1=0
+// Time 0
+// Time 0
+Warning, argument is not an equation, solving x^2-3=0
+// Time 0
+Warning, argument is not an equation, solving x^3-3*y=0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.11
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0.02
+// Time 0.01
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0.01
+// Total time 0.3
+PASS: chk_cas
+// Using locale /usr/share/locale/
+// PASS: chk_geo
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Parsing find_equi
+// Warning: Ptest,test, declared as global variable(s) compiling find_equi
+// Parsing find_equi
+// Warning: Ptest,test, declared as global variable(s) compiling find_equi
+// Time 0
+q:0
+q:1
+"test equilateral",1,1,1
+"equilateral",1,1,1,"confirme"
+"test equilateral",1,3,13
+"equilateral",1,3,13,"confirme"
+q:2
+q:3
+"test equilateral",3,13,1
+"equilateral",3,13,1,"confirme"
+"test equilateral",3,17,25
+"equilateral",3,17,25,"confirme"
+q:4
+q:5
+"test equilateral",5,27,13
+"equilateral",5,27,13,"confirme"
+"test equilateral",5,29,25
+"equilateral",5,29,25,"confirme"
+q:6
+q:7
+q:8
+q:9
+q:10
+q:11
+q:12
+q:13
+"test equilateral",13,1,3
+"equilateral",13,1,3,"confirme"
+"test equilateral",13,5,27
+"equilateral",13,5,27,"confirme"
+q:14
+q:15
+"test equilateral",15,15,15
+"equilateral",15,15,15,"confirme"
+"test equilateral",15,17,27
+"equilateral",15,17,27,"confirme"
+q:16
+q:17
+"test equilateral",17,25,3
+"equilateral",17,25,3,"confirme"
+"test equilateral",17,27,15
+"equilateral",17,27,15,"confirme"
+q:18
+q:19
+q:20
+q:21
+q:22
+q:23
+q:24
+q:25
+"test equilateral",25,3,17
+"equilateral",25,3,17,"confirme"
+"test equilateral",25,5,29
+"equilateral",25,5,29,"confirme"
+q:26
+q:27
+"test equilateral",27,13,5
+"equilateral",27,13,5,"confirme"
+"test equilateral",27,15,17
+"equilateral",27,15,17,"confirme"
+q:28
+q:29
+"test equilateral",29,25,5
+"equilateral",29,25,5,"confirme"
+"test equilateral",29,29,29
+"equilateral",29,29,29,"confirme"
+q:30
+q:31
+q:32
+q:33
+q:34
+q:35
+
+Evaluation time: 1.03
+// Time 1.03
+// Time 0
+// Total time 1.03
+PASS: chk_morley_demo
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Success
+// End defining f
+// Success
+// End defining m1
+// Success
+// End defining m2
+// Success
+// End defining m3
+// Success
+// End defining m4
+// Success
+// End defining h1
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0.03
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0.29
+// Time 0.11
+Simplification assuming t near 0
+Simplification assuming t near 0
+// Time 0.08
+Simplification assuming t near 0
+Simplification assuming t near 0
+// Time 0.17
+// Total time 0.71
+PASS: chk_xavier
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Warning: a, declared as global variable(s)
+// End defining f
+// Success
+// End defining f
+// Success
+// End defining f
+// Warning: f, declared as global variable(s)
+// End defining T
+// Warning: a,n, declared as global variable(s)
+// Warning: L,a, declared as global variable(s)
+(Comment) scanning line 91
+(Comment) scanning line 92
+(Comment) scanning line 93
+(Comment) scanning line 94
+(Comment) scanning line 95
+(Comment) scanning line 96
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+OK c'est un  carre
+// Time 0
+// Time 0.01
+calcul du det 8x8 antisymetrique formel
+// Time 0
+
+Evaluation time: 0.9
+// Time 0.9
+// Time 0.01
+OK c'est bien nul
+
+Evaluation time: 0.46
+// Time 0.46
+Gcdheu begin 28 1640000 Vector [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] 5250 Vector [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1] 1380
+Gcdheu end copy1640000
+Gcdheu end ppz1640000 1 2
+//Gcdheu exact division failed! 1640000
+// GCD eval dimension 28 1640000 Vector [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] 5250 Vector [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1]1380 
+Find_good_eval 1640000 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Fb= 1640000 0
+Gb= 1640000 0
+Find_good_eval 1640000 [81,-88,51,-8,68,48,-46,-59,-69,84,31,45,-28,99,84,56,-66,92,-31,-63,33,44,93,-37,-20,39,-4]
+Fb= 1700000 %%%{-13570,[2]%%%}+%%%{-1665,[1]%%%}+%%%{-8878,[0]%%%}
+Gb= 1720000 %%%{-13570,[1]%%%}+%%%{14173,[0]%%%}
+FOUND good eval1720000 [81,-88,51,-8,68,48,-46,-59,-69,84,31,45,-28,99,84,56,-66,92,-31,-63,33,44,93,-37,-20,39,-4]
+// evaled GCD deg 1
+Trying q/lgcd(q) as gcd 28 1720000
+lgcd(q) ok 28 1720000
+Success q/lgcd(q) as gcd 28 1730000
+// Time 0.32
+OK pour le pfaffien 8x8
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+La jordanisation est bonne
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Total time 1.73
+PASS: chk_fhan1
+// Using locale /usr/share/locale/
+// PASS: chk_fhan2
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Success
+// Success
+// End defining minval
+// Success
+// End defining trans
+// Warning: k,n,l,B,minval,j,trans, declared as global variable(s)
+// End defining Zequiv
+// Success
+// End defining f
+// Success
+// End defining transC
+// Warning: k,n,l,B,minval,j,transC, declared as global variable(s)
+// End defining ZequivC
+// Warning: n,Zequiv,d,L,f,T,ZequivC, declared as global variable(s)
+// End defining elem
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Total time 0.03
+PASS: chk_fhan3
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Warning: a, declared as global variable(s)
+// Success
+// Success
+// Success
+// Success
+// Success
+// Success
+// Success
+// Success
+// End defining T
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+// Time 0.02
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+// Time 0.02
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+0
+0
+0
+0
+// Time 0.03
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+0
+// Time 0.03
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.02
+// Time 0.16
+// Time 0.26
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+Probabilistic algorithm for determinant
+(run proba_epsilon:=0 for a deterministic answer, this is slower).
+Error probability is less than 2.08166e-16
+// Time 0.15
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.11
+// Time 0.17
+// Time 0.18
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0.13
+// Time 0.15
+// Time 0.21
+// Time 0.15
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.1
+// Time 0
+// Time 0
+// Time 0
+// Time 0.29
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Total time 2.22
+PASS: chk_fhan4
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Warning: j, declared as global variable(s)
+// End defining extr
+// Warning: a, declared as global variable(s)
+// Success
+// End defining monpolyfaddeev
+// Success
+// Warning: P,x,k, declared as global variable(s)
+// Warning: x, declared as global variable(s)
+// End defining cf
+// Warning: a, declared as global variable(s)
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.03
+// Time 0
+// Time 0
+// Time 0
+// Time 0.03
+// Time 0
+// Time 0
+// Time 0
+// Time 0.04
+// Time 0
+// Time 0
+// Time 0.08
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.02
+// Time 0.02
+// Time 0.25
+// Time 0.14
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0.02
+// Time 0
+// Time 0.03
+// Time 0.03
+// Time 0
+// Time 0.01
+// Time 0.01
+// Total time 0.73
+PASS: chk_fhan5
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Warning: x, declared as global variable(s)
+// End defining monlagrange
+// Success
+// Success
+// Success
+// Success
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+
+Evaluation time: 0.56
+// Time 0.56
+// Time 0
+// Time 0.01
+// Time 0.01
+// Time 0.14
+// Time 0.17
+// Time 0.07
+// Time 0.17
+pcar OK
+// Time 0
+pcar OK
+// Time 0.01
+// Time 0.02
+
+Evaluation time: 0.48
+// Time 0.48
+// Time 0
+// Time 0.01
+
+Evaluation time: 0.65
+// Time 0.65
+
+Evaluation time: 0.67
+// Time 0.67
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Total time 2.98
+PASS: chk_fhan6
+// Using locale /usr/share/locale/
+// PASS: chk_fhan8
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Warning: t, declared as global variable(s)
+// End defining P
+// Warning: a,l, declared as global variable(s)
+// End defining f
+// Success
+// End defining puis
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0.01
+// Time 0.01
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.02
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.06
+// Time 0
+// Time 0
+// Time 0
+// Total time 0.17
+PASS: chk_fhan0
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0.19
+// Time 0.18
+// Time 0.19
+// Time 0
+// Time 0
+// Time 0.23
+// Time 0
+// Time 0
+// Time 0
+
+Evaluation time: 2.28
+// Time 2.28
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+ca fait bien p-1
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0.04
+// Time 0
+// Time 0.19
+// Time 0.26
+// Time 0.26
+// Time 0
+// Time 0.16
+// Time 0.31
+// Time 0.19
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Total time 4.52
+PASS: chk_fhan11
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Success
+// End defining orbites
+// Warning: X, declared as global variable(s)
+// End defining phi
+// Warning: P, declared as global variable(s)
+// End defining puiss
+// Warning: P,x, declared as global variable(s)
+// End defining puiss
+// Warning: puiss,q, declared as global variable(s)
+// End defining testcarre
+// Warning: puiss,q, declared as global variable(s)
+// End defining inve
+// Success
+// End defining ordre
+// Time 0
+// Time 0
+// Time 0
+Assigning variables a and K
+Now e.g. a^200+1 will build an element of K
+// Time 0
+// Time 0
+[1 2 0 1]
+// Time 0
+// Time 0
+// Time 0
+[0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+// Time 0.05
+Assigning variables b and L
+Now e.g. b^200+1 will build an element of L
+// Time 0
+[1 0 0 0 0 0 0 0 1]
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+[2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+// Time 0
+// Time 0
+[2 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+// Time 0
+// Time 0
+1,2
+2,4
+2,8
+4,16
+8,32
+16,64
+32,128
+64,256
+// Time 0
+(X-1)*(X+1),2
+(X-1)*(X+1)*(X^2+1),4
+(X-1)*(X+1)*(X^2+1)*(X^4+1),8
+(X-1)*(X+1)*(X^2+1)*(X^4+1)*(X^8+1),16
+(X-1)*(X+1)*(X^2+1)*(X^4+1)*(X^8+1)*(X^16+1),32
+(X-1)*(X+1)*(X^2+1)*(X^4+1)*(X^8+1)*(X^16+1)*(X^32+1),64
+(X-1)*(X+1)*(X^2+1)*(X^4+1)*(X^8+1)*(X^16+1)*(X^32+1)*(X^64+1),128
+(X-1)*(X+1)*(X^2+1)*(X^4+1)*(X^8+1)*(X^16+1)*(X^32+1)*(X^64+1)*(X^128+1),256
+// Time 0
+// Time 0
+1*X+1
+[1 0 1]
+1*X^2+1
+[1 0 0 0 1]
+(1*X^2+1*X-1)*(1*X^2-1*X-1)
+[1 0 0 0 0 0 0 0 1]
+(1*X^4+1*X^2-1)*(1*X^4-1*X^2-1)
+[1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+(1*X^8+1*X^4-1)*(1*X^8-1*X^4-1)
+[1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+(1*X^16+1*X^8-1)*(1*X^16-1*X^8-1)
+[1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+(1*X^32+1*X^16-1)*(1*X^32-1*X^16-1)
+[1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+(1*X^64+1*X^32-1)*(1*X^64-1*X^32-1)
+// Time 0.02
+i_i:64
+// Time 0
+[1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+// Time 0.02
+// Time 0
+[2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+// Time 0
+// Time 0
+// Time 0
+// Time 0.02
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+ca marche
+// Time 0
+// Total time 0.15
+PASS: chk_fhan12
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Warning: x, declared as global variable(s)
+// End defining facto1
+// Warning: x, declared as global variable(s)
+// End defining facto2
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+[6 0 0 0 0 0 1]
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+[6 0 0 0 0 0 1]
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+[0 6 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+// Time 0
+// Time 0.01
+[0 0 0 0 0 0 0 2 6 5 1 5 3 2 0 1 1 6 1 2 2 5 4 6 3 0 4 1 0 6 0 1 1 6 2 5 3 1 4 5 5 4 6 1 6 6 0 4 4 3 1 5 6 0 1 2 2 4 5 3 0 1 6 6 2 0 5 1 6 6 5 3 0 4 3 4 0 4 4 5 3 1]
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Total time 0.04
+PASS: chk_fhan13
+// Using locale /usr/share/locale/
+// PASS: chk_fhan14
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Warning: v, declared as global variable(s)
+// End defining paff
+// Warning: a, declared as global variable(s)
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+Ellipsis of center (-50/7,17/2)
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Total time 0.03
+PASS: chk_fhan15
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Warning: q,x, declared as global variable(s)
+// Warning: S3h,x, declared as global variable(s)
+// Warning: S4h,x, declared as global variable(s)
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+Near [0,2], 1/epsilon^2*f([0,2]+epsilon*[1,t])=1 roots []
+Near [0,2], 1/epsilon^2*f([0,2]+epsilon*[1,t])=1 roots []
+Near [0,2], 1/epsilon^2*f([0,2]+epsilon*[1,t])=1 roots []
+Near [0,2], 1/epsilon^2*f([0,2]+epsilon*[1,t])=1 roots []
+Singular points directions: [cell_i, cell_j, singularity, next solution] [[50,70,2.0*i,-0.00112947877252+2.03333333333*i],[50,70,2.0*i,0.00112947877252+2.03333333333*i],[50,70,2.0*i,-0.00109243590672+1.96666666667*i],[50,70,2.0*i,0.00109243590672+1.96666666667*i],[50,70,2.0*i,-0.00112947877252+2.03333333333*i],[50,70,2.0*i,0.00112947877252+2.03333333333*i],[50,70,2.0*i,-0.00109243590672+1.96666666667*i],[50,70,2.0*i,0.00109243590672+1.96666666667*i],[50,70,2.0*i,-0.00112947877252+2.03333333333*i],[50,70,2.0*i,0.00112947877252+2.03333333333*i],[50,70,2.0*i,-0.00109243590672+1.96666666667*i],[50,70,2.0*i,0.00109243590672+1.96666666667*i],[50,70,2.0*i,-0.00112947877252+2.03333333333*i],[50,70,2.0*i,0.00112947877252+2.03333333333*i],[50,70,2.0*i,-0.00109243590672+1.96666666667*i],[50,70,2.0*i,0.00109243590672+1.96666666667*i]]
+Warning! Could not loop or reach boundaries 
+Warning! Could not loop or reach boundaries 
+Warning! Could not loop or reach boundaries 
+Warning! Could not loop or reach boundaries 
+Warning! Could not loop or reach boundaries 
+Warning! Could not loop or reach boundaries 
+Warning! Could not loop or reach boundaries 
+Warning! Could not loop or reach boundaries 
+Warning! Could not loop or reach boundaries 
+Warning! Could not loop or reach boundaries 
+Warning! Could not loop or reach boundaries 
+// Time 0.05
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+Near [0,0], 1/epsilon^2*f([0,0]+epsilon*[1,t])=9*t^2 roots [0.0]
+Singular points directions: [cell_i, cell_j, singularity, next solution] [[0,0,0.0,0.00666666666667-0.00171924829653*i],[0,0,0.0,0.00666666666667+0.00120989161359*i]]
+// Time 0.14
+// Time 0
+// Time 0
+// Time 0
+Hyperbola of center (0,0)
+// Time 0.01
+// Time 0.06
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+Warning, argument is not an equation, solving -14699.0*t^6+25716.0*t^5+1779.0*t^4-15116.0*t^3-624.0*t^2+2496.0*t+448.0=0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.05
+// Time 0
+// Time 0
+schur row 5 -2.79096e-08
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+Warning, argument is not an equation, solving x^3-2.0*x^2-20.0*x+48.0=0
+// Time 0
+// Time 0
+Warning, argument is not an equation, solving x^3-2*x^2-20*x+48=0
+// Time 0
+// Time 0
+Warning, argument is not an equation, solving y^2+6*sqrt(13)+18=0
+Warning, argument is not an equation, solving y^2-6*sqrt(13)+18=0
+Warning, argument is not an equation, solving y^2=0
+// Time 0.01
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+Ellipsoid of center [0.0,0.0,0.0]
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.22
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0.03
+// Total time 0.62
+PASS: chk_fhan16
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Warning: x,y,z, declared as global variable(s)
+// End defining rl
+// Warning: rl, declared as global variable(s)
+// End defining ql
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+Near [2,1], 1/epsilon^2*f([2,1]+epsilon*[1,t])=-6+2*t+10*t^2 roots [-0.881024967591,0.681024967591]
+Singular points directions: [cell_i, cell_j, singularity, next solution] [[60,55,2.0+i,2.06666666667+0.939938800939*i],[60,55,2.0+i,1.93333333333+1.0574044987*i],[60,55,2.0+i,2.06666666667+1.04434273302*i],[60,55,2.0+i,1.93333333333+0.953437648204*i]]
+Warning! Could not loop or reach boundaries 
+// Time 0.08
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+c'est bon, le point trouve est bien sur la cubique
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+S est
+ bien  lisse. on peut continuer!
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+c'est bon
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0.01
+// Time 0
+// Time 0.09
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+Warning, argument is not an equation, solving (-4*a^6*u+10*a^6*v+57*a^6-18*a^5*u-13*a^5*v+13*a^5-4*a^4*u-15*a^4*v+92*a^4-10*a^3*u+67*a^3*v-458*a^3-66*a^2*u+91*a^2*v+523*a^2-62*a*u+36*a*v-885*a-16*u+4*v+298)/(a^6-2*a^5+9*a^4-16*a^3+24*a^2-32*a+16)=0
+// Time 0
+// Time 0.02
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+c'est bien de degre 27
+// Time 0
+// Total time 0.29
+PASS: chk_fhan17
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Warning: A,x,P, declared as global variable(s)
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+Near [1,0], 1/epsilon^2*f([1,0]+epsilon*[1,t])=7+8*t+t^2 roots [-7.0,-1.0]
+Near [2,1], 1/epsilon^2*f([2,1]+epsilon*[1,t])=-4+7*t+13*t^2 roots [-0.885816136226,0.347354597765]
+Near [1,1], 1/epsilon^2*f([1,1]+epsilon*[1,t])=-4-2*t+t^2 roots [-1.2360679775,3.2360679775]
+Singular points directions: [cell_i, cell_j, singularity, next solution] [[40,20,1.0,1.01750749956-0.116666666667*i],[40,20,1.0,0.984298297257+0.116666666667*i],[40,20,1.0,1.01623362426-0.0166666666667*i],[40,20,1.0,0.982835796847+0.0166666666667*i],[60,40,2.0+i,2.01666666667+0.985089269594*i],[60,40,2.0+i,1.98333333333+1.0146162523*i],[60,40,2.0+i,2.01666666667+1.00580773806*i],[60,40,2.0+i,1.98333333333+0.994229813536*i],[40,40,1.0+i,1.01742962193+0.979398867042*i],[40,40,1.0+i,0.98399065966+1.02060113296*i],[40,40,1.0+i,1.01892941475+1.05393446629*i],[40,40,1.0+i,0.985250778258+0.946065533708*i]]
+// Time 0.25
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+Warning, argument is not an equation, solving -44*t^4-81*t^3-84*t^2-29*t-2+(16*t^4+15*t^3+41*t^2+23*t+2)*x=0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+Warning, argument is not an equation, solving 77*t^3+73*t^2+6*t+(16*t^4+15*t^3+41*t^2+23*t+2)*y=0
+// Time 0
+// Time 0.16
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Total time 0.45
+PASS: chk_fhan19
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+Warning: non-square matrix!
+// Time 0
+// Time 0
+Warning: non-square matrix!
+// Time 0
+// Time 0
+// Time 0
+Hyperbola of center (1201/284,-523/568)
+// Time 0.02
+// Time 0.07
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.07
+// Time 0.01
+// Time 0
+// Time 0
+Line -A+B-1=0
+Line -A+2*B-2=0
+Line -A+2*B+3=0
+Line -A+3*B+6=0
+Line -A+5*B-1=0
+// Time 0
+// Total time 0.2
+PASS: chk_fhan20
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Warning: x,g, declared as global variable(s)
+// Warning: x,tmp, declared as global variable(s)
+// End defining ST
+// Warning: PU, declared as global variable(s)
+// Warning: x,j, declared as global variable(s)
+// End defining MU
+// Warning: x,MU,U, declared as global variable(s)
+// End defining scalU
+// Warning: scalU, declared as global variable(s)
+// Warning: x, declared as global variable(s)
+// End defining recip
+// Time 0
+// Time 0
+// Time 0
+[1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+// Time 0
+[1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+// Time 0
+[1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+// Time 0
+[1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+// Time 0
+[1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+[1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+// Time 0
+// Time 0
+// Time 0
+// Time 0.06
+// Time 0.13
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.02
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+"ca doit etre nul",0
+"ca doit etre nul",0
+"ca doit etre nul",0
+"ca doit etre nul",0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.03
+// Time 0.01
+// Time 0
+// Time 0
+// Total time 0.26
+PASS: chk_fhan21
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Success
+// End defining puis
+// Warning: x,p, declared as global variable(s)
+// End defining periode
+// Time 0
+// Time 0
+// Time 0
+
+Evaluation time: 14.23
+// Time 14.23
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.02
+// Time 0
+// Total time 14.29
+PASS: chk_fhan9
+// Using locale /usr/share/locale/
+// C
+// /usr/share/locale/
+// giac
+// UTF-8
+// Maximum number of parallel threads 1
+// Giac share root-directory:/usr/share/giac/
+// Giac share root-directory:/usr/share/giac/
+// Using keyword file /usr/share/giac/doc/en/keywords
+// Giac share root-directory:/usr/share/giac/
+Help file /usr/share/giac/doc/en/aide_cas not found
+Added 26 synonyms
+// Warning: S, declared as global variable(s)
+// End defining f
+// Warning: S, declared as global variable(s)
+// End defining f
+// Warning: S, declared as global variable(s)
+// End defining f
+// Warning: S,f, declared as global variable(s)
+// End defining h
+// Warning: H,rep,w,k,r, declared as global variable(s)
+// End defining jeu
+// Success
+// End defining f
+// Warning: H,HE, declared as global variable(s)
+// End defining syst
+// Warning: syst, declared as global variable(s)
+// End defining sol
+// Warning: S, declared as global variable(s)
+// End defining f
+// Warning: sol,S,f,a,b,c,l, declared as global variable(s)
+// End defining question
+// Warning: j, declared as global variable(s)
+// End defining prodlist
+// Success
+// Warning: prodlist,powerlist,aa,a, declared as global variable(s)
+// End defining powerlist
+// Warning: j, declared as global variable(s)
+// End defining powerlist2
+// Warning: S, declared as global variable(s)
+// End defining f
+// Warning: sol,S,powerlist2,L,f,A,l, declared as global variable(s)
+// End defining questionbis
+// Success
+// End defining f
+// Success
+// End defining distham
+// Warning: distham,v, declared as global variable(s)
+// Warning: distham,C, declared as global variable(s)
+// Warning: distham,C, declared as global variable(s)
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+"menti a la question:",2
+// Time 0
+// Time 0
+"votre nombre est:",13
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+c'est bien nul
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+"est il dans",[8,9,10,11,12,13,14,15]
+"est il dans",[4,5,6,7,12,13,14,15]
+"est il dans",[2,3,6,7,10,11,14,15]
+"est il dans",[1,3,5,7,9,11,13,15]
+"est il dans",[1,2,4,7,9,10,12,15]
+"est il dans",[1,2,5,6,8,11,12,15]
+"est il dans",[1,3,4,6,8,10,13,15]
+// Time 0.01
+// Time 0
+// Time 0
+powerlist: recursive definition
+// Time 0
+// Time 0
+BON
+// Time 0
+// Time 0
+"est il dans",[8,9,10,11,12,13,14,15]
+"est il dans",[4,5,6,7,12,13,14,15]
+"est il dans",[2,3,6,7,10,11,14,15]
+"est il dans",[1,3,5,7,9,11,13,15]
+"est il dans",[1,2,4,7,9,10,12,15]
+"est il dans",[1,2,5,6,8,11,12,15]
+"est il dans",[1,3,4,6,8,10,13,15]
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0
+// Time 0.01
+// Time 0.01
+// Time 0.01
+// Total time 0.06
+PASS: chk_fhan18
+// Using locale /usr/share/locale/
+// PASS: chk_fhan7
+===================
+All 30 tests passed
+===================
+make[1]: quittant le répertoire « /home/parisse/tmp/giac-1.2.0/check »

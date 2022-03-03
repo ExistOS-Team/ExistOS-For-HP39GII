@@ -1,0 +1,4 @@
+t:=element(0..1);
+courbl([A,B,C,D,E,F,G,H,A]);
+courbl([J,K,L,M,N,O,L,P,J]);
+courbl(baryl([A,B,C,D,E,F,G,H,A],[J,K,L,M,N,O,L,P,J],t));

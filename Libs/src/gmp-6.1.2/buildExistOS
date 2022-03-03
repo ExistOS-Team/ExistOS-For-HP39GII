@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+./configure --host=arm-none-eabi --disable-assembly CFLAGS="-Os -fdata-sections -ffunction-sections -DNDEBUG -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian --specs=nosys.specs"
+
+make -j $(nproc)

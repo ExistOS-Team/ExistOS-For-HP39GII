@@ -1,0 +1,5 @@
+segment(B,C);
+E:=B+i*(C-B)*longueur(A,D)/longueur(B,C);
+F:=B-i*(C-B)*longueur(A,D)/longueur(B,C);
+parallele(E,droite(B,C));
+parallele(F,droite(B,C));

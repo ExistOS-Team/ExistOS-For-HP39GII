@@ -1,0 +1,34 @@
+#! /bin/bash
+# Build for iphone: first install libtommath-0.39 because GMP and MPIR don't build
+# then create a libintl.h file with
+#ifndef _LIBINTL_H
+#define _LIBINTL_H      1
+#inline const char * gettext(const char * s) { return s; };
+#endif // _LIBINTL_H
+# check that config.h reflects your configuration (FLTK disabled, NTL/GSL/CoCoA/PARI install)
+export CXXFLAGS='-g -DGIAC_GENERIC_CONSTANTS'
+export CFLAGS='-g -DGIAC_GENERIC_CONSTANTS'
+export LDFLAGS='/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/usr/lib/libtommath.a'
+# export LDFLAGS='-L/Users/parisse/iphone/usr/lib'
+build_for_iphoneos device --prefix=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/usr/ --enable-tommath --disable-gui --disable-ntl --disable-cocoa --disable-pari --disable-gsl --disable-mpfr --disable-png
+cp config.h.iphone config.h
+cp config.h.iphone src/config.h
+cd src
+rm Flv_Data_Source.o
+make Flv_Data_Source.o
+rm tinymt32.o
+make tinymt32.o
+make
+sudo make install
+cd ..
+export LDFLAGS='/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator4.3.sdk/usr/lib/libtommath.a'
+build_for_iphoneos simulator --prefix=/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator4.3.sdk/usr/ --enable-tommath --disable-gui --disable-ntl --disable-cocoa --disable-pari --disable-gsl --disable-mpfr --disable-png
+cp config.h.iphone config.h
+cp config.h.iphone src/config.h
+cd src
+rm Flv_Data_Source.o
+make Flv_Data_Source.o
+rm tinymt32.o
+make tinymt32.o
+make
+sudo make install

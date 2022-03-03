@@ -1,0 +1,463 @@
+// xcas version=1.0.0 fontsize=18 font=0 currentlevel=25
+// fltk 7Fl_Tile 25 -1385 907 205 18 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 -1385 907 203 18 0
+Recherche de solutions entieres (pas forcement de toutes les solutions) de a^2+(a+1)^2=c^2£(triangles presque isoceles).£D'apres eduscol, document ressources "Matrices" programme terminale S specialite.£On utilise ici une demarche un peu differente, qui parait plus logique que celle du document£ressource qui separe les suites an et cn puis les reaccouple de maniere incomprehensible.£On commence par un programme de balayage pour trouver les premieres solutions, puis£on cherche une relation affine entre les 4 premiers triplets (6 inconnues donc 3 relations necessaires)£on laisse le calcul formel resoudre le systeme, on teste ensuite la solution suivante, puis£on utilise le calcul formel pour verifier au cran suivant, on donne l'expression explicite.
+,
+// fltk N4xcas10Log_OutputE 25 -1182 907 2 18 0
+
+]
+,
+// fltk 7Fl_Tile 25 -1178 907 275 18 0
+[
+// fltk N4xcas7EditeurE 25 -1178 907 207 18 0
+200 ,
+cherche(n):={
+  // Recherche des solutions de a^2+(a+1)^2=c^2 pour a<=n
+  local a,c;
+  pour a de 1 jusque n faire
+    c:=sqrt(2*a^2+2*a+1);
+    si c==floor(c) alors print([a,a+1,c]); fsi;
+  fpour;
+}:;,
+// fltk N4xcas10Log_OutputE 25 -971 907 46 18 0
+// Interprete cherche£// Success compiling cherche£
+,
+// fltk N4xcas8EquationE 25 -925 907 22 18 0 1
+"Done"
+]
+,
+// fltk 7Fl_Tile 25 -901 907 184 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 -901 907 28 18 0
+cherche(10000)
+,
+// fltk N4xcas10Log_OutputE 25 -873 907 134 18 0
+[3,4,5]£[20,21,29]£[119,120,169]£[696,697,985]£[4059,4060,5741]£Evaluation time: 1.4£
+,
+// fltk N4xcas8EquationE 25 -739 907 22 18 0 1
+0
+]
+,
+// fltk 7Fl_Tile 25 -715 907 67 18 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 -715 907 66 18 0
+Recherche d'une relation de recurrence affine an+1 et cn+1 en fonction de an et cn£On prend les 3 premiers triplets, on cherche les coefficients de M pour qu'ils verifient£[an+1,cn+1]=M*[an,cn,1]
+,
+// fltk N4xcas10Log_OutputE 25 -649 907 1 18 0
+
+]
+,
+// fltk 7Fl_Tile 25 -646 907 87 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 -646 907 28 18 0
+M:=[[a,b],[c,d]]; v:=[f,g]
+,
+// fltk N4xcas10Log_OutputE 25 -618 907 1 18 0
+
+,
+// fltk N4xcas8EquationE 25 -617 907 58 18 0 1
+[[a,b],[c,d]],[f,g]
+]
+,
+// fltk 7Fl_Tile 25 -557 907 51 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 -557 907 28 18 0
+s1:=[20,29]=M*[3,5]+v
+,
+// fltk N4xcas10Log_OutputE 25 -529 907 1 18 0
+
+,
+// fltk N4xcas8EquationE 25 -528 907 22 18 0 1
+[20=(5*b+3*a+f),29=(5*d+3*c+g)]
+]
+,
+// fltk 7Fl_Tile 25 -504 907 51 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 -504 907 28 18 0
+s2:=[119,169]=M*[20,29]+v
+,
+// fltk N4xcas10Log_OutputE 25 -476 907 1 18 0
+
+,
+// fltk N4xcas8EquationE 25 -475 907 22 18 0 1
+[119=(29*b+20*a+f),169=(29*d+20*c+g)]
+]
+,
+// fltk 7Fl_Tile 25 -451 907 51 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 -451 907 28 18 0
+s3:=[696,985]=M*[119,169]+v
+,
+// fltk N4xcas10Log_OutputE 25 -423 907 1 18 0
+
+,
+// fltk N4xcas8EquationE 25 -422 907 22 18 0 1
+[696=(169*b+119*a+f),985=(169*d+119*c+g)]
+]
+,
+// fltk 7Fl_Tile 25 -398 907 69 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 -398 907 28 18 0
+syst:=concat(s1,concat(s2,s3))
+,
+// fltk N4xcas10Log_OutputE 25 -370 907 1 18 0
+
+,
+// fltk N4xcas8EquationE 25 -369 907 40 18 0 1
+[20=(5*b+3*a+f),29=(5*d+3*c+g),119=(29*b+20*a+f),169=(29*d+20*c+g),696=(169*b+119*a+f),985=(169*d+119*c+g)]
+]
+,
+// fltk 7Fl_Tile 25 -327 907 51 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 -327 907 28 18 0
+s:=linsolve(syst,[a,b,c,d,f,g])
+,
+// fltk N4xcas10Log_OutputE 25 -299 907 1 18 0
+
+,
+// fltk N4xcas8EquationE 25 -298 907 22 18 0 1
+[3,2,4,3,1,2]
+]
+,
+// fltk 7Fl_Tile 25 -274 907 87 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 -274 907 28 18 0
+[N,w]:=subst([M,v],[a,b,c,d,f,g],s)
+,
+// fltk N4xcas10Log_OutputE 25 -246 907 1 18 0
+
+,
+// fltk N4xcas8EquationE 25 -245 907 58 18 0 1
+[[[3,2],[4,3]],[1,2]]
+]
+,
+// fltk 7Fl_Tile 25 -185 907 29 18 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 -185 907 28 18 0
+On teste si la relation reste vraie au rang suivant
+,
+// fltk N4xcas10Log_OutputE 25 -157 907 1 18 0
+
+]
+,
+// fltk 7Fl_Tile 25 -154 907 51 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 -154 907 28 18 0
+N*[696,985]+w
+,
+// fltk N4xcas10Log_OutputE 25 -126 907 1 18 0
+
+,
+// fltk N4xcas8EquationE 25 -125 907 22 18 0 1
+[4059,5741]
+]
+,
+// fltk 7Fl_Tile 25 -101 907 51 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 -101 907 28 18 0
+sqrt(2*4059^2+2*4059+1)
+,
+// fltk N4xcas10Log_OutputE 25 -73 907 1 18 0
+
+,
+// fltk N4xcas8EquationE 25 -72 907 22 18 0 1
+5741
+]
+,
+// fltk 7Fl_Tile 25 -48 907 29 18 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 -48 907 28 18 0
+OK. On verifie maintenant que la relation reste vraie au rang n+1 si elle l'est au rang n
+,
+// fltk N4xcas10Log_OutputE 25 -20 907 1 18 0
+
+]
+,
+// fltk 7Fl_Tile 25 -17 907 66 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 -17 907 28 18 0
+[A,C]:=N*[a,sqrt(2*a^2+2*a+1)]+w
+,
+// fltk N4xcas10Log_OutputE 25 11 907 1 18 0
+
+,
+// fltk N4xcas8EquationE 25 12 907 37 18 0 1
+[2*sqrt(2*a^2+2*a+1)+3*a+1,3*sqrt(2*a^2+2*a+1)+4*a+2]
+]
+,
+// fltk 7Fl_Tile 25 51 907 51 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 51 907 28 18 0
+simplifier(C^2-2*A^2-2*A-1)
+,
+// fltk N4xcas10Log_OutputE 25 79 907 1 18 0
+
+,
+// fltk N4xcas8EquationE 25 80 907 22 18 0 1
+0
+]
+,
+// fltk 7Fl_Tile 25 104 907 29 18 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 104 907 28 18 0
+recherche d'une relation sur an independante de cn, a 2 crans (ou de cn indep. de an)
+,
+// fltk N4xcas10Log_OutputE 25 132 907 1 18 0
+
+]
+,
+// fltk 7Fl_Tile 25 135 907 51 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 135 907 28 18 0
+[an1,cn1]:=N*[an,cn]+w; [an2,cn2]:=simplifier(N*[an1,cn1]+w);
+,
+// fltk N4xcas10Log_OutputE 25 163 907 1 18 0
+
+,
+// fltk N4xcas8EquationE 25 164 907 22 18 0 1
+[2*cn+3*an+1,3*cn+4*an+2],[17*an+12*cn+8,24*an+17*cn+12]
+]
+,
+// fltk 7Fl_Tile 25 188 907 29 18 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 188 907 28 18 0
+on voit que pour eliminer cn, il suffit de prendre an2-6*an1, pour eliminer an, prendre cn2-6cn1
+,
+// fltk N4xcas10Log_OutputE 25 216 907 1 18 0
+
+]
+,
+// fltk 7Fl_Tile 25 219 907 51 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 219 907 28 18 0
+simplifier(an2-6*an1); simplifier(cn2-6*cn1)
+,
+// fltk N4xcas10Log_OutputE 25 247 907 1 18 0
+
+,
+// fltk N4xcas8EquationE 25 248 907 22 18 0 1
+-an+2,-cn
+]
+,
+// fltk 7Fl_Tile 25 272 907 48 18 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 272 907 47 18 0
+ensuite on cherche des suites geometriques solutions £(pour cn, pour an il faut ajouter une constante)
+,
+// fltk N4xcas10Log_OutputE 25 319 907 1 18 0
+
+]
+,
+// fltk 7Fl_Tile 25 322 907 48 18 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 322 907 47 18 0
+Resolution par xcas de la recurrence lineaire (attention niveau ci-dessous a l'affichage, £rsolve renvoie une liste de couple de suites solutions, d'ou le R(1) ou R[0], 1er couple solution)
+,
+// fltk N4xcas10Log_OutputE 25 369 907 1 18 0
+
+]
+,
+// fltk 7Fl_Tile 25 372 907 133 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 372 907 28 18 0
+R:=rsolve([a(n+1)=3*a(n)+2*c(n)+1,c(n+1)=4*a(n)+3*c(n)+2],[a(n),c(n)],[a(0)=0,c(0)=1])
+,
+// fltk N4xcas10Log_OutputE 25 400 907 1 18 0
+
+,
+// fltk N4xcas8EquationE 25 401 907 104 18 0 1
+[[(-(sqrt(2))+1)/4*(-2*sqrt(2)+3)^(n+1-1)+(sqrt(2)+1)/4*(2*sqrt(2)+3)^(n+1-1)+(-1)/2,(-(sqrt(2))+2)/4*(-2*sqrt(2)+3)^(n+1-1)+(sqrt(2)+2)/4*(2*sqrt(2)+3)^(n+1-1)]]
+]
+,
+// fltk 7Fl_Tile 25 507 907 105 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 507 907 28 18 0
+R(1)
+,
+// fltk N4xcas10Log_OutputE 25 535 907 1 18 0
+
+,
+// fltk N4xcas8EquationE 25 536 907 76 18 0 1
+[((-(sqrt(2))+1)*(-2*sqrt(2)+3)^n)/4+((sqrt(2)+1)*(2*sqrt(2)+3)^n)/4+(-1)/2,((-(sqrt(2))+2)*(-2*sqrt(2)+3)^n)/4+((sqrt(2)+2)*(2*sqrt(2)+3)^n)/4]
+]
+,
+// fltk 7Fl_Tile 25 614 907 29 18 0
+[
+// fltk N4xcas19Multiline_Input_tabE 25 614 907 28 18 0
+
+,
+// fltk N4xcas10Log_OutputE 25 642 907 1 18 0
+
+]
+// context 3910 giac archive
+7 0 22 8 0 0 'cas_setup' 7 0 11 0 0 0
+0 0 0
+0 0 0
+0 1 0
+0 0 0
+7 0 2 1 ½×Ùß|Û=
+1 Vçž¯Ò<
+0 12 0
+7 0 4 0 1 0
+0 50 0
+0 0 0
+0 25 0
+0 0 0
+0 1 0
+0 0 0
+8 0 0 'xyztrange' 7 0 16 1      $À
+1      $@
+1      $À
+1      $@
+1      $À
+1      $@
+1      $À
+1      $@
+1      $À
+1      $@
+1 fffffö¿
+1 ™™™™™ñ?
+0 1 0
+1        
+1      ð?
+0 3 0
+7 0 0 7 0 0 8 0 15 7 0 2 8 0 1 7 0 3 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 8 0 1 7 0 3 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 6 1 a 0 2 0
+8 0 4 7 0 2 0 2 0
+6 1 a 0 1 0
+10 0 1 0
+0 2 0
+8 0 4 7 0 2 0 3 0
+6 1 a 0 1 0
+6 1 A 8 0 15 7 0 2 8 0 1 7 0 3 8 0 4 7 0 2 0 3 0
+8 0 7 7 1 2 8 0 1 7 0 3 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 6 1 a 0 2 0
+8 0 4 7 0 2 0 2 0
+6 1 a 0 1 0
+10 0 1 0
+0 2 0
+8 0 4 7 0 2 0 4 0
+6 1 a 0 2 0
+6 1 C 8 0 15 7 0 2 7 0 2 7 0 2 6 1 a 6 1 b 7 0 2 6 1 c 6 1 d 6 1 M 8 0 15 7 0 2 7 0 2 7 0 2 0 3 0
+0 2 0
+7 0 2 0 4 0
+0 3 0
+6 1 N 8 0 15 7 0 2 7 0 1 7 0 2 8 0 1 7 0 3 8 0 4 7 0 2 8 0 4 7 0 2 8 0 1 7 0 2 8 0 2 8 0 7 7 1 2 0 2 0
+10 0 1 0
+0 2 0
+0 1 0
+8 0 6 0 4 0
+8 0 7 7 1 2 8 0 1 7 0 2 8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 2 0
+10 0 1 0
+0 2 0
+0 3 0
+8 0 1 7 0 3 6 1 n 0 1 0
+0 -1 0
+8 0 4 7 0 2 8 0 4 7 0 2 8 0 1 7 0 2 8 0 7 7 1 2 0 2 0
+10 0 1 0
+0 2 0
+0 1 0
+8 0 6 0 4 0
+8 0 7 7 1 2 8 0 1 7 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 2 0
+10 0 1 0
+0 2 0
+0 3 0
+8 0 1 7 0 3 6 1 n 0 1 0
+0 -1 0
+10 0 -1 0
+0 2 0
+8 0 1 7 0 2 8 0 4 7 0 2 8 0 4 7 0 2 8 0 1 7 0 2 8 0 2 8 0 7 7 1 2 0 2 0
+10 0 1 0
+0 2 0
+0 2 0
+8 0 6 0 4 0
+8 0 7 7 1 2 8 0 1 7 0 2 8 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 2 0
+10 0 1 0
+0 2 0
+0 3 0
+8 0 1 7 0 3 6 1 n 0 1 0
+0 -1 0
+8 0 4 7 0 2 8 0 4 7 0 2 8 0 1 7 0 2 8 0 7 7 1 2 0 2 0
+10 0 1 0
+0 2 0
+0 2 0
+8 0 6 0 4 0
+8 0 7 7 1 2 8 0 1 7 0 2 8 0 4 7 0 2 0 2 0
+8 0 7 7 1 2 0 2 0
+10 0 1 0
+0 2 0
+0 3 0
+8 0 1 7 0 3 6 1 n 0 1 0
+0 -1 0
+6 1 R 8 0 15 7 0 2 8 0 1 7 0 3 8 0 4 7 0 2 0 2 0
+6 2 cn 8 0 4 7 0 2 0 3 0
+6 2 an 0 1 0
+6 3 an1 8 0 15 7 0 2 8 0 1 7 0 3 8 0 4 7 0 2 0 17 0
+6 2 an 8 0 4 7 0 2 0 12 0
+6 2 cn 0 8 0
+6 3 an2 8 0 15 7 0 2 8 0 73 7 0 3 7 1 1 6 1 n 7 1 1 0 0 0
+8 0 42 7 0 2 7 0 2 7 1 2 6 1 a 6 1 c 7 1 0 7 0 1 8 0 -1 pour 7 0 4 8 0 15 7 0 2 0 1 0
+6 1 a 8 0 36 7 0 2 6 1 a 6 1 n 8 0 15 7 0 2 8 0 1 7 0 2 6 1 a 0 1 0
+6 1 a 8 0 72 7 0 2 8 0 15 7 0 2 8 0 0 sqrt 8 0 1 7 0 3 8 0 4 7 1 2 0 2 0
+8 0 7 7 1 2 6 1 a 0 2 0
+8 0 4 7 1 2 0 2 0
+6 1 a 0 1 0
+6 1 c 8 0 -1 si 7 0 3 8 0 74 7 1 2 6 1 c 8 0 0 'floor' 6 1 c 8 0 0 print 7 0 3 6 1 a 8 0 1 7 0 2 6 1 a 0 1 0
+6 1 c 0 0 0
+6 7 cherche 8 0 15 7 0 2 8 0 1 7 0 3 8 0 4 7 0 2 0 3 0
+6 2 cn 8 0 4 7 0 2 0 4 0
+6 2 an 0 2 0
+6 3 cn1 8 0 15 7 0 2 8 0 1 7 0 3 8 0 4 7 0 2 0 24 0
+6 2 an 8 0 4 7 0 2 0 17 0
+6 2 cn 0 12 0
+6 3 cn2 8 0 15 7 0 2 7 0 6 0 3 0
+0 2 0
+0 4 0
+0 3 0
+0 1 0
+0 2 0
+6 1 s 8 0 15 7 0 2 7 0 2 8 0 40 7 0 2 0 20 0
+8 0 1 7 0 3 8 0 4 7 0 2 0 5 0
+6 1 b 8 0 4 7 0 2 0 3 0
+6 1 a 6 1 f 8 0 40 7 0 2 0 29 0
+8 0 1 7 0 3 8 0 4 7 0 2 0 5 0
+6 1 d 8 0 4 7 0 2 0 3 0
+6 1 c 6 1 g 6 2 s1 8 0 15 7 0 2 7 0 2 8 0 40 7 0 2 0 119 0
+8 0 1 7 0 3 8 0 4 7 0 2 0 29 0
+6 1 b 8 0 4 7 0 2 0 20 0
+6 1 a 6 1 f 8 0 40 7 0 2 0 169 0
+8 0 1 7 0 3 8 0 4 7 0 2 0 29 0
+6 1 d 8 0 4 7 0 2 0 20 0
+6 1 c 6 1 g 6 2 s2 8 0 15 7 0 2 7 0 2 8 0 40 7 0 2 0 696 0
+8 0 1 7 0 3 8 0 4 7 0 2 0 169 0
+6 1 b 8 0 4 7 0 2 0 119 0
+6 1 a 6 1 f 8 0 40 7 0 2 0 985 0
+8 0 1 7 0 3 8 0 4 7 0 2 0 169 0
+6 1 d 8 0 4 7 0 2 0 119 0
+6 1 c 6 1 g 6 2 s3 8 0 15 7 0 2 7 0 6 8 0 40 7 0 2 0 20 0
+8 0 1 7 0 3 8 0 4 7 0 2 0 5 0
+6 1 b 8 0 4 7 0 2 0 3 0
+6 1 a 6 1 f 8 0 40 7 0 2 0 29 0
+8 0 1 7 0 3 8 0 4 7 0 2 0 5 0
+6 1 d 8 0 4 7 0 2 0 3 0
+6 1 c 6 1 g 8 0 40 7 0 2 0 119 0
+8 0 1 7 0 3 8 0 4 7 0 2 0 29 0
+6 1 b 8 0 4 7 0 2 0 20 0
+6 1 a 6 1 f 8 0 40 7 0 2 0 169 0
+8 0 1 7 0 3 8 0 4 7 0 2 0 29 0
+6 1 d 8 0 4 7 0 2 0 20 0
+6 1 c 6 1 g 8 0 40 7 0 2 0 696 0
+8 0 1 7 0 3 8 0 4 7 0 2 0 169 0
+6 1 b 8 0 4 7 0 2 0 119 0
+6 1 a 6 1 f 8 0 40 7 0 2 0 985 0
+8 0 1 7 0 3 8 0 4 7 0 2 0 169 0
+6 1 d 8 0 4 7 0 2 0 119 0
+6 1 c 6 1 g 6 4 syst 8 0 15 7 0 2 7 0 2 6 1 f 6 1 g 6 1 v 8 0 15 7 0 2 7 0 2 0 1 0
+0 2 0
+6 1 w 8 0 0 'xcas_mode' 0 0 0
+

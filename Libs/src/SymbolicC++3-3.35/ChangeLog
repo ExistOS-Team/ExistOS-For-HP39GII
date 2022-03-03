@@ -1,0 +1,53 @@
+2010-09-15
+	Fixed rational.h to include <limits>
+
+2010-08
+	Added pattern matching for Equation
+	Added elementary solve routines
+
+2009-10-27
+	Corrected the handling of powers of products in Product::subst,
+	i.e. when expanding (a*b)^2 a and b must be inserted directly into
+	the list of factors.
+
+2009-10-20
+	Corrected a bug in comparing non-commutative products.
+
+2009-10-19
+	Pattern matching for non-commutative products added.
+	Added solve.h and integration.h.
+	Initial support for equation solving: linear, quadratic, cubic.
+	Initial support for integration using a few apptern matches.
+
+2009-10-15
+	Completed pattern matching (commutative products only).
+	Added substitution with pattern matching (BindingEquation).
+
+2009-10-02:
+	Added a^(b+c) = a^b*a^c in Product::expand. This helps
+ 	to simplify some expressions.
+	Fix Derivative::subst to check whether the function changed
+	and if not avoid re-computing the derivatives. This fixes
+	a problem when differentiating f[x, y[x]] in some cases.
+	Fix Product::subst to ignore substitutions of constants, which always
+	work.
+
+2009-05-22:
+	Some parts were incorrectly marked as part of the library
+	or part of the headers for the GNU autoconf version.
+
+2009-05-20:
+	Changed Cloning and CloningPtr classes to simplify
+	and hopefully improve readability.
+
+2009-04-14:
+	Made the vacuum state and its dual non-commutative in
+	examples/fermi.cpp and added some simplifying rules.
+
+2009-03-31:
+	Fixed the symbolic cross product.
+
+2009-01-20:
+	Provide GNU configure build and install
+	Added headers/symbolicc++.h
+		for use instead of headers/symbolic/symbolicc++.h

@@ -4363,7 +4363,7 @@ static void prvResetNextTaskUnblockTime( void )
              * interrupt.  Only assert if the critical nesting count is 1 to
              * protect against recursive calls if the assert function also uses a
              * critical section. */
-            if( pxCurrentTCB->uxCriticalNesting == 2 )
+            if( pxCurrentTCB->uxCriticalNesting == 1 )
             {
                 portASSERT_IF_IN_ISR();
             }

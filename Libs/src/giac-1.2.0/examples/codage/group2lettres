@@ -1,0 +1,37 @@
+c2n2(m):={
+local s,ln_,l,n;
+s:=size(m);
+if (irem(s,2)==1){
+m:=append(m,"F");
+s:=s+1;
+}
+ln_:=[];
+l:=asc(m);
+for (k:=0;k<s;k:=k+2){
+n:=l[k]*26+l[k+1];
+ln_:=append(ln_,n);
+}
+return(ln_);
+};
+n2c2(l):={
+local s,n,m;
+s:=size(l);
+m:="";
+for (k:=0;k<s;k++){
+n:=l[k];
+m:=append(m,char(iquo(n,26)+65));
+m:=append(m,char(irem(n,26)+65));
+}
+return(m);
+};
+affin2(a,b,l):={
+local s;
+s:=size(l);
+for (k:=0;k<s;k++){
+l[k]:=irem(a*l[k]+b,676);
+}
+return(l);
+};
+cesar2(a,b,m):={
+return(n2c2(affin2(a,b,c2n2(m))));
+};

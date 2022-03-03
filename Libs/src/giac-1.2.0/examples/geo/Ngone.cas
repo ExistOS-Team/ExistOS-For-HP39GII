@@ -1,0 +1,11 @@
+ 
+(A,B,n)-> 
+{ local l,C; 
+  l:=[];  
+  for (j:=1;j<=n;j:=j+1) { 
+      l:=append(l,segment(A,B));  
+      C:=rotation(B,(n-2)*pi/n,A);  
+      A:=B;  
+      B:=C;  
+    };  
+  return(l); }

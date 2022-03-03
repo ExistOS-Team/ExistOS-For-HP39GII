@@ -1,0 +1,20 @@
+This package was debianized by Carleos Artime <carleos@pinon.ccu.uniovi.es> on
+Fri, 26 Jul 2002 20:01:40 0200
+
+It was downloaded from ftp://ftp-fourier.ujf-grenoble.fr/xcas/giac.tgz
+
+Upstream Author(s): Bernard Parisse <parisse@fourier.ujf-grenoble.fr>
+
+Copyright:
+
+(c) B. Parisse, Institut Fourier, 2002
+    R. De Graeve, Institut Fourier, 2002
+    except for:
+    a/ The first GNUification of the giac package (automake,autoconf) is
+    (c) Richard Kreckel, Universitat Mainz, 10/2000.
+    b/ The expression parser was modified from GiNaC expression parser
+    GiNaC Copyright (C) 1999-2000 Johannes Gutenberg University Mainz, Germany
+    
+You are free to distribute this software under the terms of the GNU General
+Public License. On Debian systems, the complete text of the GNU General Public
+License can be found in /usr/share/common-licenses/GPL file.

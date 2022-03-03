@@ -1,0 +1,22 @@
+Compilation of giac with Visual C++ Express Studio 2009 (the free version)
+1/ Install visual c++ http://msdn.microsoft.com/fr-fr/express/aa975050.aspx
+2/ Install gmp for visual c++
+3/ Untar giac (tar xvfz giac-x.x.x.tar.gz). 
+Copy config.h.vcc to config.h in the src directory
+4/ Create a giac directory inside Visual C++ include directory and
+copy all *.h files from src to the visual c++ giac directory
+
+A/ Method 1 from inside visual c++ IDE
+4/ Create a new giaclib project: static library. 
+Overwrite giaclib.vcproj from this directory after editing it
+for path replacements
+5/ Generate the library with nodefaultlib (project options)
+6/ You can check a little program using the library with another project
+and the source file src/giac_oo.cpp
+
+B/ Method 2 from inside cygwin if installed
+4/ From the Visual c++ command line run cygwin with \cygwin\cygwin
+5/ go in the giac src directory
+6/ make -f Makefile.vcc
+7/ You can compile giac_oo.cpp
+   cl /Zi /I. /EHsc giac_oo.cpp giac_oo.lib gmp.lib

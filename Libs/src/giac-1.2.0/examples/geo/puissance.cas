@@ -1,0 +1,10 @@
+ 
+(A,C)-> 
+{ local O,r,a1,a2,o1,o2; 
+  O:=centre(C);  
+  r:=rayon(C);  
+  a1:=re(affixe(A));  
+  a2:=im(affixe(A));  
+  o1:=re(affixe(O));  
+  o2:=im(affixe(O));  
+  return((a1-o1)^2+(a2-o2)^2-r^2); }

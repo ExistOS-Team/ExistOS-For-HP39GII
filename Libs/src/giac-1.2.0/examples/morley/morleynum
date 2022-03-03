@@ -1,0 +1,26 @@
+a1:=element(0..pi/6,0.3);
+a2:=element(0..pi/6,0.4);
+O:=point(0);
+J:=point(1);
+[(D1:=droite(O,O+(1+i*tan(a1)))),
+ (D2:=droite(O,O+(1+i*tan(2*a1)))),
+ (D3:=droite(J,J-(1-i*tan(2*a2)))),
+ (D4:=droite(J,J-(1-i*tan(a2)))),0];
+T1:=droite(0,O+(1+i*tan(3*a1)));
+T2:=droite(J,J-(1-i*tan(3*a2)));
+A:=inter(T1,T2)[0];
+[(D5:=droite(A,A+(1+i*tan(pi/3+2*a1-a2)))),
+ (D6:=droite(A,A+(1+i*tan(2*pi/3+a1-2*a2)))),0];
+B:=inter(D1,D4)[0];
+C:=inter(D3,D6)[0];
+D:=inter(D5,D2)[0];
+triangle(B,C,D);
+[segment(J,B),segment(J,C),segment(O,B),segment(O,D),segment(A,C),segment(A,D)];
+bc:=longueur2(B,C);
+dc:=longueur2(D,C);
+db:=longueur2(D,B);
+legende(J,"BC="+bc);
+legende(J+0.1*i,"CD="+dc);
+legende(J+0.2*i,"DB="+db);
+xyztrange(-0.1,1.1,-0.1,1.1,-10.0,10.0,-1.0,6.0,-0.1,1.1,-0.1,1.1,0);
+

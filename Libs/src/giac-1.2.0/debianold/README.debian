@@ -1,0 +1,26 @@
+giac for Debian
+---------------
+
+Note that there is a "debianold" directory in upstream tree, different
+from this one [1].  "Giac" is separately packaged for Quantian, a
+mathematical oriented Knoppix-derivated distribution [2], under
+different conditions (e.g. Pari support requires a patch to Pari
+sources if NTL not installed, in that case copy rules.no.pari to rules
+to build, in case NTL is installed you can safely copy rules.pari to
+rules); Quantian's Giac is built by configuring
+a series of advanced options in libraries it depends on (this package
+will use these options when they are set by default in the
+corresponding Debian packages).
+
+The command line interface can be started by typing "giac" or
+"icas".  Help is available thru the commands "aide", "cas_help",
+"en_cas_help", "fr_cas_help" and "es_cas_help" (choose language).
+"Giac" can be used as a C++ library.  Just install "libgiac0-dev".
+
+The GUI command are "xcas" and "xcasnew".
+
+[1] The corresponding package can be found at 
+    ftp://ftp-fourier.ujf-grenoble.fr/xcas/
+
+[2] Visit http://dirk.eddelbuettel.com/quantian.html
+

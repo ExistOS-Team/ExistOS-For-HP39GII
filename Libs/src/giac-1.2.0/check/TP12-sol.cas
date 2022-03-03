@@ -1,0 +1,111 @@
+ restart;maple_mode(1);cas_setup(0,0,0,1,0,1e-10,10,[1,50,0,25],0,0,0); #radians,pas de cmplx, pas de  Sqrt
+ GF(3,6,'a');
+ (1+a)^17;
+ Factor(x^3-x+1) mod 3;
+ factor(x^3-x+1,a);
+ factor(x^3-x+a,a);
+ Factor(x^{3^5}-x) mod 3;
+ GF(3,20,'b'); #c'est trop gros:No irreducible primitive polynomial found Error:
+ Factor(X^8+1) mod 3;
+ l:={1,2,3,4,3,4};
+ l minus {1,3};
+ l minus l;
+ orbites:=proc(n)
+ local a,i,j,k,l,o,liste;
+ liste:=[];
+ if n mod 3 =0 then print("Erreur: 3 divise",n)
+ else
+ l:={seq(i,i=0..n-1)};
+ j:=1;
+ while l<>{} do
+ i:=l[1];
+ o:={i};a:=(3*i) mod n;
+ while a<>i do o:=o union {a};a:= (3*a) mod n; od;
+ l:= (l minus o); liste:=[op(liste),o]; 
+ od;
+ fi;
+ liste;
+ end proc;
+ Factor(X^32-1) mod 3;
+ orbites(32);
+ Factor(X^14-1) mod 3;
+ orbites(14);
+/*  On remarque que pour tout i il y a autant d'orbites \`a i elements que de facteurs irreductibles de degre i*/
+ for i from 1 to 8 do print(nops(orbites(2^i)[2]),2^i) od;
+/*   (Cf cours)On peut montrer que le noyau de la surjection donn\'ee par la£ reduction mod 4 est cyclique d'ordre 2^(n-2)£ -3=1+4.m ou m est impair, donc -3 est d'ordre maximal donc 3 aussi.£  En fait les elements d'ordre max sont ceux congrus a 5 ou -5 mod 8*/
+ for i from 1 to 8 do print(factor(X^(2^i)-1),2^i) od;
+/*  le poly cyclo Phi_2^n est phi(n)*/
+ phi:=n->X^(2^(n-1))+1;
+ for i from 1 to 8 do print(Factor(phi(i)) mod 3) od;
+ for i from 1 to 100 do if ((3^i-1) mod 2^8) == 0  then print(i) fi; od;
+/* on prend i=64*/
+ Factor(X^128+1) mod 3;
+ P:=X^64+X^32-1;
+ Factor(P) mod 3; #P convient
+/* ----------------Racines carrees---------------------------------------------------------------------------*/
+ P:=x^64+x^32-1;
+ puiss:=proc(g,n)
+ local u,v;
+ u:=1;v:=g;
+ while n>1 do
+ if (n mod 2 )==0 then v:=Rem(v*v,P) mod 3; n:=n/2;
+ else u:=Rem(u*v,P) mod 3; v:=Rem(v*v,P) mod 3; n:=(n-1)/2;
+ fi;od;
+ Rem(u*v,P)mod 3;end;
+ puiss(1+x,5^7);
+ puiss:=(g,n)->powmod(g,n,3,P,x);
+ puiss(1+x,5^7); # on v\'erifie
+ q:=3^64;t:=(q-1)/2^8;
+ testcarre:=proc(g)
+ evalb(puiss(g,(q-1)/2)=1);
+ end proc;
+ testcarre(1+x); # 1+x ne convient pas
+ testcarre(1+x^5); # 1+x^5 n'est pas un carre donc g est d'ordre 2^8.
+ g:=puiss(1+x^5,t); # verification:
+ b:=[];
+ for i from 0 to 8 do b:=[op(b),puiss(g,2^i)] od;
+ inve:=proc(v)
+ puiss(v,q-2)
+ end proc;
+ z:=1+x;testcarre(z);
+ (u,v):=igcdex(t,2^8)[1..2];
+/*  dans cet exemple u est negatif, on cherche donc l'inverse de z*/
+ z1:=puiss(inve(z),-u*t);
+ z2:=puiss(z,v*2^8);
+/*  verification de l'isomorphisme  produit on doit retrouver z:*/
+ Rem(z1*z2,P) mod 3;z;
+/*  On n'etait pas oblig\'e de trouver l'inverse de z, on utilise que z^(q-2)*z=1*/
+ z1:=puiss(z,(u*t) mod (q-1));
+ Rem(z1*z2,P) mod 3;z; #attention, pour Rem mod il faut des x
+/* on verifie d'abord si q+1 est divisible par 4, si oui c'est tres simple.*/
+ (q+1) mod 4; #tant pis..
+ racinez2:=puiss(z2,(t+1)/2);  #racine de z2:
+ puiss(racinez2,2);z2;  #verification:
+ m:=[seq(0,8)];xx:=z1; #on sauve z1
+ for i from 7 to 0 by -1 do if Rem(puiss(z1,2^i)+1,P) mod 3 = 0 then
+ m[8-i]:=1;z1:=Rem(z1*inve(b[8-i]),P) mod 3; else m[8-i]:=0;fi od;
+/*  verification:*/
+ z1:=1; for i from 1 to 8 do z1:=Rem(z1*puiss(b[i],m[i]),P) mod 3 od: z1;xx;#on verife que l'on trouve bien la valeur sauvee.
+ racinez1:=1;for i from 2 to 8 do racinez1:=Rem(racinez1*puiss(b[i-1],m[i]),P) mod 3  od:puiss(racinez1,2);z1;
+ racinez:=normal(Rem(racinez1*racinez2,P) mod 3);
+ puiss(racinez,2);z;
+/*  ------------------------Exercice: Ordre d'un element-----------------------------------*/
+/*  Pour avoir la matrice (nombre premier, multiplicite), on utilise en mode xcas£ maple_ifactors. En mode maple  ifactors coincide avec maple_ifactors. */
+ maple_ifactors(36*7)[2];
+ ifactors(36*7)[2];
+ transpose(ifactors(36*7)[2])[1];
+ ordre:=proc(x,n)
+ local m,l,p,y;
+ m:=Phi(n);
+ l:=(maple_ifactors(m)[2]);
+ for i from 1 to rowdim(l) do
+ m:=iquo(m,l[i,1]^l[i,2]);y:=powmod(x,m,n);
+ while y <> 1 do y:=powmod(y,l[i,1],n);m:=m*l[i,1]; od;
+ od;
+ m;
+ end;
+ ordre(-1,2^1000);
+ pari();
+ if (pari_znorder(Mod(5,11^5*2^40*101)) == ordre(5,11^5*2^40*101)) then
+ print("ca marche") else print("il y a une erreur") fi;
+

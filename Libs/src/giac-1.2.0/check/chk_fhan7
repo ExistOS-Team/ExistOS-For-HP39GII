@@ -1,0 +1,5 @@
+#! /bin/sh
+export LANG=en_US.UTF8
+export LC_MESSAGES=en_US.UTF8
+../src/icas TP07-sol.cas > TP07.tst
+diff TP07.tst TP07-sol.cas.out1

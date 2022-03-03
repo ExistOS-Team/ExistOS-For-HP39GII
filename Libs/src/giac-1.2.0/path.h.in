@@ -1,0 +1,4 @@
+#define giac_html_location "@pkgdatadir@/doc/"
+#define giac_aide_location "@pkgdatadir/aide_cas"
+#define giac_locale_location "@datadir@/locale/"
+#define giac_gnuplot_location ""

@@ -1,0 +1,107 @@
+ restart;maple_mode(1);cas_setup(0,0,0,1,0,1e-10,10,[1,50,0,25],0,0,0);#radians,pas de cmplx, pas de  Sqrt
+ n:=5;A:=matrix(n,n,(i,j)->a[i,j]);M:=A;c:=1;k:=1;
+/*  Pour M, On peut ecraser car i,j>k*/
+Lk:=[];
+for i from k+1 to n do 
+for j from k+1 to n do 
+M[i,j]:=simplify(1/c*(M[k,k]*M[i,j]-M[i,k]*M[k,j]));
+II:=[seq(l,l=1..k),i];JJ:=[seq(l,l=1..k),j];
+AIIJJ:=matrix([seq([seq(A[u,v],v=JJ)],u=II)])
+Lk:=[op(Lk),AIIJJ];
+print(simplify(det(AIIJJ)-M[i,j]));
+od:od:
+c:=M[k,k]:k:=k+1;
+Lk;
+Lk:=[];
+for i from k+1 to n do 
+for j from k+1 to n do 
+M[i,j]:=simplify(1/c*(M[k,k]*M[i,j]-M[i,k]*M[k,j]));
+II:=[seq(l,l=1..k),i];JJ:=[seq(l,l=1..k),j];
+AIIJJ:=matrix([seq([seq(A[u,v],v=JJ)],u=II)])
+Lk:=[op(Lk),AIIJJ];
+print(simplify(det(AIIJJ)-M[i,j]));
+od:od:
+c:=M[k,k]:k:=k+1;
+Lk;
+"repere";
+Lk:=[];
+for i from k+1 to n do 
+for j from k+1 to n do 
+M[i,j]:=simplify(1/c*(M[k,k]*M[i,j]-M[i,k]*M[k,j]));
+II:=[seq(l,l=1..k),i];JJ:=[seq(l,l=1..k),j];
+AIIJJ:=matrix([seq([seq(A[u,v],v=JJ)],u=II)])
+Lk:=[op(Lk),AIIJJ];
+print(simplify(det(AIIJJ)-M[i,j]));
+od:od:
+c:=M[k,k]:k:=k+1;
+Lk;
+Lk:=[];
+for i from k+1 to n do 
+for j from k+1 to n do 
+M[i,j]:=simplify(1/c*(M[k,k]*M[i,j]-M[i,k]*M[k,j]));
+II:=[seq(l,l=1..k),i];JJ:=[seq(l,l=1..k),j];
+AIIJJ:=matrix([seq([seq(A[u,v],v=JJ)],u=II)])
+print(simplify(det(AIIJJ)-M[i,j]));
+od:od:
+c:=M[k,k]:k:=k+1;
+/* On passe de Mk-1 a Mk par: L_i<-(c_k.L_i-a_{i,k}.L_k)/c_{k-1}. Chacune de ces operatons£multiplie le determinant par c_k/c_{k-1}, et on ne touche pas a la premiere ligne de£M_{k-1}. Donc le determinant de M_{k} fois le premier coefficient de M_{k-1} (qui est£c_k) vaut  (c_k/c_{k-1})^(dim Mk) fois det M_(k-1). d'ou la formule:£det(M_k)=(c^{n-k-1}_k)/(c_{k-1}^{n-k}) *det(M_{k-1}). D'autre part, la matrice M_{n-1}£est de taille 1 et vaut c_n. Ce qui donne bien det(M_0)=c_n. Donc c_n est entier. Si l'on£applique ce resultat a A_{I,J}, alors le dernier c sera a^(k)_{i,j}, il vaudra donc det£A_{I,J} et sera entier. Ce qui prouve que ces divisions sont exactes. */
+"repere 2";
+ n:=10;A:=matrix(n,n,(i,j)->rand(21)-10);M:=A;c:=1;k:=1;s:=1;
+for k from 1 to n-1 do
+for i from k+1 to n do 
+for j from k+1 to n do 
+M[i,j]:=simplify(1/c*(M[k,k]*M[i,j]-M[i,k]*M[k,j]));
+od:od:
+c:=M[k,k]:k:=k+1;s:=s*c;
+od:s; 
+/* -------------------------------------------------------------------------------------------------------------------------  */
+ A:=matrix(4,4,(i,j)->rand(21)-10);B:=A-x*identity(4);
+ P:=normal(charpoly(A,x));
+ for i from 1 to 3 do B:=normal(pivot(B,i,i)); od;
+ simplify(B[4,4]/P);#le dernier terme diagonal est un multiple du poly carateristique
+ B:=A-x*identity(4);
+ for i from 1 to 3 do B:=normal(pivot(B,5-i,i)); od;
+ simplify(B[1,4]/P);#le dernier terme diagonal est un multiple du poly carateristique
+pari():; // pour charger pari; sinon faire pari_matdet
+ k:=100;A:=matrix(k,k,(i,j)->rand(21)-10):
+ time(d1:=matdet(A,0)):#par gauss-bareiss via pari
+ time(d2:=det(A,bareiss)):# par bareiss via xcas
+ time(d3:=det(A)):# par reduction modulaire (car A est a coeffs entiers) via xcas 
+d1-d2;d1-d3;
+/* On teste aussi avec des fractions*/
+ k:=50;A:=matrix(k,k,(i,j)->rand(21)-10/(rand(10)+1)):
+ time(d1:=matdet(A,0)):#par gauss-bareiss via pari
+ time(d2:=det(A,bareiss)):# par bareiss via xcas
+ time(d3:=det(A,lagrange)):# par lagrange  via xcas
+d1-d2;d1-d3;
+ k:=30;A:=matrix(k,k,(i,j)->rand(21)-10):B:=A-x*identity(k):
+ time(d1:=matdet(B,1)):#par pivot via pari
+ time(d2:=matdet(B,0)):#par gauss-bareiss
+/*  time(d3:=det(B,rational_det));# par pivot via xcas (un peu long)*/
+ time(d4:=det(B,bareiss)):# par bareiss via xcas
+ time(d5:=det(B,lagrange)):# par lagrange via xcas
+ normal(d1-d2);normal(d1-d4);normal(d1-d5);
+ k:=40;A:=matrix(k,k,(i,j)->rand(21)-10):B:=A-x*identity(k):
+/* pour k>40 par pivot usuel on depasse la taille apr defaut de pari,£donc on arrete.*/
+ normal(matdet(B,0)-charpoly(A,x));
+ k:=50;A:=matrix(k,k,(i,j)->rand(21)-10):B:=A-x*identity(k):
+ normal(matdet(B,0)-charpoly(A,x));
+/* -----------------------------------------------------------------------------------------------------------*/
+ A := [[0,-2,1,3],[0,0,0,1],[1,1,0,0],[-3,4,1,0]];
+ B:=matrix(4,4):B[1,2]:=1:B[2,1]:=1:B[3,3]:=1:B[4,4]:=1:B;
+ B*A;
+ T:=proc(i,j,a)
+ local TT;  
+ TT:=identity(4):TT[i,j]:=a:TT;
+ end proc;
+  
+ T(3,1,1/2)*B*A;
+ T(4,1,3/2)*T(3,1,1/2)*B*A;
+ F:=matrix(4,4):F[1,1]:=1:F[3,3]:=1:F[2,4]:=1:F[4,2]:=1:F;
+ F*T(4,1,3/2)*T(3,1,1/2)*B*A;#On compose les transpositions
+ LU(A,L,U,P);inv(P)*L*U-A;
+/* il faut deplacer les transpositions: On a S.T(i,j,s)=T(i',j',s).S pour i=\sigma(i'),j=\sigma(j') */
+U:=T(4,3,-2)*F*T(4,1,3/2)*T(3,1,1/2)*B*A;
+L:=(F*T(3,1,-1/2)*F^(-1))*(F*T(4,1,-3/2)*F^(-1))*T(4,3,2);
+S:=B*F^(-1);
+S*L*U-A;  

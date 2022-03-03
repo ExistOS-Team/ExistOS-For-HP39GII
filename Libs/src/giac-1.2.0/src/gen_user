@@ -1,0 +1,14 @@
+Making a new class, derivative of gen_user
+
+You must declare
+class my_gen::public gen_user {
+  virtual my_gen * memory_alloc() const { return (my_gen *) malloc(sizeof(*this)); }
+};
+and redefine each operator you would like to redefine.
+You must define a constructor taking a gen (it will be of type _COMP most
+certainly) and returning a gen of type _USER with it's _USERptr pointing
+to a * my_gen, make from this constructor a standard unary_function_ptr 
+at_my_gen with name my_gen and register it for the lexer
+sym_tab_register("my_gen",at_my_gen);
+so that the user can write something like that
+a:=my_gen(1,2,3)

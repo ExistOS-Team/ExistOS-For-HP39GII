@@ -1,0 +1,5 @@
+xcas troubles:
+If you get segmentation fault e.g. when deleting an object in the
+history, then try to compile giac/xcas with FLTK 1.0.11. FLTK 1.1
+has not the same focus rules, and I do not have time to update xcas
+right now.

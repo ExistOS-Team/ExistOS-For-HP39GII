@@ -1,0 +1,6 @@
+#! /bin/tcsh
+# autoconf
+# autoheader
+./configure --enable-sscl
+make install-strip
+make dvi

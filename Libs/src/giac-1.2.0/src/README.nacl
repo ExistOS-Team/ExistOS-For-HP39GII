@@ -1,0 +1,29 @@
+To compile giac for nacl,
+0/ run
+export NACL_SDK_ROOT=~/nacl_sdk/pepper_31 # (adapt)
+export NACL_ARCH=pnacl # for nacl_ports
+1/ install naclports
+2/ copy for example ports/gsl to ports/gmp and ports/mpfr and adapt, compile gsl gmp and mpfr
+by running make gmp; make gsl; make mpfr
+You must run sha1sum package_name to get the sha1 files.
+3/ copy again ports/gsl to ports/giac and adapt.
+To compile giac successfully, once configure is done,
+you must change config.h in out/repository/giac-1.1.0 and src:
+remove HAVE_LIBPTHREAD and HAVE_PTHREAD_H, add
+#define PNACL
+At the end, ignore the errors while building icas.pexe and aide.pexe by
+  touch icas.pexe aide.pexe
+remove the line mv $(DESTDIR)/... at the end of src/Makefile, run 
+  make install
+then you can remove the share/giac directory in pepper.
+
+4/ Test in NACL_SDK_ROOT
+unset NACL_ARCH
+export TOOLCHAIN=pnacl 
+# check in index.html data-tools: pnacl must be first
+# export CONFIG=Release # or Debug
+export CONFIG=Debug # or Release
+
+add giac mpfr gmp gsl gslcblas in Makefile LIBS of getting started
+Unfortunately I get a LLVM link error
+LLVM ERROR: atomic load/store must be at least naturally aligned, got 0, bytes expected at least 4 bytes, in:   %10 = load volatile i32* %call

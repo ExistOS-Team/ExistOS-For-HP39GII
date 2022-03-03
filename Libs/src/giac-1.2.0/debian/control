@@ -1,0 +1,19 @@
+Source: giac
+Section: math
+Priority: optional
+Maintainer: Carleos Artime <carleos@pinon.ccu.uniovi.es>
+Build-Depends: debhelper
+Standards-Version: 3.5.2
+
+Package: giac
+Architecture: any
+Depends: ${shlibs:Depends}
+Suggests: libreadline4, texmacs, menu
+Recommends: python3-giacpy, python-giacpy, libao-dev
+Description: computer algebra system by Bernard Parisse
+ Giac Is A Cas (computer algebra system). It is under active development and
+ consists of:
+    - a C++ library (libgiac)
+    - a command line interpreter (icas)
+    - a FLTK-based GUI (xcas)
+ Bernard Parisse is the main author of the CAS of HP40G and HP49G calculators.

@@ -1,0 +1,23 @@
+export ANDROID_ROOT=/usr/local/android-ndk-r6b/platforms/android-9/
+export ANDROID_TOOLCHAIN=/usr/local/android-ndk-r6b/toolchains/
+export PATH=$ANDROID_TOOLCHAIN/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin:$ANDROID_TOOLCHAIN/x86-4.4.3/prebuilt/darwin-x86/bin:$PATH
+export CC='i686-android-linux-gcc ' 
+export CROSS_COMPILE='i686-android-linux-'
+export CFLAGS='-I. -I.. -I$(ANDROID_ROOT)/arch-x86/usr/include -g -fPIC -DPIC -fno-strict-aliasing -D__ANDROID__ -DHAVE_CONFIG_H -DGIAC_GENERIC_CONSTANTS' 
+export CXXFLAGS='-I. -I.. -I$(ANDROID_ROOT)/arch-x86/usr/include -I/usr/local/android-ndk-r6b/sources/cxx-stl/gnu-libstdc++/include/ -I/usr/local/android-ndk-r6b/sources/cxx-stl/gnu-libstdc++/libs/x86/include -g -fPIC -DPIC -fno-strict-aliasing -D__ANDROID__ -DHAVE_CONFIG_H -DGIAC_GENERIC_CONSTANTS'
+export LDFLAGS=' -fPIC -L$(ANDROID_ROOT)/arch-x86/usr/lib -lm -lc -lgcc -lstdc++' 
+export AR='i686-android-linux-ar' 
+export AS='i686-android-linux-as'
+export LD='i686-android-linux-g++' 
+export RANLIB='i686-android-linux-ranlib'
+export OBJDUMP='i686-android-linux-objdump' 
+export STRIP='i686-android-linux-strip'
+export NM='i686-android-linux-nm' 
+export CXX='i686-android-linux-g++'
+cp config.h.android config.h
+cp config.h.android ../config.h
+#rm -f *.o
+make -f Makefile.android libgiac.so
+#sudo cp libgiac*.so $ANDROID_ROOT/arch-x86/usr/lib
+#sudo cp *.h $ANDROID_ROOT/arch-x86/usr/include
+

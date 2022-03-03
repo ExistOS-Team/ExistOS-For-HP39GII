@@ -1,0 +1,15 @@
+GIAC_GENERIC_CONSTANTS -> mode par défaut dans configure.in
+plot3d.cc: plan clic en pointillé
+====================
+* nodisp() puis ans()
+---
+* Cleanup
+variables globales: bloc prog, bloc usual.cc et fcts transcendentes,
+limit/series, subst, gauss/isom, autres (sym2poly, alg_ext, gen)
+maple_mode, variables plotter
+reverifier les eval
+* Cleanup plot: attributs de forme, remplissage, etc
+* classe table et historique -> table avec en input soit un eqw 2-d
+soit un editor (toujours editor si programme). En output, un graphe
+si plot ou une table si sheet, non modifiable, si prog un text output,
+sinon 2-d.

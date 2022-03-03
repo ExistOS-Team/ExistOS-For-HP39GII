@@ -1,0 +1,8 @@
+#! /bin/bash
+#mkdir -p include/giac lib bin
+cp -rf src/*.h include/giac
+cp -f src/giac.dll bin
+cp -f src/libgiac.def bin
+cp -f src/libgiacdll.a lib
+cp -f src/libgiac.a lib
+zip -r mingwgiac.zip bin lib include/

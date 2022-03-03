@@ -1,0 +1,4 @@
+#! /usr/bin/bash
+#fluid -c xcas.fl
+#g++ -I.. -DWIN32 -s --static gausspol.o sym2poly.o index.o gaussint.o identificateur.o symbolic.o unary.o modpoly.o modfactor.o quater.o renee.o input_lexer.o input_parser.o derive.o intg.o series.o subst.o usual.o vecteur.o moyal.o tex.o lin.o solve.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o plot3d.o rpn.o prog.o xcas.cxx -o xcas -lfltk -lgdi32 -lwsock32 -lgiac -lgmp 
+#zip xcas.zip xcas.exe COPYING aide_cas prime.table xcas.pdf cygwin1.dll

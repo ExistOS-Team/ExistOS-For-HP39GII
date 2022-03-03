@@ -1,0 +1,7 @@
+E:=droite(A,B);
+M:=mediatrice(C,D);
+H:=projection(E,C);
+P:=parabole(C,milieu(C,H));
+N:=inter(P,M);
+C1:=cercle(N[0],C-(N[0]));
+Q:=parabole(D,milieu(D,projection(E,D)));

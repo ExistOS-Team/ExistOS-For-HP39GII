@@ -1,0 +1,9 @@
+#! /bin/bash
+# flags for compiling for mingw with GMP
+export CXXFLAGS='-I/shared/mingw/usr/include'
+export CPPFLAGS='-I/shared/mingw/usr/include'
+export CFLAGS='-I/shared/mingw/usr/include'
+export LDFLAGS='-L/shared/mingw/usr/lib'
+export PATH=/shared/codeblocks/MinGW/bin:$PATH
+#./configure --prefix=/shared/mingw/usr --host=mingw32 --disable-shared
+

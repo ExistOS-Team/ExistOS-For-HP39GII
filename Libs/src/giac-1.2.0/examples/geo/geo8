@@ -1,0 +1,5 @@
+D:=droite(A,B);
+P:=perpendiculaire(A,droite(A,B));
+M:=mediatrice(A,C);
+N:=inter(P,M)[0];
+C1:=cercle(N,A-N);

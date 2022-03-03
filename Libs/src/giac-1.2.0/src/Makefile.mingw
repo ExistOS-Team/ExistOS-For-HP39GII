@@ -1,0 +1,48 @@
+# -*- mode:Makefile -*-
+# Building xcas/icas with giac.dll
+# run ./configure
+# with export CXXFLAGS="-L/usr/X11R6/lib -L/usr/local/lib -I/usr/local/include"
+# then make -f Makefilenew.win xcasdll / icasdll
+CXXFLAGS = -g -I. -I.. -DWIN32 -DHAVE_CONFIG_H -DIN_GIAC -DDOUBLEVAL -DUSE_OPENGL32 -DGIAC_GENERIC_CONSTANTS
+CFLAGS = -g -I. -I.. -DWIN32 -DUSE_OPENGL32  -DHAVE_LIBGL # -pg
+CXX=/shared/codeblocks/MinGW/bin/g++
+CC=/shared/codeblocks/MinGW/bin/gcc
+LD=/shared/codeblocks/MinGW/bin/ld
+AR=/shared/codeblocks/MinGW/bin/ar
+RANLIB=/shared/codeblocks/MinGW/bin/ranlib
+OBJS =  History.o Input.o Xcas1.o Equation.o Print.o Tableur.o Cfg.o Flv_CStyle.o Flve_Check_Button.o Flve_Input.o Flv_Style.o Flv_Data_Source.o Flve_Combo.o Flv_List.o Flv_Table.o Editeur.o Graph.o Graph3d.o Help1.o gl2ps.o
+GIACOBJS = sym2poly.o gausspol.o threaded.o maple.o ti89.o mathml.o moyal.o misc.o permu.o quater.o desolve.o input_parser.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o intgab.o risch.o lin.o series.o subst.o vecteur.o csturm.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o plot3d.o rpn.o prog.o pari.o cocoa.o TmpLESystemSolver.o TmpFGLM.o unary.o usual.o identificateur.o gen.o input_lexer.o tinymt32.o
+LIBS = -lmpfi -lmpfr -lgmp
+#LIBS = -L/usr/local/lib -L/usr/X11R6/lib  -lcocoa -lmpfi -lmpfr.dll -lfltk_images -lfltk -lfltk_gl -lglu32 -lopengl32  -ljpeg -lpng -lz -lgsl -lgslcblas -lntl -lgmpxx.dll -lgmp.dll -lpari -llapack -lrefblas -lgfortran -lpthread -lao #-ldl
+WLIBS = -lintl -liconv -mwindows -lole32 -luuid -lcomctl32 -lwsock32 
+# For windows: remove -ldl in LIBS above and uncomment WLIBS below, + -DWIN32
+# For linux: add -ldl in LIBS and comment WLIBS
+xcas:	$(OBJS) $(GIACOBJS) hist.o 
+#	$(CXX) $(CXXFLAGS) $(OBJS) -o xcas $(DYNLIBS)
+	$(CXX) $(CXXFLAGS) hist.o $(GIACOBJS) $(OBJS) -o xcas $(LIBS) $(WLIBS)
+# giacpy target is not functionnal, but the commandlines should work from giacpy source directory if Xcas is installed in c:\xcas
+giacpy:	giac.dll
+	python setup.py build_ext -I/cygdrive/c/xcas/include -DWIN32 -DHAVE_CONFIG_H -DIN_GIAC -DDOUBLEVAL -DUSE_OPENGL32 -DGIAC_GENERIC_CONSTANTS -L/cygdrive/c/xcas
+	python setup.py install
+clean:
+	rm -f $(OBJS) hist.o
+icas:	$(OBJS) $(GIACOBJS) icas.o
+	$(CXX) $(CXXFLAGS) $(GIACOBJS) $(OBJS) icas.o -o icas $(LIBS) # $(WLIBS) #-lreadline -lhistory
+giac.dll:   $(GIACOBJS) first.o
+	$(CXX)  $(CXXFLAGS) -s -shared -Wl,--output-def=libgiac.def -Wl,--out-implib=libgiacdll.a $(GIACOBJS) first.o -o giac.dll $(LIBS) # $(WLIBS)
+libgiac.a:  $(GIACOBJS) first.o
+	$(AR) cru libgiac.a $(GIACOBJS) first.o
+	$(RANLIB) libgiac.a 
+icasdll:	$(OBJS) giac.dll icas.o
+	$(CXX) -s $(CXXFLAGS) $(OBJS) icas.o -o icas giac.dll $(LIBS) $(WLIBS) -lreadline -lhistory
+xcasdll:	$(OBJS) hist.o giac.dll
+	$(CXX) $(CXXFLAGS) -s hist.o $(OBJS) -o xcas giac.dll $(LIBS) $(WLIBS)
+hist.o: 	hist.cxx
+	$(CXX) $(CXXFLAGS) -c hist.cxx
+hist.cxx:	hist.fl
+	fluid -c hist.fl
+.cc.o:
+	$(CXX) $(CXXFLAGS) -c $<
+clean:
+	rm -f $(OBJS) $(GIACOBJS) icas.o hist.o
+

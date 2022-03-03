@@ -1,0 +1,6 @@
+cyclic6:=[x1+x2+x3+x4+x5+x6, x1*x2+x2*x3+x3*x4+x4*x5+x5*x6+x1*x6,x1*x2*x3+x2*x3*x4+x3*x4*x5+x4*x5*x6+x1*x5*x6+x1*x2*x6,x1*x2*x3*x4+x2*x3*x4*x5+x3*x4*x5*x6+x1*x4*x5*x6+x1*x2*x5*x6+x1*x2*x3*x6,x1*x2*x3*x4*x5+x2*x3*x4*x5*x6+x3*x4*x5*x6*x1+x4*x5*x6*x1*x2+x5*x6*x1*x2*x3+x6*x1*x2*x3*x4,x1*x2*x3*x4*x5*x6-1];
+time(gb:=gbasis(cyclic6,indets(cyclic6),tdeg,with_cocoa=true));
+gb;
+time(gb:=gbasis(cyclic6,indets(cyclic6),plex));
+gb;
+

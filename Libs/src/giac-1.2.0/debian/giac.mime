@@ -1,0 +1,1 @@
+application/xcas; /usr/bin/xcas %s; compose=/usr/bin/xcas %s; edit=/usr/bin/xcas; description="Xcas worksheet"; test=test -n "$DISPLAY"; priority=5

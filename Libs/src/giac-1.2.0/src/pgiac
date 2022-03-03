@@ -1,0 +1,359 @@
+#!/usr/bin/perl
+# ========================================================================
+# 				pgiac
+# ========================================================================
+# Jean-Michel Sarlat                              mercredi 17 octobre 2007
+# ========================================================================
+# mail : jm-sarlat@melusine.eu.org
+# web  : http://melusine.eu.org/syracuse/giac/pgiac/
+# ========================================================================
+# Copyright (c) 2008 Jean-Michel Sarlat.  All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the same terms as Perl itself.
+
+
+use Fcntl;
+use POSIX qw(:errno_h);
+use File::Basename;
+
+use Getopt::Std;
+getopts("f:");
+
+# La valeur ci-dessous dépend du système, elle doit être déterminée
+# pour chaque système...
+our $FIONREAD 	= 0x00541b;	# Valeur par défaut (linux)
+
+our $EXECUTABLE	= "giac --texmacs";
+
+# Adaptation pou Mac OS X.
+if ($^O =~ /darwin/) {
+    $FIONREAD 	= 0x4004667f;
+    $EXECUTABLE	= "icas --texmacs";
+}
+
+
+my $VERSION 	= "0.1.9a";  	# Dimanche 21 août 2011
+
+my $OUT 	= ""; 		# Contenu en sortie.
+my $NBFIG 	= 1;		# Compteur de figures.
+my $COMPTEUR 	= 0;		# Compteur de commandes.
+my $NBCMD 	= 0;		# Nombre de commandes successives traitées.
+
+my $FFIG	= "";	# Extension des figures par défaut (aucune).
+$opt_f and ($opt_f eq "pdf" or $opt_f eq "eps") and $FFIG = ".$opt_f";
+
+
+my $STRING  	= "verbatim";	# Sortie des chaînes de caractères
+my $COMMANDE	= "verb";	# Affichage des commandes.
+
+# --- Caractères utilisés dans le balisage de la sortie de giac avec
+# l'option --texmacs.
+my $chr2 = chr(2);
+my $chr5 = chr(5);
+my $prompt = "${chr2}prompt#> $chr5";
+
+my $FIG_TITRE;
+
+
+my $DEBUG  = 0;
+
+my $INBLOC = 0;
+my $BLOC   = "";
+
+# Commande pour déterminer la BoundingBox d'un fichier EPS via GS.
+my $GSBBOX = "gs -q -sDEVICE=bbox -sPAPERSIZE=a4 -dNOPAUSE -dNOSAFER";
+
+#@f:entete
+open(INGIAC,$ARGV[0]) or die "Impossible d'ouvrir $ARGV[0]... : $!";
+my $PRE = (fileparse($ARGV[0],qw{\..*}))[0];
+open(LOG,">$PRE-out.log");
+
+# ======================================================================
+pipe(INF,OUTP);
+pipe(INP,OUTF);
+
+
+
+local $fh = select(OUTF); $| = 1; select $fh;
+local $fh = select(OUTP); $| = 1; select $fh;
+
+
+my $PIDP = $$;
+my $PIDF = fork();
+
+# === Procédure principale =============================================
+unless ($PIDF) {
+    sleep 0.5;
+    close(INF); close(OUTF);
+    # open(STDERR,">pgiac.err");
+    open(STDOUT,">&OUTP");
+    open(STDIN,"<&INP");
+    open(STDERR,">&OUTP");
+    select(STDOUT); $| = 1;
+    system $EXECUTABLE;
+    exit;    
+} else {
+    close(INP); close(OUTP);
+    $attributs = '';
+    fcntl(INF,F_GETFL,$attributs);
+    $attributs |= O_NONBLOCK;
+    fcntl(INF,F_SETFL,$attributs) or die "Problème: $!\n";
+    &Init;
+    while (<INGIAC>) {
+	chomp($_);
+	if ($INBLOC) {
+	    if ($_ =~ /^\.end/) {
+		chomp($BLOC);
+		&Executer($BLOC,"ltx");
+		$INBLOC = 0; $BLOC = "";
+	    } else {
+		$BLOC .= "$_\n";
+	    }
+	} elsif ($_ =~ /^\.gp (.*)/) {
+	    &LireParametres($1);
+	} elsif ($_ =~ /^\.gmp (.*)/) {
+	    &Executer($1,"mp");
+	} elsif ($_ =~ /^\.g (.*)/) {
+	    &Executer($1,"ltx");
+	} elsif ($_ =~ /^\.g\:(.*)/) {
+	    $INBLOC = 1; $BLOC = $1 ? "$1\n" : "";
+	} elsif ($_ =~ /^\.G(.*)/) {
+	    my @lignes = qx{cat $1};
+	    &Executer(join("",@lignes));
+	} else {
+	    $OUT .= "$_\n";
+	}
+    }
+    &Quitter;
+    waitpid($PIDF,0);
+}
+
+open(OUTGIAC,">$PRE.tex"); print OUTGIAC $OUT; close(OUTGIAC);
+
+
+# === GetTaille ========================================================
+# Cette procédure scrute le descripteur INF en lecture jusqu'à ce qu'il 
+# contienne des données, la taille de ces données est alors retournée.
+sub GetTaille {
+    my $taille = 0;
+    while($taille == 0) {
+	sleep 0.02;
+	$taille = pack("L",0);
+	ioctl(INF,$FIONREAD,$taille) 
+	    or die "Problème (ioctl dans GetTaille) : $!\n";
+	$taille = unpack("L",$taille);
+    }
+    return $taille;
+}
+
+# === GetTampon ========================================================
+# Récupérer les données dans le descripteur de sortie de giac.
+sub GetTampon {
+    my $tampon = my $tmp = "";
+    while (1) {
+	my $t = &GetTaille; 
+	my $rv = sysread(INF,$tmp,$t);
+	$tampon .= $tmp;
+	# Fin de tampon pour une utilisation normale.
+	$tmp =~ /$prompt$/ and last;
+    }
+    return $tampon;
+}
+
+
+# === Init =============================================================
+# Cette procédure vide le descripteur INF des données transmises au tout
+# début de la séquence.
+sub Init {
+    my $t = &GetTampon();
+}
+
+# === Exécution ========================================================
+sub Executer {
+    my ($t,$a) = @_;
+    (my $c = $t) =~ s/^\s+|\s+$//g;
+    $DEBUG and print STDERR "envoi: |$c|\n";
+    print OUTF "$c\n";
+    if ($a eq "mp") {
+	GetOutGiacMetaPost($t,&GetTampon());
+    } else {
+	GetOutGiac($t,&GetTampon()); 
+    }
+}
+
+# === Quitter ==========================================================
+sub Quitter {
+    print OUTF "quit\n";
+}
+
+#@f:pipe
+
+# === GetOutGiac =======================================================
+# Cette procédure analyse ce qui est récupéré dans le descripteur de 
+# sortie de giac. Au début, les procédures d'appui.
+
+## Option $COMMANDE = listing : Guillaume Connan - 9 juin 2008
+sub outCommande {
+    my $t = shift;
+    if ($COMMANDE eq "listing") {
+	return << "eop";
+\\begin{lstlisting}
+$t
+\\end{lstlisting}
+eop
+    }
+    if ($INBLOC) {
+	return << "eop";
+{\\MarqueBlocGiac{$COMPTEUR}	
+\\begin{verbatim}
+$t
+\\end{verbatim}	
+}
+eop
+    }
+    return << "eop";
+{\\MarqueCommandeGiac{$COMPTEUR} \\verb|$t|}
+eop
+}
+
+sub outVerbatim {
+    my $t = shift;    
+    if ($STRING eq "text") {
+	$t =~ s/\^/\\\^\{}/g;
+	$t =~ s/\-\>/\\(\\rightarrow\\)/g;
+	return << "eop";
+{\\MarqueLaTeXGiac{\\[\\text{$t}\\]}}
+eop
+    }
+    if ($STRING eq "tex") {
+    	$t =~ s/\-\>/\\rightarrow /g;
+	return << "eop";
+{\\MarqueLaTeXGiac{\\[$t\\]}}
+eop
+    }
+    return << "eop";
+\\begin{verbatim}\t\t$t\\end{verbatim}
+eop
+}
+
+sub outLaTeX {
+    my $t = shift;
+    return << "eop";
+{\\MarqueLaTeXGiac{$t}}
+eop
+}
+
+sub outGraphics {
+    my $t = shift;
+    return << "eop";
+\\InscriptionFigureGiac{$t$FFIG}    
+eop
+}
+
+sub GetOutGiac {
+    # $c est le texte de la commande, $r est la réponse fournie par giac.
+    my ($c,$r) = @_;
+    # Incrémentation du compteur des commandes.
+    $COMPTEUR++;
+    print LOG "Commande $COMPTEUR\n";
+    # Segmentation de la réponse (un peu simpliste pour l'instant, cela ne
+    # tient pas compte des emboîtements...)
+    my @champs = split /$chr2/, $r; shift @champs;
+    my %reponse = ();
+    foreach (@champs) {
+	my($n,$v) = split /:/;
+	if ($n eq "ps") {
+	    $v = sprintf("$PRE-%02d",$NBFIG);
+	    $NBFIG++;
+	    rename "casgraph.eps",  "$v.eps";
+	    &epstopdf($v);
+	}
+    	unless ($n =~ /^prompt/) {
+	    # Nettoyage
+	    $v =~ s/$chr5//g; $v =~ s/^\s*|\s*$//g;
+	    # Affectation - La succession ds verbatim reste à règler,
+	    # éventuellement...
+	    $reponse{$n} = $v;
+	    print LOG "$n:\n$v\n";
+	}
+    }
+    # Construction de l'inscription.
+    $OUT .= "%\@Commande-$COMPTEUR\n";
+    $OUT .= &outCommande($c);
+    $reponse{verbatim} and $reponse{verbatim} !~ /^\// 
+	and $OUT .= &outVerbatim($reponse{verbatim});
+    $reponse{latex}    and $OUT .= &outLaTeX($reponse{latex});
+    $reponse{ps}       and $OUT .= &outGraphics($reponse{ps});
+}
+# === Fin de GetOutGiac ================================================
+
+# === GetOutGiacMetaPost ===============================================
+sub GetOutGiacMetaPost {
+    my ($c,$r) = @_;
+    # On avance d'un pas...
+    $OUT .= "%\@Commande-$COMPTEUR\n";
+    $OUT .= &outCommande($c);
+    $COMPTEUR++;
+    # Nettoyage de la réponse. Pour l'instant, suppression des deux
+    # première lignes (verbatim) et de la dernière (prompt).
+    my @l = split(/\n/,$r); pop @l; shift @l; shift @l;
+    # Suppression d'une séquence chr2verbatim: observée en tête de
+    # troisième ligne, curieux :)
+    $l[0] =~ s/^${chr2}verbatim://;
+    # Création du fichier MetaPost.
+    open(MP,">giac-temp.mp"); print MP join("\n",@l); close MP;    
+    # Compilation...
+    qx{mpost giac-temp.mp};
+    # Inscription de la réponse dans la sortie.
+    if (-f "giac-temp.1") {
+	# Transformation au format PDF
+	qx{mptopdf giac-temp.1};
+	# Renommage des fichiers...
+	$v = sprintf("$PRE-%02d",$NBFIG);
+	$NBFIG++;
+	rename "giac-temp-1.pdf", "$v.pdf";
+	rename "giac-temp.mp", "$v.mp";
+	rename "giac-temp.1", "$v.eps";
+	$OUT .= &outGraphics($v);
+    } else {
+	$OUT .= &outVerbatim("Erreur, l'image n'est pas trouvée !");
+    }
+}
+# === Fin de GetOutGiacMetaPost ========================================
+#@f:getout
+### Conversion du fichier $f.eps au format PDF.
+sub epstopdf {
+    my $f = shift;
+    my @b = split /\s+/, qx{$GSBBOX $f.eps quit.ps 2>&1 | grep "%%BoundingBox"};
+    shift @b;
+    my ($l,$h) = ($b[2] - $b[0], $b[3] - $b[1]); 
+    open(PS,">pgiac-$f.ps");
+    print PS "<</PageSize [$l $h] >> setpagedevice\n";
+    print PS "/sysstroke {systemdict /stroke get exec} def\n";
+    print PS "/stroke {.dashpath sysstroke} def\n";
+    print PS "$b[0] neg $b[1] neg translate ($f.eps) run\n";
+    close(PS);
+    qx{ps2pdf -dNOSAFER pgiac-$f.ps $f.pdf };
+    unlink "pgiac-$f.ps" if -f "pgiac-$f.ps";
+}
+
+#@f:figure
+
+# === Lire des paramètres ==============================================
+sub LireParametres {
+    my $l = shift;
+    $l =~ s/^\s+|\s+$//g;
+    $l =~ /(\w+)\s*=\s*(.*)$/;
+    if ($1 eq "ext_fig") {
+	($2 eq "eps" or $2 eq "pdf") and $FFIG  = ".$2";
+    }
+    if ($1 eq "string") {
+	($2 eq "verbatim" or $2 eq "text" or $2 eq "tex" ) and $STRING = $2;
+    }
+    if ($1 eq "commande") {
+	($2 eq "verb" or $2 eq "listing") and $COMMANDE = $2;
+    }
+}
+
+#@f:parametres

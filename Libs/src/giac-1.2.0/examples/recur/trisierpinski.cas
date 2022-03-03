@@ -1,0 +1,71 @@
+//le iriangle de sierpinski ex triserp(-2-2*i,2-2*i,5)
+triserp(x,y,n):={
+local z;
+z:=x+(y-x)*exp(evalf(i*pi/3));
+if (n==0) return triangle_equilateral(x,y);
+triserp(x,(x+y)/2,n-1);
+triserp(z,(x+z)/2,n-1);
+triserp(y,(y+z)/2,n-1);
+};
+//la courbe trapeze de sierpinski ex traserp(-2-2*i,2-2*i,5)
+traserp(x,y,n):={
+local z;
+z:=x+(y-x)*exp(evalf(i*pi/3));
+if (n==0) return segment(x,y);
+traserp((x+z)/2,x,n-1);
+traserp((x+z)/2,(z+y)/2,n-1);
+traserp(y,(y+z)/2,n-1);
+};
+//le tapis carre de sierpinski ex carserp(-2-2*i,2-2*i,4)
+carserp(x,y,n):={
+local a,b,c,d,f,g,h,j;
+h:=(y-x)/3;
+a:=x+h;
+b:=a+h;
+c:=x+i*h;
+d:=c+i*h;
+f:=b+i*h;
+g:=d+h;
+j:=g+h;
+if (n==0) return carre(x,y);
+carserp(x,a,n-1);
+carserp(a,b,n-1);
+carserp(b,y,n-1);
+carserp(c,c+h,n-1);
+carserp(f,f+h,n-1);
+carserp(d,g,n-1);
+carserp(g,j,n-1);
+carserp(j,j+h,n-1);
+};
+// dessin d'un polygone regulier de k cotes
+polyreg(x,y,k):={
+local a,b,c;
+a:=x;
+b:=y;
+for (j:=1;j<=k;j++) {
+c:=a+(b-a)*exp(evalf(i*pi*(k-2)/k));
+segment(a,c);
+b:=a;
+a:=c;
+}
+};
+//napperon de Cantor ou de Sierpinski k=3,4...  utilise polyreg 
+//ex polyserp(-1-2*i,1-2*i,5,3); polyserp(-2*i,1-2*i,9,2)
+polyserp(x,y,k,n):={
+local a,b,c,h,j,q,s;
+if (n==0) return polyreg(x,y,k);
+a:=x;
+b:=y;
+for (j:=1;j<=k;j++) {
+//pour k=3 ou 4  h:=(b-a)/3;pour k=5,6,7,8 h:=(b-a)/2/(cos(evalf(2*pi/k))+1);
+s:=1;
+for (l:=1;l<=iquo(k-1,4);l++){
+s:=s+cos(2*l*evalf(pi)/k);
+} 
+h:=(b-a)/2/s;
+polyserp(a,a+h,k,n-1);
+c:=a+(b-a)*exp(evalf(i*pi*(k-2)/k));
+b:=a;
+a:=c;
+}
+};

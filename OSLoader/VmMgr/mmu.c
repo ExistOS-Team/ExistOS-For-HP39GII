@@ -7,9 +7,12 @@
 
 #include "../debug.h"
 
-#define DFLPT_BASE  0x800C0000
+//#define DFLPT_BASE  0x800C0000
 
 
+uint32_t L1PTE[4096] __attribute__((aligned(8192)));
+
+uint32_t DFLPT_BASE = (uint32_t)&L1PTE;
 
 uint32_t L2PTE[TOTAL_VM_SEG * 256]  __attribute__((aligned(1024)));
 
@@ -147,7 +150,8 @@ static inline void SetMPTELoc(uint32_t mpte, uint32_t seg)
 static inline void SetL1PTE(uint32_t pte, uint32_t interpret, uint32_t targetAddr, uint32_t domain, 
     uint32_t AP, bool cache, bool buffer)
 {
-    volatile uint32_t *PTE_LOC = (uint32_t *)DFLPT_BASE;
+    //volatile uint32_t *PTE_LOC = (uint32_t *)DFLPT_BASE;
+    volatile uint32_t *PTE_LOC = (uint32_t *)L1PTE;
     PTE_LOC[pte] = 0;
     switch (interpret)
     {
@@ -250,6 +254,7 @@ void mmu_map_page(uint32_t vaddr, uint32_t paddr,
 void mmu_init()
 {
     memset(L2PTE, 0, sizeof(L2PTE));
+    memset(L1PTE, 0, sizeof(L1PTE));
 
     SetMPTELoc(0, 0);
     SetL1PTE(0      , L1PTE_INTERPRET_SECTION, 0         , OSLOADER_MEMORY_DOMAIN, AP_SYSRW_USROR, false, false);
@@ -277,6 +282,8 @@ void mmu_init()
     mmu_SetDomainPermCheck(VM_ROM_DOMAIN, true);
 
     mmu_set_rs(2);
+
+    mmu_dumpMapInfo();
 
     mmu_enable(DFLPT_BASE);
 

@@ -1,0 +1,5 @@
+giac_0.9.0-2_i386.deb math optional
+giac-doc_0.9.0-2_i386.deb math optional
+giac-doc-nonfree_0.9.0-2_i386.deb non-free/math optional
+libgiac0_0.9.0-2_i386.deb libs optional
+libgiac0-dev_0.9.0-2_i386.deb libdevel optional

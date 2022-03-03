@@ -1,0 +1,76 @@
+Read instructions below to install the required libraries or get them
+compiled (gcc 2.95) at ftp-fourier.ujf-grenoble.fr/xcas/devel
+Then run ./configure, and cd src make, then sh mkstat, then edit
+xcas.fl and remove the Input_tab input, rename the hidden input_old to
+input and remove the hidden declaration, then fluid -c xcas.fl,
+then make again and sh mkxstat will build xcas
+To move xcas, use the Finder or use cp but then run fltk-config --post xcas
+to make xcas visible from the finder
+************************************************
+-Developper Tools December 2002
+
+fltk (version 1.2.x): fltk on MacOSX will compile without the need for X11
+%make
+%sudo make install
+
+flvw: (use flvw-20000224.tgz)
+%./configure
+%emacs makeinclude
+Change the following (line 52):
+
+LIBS   =       -lflvw  -lX11 -lXext -rdynamic -lm -ldl
+LDFLAGS        =       -g -O2 -L/usr/X11R6/lib -L../lib
+
+into:
+
+LDLIBS = -framework Carbon -framework ApplicationServices -lsupc++
+GLDLIBS = -framework AGL -framework OpenGL
+LDFLAGS  = $(LDLIBS) $(GLDLIBS) -lfltk_gl -lfltk -lm ../lib/libflvw.a
+LIBNAME = libflvw
+LIBRARY = ../lib/libflvw
+#LIBS   =       -lflvw  -lX11 -lXext -rdynamic -lm -ldl
+#LDFLAGS        =       -g -O2 -L/usr/X11R6/lib -L../lib
+---
+
+%emacs FL/Flv_List.H
+Comment the line 52:
+//#define fl_inactive inactive
+
+%make
+%sudo make install
+
+If you want to play with the executable created in the test directory you will have to run on each executable:
+ /Developer/Tools/Rez -t APPL /usr/local/include/FL/mac.r -o test/exename
+
+Replace exename with either exercise, testedit, testlist, basiclist, testtable, testtable2
+
+-iconv library: (ftp://ftp.gnu.org/gnu/libiconv/libiconv-1.8.tar.gz)
+Get it all done: http://www.hmug.org/pub/MacOS_X/BSD/Libraries/System/libiconv/libiconv-1.8-1-osx2.tar.gz
+
+%./configure
+%make
+%sudo make install
+
+-gettext (http://mirrors.kernel.org/gnu/gettext/). Make you are using gettext version 0.11.2, for some reason I can't get
+giac to work properly with version 0.11.5. I suspect a problem in 0.11.5 rather than in giac
+Either get it all done: http://www.hmug.org/pub/MacOS_X/BSD/Development/Tools/gettext/gettext-0.11.2-1-osx.tar.gz
+
+./configure --with-included-gettext --without-libintl-prefix --enable-static
+
+%./configure
+%emacs config.h
+  add #define __USER_LABEL_PREFIX__ _
+%make
+
+-giac:
+%./configure --enable-dl=no
+
+%emacs src/Makefile
+Change line 147 for
+
+LDLIBS = -L/usr/local/lib/ -framework Carbon -framework ApplicationServices -lsupc++
+GLDLIBS = -framework AGL -framework OpenGL
+LDFLAGS  = $(LDLIBS) $(GLDLIBS)
+LIBS = -lflvw -lfltk -lfltk_gl -lgsl -lgslcblas -lreadline -lncurses -lm -lintl
+#LIBS = -lflvw -lfltk -lgsl -lgslcblas -lreadline -lncurses -ldl -lm  -L/usr/X11R6/lib -lX11
+

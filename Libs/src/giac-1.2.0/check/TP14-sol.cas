@@ -1,0 +1,97 @@
+maple_mode(1);
+/* ------------------------------Methode de Berlkamp-----------------------------*/
+ sum(rand(20)*x^i,i=0..n);  #sum,mul,add evaluent le random avant!
+ randP:=n->poly2symb([1,seq(rand(20),i=0..n-1)],x);
+ P:=normal(mul([seq(randP(rand(7)),i=1..5)])); #on met un seq pour avoir des rand differents
+P:=x^16+x^14+58*x^15+1386*x^14+17715*x^13+131260*x^12+578697*x^11+1538013*x^10+2648041*x^9+3687447*x^8+4993299*x^7+5858116*x^6+5979221*x^5+5239798*x^4+4098561*x^3+3176188*x^2+1660466*x+705432;
+ gcd(P,diff(P,x)); #Pour berlekamp, il ne faut pas de facteurs multiples.
+/*  Attention \`a la bonne instruction pour trouver un noyau mod p. Prendre la forme£ inerte: Nullspace. De plus, il faut aussi faire attention pour les£ coefficients des polynomes, on les veut tous jusque degree(P)-1 meme si leur£ degr\'e est plus petit.*/
+ berl:=proc(p,PP)
+ local L,tmp,i,j,F;
+ L:=[];
+ if degree(Gcd(PP,diff(PP,x)) mod p) =0 then
+ for i from 0 to degree(PP) - 1 do
+ tmp:=powmod(x,i*p,p,PP,x); #On utilise la puissance rapide 
+ tmp:=Rem(tmp-x^i,PP) mod p;
+ l:=[seq(coeff(tmp,x,j),j=0..degree(PP)-1)];
+ L:=[op(L),l];
+ od:
+ F:=transpose(L);Nullspace(F) mod p;
+ else print("facteurs multiples",p); [[0]] fi;
+ end;
+ p:=1:L:=[];for i from 1 to 10 do
+ p:=nextprime(p):L:=[op(L),[rowdim(berl(p,P)),p,Factor(P) mod p]] od;
+/*  Non, il peut y avoir moins de facteurs dans Z.*/
+ p:=7; Gcd(P,diff(P,x)) mod p;
+N:=berl(p,P);LX:=[seq(x^(j-1),j=1..degree(P))];
+Q:=(LX*N[2]);
+Rem(powmod(Q,p,p,P,x)-Q,P) mod p; #  verification:
+Gcd(Q,P) mod p;  #l'un des 3 pgcd est non trivial:
+A:=Rem(powmod(Q,(p-1)/2,p,P,x)-1,P) mod p;
+Gcd(A,P) mod p;
+B:=Rem(powmod(Q,(p-1)/2,p,P,x)+1,P) mod p;
+Gcd(B,P) mod p;
+ unfacteur:=proc(d)
+ i:=1;
+ A:=1;B:=1;rep:=1;
+ r:=[seq(rand(p),i=1..rowdim(N))]*N; #un element du noyau au hasard
+ Q:=(LX*r);
+ #On fait 3 essais;
+ A:=Gcd(Q,d) mod p;
+ if degree(A)*(degree(A)-degree(d))<>0 then rep:=A ;
+ else A:=Rem(powmod(Q,(p-1)/2,p,P,x)-1,P) mod p;
+ A:=Gcd(A,d) mod p;
+ if degree(A)*(degree(A)-degree(d))<>0 then rep:=A ;
+ else A:=Rem(Powmod(Q,(p-1)/2,p,P,x)+1,P) mod p;
+ A:=Gcd(A,d) mod p;
+ if degree(A)*(degree(A)-degree(d))<>0 then rep:=A fi;
+ fi;
+ fi;
+ if degree(rep)=0 then d else rep  fi;
+ end proc;
+ unfacteur(P);
+ facteurpseudoirred:=proc(d)
+ t:=unfacteur(d);
+ tt:=d;
+ while (degree(t)<degree(tt)) do tt:=t;t:=unfacteur(t); od;
+ t;
+ end;
+ f:=facteurpseudoirred(P);
+/*  Si le noyau est de dim 1, f est irreductible.*/
+ if (rowdim(berl(p,f))==1) then print ("f est irred") fi;
+ T:=P;a:=1;L:=[];
+while degree(T)>0 do T:=Quo(T,a) mod p;L:=[op(L),a];a:=facteurpseudoirred(T); od:L;
+/* Le nombre de facteurs doit etre la dim de ker F, on teste si l'on a£trouve tous les facteurs ainsi:*/
+ if nops(N)==(nops(L)-1) then print("on a bien trouve tous les facteurs") fi;
+/* ----------------------------Exo remontee Henselienne--------------------------*/
+p:=7;
+ P:=x^16+x^14+58*x^15+1386*x^14+17715*x^13+131260*x^12+578697*x^11+1538013*x^10+2648041*x^9+3687447*x^8+4993299*x^7+5858116*x^6+5979221*x^5+5239798*x^4+4098561*x^3+3176188*x^2+1660466*x+705432;
+L:=op(Factor(P) mod 7);
+ A:=x^2+2*x+3;B:=Quo(P,A,x) mod p; [U,V,DD]:=Gcdex(A,B,x) mod p;
+invDD:=igcdex(DD,p)[1];U:=U*invDD;V:=V*invDD;
+ Rem(A*U+B*V,P,x) mod p; # verification:
+/*  (A+p^iA')(B+p^iB')=P[p^(i+1)];A'B+B'A=(P-A.B)/p^i;A'=V*(P-AB)/p^i[p];*/
+/*  On veut AU+BV=1[P];AB=P[p^i];(A+p^iAA)(B+p^iBB)=P[p^(i+1)]*/
+ for i from 1 to 4 do
+ PP:=normal((P-A*B)/p^i);AA:=Rem(PP*V,A,x) mod p;
+ BB:=Quo(normal(PP-B*AA),A,x) mod p;
+ A:=normal(A+p^i*AA);B:=normal(B+p^i*BB);
+ A;
+ od;
+/*  La remontee se stabilise, le facteur peut convenir, on teste s'il divise dans Z*/
+ if rem(P,A,X)=0 then print(A,"est un diviseur dans Z") fi;
+/*  Mais, il ne convient pas forcement on a eu de la chance, il faudrait alors£ essayer d'autres facteurs, £  ou bien des produits. Si la factorisation modulo $p$ a trop de£ facteurs c'est plus long. DAns l'exemple suivant, ca ne se stabilise pas, ce£ facteur  modulo p ne vient pas d'un facteur dans Z*/
+ A:=x-2;B:=Quo(P,A,x) mod p; [U,V,DD]:=Gcdex(A,B,x) mod p;
+invDD:=igcdex(DD,p)[1];U:=U*invDD;V:=V*invDD;
+ Rem(A*U+B*V,P,x) mod p; # verification:
+ for i from 1 to 10 do
+ PP:=normal((P-A*B)/p^i);AA:=Rem(PP*V,A,x) mod p;
+ BB:=Quo(normal(PP-B*AA),A,x) mod p;
+ A:=normal(A+p^i*AA);B:=normal(B+p^i*BB);
+ A;
+od;
+ borne:=proc(m,P)
+A:=matrix([coeffs(P)]);
+binomial(m,floor(m/2))*evalf(sqrt((A*transpose(A))[1,1]),5);
+end;
+borne(5,P),evalf(p^10,3);#Donc 10 iterations suffisent.

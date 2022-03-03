@@ -1,0 +1,424 @@
+// xcas version=0.9.9 fontsize=20 font=0 currentlevel=6
+// fltk 7Fl_Tile 16 -172 965 31 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 16 -172 965 30 20 0
+La figure dynamique
+,
+// fltk N4xcas10Log_OutputE 16 -142 965 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 16 -139 965 446 20 0
+[
+// fltk N4xcas6FigureE 16 -139 965 445 20 0 landscape=0 history=0.40415 geo=0.46632  mouse_param=0.12953
+// fltk N4xcas12History_PackE 18 -113 370 1027 20 0
+[
+// fltk 7Fl_Tile 46 -113 342 58 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 46 -113 342 30 20 0
+assume(a=[1.65,0.0,5.0]);
+,
+// fltk N4xcas10Log_OutputE 46 -83 342 1 20 0
+
+,
+// fltk N4xcas10Gen_OutputE 46 -82 342 27 20 0
+parameter([a,0.0,5.0,1.65,0.05])
+]
+,
+// fltk 7Fl_Tile 46 -53 342 58 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 46 -53 342 30 20 0
+assume(b=[1.55,0.0,5.0]);
+,
+// fltk N4xcas10Log_OutputE 46 -23 342 1 20 0
+
+,
+// fltk N4xcas10Gen_OutputE 46 -22 342 27 20 0
+parameter([b,0.0,5.0,1.55,0.05])
+]
+,
+// fltk 7Fl_Tile 46 7 342 58 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 46 7 342 30 20 0
+A:=point(0,0);
+,
+// fltk N4xcas10Log_OutputE 46 37 342 1 20 0
+
+,
+// fltk N4xcas10Gen_OutputE 46 38 342 27 20 0
+pnt(pnt[0,[536870968],"A"])
+]
+,
+// fltk 7Fl_Tile 46 67 342 58 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 46 67 342 30 20 0
+B:=point(a,0);
+,
+// fltk N4xcas10Log_OutputE 46 97 342 1 20 0
+
+,
+// fltk N4xcas10Gen_OutputE 46 98 342 27 20 0
+pnt(pnt[a,[536870968],"B"])
+]
+,
+// fltk 7Fl_Tile 46 127 342 80 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 46 127 342 30 20 0
+rectangle(A,B,b/a,D,C);
+,
+// fltk N4xcas10Log_OutputE 46 157 342 1 20 0
+
+,
+// fltk 9Fl_Scroll 46 158 342 49 20 0
+[
+// fltk N4xcas10Gen_OutputE 46 158 1119 27 20 0
+group[pnt(pnt[group[0,a,a+a*b/a*(i),a*b/a*(i),0],56]),pnt(pnt[a*b/a*(i),536870968,D]),pnt(pnt[a+a*b/a*(i),536870968,C])]
+,
+// fltk 12Fl_Scrollbar 46 191 342 16 20 0
+[]
+,
+// fltk 12Fl_Scrollbar 372 158 16 33 20 0
+[]
+]
+]
+,
+// fltk 7Fl_Tile 46 209 342 80 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 46 209 342 30 20 0
+equilateral_triangle(B,C,I,color=yellow);
+,
+// fltk N4xcas10Log_OutputE 46 239 342 1 20 0
+
+,
+// fltk 9Fl_Scroll 46 240 342 49 20 0
+[
+// fltk N4xcas10Gen_OutputE 46 240 1374 27 20 0
+group[pnt(pnt[group[a,a+a*b/a*(i),a+((a+a*b/a*(i)-a)*(sqrt(3)*(i)+1))/2,a],3]),pnt(pnt[a+((a+a*b/a*(i)-a)*(sqrt(3)*(i)+1))/2,536870968,I])]
+,
+// fltk 12Fl_Scrollbar 46 273 342 16 20 0
+[]
+,
+// fltk 12Fl_Scrollbar 372 240 16 33 20 0
+[]
+]
+]
+,
+// fltk 7Fl_Tile 46 291 342 80 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 46 291 342 30 20 0
+equilateral_triangle(C,D,J,color=green);
+,
+// fltk N4xcas10Log_OutputE 46 321 342 1 20 0
+
+,
+// fltk 9Fl_Scroll 46 322 342 49 20 0
+[
+// fltk N4xcas10Gen_OutputE 46 322 1919 27 20 0
+group[pnt(pnt[group[a+a*b/a*(i),a*b/a*(i),a+a*b/a*(i)+((-a-a*b/a*(i)+a*b/a*(i))*(sqrt(3)*(i)+1))/2,a+a*b/a*(i)],2]),pnt(pnt[a+a*b/a*(i)+((-a-a*b/a*(i)+a*b/a*(i))*(sqrt(3)*(i)+1))/2,536870968,J])]
+,
+// fltk 12Fl_Scrollbar 46 351 326 20 20 0
+[]
+,
+// fltk 12Fl_Scrollbar 372 322 16 33 20 0
+[]
+]
+]
+,
+// fltk 7Fl_Tile 46 373 342 58 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 46 373 342 30 20 0
+P:=single_inter(line(A,J),line(B,C));
+,
+// fltk N4xcas10Log_OutputE 46 403 342 1 20 0
+
+,
+// fltk N4xcas10Gen_OutputE 46 404 342 27 20 0
+pnt(pnt[((-i)*sqrt(3)+1)*a+(2*i)*b,56,P])
+]
+,
+// fltk 7Fl_Tile 46 433 342 58 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 46 433 342 30 20 0
+Q:=single_inter(line(A,I),line(C,D));
+,
+// fltk N4xcas10Log_OutputE 46 463 342 1 20 0
+
+,
+// fltk N4xcas10Gen_OutputE 46 464 342 27 20 0
+pnt(pnt[2*a+(-sqrt(3)+i)*b,56,Q])
+]
+,
+// fltk 7Fl_Tile 46 493 342 80 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 46 493 342 30 20 0
+triangle(A,P,Q,display=red);
+,
+// fltk N4xcas10Log_OutputE 46 523 342 1 20 0
+
+,
+// fltk 9Fl_Scroll 46 524 342 49 20 0
+[
+// fltk N4xcas10Gen_OutputE 46 524 916 27 20 0
+pnt(pnt[group[0,((-i)*sqrt(3)+1)*a+(2*i)*b,2*a+(-sqrt(3)+i)*b,0],1])
+,
+// fltk 12Fl_Scrollbar 46 557 342 16 20 0
+[]
+,
+// fltk 12Fl_Scrollbar 372 524 16 33 20 0
+[]
+]
+]
+,
+// fltk 7Fl_Tile 46 575 342 80 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 46 575 342 30 20 0
+legend([0,40],"a/b=",evalf(a/b));
+,
+// fltk N4xcas10Log_OutputE 46 605 342 1 20 0
+
+,
+// fltk 9Fl_Scroll 46 606 342 49 20 0
+[
+// fltk N4xcas10Gen_OutputE 46 606 434 27 20 0
+pnt(pnt[legend([[0,40],"a/b=1.06",0]),0])
+,
+// fltk 12Fl_Scrollbar 46 639 342 16 20 0
+[]
+,
+// fltk 12Fl_Scrollbar 372 606 16 33 20 0
+[]
+]
+]
+,
+// fltk 7Fl_Tile 46 657 342 80 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 46 657 342 30 20 0
+legend([0,60],"sqrt(3)/2=",evalf(sqrt(3)/2));
+,
+// fltk N4xcas10Log_OutputE 46 687 342 1 20 0
+
+,
+// fltk 9Fl_Scroll 46 688 342 49 20 0
+[
+// fltk N4xcas10Gen_OutputE 46 688 503 27 20 0
+pnt(pnt[legend([[0,60],"sqrt(3)/2=0.866",0]),0])
+,
+// fltk 12Fl_Scrollbar 46 721 342 16 20 0
+[]
+,
+// fltk 12Fl_Scrollbar 372 688 16 33 20 0
+[]
+]
+]
+,
+// fltk 7Fl_Tile 46 739 342 80 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 46 739 342 30 20 0
+legend([0,80],"2/sqrt(3)=",evalf(2/sqrt(3)));
+,
+// fltk N4xcas10Log_OutputE 46 769 342 1 20 0
+
+,
+// fltk 9Fl_Scroll 46 770 342 49 20 0
+[
+// fltk N4xcas10Gen_OutputE 46 770 490 27 20 0
+pnt(pnt[legend([[0,80],"2/sqrt(3)=1.15",0]),0])
+,
+// fltk 12Fl_Scrollbar 46 803 342 16 20 0
+[]
+,
+// fltk 12Fl_Scrollbar 372 770 16 33 20 0
+[]
+]
+]
+,
+// fltk 7Fl_Tile 46 821 342 58 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 46 821 342 30 20 0
+is_equilateral(A,P,Q);
+,
+// fltk N4xcas10Log_OutputE 46 851 342 1 20 0
+
+,
+// fltk N4xcas10Gen_OutputE 46 852 342 27 20 0
+1
+]
+,
+// fltk 7Fl_Tile 46 881 342 31 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 46 881 342 30 20 0
+
+,
+// fltk N4xcas10Log_OutputE 46 911 342 1 20 0
+
+]
+]
+// fltk N4xcas5Geo2dE 406 -113 450 419 20 0
+-2.2906,3.1037,-1.8926,3.3062,[parameter([a,0.0,5.0,1.65,0.05]),parameter([b,0.0,5.0,1.55,0.05]),pnt(pnt[0,[536870968],"A"]),pnt(pnt[a,[536870968],"B"]),[pnt(pnt[group[0,a,a+a*b/a*(i),a*b/a*(i),0],56]),pnt(pnt[a*b/a*(i),536870968,D]),pnt(pnt[a+a*b/a*(i),536870968,C])],[pnt(pnt[group[a,a+a*b/a*(i),a+((a+a*b/a*(i)-a)*(sqrt(3)*(i)+1))/2,a],3]),pnt(pnt[a+((a+a*b/a*(i)-a)*(sqrt(3)*(i)+1))/2,536870968,I])],[pnt(pnt[group[a+a*b/a*(i),a*b/a*(i),a+a*b/a*(i)+((-a-a*b/a*(i)+a*b/a*(i))*(sqrt(3)*(i)+1))/2,a+a*b/a*(i)],2]),pnt(pnt[a+a*b/a*(i)+((-a-a*b/a*(i)+a*b/a*(i))*(sqrt(3)*(i)+1))/2,536870968,J])],pnt(pnt[((-i)*sqrt(3)+1)*a+(2*i)*b,56,P]),pnt(pnt[2*a+(-sqrt(3)+i)*b,56,Q]),pnt(pnt[group[0,((-i)*sqrt(3)+1)*a+(2*i)*b,2*a+(-sqrt(3)+i)*b,0],1]),pnt(pnt[legende([[0,40],"a/b=1.06",0]),0]),pnt(pnt[legende([[0,60],"sqrt(3)/2=0.866",0]),0]),pnt(pnt[legende([[0,80],"2/sqrt(3)=1.15",0]),0]),1],-1.767,1.767,1,0,0,0,0.5,0.5,1,0,1,1.8,0,1,65,[],24,18,256,0,100,0,0,1,0.03,88,61,216
+
+,
+// fltk N4xcas10Log_OutputE 16 306 965 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 16 309 965 31 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 16 309 965 30 20 0
+Les preuves en utilisant le calcul formel
+,
+// fltk N4xcas10Log_OutputE 16 339 965 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 16 342 965 80 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 16 342 965 27 20 0
+p:=point(abscissa(B),y):; q:=point(x,ordinate(C)):; res:=normal(rotation(A,pi/3,p)-q)
+,
+// fltk N4xcas10Log_OutputE 16 369 965 1 20 0
+
+,
+// fltk N4xcas8EquationE 16 370 965 52 20 0 1
+"Done","Done",((i)*sqrt(3)+1)/2*a+(-i)*b-x+(-(sqrt(3))+i)/2*y
+]
+,
+// fltk 7Fl_Tile 16 424 965 55 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 16 424 965 26 20 0
+solve([re(res)=0,im(res)=0],[x,y])
+,
+// fltk N4xcas10Log_OutputE 16 450 965 1 20 0
+
+,
+// fltk N4xcas8EquationE 16 451 965 28 20 0 1
+[[-sqrt(3)*b+2*a,-sqrt(3)*a+2*b]]
+]
+,
+// fltk 7Fl_Tile 16 481 965 56 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 16 481 965 27 20 0
+normal(affix(rotation(A,pi/3,P))),normal(affix(Q))
+,
+// fltk N4xcas10Log_OutputE 16 508 965 1 20 0
+
+,
+// fltk N4xcas8EquationE 16 509 965 28 20 0 1
+2*a+(-(sqrt(3))+i)*b,2*a+(-(sqrt(3))+i)*b
+]
+,
+// fltk 7Fl_Tile 16 539 965 31 20 0
+[
+// fltk N4xcas19Multiline_Input_tabE 16 539 965 30 20 0
+
+,
+// fltk N4xcas10Log_OutputE 16 569 965 1 20 0
+
+]
+// context 2330 giac archive
+7 0 18 8 0 0 'cas_setup' 7 0 11 0 0 0
+0 0 0
+0 0 0
+0 1 0
+0 0 0
+7 0 2 1 ½×Ùß|Û=
+1 ÔFFõg<
+0 12 0
+7 0 4 0 1 0
+0 50 0
+0 0 0
+0 25 0
+0 0 0
+0 0 0
+0 0 0
+8 0 0 'xyztrange' 7 0 16 1      $À
+1      $@
+1      $À
+1      $@
+1      $À
+1      $@
+1      $À
+1      $@
+1      $À
+1      $@
+1 fffffö¿
+1 ™™™™™ñ?
+0 1 0
+1        
+1      ð?
+0 3 0
+7 0 0 7 0 0 8 0 15 7 0 2 8 -1 12 7 8 3 0 0 0
+7 0 1 0 536870968 0
+12 1 |A 6 1 A 8 0 15 7 0 2 8 -1 12 7 8 3 6 1 a 7 0 1 0 536870968 0
+12 1 |B 6 1 B 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 1 7 0 2 6 1 a 8 0 4 7 0 4 6 1 a 6 1 b 8 0 6 6 1 a 4 0 0 0
+0 1 0
+0 536870968 0
+6 1 C 6 1 C 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 4 7 0 4 6 1 a 6 1 b 8 0 6 6 1 a 4 0 0 0
+0 1 0
+0 536870968 0
+6 1 D 6 1 D 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 1 7 0 2 6 1 a 8 0 4 7 0 3 8 0 1 7 0 3 6 1 a 8 0 4 7 0 4 6 1 a 6 1 b 8 0 6 6 1 a 4 0 0 0
+0 1 0
+8 0 2 6 1 a 8 0 1 7 0 2 8 0 4 7 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+4 0 0 0
+0 1 0
+0 1 0
+8 0 6 0 2 0
+0 536870968 0
+6 1 I 6 1 I 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 1 7 0 3 6 1 a 8 0 4 7 0 4 6 1 a 6 1 b 8 0 6 6 1 a 4 0 0 0
+0 1 0
+8 0 4 7 0 3 8 0 1 7 0 3 8 0 2 6 1 a 8 0 2 8 0 4 7 0 4 6 1 a 6 1 b 8 0 6 6 1 a 4 0 0 0
+0 1 0
+8 0 4 7 0 4 6 1 a 6 1 b 8 0 6 6 1 a 4 0 0 0
+0 1 0
+8 0 1 7 0 2 8 0 4 7 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+4 0 0 0
+0 1 0
+0 1 0
+8 0 6 0 2 0
+0 536870968 0
+6 1 J 6 1 J 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 1 7 0 2 8 0 4 7 0 2 8 0 1 7 0 2 8 0 4 7 0 2 4 0 0 0
+0 -1 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+0 1 0
+6 1 a 8 0 4 7 0 2 4 0 0 0
+0 2 0
+6 1 b 0 56 0
+6 1 P 6 1 P 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 1 7 0 2 8 0 4 7 0 2 0 2 0
+6 1 a 8 0 4 7 0 2 8 0 1 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+4 0 0 0
+0 1 0
+6 1 b 0 56 0
+6 1 Q 6 1 Q 8 0 15 7 0 2 7 13 2 0 1 1
+1 fffffú?
+6 1 a 8 0 15 7 0 2 7 13 2 0 1 1
+1 ÌÌÌÌÌø?
+6 1 b 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 1 7 0 2 6 1 a 8 0 4 7 0 2 4 0 0 0
+0 1 0
+6 1 y 7 0 1 0 536870968 0
+12 1 |p 6 1 p 8 0 15 7 0 2 8 -1 12 7 8 3 8 0 1 7 0 2 6 1 x 8 0 4 7 0 4 4 0 0 0
+0 1 0
+6 1 a 6 1 b 8 0 6 6 1 a 7 0 1 0 536870968 0
+12 1 |q 6 1 q 8 0 15 7 0 2 8 0 1 7 0 4 8 0 4 7 0 2 8 0 4 7 0 2 8 0 1 7 0 2 8 0 4 7 0 2 4 0 0 0
+0 1 0
+8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+0 1 0
+8 0 6 0 2 0
+6 1 a 8 0 4 7 0 2 4 0 0 0
+0 -1 0
+6 1 b 8 0 2 6 1 x 8 0 4 7 0 2 8 0 4 7 0 2 8 0 1 7 0 2 8 0 2 8 0 7 7 1 2 0 3 0
+10 0 1 0
+0 2 0
+4 0 0 0
+0 1 0
+8 0 6 0 2 0
+6 1 y 6 3 res 8 0 0 'xcas_mode' 0 0 0
+

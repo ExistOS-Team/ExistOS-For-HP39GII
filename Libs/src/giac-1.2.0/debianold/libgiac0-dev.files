@@ -1,0 +1,4 @@
+usr/include
+usr/lib/libgiac*.so
+usr/lib/libgiac*.a
+usr/lib/libgiac*.la

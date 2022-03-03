@@ -1,0 +1,4 @@
+#! /bin/sh
+unset LANG
+../src/icas morley_demo.cas > morley_demo.tst
+diff morley_demo.tst morley_demo.out

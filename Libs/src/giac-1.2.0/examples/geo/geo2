@@ -1,0 +1,6 @@
+//bissectrices de l'angle A du triangle ABC supposé tracé
+C1:=cercle(A,2);
+D:=inter(C1,droite(A,B)); 
+E:=inter(C1,droite(A,C));
+mediatrice(D[0],E[0]);
+mediatrice(D[1],E[0]); 

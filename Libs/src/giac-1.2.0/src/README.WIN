@@ -1,0 +1,18 @@
+Running xcas:
+After unzipping xcas in a directory, click on
+xcas.exe (english)
+xcasfr.bat (french)
+xcases.bat (spanish)
+If you want to have print support you should install AsTeX, see
+http://www.univ-orleans.fr/EXT/ASTEX
+Once AsTeX installed, preview and print should work on windows NT. 
+On windows 9x, you might need to edit the file
+latex.bat with wordpad or notepad and remove the ^ before &latex2e
+
+* Making a giac dll (Jean-Pierre Branchard)
+make -f Makefile.win giac.dll
+cp giac.dll /bin
+ln -sf /bin/giac.dll /usr/local/lib
+See also http://cygwin.com/cygwin-ug-net/dll.html#DLL-BUILD
+Then you can compile giac applications using e.g. for Ginette
+g++ ginette.cc -s -o ginette `gtk-config --cflags --libs` -lgiac

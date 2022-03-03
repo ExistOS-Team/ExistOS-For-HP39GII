@@ -1,0 +1,14 @@
+A:=point(-3);
+p:=3;
+K:= point(A+p);
+t:=element(0..1);
+B:=A+t*(K-A);
+C:=rotation(B,pi/2,K);
+D:= C+A-B;
+segment(A,B);
+segment(C,B);
+segment(C,D);
+segment(A,D);
+f(x):=9*x*(1-x);
+G:=plotfunc(f(x),x);
+M:=element(G,t);

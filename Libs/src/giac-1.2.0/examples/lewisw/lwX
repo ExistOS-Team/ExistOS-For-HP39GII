@@ -1,0 +1,6 @@
+t := i;
+p4 := (7*t*y*x^2*z^2 - 3*t + t*x*y*z + 11*(x + 1 + t)*y^2 + 5*z + t + 1)^4 *(3*t*x - 7*t*y + 2*z - 3*t + 1)^5 % 17027;
+q4 := (7*t*y*x^2*z^2 - 3*t + t*x*y*z + 11*(x + 1 + t)*y^2 + 5*z + t + 1)^3 *(3*t*x - 7*t*y + 2*z + 3*t - 1)^6 % 17027;
+qqq:= gcd(p4, q4);
+print(Unquoted, "Time" = (time() - LASTTIME)*msec);
+factor(qqq);

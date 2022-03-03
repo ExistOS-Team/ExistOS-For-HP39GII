@@ -1,0 +1,20 @@
+ //on clique pour avoir trois points A,B,C
+A:= point(-4.95-1.777*i); 
+B:= point(3.786-2.876*i);
+C:= point(0.722+1.9*i);
+a1:=(angle(A,B,C))/3;  
+b1:=(angle(B,C,A))/3;  
+c1:=eval(pi/3-a1-b1);  
+P:=inter(rotation(A,a1,droite(A,B)),rotation(B,-b1,droite(B,A)))[0];  
+Q:=inter(rotation(C,-c1,droite(C,B)),rotation(B,b1,droite(B,C)))[0];  
+R:=inter(rotation(A,-a1,droite(A,C)),rotation(C,c1,droite(C,A)))[0]; 
+U:=inter(rotation(A,2*a1,droite(A,B)),rotation(B,-2*b1,droite(B,A)))[0];  
+V:=inter(rotation(C,-2*c1,droite(C,B)),rotation(B,2*b1,droite(B,C)))[0];  
+W:=inter(rotation(A,-2*a1,droite(A,C)),rotation(C,2*c1,droite(C,A)))[0]; 
+triangle(A,R,C);
+triangle(B,Q,C);
+triangle(A,P,B);
+triangle(P,Q,R);
+triangle(U,Q,R);
+triangle(V,P,R);
+triangle(W,Q,P); 

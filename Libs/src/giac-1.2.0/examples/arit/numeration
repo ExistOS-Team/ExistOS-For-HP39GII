@@ -1,0 +1,96 @@
+ecris(n,b):={
+//n est en base 10 et b<=10, ecrit est une fonction iterative 
+//ecris(n,b)=la liste des caracteres de l'ecriture de n en base b  
+local L;
+L:=[];
+while (n>=b){
+L:=concat([irem(n,b)],L);
+n:=iquo(n,b);
+}
+L:=concat([n],L);
+return(L);
+};
+ecritur(n,b):={
+//n est en base 10 et b<=10, ecritur est une fonction recursive 
+//ecritur(n,b)=la liste des caracteres de l'ecriture de n en base b
+if (n>=b)
+return(append(ecritur(iquo(n,b),b),irem(n,b)));
+else
+return([n]);
+};
+chiffre(n,b):={
+//chiffre(n,b) transforme n (0<=n<b) en son caractere ds la base b 
+if (n>9) 
+n:=char(n+55);
+else 
+n:=char(48+n);
+return(n);
+};
+ecritu(n,b):={
+//n est en base 10 et b<=36, ecritu est une fonction iterative 
+//ecritu(n,b)=la liste des caracteres de l'ecriture de n en base b  
+local L,r,rc;
+L:=[];
+while (n>=b){
+r:=irem(n,b);
+rc:=chiffre(r,b);
+L:=concat([rc],L);
+n:=iquo(n,b);
+}
+n:=chiffre(n,b);
+L:=concat([n],L);
+return(L);
+};
+ecriture(n,b):={
+//n est en base 10 et b<=36, ecriture est une fonction recursive 
+//ecriture(n,b)=la liste des caracteres de l'ecriture de n en base b
+local r,rc;
+if (n>=b){
+r:=irem(n,b);
+rc:=chiffre(r,b);
+return(append(ecriture(iquo(n,b),b),rc));
+}
+else {
+return([chiffre(n,b)]);
+}
+};
+ecrit(n,b):= { 
+//ecrit(n,b)=la sequence des chiffres de n dans la base b 
+local m,u,cu; 
+  m:=(NULL);  
+  while(n!=0){ 
+      u:=(irem(n,b));  
+      if (u>9) { 
+          cu:=(char(u+55));  
+        } 
+       else { 
+          cu:=(char(u+48));  
+        };  
+      m:=(cu,m);  
+      n:=(iquo(n,b));  
+    };  
+  return(m); 
+};
+nombre(m,b):={
+local s,k,am,nm,n; 
+  s:=(size(m));  
+  n:=(0);  
+  k:=(0);  
+  if (s!=0) { 
+      while(k<s){ 
+          am:=(asc(m[k])[0]);  
+          if (am>64) { 
+              nm:=(am-55);  
+            } 
+           else { 
+              nm:=(am-48);  
+            };  
+          if (nm>(b-1)) { 
+              return("erreur");  
+            }  
+          n:=(n*b+nm);  
+          k:=(k+1);  
+        };  
+    }   
+  return(n);
+};

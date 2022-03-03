@@ -1,0 +1,9 @@
+//mediatrice d'un segment
+1;
+A:=point(-1.0-2.0*i);
+B:=point(2.0+3.0*i);
+segment(A,B);
+C1:=cercle(A,B-A);
+C2:=cercle(B,A-B);
+D:=droite(inter(C1,C2));
+M:=inter(segment(A,B),D);

@@ -1,0 +1,54 @@
+-------------------------------------------------------------------------
+ENGLISH
+-------------------------------------------------------------------------
+Running xcas:
+After unzipping xcas in a directory, click on
+xcas.exe (english)
+xcasfr.bat (french)
+xcases.bat (spanish)
+If you want to have print support you must have a LaTeX distribution
+with pstricks that supports Unix-like LaTeX commands (latex, windvi, dvips)
+A good place to get one for Windows is http://www.fptex.org/
+If you are using miktex, replace windvi.exe by yap.exe in the xdvi.bat
+file.
+During the setup, keep the recommended default install *but* you
+must also install pstricks, check for custom install and check the
+pstricks button in the texlive->tex-pictures->pstricks, as well as
+the ghostscript-free and gsview42-nonfree in the win32-support section
+After install, check that . is in your current PATH or move latex.bat,
+xdvi.bat and dvips.bat in a directory from your PATH e.g. in the
+C:\WINDOWS directory
+If you want to put xcas in a directory of your PATH and run it from
+another directory, you should set the environment variables
+XCAS_LOCALE to the directory where the locales are
+XCAS_HELP to the file aide_cas
+This can be done in the xcasfr.bat or xcases.bat file, e.g. add
+set XCAS_LOCALE=/cygdrive/c/xcas/locale/
+set XCAS_HELP=/cygdrive/c/xcas/aide_cas
+-------------------------------------------------------------------------
+FRANCAIS 
+-------------------------------------------------------------------------
+Pour installer xcas
+Utilisez un decompresseur (par exemple WinZip) pour desarchiver xcas.zip
+dans un repertoire puis cliquez sur
+xcasfr.bat
+Pour pouvoir imprimer, il vous faut une distribution LaTeX avec pstricks
+qui accepte les commandes LaTeX en style Unix (latex, windvi et dvips)
+Par exemple, vous pouvez en recuperer sur http://www.fptex.org/
+Pendant l'installation, conservez l'install recommendee par defaut *mais* 
+selectionnez pstricks dans la section texlive->tex-pictures->pstricks et
+dans la section win32-support->ghostscript-free et gsview42-nonfree
+(vous pouvez aussi rajouter emacs, latex2html, etc. dans cette section)
+Si vous utilisez la ditribution miktex, remplacez windvi.exe par yap.exe
+dans le fichier xdvi.bat
+Apres installation, verifiez que . est dans votre PATH, sinon vous
+devrez deplacer latex.bat, xdvi.bat et dvips.bat dans un repertoire de votre
+chemin par exemple dans le repertoire C:\WINDOWS
+Si vous placez xcas dans un repertoire du PATH et que vous le lancez
+depuis un autre repertoire, vous devez donner une valeur aux variables
+d'environement
+XCAS_LOCALE (vers le repertoire ou les fichiers de locale sont installes)
+XCAS_HELP (vers le fichier aide_cas)
+Vous pouvez rajouter dans le fichier xcasfr.bat des lignes du genre
+set XCAS_LOCALE=/cygdrive/c/xcas/locale/
+set XCAS_HELP=/cygdrive/c/xcas/aide_cas

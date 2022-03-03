@@ -1,0 +1,9 @@
+MINGW compilation instructions (under cygwin)
+
+1/ install mingw 32 bits
+2/ set path in path.mingw and configure.mingw according to your installation
+3/ source path.mingw
+4/ copy config.h.mingw to config.h and src/config.h
+5/ cd src
+6/ copy Makefile.mingw to Makefile
+7/ run make giac.dll or make icas

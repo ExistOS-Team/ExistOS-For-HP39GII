@@ -1,0 +1,98 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH GIAC 1 "2014-4-6"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+giac \- computer algebra system
+.SH SYNOPSIS
+.B giac
+.RI [ options ] " files"
+.br
+.B icas
+.RI [ options ] " files" 
+.br
+.B xcas
+.RI " files"
+.br 
+.B cas_help
+.RI " keyword" 
+.SH DESCRIPTION
+.PP
+.\" TeX users may be more comfortable with the \fB<whatever>\fP and
+.\" \fI<whatever>\fP escape sequences to invode bold face and italics, 
+.\" respectively.
+\fBgiac\fP is an advanced symbolic and numeric calculator by
+Bernard Parisse. The console interface is named 
+.B icas 
+or equivalently
+.B giac
+. 
+The corresponding GUI program is called 
+.B xcas.
+These programs has extensive html documentation; One can also obtain some
+help about a keyword like this:
+.br
+.P 
+.IR
+.br 
+   0>> ?gcd
+.br
+   Returns the greatest common divisor of 2 polynomials of several variables 
+   or of 2 integers or of 2 rationals.
+.br
+   (Intg(a) or Poly),(Intg(b) or Poly)
+.br
+   gcd(45,75);gcd(15/7,50/9);gcd(x^2-2*x+1,x^3-1);gcd(t^2-2*t+1,t^2+t-2);
+.br
+   gcd((x^2-1)*(y^2-1)*z^2,x^3*y^3*z+(-(y^3))*z+x^3*z-z)
+.br
+   lcm,euler,modgcd,ezgcd,psrgcd,heugcd,Gcd
+
+
+.br
+.SH OPTIONS
+.TP
+.B \-\-version
+Show version of program.
+.TP
+.B \-\-texmacs
+To call giac/icas from Texmacs
+.TP
+.B \-\-emacs
+To call giac/icas from Emacs
+.TP
+.B \-\-sage 
+To call giac from Sage
+
+.SH SEE ALSO
+The programs are documented fully by
+.IR "GIAC/XCAS manual" 
+in html format in /usr/share/giac/doc.
+
+.br
+.br
+.B
+C++ 
+programers will find some informations about the giac library in the 
+.I
+info
+manual.
+
+.SH AUTHOR
+Bernard Parisse. http://www-fourier.ujf-grenoble.fr/~parisse/giac.html
+.SH LICENSE
+GPLv3+
+

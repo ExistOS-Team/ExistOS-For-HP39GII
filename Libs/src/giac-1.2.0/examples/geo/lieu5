@@ -1,0 +1,7 @@
+A:=point(-3.46000000000,0.594000000000) ;
+B:=point(-0.667000000000,0.516000000000);
+C:=point(-1.21000000000,2.84000000000);  
+D:=parallele(A,droite(B,C));
+M:=element(D);
+H:=(inter(perpendiculaire(M,CB),perpendiculaire(C,droite(M,B))))[0] ;
+lieu(H,M);

@@ -1,0 +1,3 @@
+#! /bin/sh
+../src/icas testfactor > factor.tst
+diff factor.tst factor.out

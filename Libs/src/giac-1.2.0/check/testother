@@ -1,0 +1,4 @@
+simplify(integrate(1/(1+sqrt(1-x**2)),x));
+integrate(exp(x)*sin(x),x,0,t);
+integrate(1/(t**4+t**2),t,2,+infinity);
+integrate((a*t+5)/((t-1)**3*(t-2)**2),t,3,x);

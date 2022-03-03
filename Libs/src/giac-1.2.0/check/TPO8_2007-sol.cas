@@ -1,0 +1,104 @@
+ M:=t->(cos(t)/sin(t)^3,sin(t)/sin(t)^3);
+ f:=(x,y,z)->x^3-3*x*y*z-z^3;
+ C2:=implicitplot(f(x,y,1),x,y);
+/*  Pour ajuster le pas d'un trace implicit on utilise xstep et ystep£pour abscisse et ordonnee, quels que soient les noms de variables.*/
+ C2Z:=implicitplot(f(x,1,z),x,z,xstep=0.01,ystep=0.01);
+/* ---------------------------------------------------------------------------------£ Mini texte Courbes elliptiques£---------------------------------------------------------------------------------*/
+/* Etudier la documentation de factorint dans l'aide de pari-gp: Il combine£plusieurs methodes, dont celle de Lenstra: ECM*/
+/*  egalite de 2 vecteurs a facteur pres:*/
+ egal:=proc(P,Q)
+ a:=expand(P[1]*Q[2]-P[2]*Q[1]);
+ b:=expand(P[3]*Q[2]-P[2]*Q[3]);
+ c:=expand(P[1]*Q[3]-P[3]*Q[1]);
+ if [a,b,c]=[0,0,0] then true; else false; fi;
+end proc;
+/* On cree une procedure simplif que l'on pourra modifier ensuite:*/
+simplif:=proc(R)
+d:=igcd(R[1],R[2],R[3]);
+normal(R/d);end proc;
+/* On prend un courbe  C d'equation: y^2=x^3+ax^2+bx+c*/
+ pointresiduel:=proc(a,b,c,P,Q)
+local d,C,QQ,M,sol,R;
+ C:=-y^2*z+x^3+a*x^2*z+b*x*z^2+c*z^3;
+if egal(P,Q) then
+//la tangente est P+tQQ sauf si P est omega. Autrement dit, QQ est le point
+//d'intersection de la tangente avec la droite de l'infini, ie c'est le vecteur
+//directeur. Sauf lorsque la tangente est la droite de l'infini ie QQ=omega
+QQ:=[subs(x=P[1],y=P[2],z=P[3],diff(C,y)),subs(x=P[1],y=P[2],z=P[3],-diff(C,x)),0];
+M:=expand(P+t*QQ);d:=subs(x=M[1],y=M[2],z=M[3],C);
+sol:=normal(d/t^2);
+//le vecteur QQ doit etre non nul sinon c'est que la courbe est singuliere.
+if egal(QQ,[0,1,0]) then R:=[0,1,0]; else R:=expand(-coeff(sol,t,1)*P+coeff(sol,t,0)*QQ);fi;
+else
+//On parametre (PQ) par P+tQ, 0 et l'infini sont solutions.
+M:=expand(P+t*Q);d:=subs(x=M[1],y=M[2],z=M[3],C);
+//sol doit etre un poly de degre 1 puisque 0 et l'infini sont solutions.
+sol:=normal(d/t);
+//ce vecteur doit etre non nul.
+R:=expand(-coeff(sol,t,1)*P+coeff(sol,t,0)*Q);
+fi;
+end proc;
+/* exemple:*/
+P:=[0,0,1];Q:=[1,1,1];omega:=[0,1,0];
+/* verification egal:*/
+ if egal(P,Q) then print(eg) else  print(noneg) fi;
+ if egal(P,P) then print(eg) else  print(noneg) fi;
+ pointresiduel(1,-1,0,P,Q);pointresiduel(1,-1,0,P,omega);pointresiduel(1,-1,0,P,omega);
+ pointresiduel(1,-1,0,P,P);pointresiduel(1,-1,0,omega,omega);
+/*  addition:*/
+plus:=proc(a,b,c,P,Q)
+local R;
+R:=pointresiduel(a,b,c,P,Q);
+R[2]:=-R[2];
+R;
+end proc;
+plus(1,-1,0,omega,omega);plus(1,-1,0,P,omega);plus(1,-1,0,P,P);R:=plus(1,-1,0,P,Q);
+/* On programme la mult par n en O(log n) additions.*/
+nplus:=proc(a,b,c,P,n)
+local Y,m,X;
+Y:=[0,1,0];X:=P;m:=n;
+while m>0 do
+ if odd(m) then Y:=plus(a,b,c,X,Y);X:=plus(a,b,c,X,X);m:=(m-1)/2;
+  else X:=plus(a,b,c,X,X);m:=m/2;
+  fi; 
+  end do;
+  Y;
+end proc;
+/*  Ex: P est d'ordre 2, Q d'ordre 3, P+Q d'ordre 6 */
+ nplus(1,-1,0,P,2),nplus(1,-1,0,Q,2),nplus(1,-1,0,Q,3),nplus(1,-1,0,R,3),nplus(1,-1,0,R,2),nplus(1,-1,0,R,6);
+ pari()
+ [x1,x2]:=pari_ellpow([0,1,0,2,-15],[2,1],5);
+ [y1,y2,y3]:=nplus(1,2,-15,[2,1,1],5);
+ normal([x1,x2]-[y1/y3,y2/y3]);#doit etre nul
+/* Application \`a la  factorisation.*/
+egalomega:=proc(P,N)
+ Q:=[0,1,0];
+ a:=expand(P[1]*Q[2]-P[2]*Q[1]);
+ b:=expand(P[3]*Q[2]-P[2]*Q[3]);
+ c:=expand(P[1]*Q[3]-P[3]*Q[1]);
+ g:=igcd(a,b,c,N);
+ if g<>1 and g<>N  then print("diviseur",g):true; else false; fi;
+end proc;
+//On redefinit simplifier pour travailler modulo N
+simplif:=proc(R)
+d:=igcd(R[1],R[2],R[3],N);
+ if d<>1 and d<>N then print("diviseur",d); break;
+else  R mod N;fi;end proc;
+/* On redefinit plus pour qu'il s'arrete si l'on obtient£omega modulo un diviseur strict de N.*/
+plus:=proc(a,b,c,P,Q)
+R:=pointresiduel(a,b,c,P,Q);
+R[2]:=-R[2];
+if egalomega(R,N) then break; fi;
+R;
+end proc;
+/* factorisation d'un entier via les courbes elliptiques*/
+n:=lcm(seq(i,i=1..19));
+/* On cherche c tel que (2,1) soit sur y^2=x^3+bx+c*/
+P:=[2,1,1];N:=nextprime(20000)*nextprime(40000);
+for a from 1 to 3 do for b from 1 to 20
+do nplus(a,b,P[2]^2-P[1]^3-a*P[1]^2-b*P[1],P,n) od:od:
+print("trouve en a b"),a,b;
+N:=nextprime(1234567)*nextprime(7654321);n:=lcm(seq(i,i=1..50));
+for a from 1 to 3 do for b from 1 to 20
+do nplus(a,b,P[2]^2-P[1]^3-a*P[1]^2-b*P[1],P,n) od:od:
+print("trouve en a b"),a,b;

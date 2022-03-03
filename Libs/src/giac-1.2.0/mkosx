@@ -1,0 +1,26 @@
+#! /bin/bash
+export CFLAGS='-m32 -O2 -I/usr/X11/include'
+export CXXFLAGS='-m32 -O2 '
+export CPPFLAGS='-m32 -O2 '
+#export LDFLAGS='-L/usr/X11/lib'
+# export LIBS="$LIBS -framework AGL -framework OpenGL -framework ApplicationServices -framework Cocoa -isysroot /Developer/SDKs/MacOSX10.6.sdk"
+./configure --prefix=/Applications/usr
+make
+cd src
+sh mkstat
+make
+sh mkhist
+make install
+cp -f icas /Applications/usr/bin
+rm -rf /Applications/usr/bin/xcas.app
+cp -f xcas /Applications/usr/bin/
+cd /Applications/usr/bin
+fltk-config --post xcas
+open ~/Desktop/xcas.pmdoc
+# building python extension
+# make the 64 bits version of giac with -m64 compile flag
+# copy .libs/libgiac.a to /usr/local/lib
+# export ARCHFLAGS='-arch x86_64'
+# python setup.py build_ext
+# sudo python setup.py install
+# /bin/cp -f /Library/Python/2.6/site-packages/giacpy* /Applications/usr/share/python26/

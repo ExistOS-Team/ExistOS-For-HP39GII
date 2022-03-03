@@ -1,0 +1,16 @@
+This directory contains automatic checks for giac builds.
+Files beginning with TP are sessions made by F. Han for his preparation
+to French Agregation de Mathematiques (http://www.math.jussieu.fr/~han/agreg)
+(c) 2010 
+Frederic Han, http://www.math.jussieu.fr/~han
+Centre de Mathématiques de Jussieu, 
+Université Paris 7 Denis Diderot,
+Case Postale 7012
+2, place Jussieu
+F-75251 PARIS CEDEX 05 
+
+The file chk_xavier is a check based on a session by 
+Xavier Vidaux, http://www2.udec.cl/~xvidaux/
+Department of Mathematics
+Faculty of Physical and Mathematical Sciences
+University of Concepción (Chile)

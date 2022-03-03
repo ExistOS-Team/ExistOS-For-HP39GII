@@ -1,0 +1,41 @@
+code(c):={
+if (c=="é") return 100;
+if (c=="è") return 99;
+if (c=="à") return 98;
+if (c=="ç") return 97;
+if (c=="ù") return 96;
+if (c=="ê") return 95;
+return(asc(c)-32);
+};
+
+decode(k):={
+if (k== 100) return "é";
+if (k==99) return "è";
+if (k==98) return "à";
+if (k==97) return "ç";
+if (k==96) return "ù";
+if (k==95) return "ê";
+return(char(k+32));
+};
+
+jules_cesar(message,cle):={
+local s,j,messcode;
+s:=size(message);
+messcode:="";
+for (j:=0;j<s;j++) {
+messcode:=append(messcode,decode(irem(cle+code(message[j]),101)));
+}
+return (messcode);
+};
+
+lineaire(message,cle):={
+local s,j,messcode;
+s:=size(message);
+messcode:="";
+for (j:=0;j<s;j++) {
+messcode:=messcode+decode(irem(cle*code(message[j]),101));
+}
+return (messcode);
+};
+
+

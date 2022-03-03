@@ -1,0 +1,73 @@
+ restart;maple_mode(1);cas_setup(0,0,0,1,0,1e-10,10,[1,50,0,25],0,0,0); #radians,pas de cmplx, pas de  Sqrt
+P:=-2*x^3+5*x^2*y+x^2+4*x*y^2-26*x*y+22*x+2*y^3-4*y^2+18*y-24; // normal(add((rand(-5,5)*x+rand(-5,5)*y+rand(-5,5))*(x-2)^i*(y-1)^(2-i),i=0..2));
+implicitplot(P,x,y,xstep=0.01):
+ fP:=unapply(P,x,y);
+ intersec:=normal(fP(a*t+2,b*t+1)/t^2);
+/*  On resout l'equation de degre 1 en t: intersec=0 en recuperant les£ coefficients. C'est toujours plus raisonnable d'eviter  d'utiliser une£ fonction sophistiquee telle que  solve, dont on ne sait pas trop ce quelle£ fait. Meme si ici ca marche tres bien. */
+ t0:=normal(-coeff(intersec,t,0)/coeff(intersec,t,1));
+ xab:=a*t0+2;yab:=b*t0+1; #les coordonn\'ees du point Mab.
+ if normal(fP(xab,yab))==0 then print("c'est bon, le point trouve est bien sur la cubique") fi; # verification.
+Ma:=subst(xab+I*yab,b=1);
+ C1:=paramplot(Ma,a=-20..20,affichage=blue):#NB la langue des couleurs peut poser PB
+ rl:=proc() rand(-5,5)*x+rand(-5,5)*y+rand(-5,5)*z+rand(-5,5); end;
+/*  Le produit rl()*rl() est une quadrique de rang 2 (au lieu de 4.NB: l'equation£  homogene a 4 variables), elle n'est pas donc£ generale. En revanche toute forme quadratique de 4 variables est somme de 2£ formes quadratiques de rang 2.*/
+ ql:=proc()  normal(rl()*rl()+rl()*rl()); end; #une quadrique random.
+ P:=normal((x-2*y-z+3)*x^2+x*y*(x-2*y-z-1)+y^2*(x+4*y+3*z-5)+z*(2*x^2-x+y*z-2*z^2+y^2-z-y-7)); # celui ci convient
+ P:=-x^3+x^2*y+9*x^2*z-2*x^2-4*x*y^2-21*x*y*z-3*x*y-18*x*z^2+x*z+4*y^3+2*y^2*z-y^2+25*y*z^2-18*y*z-12*z^3-10*z^2+23*z; // normal(rl()*x^2+x*y*rl()+y^2*rl()+z*(rl()*rl()+rl()*rl())); # par  hypothese, P  est dans l'ideal (x^2,xy,y^2,z)
+/*  Pour l'hypotheses de lissite, on ne la verifiera pas de maniere exacte, on£ utilise donc une fonction resoudre  en flottants complexes: cSolve*/
+ if cSolve(([P,op(grad(P,[x,y,z]))]),[x,y,z])==[] then print("S est
+ bien  lisse. on peut continuer!")  else print("Pas de chance, il faut prendre un autre P") fi;
+ C:=normal(subs(z=0,P));# l'equation de C dans le plan z=0.
+/*  la courbe plane C dans le plan z=0 a une equation sans termes de degre 0 ni 1,£ elle est donc singuli\`ere en (0,0)*/
+ fP:=unapply(C,x,y);
+ purge(a,b);
+/*  On prend la droite de vecteur directeur (a,1) (il manquera juste la droite verticale).*/
+ intersec:=normal(fP(a*t,t)/t^2);
+ t0:=normal(-coeff(intersec,t,0)/coeff(intersec,t,1));
+ xa:=a*t0;ya:=t0; #les coordonn\'ees du point Ma.
+ if normal(fP(xa,ya))==0 then print("c'est bon") fi; # verification.
+ dPxa:=normal(unapply(diff(P,x),x,y,z)(xa,ya,0));
+ dPya:=normal(unapply(diff(P,y),x,y,z)(xa,ya,0));
+ dPza:=normal(unapply(diff(P,z),x,y,z)(xa,ya,0));
+ Eqa:=numer((x-xa)*dPxa+(y-ya)*dPya+z*dPza);
+/* On choisit deux vecteurs du plan tangent qui en general forment une base.£On simplifie donc par leur pgcd des coefficients pour retirer des cas ou ils£sont nuls.*/
+ g:=gcd(coeff(Eqa,y,1),coeff(Eqa,x,1)); #il est non trivial
+ v1:=normal([-coeff(Eqa,y,1),coeff(Eqa,x,1),0]/g);
+ g:=gcd(coeff(Eqa,y,1),coeff(Eqa,z,1)); 
+ v2:=normal([0,-coeff(Eqa,z,1),coeff(Eqa,y,1)]/g);
+/*  Maintenant le seul cas ou v1,v2 n'est pas libre est donne par l'annulation£ du premier coefficient de v1. notons le v1v2lies, l'annulation de ce polynome£ ne correspondra pas a un cas voulu, mais sur ce lieu il faudrait choisir une£ autre base du plan*/
+v1v2lies:=v2[3];
+ N:=[xa,ya,0]+t*(v1+b*v2);
+ resiequ:=normal(unapply(P,x,y,z)(op(N))/t^2);
+ t0:=-coeff(resiequ,t,0)/coeff(resiequ,t,1);
+/*  On obtient donc dans l'expression suivante une application£ rationnelle "dominant" la surface cubique. On n'espere pas qu'il£ s'agisse d'une parametrisation rationnelle (un point a le droit£ d'avoir plusieurs antecedants) on parlera donc d'unirationalite. */
+ Naff:=normal([xa,ya,0]+t0*(v1+b*v2));#la cubique affine dominee par cette application. 
+ normal(unapply(P,x,y,z)(op(Naff)));#ca doit etre nul.
+ Nproj:=normal(denom(Naff[1])*[Naff[1],Naff[2],Naff[3],1]);
+/*  --On etudie maintenant la question des 27 droites incluses dans S--*/
+ purge(u,v,t);
+ M:=normal([xa,ya,0]+t*[u,v,1]);
+ restrictionS:=(unapply(P,x,y,z)(op(M))/t);#le numerateur suffit
+ c0:=coeff(restrictionS,t,0);#de degre 1en u,v
+ c1:=coeff(restrictionS,t,1);#de degre 2 en u,v
+ c2:=coeff(restrictionS,t,2);#de degre 3 en u,v
+ u0:=solve(c0,u):
+ c1u0:=normal(unapply(c1,u)(u0));
+ c2u0:=normal(unapply(c2,u)(u0));
+/*  Puisque l'on doit resoudre c1u0=0 et c2u0=0, on le fait pour le numerateur.*/
+ cc1:=numer(c1u0);
+ cc2:=numer(c2u0);
+ d:=gcd(seq(coeff(cc1,v,i),i=0..2));
+ cc1:=quo(cc1,d);
+ d:=gcd(seq(coeff(cc1,v,i),i=0..3));
+ cc2:=quo(cc2,d);
+ Rep1:=resultant(cc1,cc2,v);
+ factors(Rep1);
+/*  Le resultant fait apparaitre un polynome de degre 27, et d'autres facteurs.£ Un premier facteur correspond au numerateur du coefficient de u dans c0 (a la£ puissance 6), ce£ qui est normal car on a divise par ce coefficient pour eliminer u avec£ l'equation c0. L'autre facteur correspond au denominateur de ya (aussi a la£ puissance 6), ce qui est£ normal aussi, car lorsque Ma est a l'infini, le vecteur (u,v,1) choisi pour£ creer un droite passant par Ma peut coincider avec Ma, on n'a donc pas£ travaille avec une droite passant par Ma dans ce cas.£ C'est donc le polynome de degre 27 qui correspond aux droites£ incluses dans S, il y en a donc 27 sur un corps algebriquement clos.  */
+ factor(coeff(c0,u,1));
+ Rep1b:=normal(Rep1/numer(coeff(c0,u,1))^6);
+ P27:=normal(Rep1b/denom(ya)^6);# les 27 valeurs de a pour lequelles il passe une   droite de S par Ma
+ if degree(P27,a)==27 then print("c'est bien de degre 27") else
+ print("Attention ca n'est pas de degre 27,
+ soit on a pas de chance et C est reductible,
+ soit il y a une ERREUR");0; fi;  

@@ -1,0 +1,152 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{french}
+\usepackage{amsfonts}
+%\pagestyle{empty}
+\begin{document}
+\begin{center}
+2002-2003\\
+{\bf MIAS,UNITÉ SM-31, MATHÉMATIQUES}\\
+\vspace{2mm}
+ FEUILLE D'EXERCICES $n^o 5$\\
+\vspace{1cm}
+$\phi \varphi$
+{\bf ANALYSE}
+\end{center}
+\begin{enumerate}
+\item Etudier l'intégrabilité des fonctions suivantes pour lesquelles
+  on donne $f(x)$ et l'intervalle.
+$$\frac{\ln x}{x^2}\;\mbox{sur}\;]0,\;+\infty [,\;\;\;\;\frac{\ln
+  x}{x^2+1}\;\mbox{sur}\;]0,\;+\infty [,$$
+$$\frac{x}{(\ln x)^\alpha}\;\mbox{sur}\;]0,\;1/2
+ ],\;\;\;\;\frac{1}{x(\ln x)^\alpha}\;\mbox{sur}\;]0,\;1/2 ],$$
+$$\frac{\ln (1+x^a)}{x^b}\;\mbox{sur}\;]0,\;+\infty [,\;\;\;\;\frac{\exp
+ (-x)}{x^\alpha}\;\mbox{sur}\;[1,\;+\infty [,$$
+$$\frac{\exp (-x)-1}{x^\alpha}\;\mbox{sur}\;]0,\;+\infty [,\;\;\;\;\frac{\sin^2
+  x}{x\ln x}\;\mbox{sur}\;]0,\;+\infty [,$$
+$$\frac{\sin x}{x^\alpha+\sin t}\;\mbox{sur}\;]0,\;+\infty
+[,\;\;\;\;x\sin\frac{1}{x}\;\mbox{sur}\;]0,\;1],$$
+$$\frac{1}{x}\cos(\frac{1}{x^2})\;\mbox{sur}\;]0,\;1].$$
+\item Même exercice avec 
+$$\frac{1}{x}\{ (x^3+2x+1)^{1/3}-(ax^2+bx+c)^{1/2}\}\; \mbox{sur}\;
+[1,\;+\infty [.$$
+\item Soit $a>0,$ et $f:[0,\; a]\rightarrow\mathbb R$ une fonction
+  continue, dérivable en 0, telle que $f(0)=f'(0).$ Montrer que
+  $$\frac{f(x)}{x^{3/2}}$$ est intégrable sur $]0,\; a].$ La fonction
+  $$\frac{f(x)}{x^2}$$ est-elle intégrable sur $]0,\; a] ?$  
+\item Soit $f: [1,\;+\infty [\rightarrow ]0,\;+\infty [$ une fonction
+  continue telle que $$\frac{f(x+1)}{f(x)}\rightarrow l,$$ lorsque
+  $x\rightarrow +\infty.$ Si $l<1,$ montrer que $f$ est intégrable sur $[1,\;+\infty [.$
+\item Soient $a, b$ des constantes >0.
+\begin{itemize}
+\item i) Montrer que la fonction $\frac{\mbox{e}^{-at}}{t}$ est
+  intégrable sur $[1, \; +\infty [,$ et que
+  $\frac{\mbox{e}^{-at}-\mbox{e}^{-bt}}{t}$ est intégrable sur $]0,\;
+  +\infty [.$
+\item ii) Soit $f :]0, \; +\infty [\rightarrow\mathbb R$ une fonction
+  intégrable. Déterminer $$\lim_{\epsilon\rightarrow
+    0}\int_{a\epsilon}^{b\epsilon}f(t)\mbox{d}t,\;\;\;\lim_
+  { X\rightarrow +\infty}\int_{aX}^{bX}f(t)\mbox{d}t.$$
+ En déduire $$\lim_{\epsilon\rightarrow
+    0}\int_{a\epsilon}^{b\epsilon}\frac{\mbox{e}^{-t}}{t}\mbox{d}t,\;\;\;\lim_
+  { X\rightarrow
+    +\infty}\int_{aX}^{bX}\frac{\mbox{e}^{-t}}{t}\mbox{d}t.$$
+\item iii) Déterminer la valeur de $$\int_{]0,\;+\infty
+    [}\frac{\mbox{e}^{-at}-\mbox{e}^{-bt}}{t}\mbox{d}t.$$
+\end{itemize}
+\item Etudier l'intégrabilité sur $[0,\; +\infty [$ des fonctions
+  suivantes
+$$ \frac{x}{1+\mbox{e}^x\sin^2x},\;\;\;\frac{x}{1+x^\alpha\sin^2x},$$
+où $\alpha$ est un paramètre >0. (On pourra calculer d'abord
+$$\int_0^\pi\frac{\mbox{d}u}{1+a\sin^2u},\;\;\; a\geq 0.)$$
+\end{enumerate}
+
+\begin{center}
+{\bf ALGEBRE}\\
+{\it Exercices}
+\end{center}
+\begin{enumerate}
+\item On considère  les endomorphismes de $\mathbb R^4,$ dont les
+  matrices dans la base  canonique sont
+$$
+A=\left(\begin{array}{rrrr}4&3&-1&-3\\-1&1&1&1\\2&0&-1&-2\\1&1&0&0\end{array}\right),\;\;\;B=\left(\begin{array}{rrrr}-2&2&4&1\\1&0&-1&-1\\-2&2&3&2\\-1&2&3&0\end{array}\right).$$
+Vérifier que ces endomorphismes sont trigonalisables et déterminer
+pour chacun des deux une base de $\mathbb R^4,$ dans laquelle leur
+matrice est triangulaire.
+\item Si $B$ est la matrice donnée dans l'exercice précédent, donner
+  la solution générale du système différentiel $$ Y'(t)=BY(t),$$ où
+$$Y(t)=\left(\begin{array}{cccc}x(t)\\y(t)\\z(t)\\u(t)\end{array}\right).$$
+\item Soit $A\in {\cal M}_3(\mathbb C)$ une matrice de polynôme
+  caractéristique $P_A(X)=(a-X)(b-X)^2,$ avec $a\neq b.$ Montrer que $A$ est semblable
+  à l'une des deux matrices suivantes :
+$$\left(\begin{array}{ccc}a&0&0\\0&b&0\\0&0&b\end{array}\right),\;\mbox{
+  ou bien}\;
+\left(\begin{array}{ccc}a&0&0\\0&b&1\\0&0&b\end{array}\right).$$
+\item Soit $A\in {\cal M}_3(\mathbb C)$ une matrice de polynôme
+  caractéristique $P_A(X)=(b-X)^3.$ Montrer que $A$ est semblable
+  à l'une des trois matrices suivantes :
+$$\left(\begin{array}{ccc}b&0&0\\0&b&0\\0&0&b\end{array}\right),\;\;
+\left(\begin{array}{ccc}b&0&0\\0&b&1\\0&0&b\end{array}\right),\;\mbox{
+  ou bien}\;
+\left(\begin{array}{ccc}b&1&0\\0&b&1\\0&0&b\end{array}\right).$$
+\item On suppose que $\lambda$ est une valeur propre complexe de $A\in
+  {\cal M}_n(\mathbb R),$ avec $\Im \lambda\neq 0.$ Si $V\in \mathbb
+  C^n\setminus\{0\},$ est un vecteur propre associé à $\lambda,$ montrer que $\Re V$ et $\Im V$ sont des vecteurs
+  linéairement indépendants de $\mathbb R^n.$ (Ici $\Re$ pour partie
+  réelle et $\Im$ pour partie imaginaire).
+\end{enumerate}
+\begin{center}
+\vspace{5mm}
+{\it Problème}
+\end{center}
+\begin{enumerate}
+\item Soit $A\in {\cal M}_n(\mathbb R),$ telle que $A^3=I,$ et soit
+  $g$ l'endomorphisme de $\mathbb C^n,$ de matrice $A$ dans la base
+  canonique.
+\begin{itemize}
+\item a) Déterminer $g^3.$ Quelles sont les valeurs propres de $g ?$
+\item b) Montrer que $g$ est diagonalisable.
+\end{itemize}
+\item Soit $f$ un endomorphisme de $\mathbb R^2.$
+\begin{itemize}
+\item a) Montrer que le spectre de $f$ est $\{\mbox{e}^{i\theta},
+  \mbox{e}^{-i\theta}\},$ avec $\theta\neq 0 \;\mbox{mod}\pi,$ si et seulement s'il existe une base de
+  $\mathbb R^2,$ dans laquelle la matrice de $f$ est égale à 
+$$
+\left(\begin{array}{cc}\cos\theta&-\sin\theta\\\sin\theta&\cos\theta\end{array}\right).$$
+b) En utilisant le résultat précédent, déterminer les endomorphismes
+de $\mathbb R^2,$ tels que $f^3= \mbox{id}.,$ où id. désigne
+l'application identité. Quel est le polynôme caractéristique d'un tel
+endomorphisme ?
+\end{itemize}
+\item Soit $f:\mathbb R^3\rightarrow\mathbb R^3$ un endomorphisme tel
+  que $f^3= \mbox{id}.$
+\begin{itemize}
+\item a) Si $f$ est diagonalisable, alors $f=\mbox{id}.$ 
+\item b) On suppose désormais que $f\neq\mbox{id}.$ Quel est le
+  polynôme caractéristique de $f ?$ Quelles sont les valeurs propres
+  de $f ?$
+\item c) Montrer qu'il existe un unique plan vectoriel $P,$ invariant
+  par $f.$ 
+\item d) Si $$ R=\left(\begin{array}{cc}-1/2&-\sqrt 3/2\\\sqrt
+      3/2&-1/2\end{array}\right),$$ montrer qu'il existe une base de
+  $\mathbb R^3,$ dans laquelle la matrice de $f$ est
+$$\left(\begin{array}{cc}1&0\\0&R \end{array}\right).$$
+\end{itemize} 
+\item  On considère maintenant une matrice $A\in {\cal M}_4(\mathbb
+  R),$ telle que $A^3=I,$ et $A\neq I.$ Montrer que $A$ est semblable
+  à l'une des deux matrices suivantes :
+$$\left(\begin{array}{cc}I_2&0\\0&R
+  \end{array}\right),\;\;\left(\begin{array}{cc}R&0\\0&R
+  \end{array}\right).$$  Généraliser ce résultat en dimension
+quelconque.
+\item Trouver des matrices carrées ,{\it à coefficients entiers},
+  différentes de l'identité et dont le cube est l'identité.
+\end{enumerate}
+\end{document}
+
+
+
+
+
+

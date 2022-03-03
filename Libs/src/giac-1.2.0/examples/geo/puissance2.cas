@@ -1,0 +1,7 @@
+ 
+(A,C)-> 
+{ local O,r,d; 
+  O:=centre(C);  
+  r:=rayon(C);  
+  d:=longueur2(A,O);  
+  return(d-r^2); }

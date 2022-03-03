@@ -1,0 +1,53 @@
+ndiv1(n):={
+  local d,l1,l2,k;
+  d:=2;
+  l1:=[1];
+  while (n!=1) {
+    l2:=[];
+    k:=0;
+    while (irem(n,d)==0) {
+      n:=iquo(n,d);
+      k:=k+1;
+      l2:=concat(l2,l1*d^k);
+    }
+    l1:=concat(l1,l2); 
+    d:=d+1;
+  }
+  return(l1);
+};
+fpdiv(n):={
+//renvoie la liste des diviseurs de n en utilisant factprem qui se trouve
+// dans le fichier factpremier
+local l1,l2,l3,d,e,s;
+l3:=factprem(n);
+s:=size(l3);
+l1:=[1];
+for (k:=0;k<s-1;k:=k+2) {
+l2:=[];
+d:=l3[k];
+e:=l3[k+1];
+for (j:=1;j<=e;j++) {
+l2:=concat(l2,l1*(d^j));
+}
+l1:=concat(l1,l2);
+}
+return(l1);
+};
+criblediv(n):={
+//renvoie la liste des diviseurs de n en utilisant criblefact qui se trouve
+//dans le fichier factpremier
+local l1,l2,l3,d,e;
+l3:=criblefact(n);
+s:=size(l3);
+l1:=[1];
+for (k:=0;k<s-1;k:=k+2) {
+l2:=[];
+d:=l3[k];
+e:=l3[k+1];
+for (j:=1;j<=e;j++) {
+l2:=concat(l2,l1*(d^j));
+}
+l1:=concat(l1,l2);
+}
+return(l1);
+};

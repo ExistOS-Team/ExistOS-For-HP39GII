@@ -1,0 +1,15 @@
+A:=point(-3.84000000000,1.95000000000);
+B:=point(-2.16000000000,-0.723000000000);  
+C:=point(1.30000000000,0.710000000000); 
+triangle(A,B,C);
+u:=element(-4..4,0.182);
+M:=element(droite(B,C),u);
+D:=element(droite(A,B));
+D1:=droite(D,M);
+E:=(inter(droite(A,C),D1))[0];
+C1:=circonscrit(B,D,M);
+C2:=circonscrit(E,C,M);
+L:=inter(C1,C2);
+if (affixe(L[0])==affixe(M)) {Q:=L[1];} else {Q:=L[0];};
+P:=Q;
+lieu(P,D);

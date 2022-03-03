@@ -1,0 +1,24 @@
+# -*- mode:Makefile -*-
+CXXFLAGS = -g -DIPAQ -DSOFTMATH -I.. -I. -I/skiff/include -I/skiff/usr/include -I/skiff/usr/X11R6/include -I/skiff/local/include -I/skiff/local/arm-linux/include -I/skiff/local/arm-linux/usr/include -I/skiff/local/arm-linux/usr/local/include -I/skiff/local/arm-linux/usr/X11R6/include #-msoft-float 
+OBJS =  hist.o History.o Input.o Xcas1.o Equation.o Print.o Tableur.o Editeur.o Flv_CStyle.o Flve_Check_Button.o Flve_Input.o Flv_Style.o Flv_Data_Source.o Flve_Combo.o Flv_List.o Flv_Table.o Graph.o Help1.o
+GIACOBJS = sym2poly.o gausspol.o maple.o ti89.o mathml.o moyal.o misc.o permu.o quater.o desolve.o input_parser.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o risch.o lin.o series.o subst.o vecteur.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o plot3d.o rpn.o prog.o pari.o unary.o usual.o identificateur.o gen.o input_lexer.o  softmath.o
+LIBS = -L/skiff/lib -L/skiff/usr/lib -L/skiff/usr/X11R6/lib -L/skiff/local/lib -L/skiff/local/arm-linux/lib -L/skiff/local/arm-linux/usr/lib -L/skiff/local/arm-linux/usr/local/lib -L/skiff/local/arm-linux/usr/X11R6/lib -lmpfr -lfltk_images -lfltk -ljpeg -lpng -lz -lX11 -lgsl -lgslcblas -lgmp -ldl -lpthread
+STATLIBS = /skiff/local/lib/libmpfr.a /skiff/lib/libfltk_images.a /skiff/lib/libfltk.a  /skiff/local/lib/libpng12.a /skiff/local/lib/libgsl.a /skiff/local/lib/libgslcblas.a /skiff/local/lib/libreadline.a /skiff/local/lib/libhistory.a /skiff/local/lib/libncurses.a -L/skiff/lib -L/skiff/usr/lib -L/skiff/usr/X11R6/lib -L/skiff/local/lib -L/skiff/local/arm-linux/lib -L/skiff/local/arm-linux/usr/lib -L/skiff/local/arm-linux/usr/local/lib -L/skiff/local/arm-linux/usr/X11R6/lib -lX11 -lXau -ldl -lpng12 -ljpeg -lz -lgmp -lpthread -lstdc++ 
+DYNLIBS =  -L/skiff/local/lib -L/usr/X11R6/lib -lX11 -lgiac -lgmp
+# For windows: remove -ldl in LIBS above and uncomment WLIBS below, + -DWIN32
+# For linux: add -ldl in LIBS and comment WLIBS
+xcasnew:	$(OBJS)
+#	arm-linux-g++ $(CXXFLAGS) $(OBJS) -o xcasnew $(DYNLIBS) $(LIBS)
+#	arm-linux-g++ $(CXXFLAGS) $(GIACOBJS) $(OBJS) -o xcasnew $(LIBS) #$(WLIBS)
+	/skiff/local/bin/arm-linux-g++ -s $(CXXFLAGS) $(GIACOBJS) $(OBJS) -o xcasnew $(STATLIBS) 
+hist.o: 	hist.cxx
+	/skiff/local/bin/arm-linux-g++ $(CXXFLAGS) -c hist.cxx
+hist.cxx:	hist.fl
+	fluid -c hist.fl
+Help1.o:	Help1.cc
+	/skiff/local/bin/arm-linux-g++ $(CXXFLAGS) -c Help1.cc
+.cc.o:
+	/skiff/local/bin/arm-linux-g++ $(CXXFLAGS) -c $<
+clean:
+	rm -f $(OBJS)
+

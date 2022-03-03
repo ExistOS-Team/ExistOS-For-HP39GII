@@ -1,0 +1,19 @@
+#! /bin/sh
+
+cd ~/tmp
+#rm -rf giac-0.6.1
+tar xvfz ~/giac-0.9.2/giac-0.9.2.tar.gz
+cd giac-0.9.2/debian
+cp -f rules.pari rules
+cd ..
+#export CXXFLAGS='-g -L/usr/local/lib'
+#export CXXFLAGS='-L/usr/local/lib -g'
+export CXXFLAGS='-L/usr/local/lib -O2 -DSMARTPTR64 -D_I386_ '
+#dpkg-buildpackage -us -uc -rfakeroot
+mv debian debiannew
+mv debianold debian
+mv debiannew debianold
+dpkg-buildpackage -rfakeroot
+mv debian debiannew
+mv debianold debian
+mv debiannew debianold

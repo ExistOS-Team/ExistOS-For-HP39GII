@@ -1,0 +1,4 @@
+#! /bin/sh
+unset LANG
+../src/icas TP16-sol.cas > TP16.tst
+diff TP16.tst TP16-sol.cas.out1

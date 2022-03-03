@@ -63,8 +63,22 @@ void vTask1(void *pvParameters) {
     //printf("Start vTask1\n");
     for (;;) {
 		    
-		vTaskDelay(pdMS_TO_TICKS(5000));
+		vTaskDelay(pdMS_TO_TICKS(20000));
 		printTaskList();
+
+/*
+    vTaskSuspend(pSysTask);
+    portYIELD();
+    
+    r = (uint32_t *)(((uint32_t *)pSysTask)[1]) - 16;
+    INFO("SYS REGS:\n");
+    for(int i = 0; i<16; i++)
+    {
+        INFO("REG[%d]: %08X\n", i, r[i]);
+    }
+    INFO("\n");
+    vTaskResume(pSysTask);
+*/
     }
 }
 
@@ -844,7 +858,7 @@ void vLLKkbd(void *pvParameters)
       if(curKey != 255){
         LLIRQ_PostIRQ(LL_IRQ_KEYBOARD, curKey, press, 0);
       }
-      vTaskDelay(1);
+      vTaskDelay(30);
     }
 }
 

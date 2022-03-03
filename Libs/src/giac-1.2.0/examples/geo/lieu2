@@ -1,0 +1,8 @@
+C1:=cercle(A,B);
+O:=milieu(A,B);
+C:=element(C1);
+T:=tangent(C1,C);
+D2:=parallele(O,droite(A,C));
+M:=inter(T,D2);
+N:=M[0];
+lieu(N,C);

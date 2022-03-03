@@ -1,0 +1,101 @@
+CXXFLAGS = -O3 -malign-loops=2 -malign-jumps=2 -malign-functions=2 -fomit-frame-pointer
+xcas: 	sym2poly.o gausspol.o gen.o moyal.o misc.o permu.o quater.o desolve.o input_parser.o input_lexer.o identificateur.o unary.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o lin.o series.o subst.o usual.o vecteur.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o rpn.o prog.o xcas.o plotfltk.o pari.o sheet.o first.o
+	c++ $(CXXFLAGS) -o xcas -s --static -I.. -L/usr/X11R6/lib sym2poly.o gausspol.o gen.o moyal.o misc.o permu.o quater.o desolve.o input_parser.o input_lexer.o identificateur.o unary.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o lin.o series.o subst.o usual.o vecteur.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o rpn.o prog.o sheet.o xcas.o plotfltk.o pari.o first.o -lgmp -lflvw -lfltk -lX11 -ldl -lgsl -lgslcblas #-lntl -lpari
+cas: 	sym2poly.o gausspol.o gen.o moyal.o misc.o permu.o quater.o input_parser.o input_lexer.o identificateur.o unary.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o lin.o series.o subst.o usual.o vecteur.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o rpn.o prog.o cas.o pari.o desolve.o first.o
+	c++ $(CXXFLAGS) -o cas -s -I.. -L/usr/X11R6/lib moyal.o misc.o permu.o quater.o desolve.o input_parser.o input_lexer.o sym2poly.o gausspol.o gen.o identificateur.o unary.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o lin.o series.o subst.o usual.o vecteur.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o rpn.o prog.o pari.o cas.o first.o /usr/local/lib/gc.a /usr/lib/libgmp.a -lreadline -lhistory -lncurses -lgsl -lgslcblas -ldl -lflvw -lfltk -lX11 # -lntl -lpari 
+cas2: 	sym2poly.o gausspol.o gen.o moyal.o misc.o permu.o quater.o input_parser.o input_lexer.o identificateur.o unary.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o lin.o series.o subst.o usual.o vecteur.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o rpn.o prog.o cas.o pari.o desolve.o first.o
+	c++ $(CXXFLAGS) -o cas -s -I.. moyal.o misc.o permu.o quater.o desolve.o input_parser.o input_lexer.o sym2poly.o gausspol.o gen.o identificateur.o unary.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o lin.o series.o subst.o usual.o vecteur.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o rpn.o prog.o pari.o cas2.o first.o /usr/local/lib/gc.a /usr/lib/libgmp.a 
+statcas: 	sym2poly.o gausspol.o gen.o moyal.o misc.o permu.o quater.o input_parser.o input_lexer.o identificateur.o unary.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o lin.o series.o subst.o usual.o vecteur.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o rpn.o prog.o cas.o pari.o desolve.o first.o
+	c++ $(CXXFLAGS) -o cas -s --static -L/usr/X11R6/lib -I.. sym2poly.o gausspol.o gen.o moyal.o misc.o permu.o quater.o desolve.o input_parser.o input_lexer.o identificateur.o unary.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o lin.o series.o subst.o usual.o vecteur.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o rpn.o prog.o pari.o cas.o first.o -lgmp -lfltk -lX11 -lreadline -lhistory -lncurses /usr/local/lib/libpari.a  -lntl -lgsl -lgslcblas -ldl
+xcas.o:		xcas.cxx
+	g++ -I.. $(CXXFLAGS) -c xcas.cc
+xcas.cxx:	xcas.fl
+	fluid -c xcas.fl
+cas.o:		cas.cc
+	g++ -I.. $(CXXFLAGS) -c cas.cc
+cas2.o:		cas2.cc
+	g++ -I.. $(CXXFLAGS) -c cas2.cc
+sym2poly.o:	sym2poly.cc
+	g++ -I..  $(CXXFLAGS) -c sym2poly.cc 
+prog.o:	prog.cc
+	g++ -I..  $(CXXFLAGS) -c prog.cc 
+desolve.o:	desolve.cc
+	g++ -I..  $(CXXFLAGS) -c desolve.cc 
+gausspol.o:	gausspol.cc
+	g++ -I..  $(CXXFLAGS) -c gausspol.cc 
+gen.o:	gen.cc
+	g++ -I..  $(CXXFLAGS) -c gen.cc 
+input_parser.o:	 input_parser.cc
+	g++ -I..  $(CXXFLAGS) -c  input_parser.cc
+input_parser.cc:	input_parser.yy
+	bison -v -y -p giac_yy -d input_parser.yy && mv -f y.tab.c input_parser.cc && mv -f y.tab.h input_parser.h 
+input_lexer.o:	 input_lexer.cc
+	g++ -I..  $(CXXFLAGS) -c  input_lexer.cc
+input_lexer.cc:	input_lexer.ll
+	flex -Pgiac_yy -olex.yy.c input_lexer.ll && mv -f lex.yy.c input_lexer.cc
+identificateur.o:	identificateur.cc
+	g++ -I..  $(CXXFLAGS) -c identificateur.cc 
+unary.o:	unary.cc
+	g++ -I..  $(CXXFLAGS) -c unary.cc
+symbolic.o:	 symbolic.cc
+	g++ -I..  $(CXXFLAGS) -c  symbolic.cc
+index.o:	 index.cc
+	g++ -I..  $(CXXFLAGS) -c  index.cc
+modpoly.o:	 modpoly.cc
+	g++ -I.. $(CXXFLAGS) -c  modpoly.cc
+modfactor.o:	 modfactor.cc
+	g++ -I.. $(CXXFLAGS) -c  modfactor.cc 
+derive.o:	  derive.cc
+	g++ -I..  $(CXXFLAGS) -c   derive.cc 
+solve.o:	solve.cc
+	g++ -I..  $(CXXFLAGS) -c solve.cc
+intg.o:	 intg.cc
+	g++ -I..  $(CXXFLAGS) -c  intg.cc
+lin.o:	 lin.cc
+	g++ -I..  $(CXXFLAGS) -c  lin.cc
+series.o:	 series.cc
+	g++ -I..  $(CXXFLAGS) -c  series.cc 
+subst.o:	  subst.cc
+	g++ -I..  $(CXXFLAGS) -c   subst.cc 
+usual.o:	usual.cc
+	g++ -I..  $(CXXFLAGS) -c usual.cc 
+vecteur.o:	vecteur.cc
+	g++ -I..  $(CXXFLAGS) -c vecteur.cc
+moyal.o :	 moyal.cc
+	g++ -I..  $(CXXFLAGS) -c  moyal.cc
+permu.o :	 permu.cc
+	g++ -I..  $(CXXFLAGS) -c  permu.cc
+misc.o :	 misc.cc
+	g++ -I..  $(CXXFLAGS) -c  misc.cc
+quater.o :	 quater.cc
+	g++ -I..  $(CXXFLAGS) -c  quater.cc
+renee.o :	 renee.cc
+	g++ -I..  $(CXXFLAGS) -c  renee.cc
+tex.o:	 tex.cc
+	g++ -I..  $(CXXFLAGS) -c  tex.cc
+global.o:	 global.cc
+	g++ -I..  $(CXXFLAGS) -c  global.cc 
+ifactor.o:	  ifactor.cc
+	g++ -I..  $(CXXFLAGS) -c   ifactor.cc 
+alg_ext.o:	alg_ext.cc
+	g++ -I..  $(CXXFLAGS) -c alg_ext.cc
+gauss.o:	 gauss.cc
+	g++ -I..  $(CXXFLAGS) -c  gauss.cc 
+isom.o:	isom.cc
+	g++ -I..  $(CXXFLAGS) -c isom.cc 
+plot.o:	plot.cc
+	g++ -I..  $(CXXFLAGS) -c plot.cc
+plotfltk.o:	plotfltk.cc
+	g++ -I..  $(CXXFLAGS) -c plotfltk.cc
+help.o:	help.cc
+	g++ -I..  $(CXXFLAGS) -c help.cc
+rpn.o:	rpn.cc
+	g++ -I..  $(CXXFLAGS) -c rpn.cc 
+pari.o:	pari.cc
+	g++ -I..  $(CXXFLAGS) -c pari.cc 
+ezgcd.o:	ezgcd.cc
+	g++ -I..  $(CXXFLAGS) -c ezgcd.cc 
+sheet.o:	sheet.cc
+	g++ -I..  $(CXXFLAGS) -c sheet.cc 
+first.o:	first.cc
+	g++ -I..  $(CXXFLAGS) -c first.cc 

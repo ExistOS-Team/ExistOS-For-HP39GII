@@ -1,0 +1,25 @@
+assume(a1=0.3);
+assume(a2=0.4);
+O:=point(0);
+J:=point(1);
+T0:=droite(O,J);
+[(D1:=droite(O,point(1+i*tan(a1)))),
+ (D2:=droite(O,point(1+i*texpand(tan(2*a1))))),
+ (D3:=droite(J,point(i*texpand(tan(2*a2))))),
+ (D4:=droite(J,point(i*texpand(tan(a2))))),0];
+T1:=droite(0,point(1+i*texpand(tan(3*a1))));
+T2:=droite(J,point(i*texpand(tan(3*a2))));
+A:=inter(T1,T2)[0];
+[(D5:=droite(A,A+1+i*texpand(tan(pi/3+2*a1-a2)))),
+ (D6:=droite(A,A+1+i*texpand(tan(2*pi/3+a1-2*a2)))),0];
+B:=point(normal(affixe(inter(D1,D4)[0])));
+C:=point(normal(affixe(inter(D3,D6)[0])));
+D:=point(normal(affixe(inter(D5,D2)[0])));
+triangle(B,C,D);
+[segment(J,B),segment(J,C),segment(O,B),segment(O,D),segment(A,C),segment(A,D)];
+bc:=longueur2(B,C);
+dc:=longueur2(D,C);
+db:=longueur2(D,B);
+normal(bc-db);
+normal(bc-dc);
+xyztrange(-0.1,1.10, -0.10,1.10, -10.0,10.0, -1.0,6.0, -0.1,1.1, -0.1,1.1,0);

@@ -1,0 +1,171 @@
+## Process this file with automake to produce Makefile.in
+
+lib_LTLIBRARIES = libgiac.la
+libgiac_la_SOURCES = sym2poly.cc gausspol.cc moyal.cc \
+  misc.cc permu.cc quater.cc desolve.cc input_parser.yy input_lexer.ll \
+  symbolic.cc index.cc modpoly.cc modfactor.cc \
+  ezgcd.cc derive.cc solve.cc intg.cc lin.cc series.cc \
+  subst.cc vecteur.cc tex.cc global.cc \
+  ifactor.cc alg_ext.cc gauss.cc isom.cc plot.cc help.cc rpn.cc prog.cc \
+  pari.cc usual.cc identificateur.cc gen.cc unary.cc first.cc
+giacincludedir = $(includedir)/giac
+giacinclude_HEADERS = dispatch.h fraction.h gen.h desolve.h misc.h permu.h \
+  identificateur.h unary.h symbolic.h index.h modpoly.h modfactor.h \
+  monomial.h poly.h gausspol.h sym2poly.h ezgcd.h derive.h solve.h quater.h \
+  subst.h usual.h intg.h lin.h series.h vecteur.h moyal.h tex.h global.h \
+  ifactor.h alg_ext.h gauss.h isom.h plot.h help.h rpn.h prog.h pari.h giac.h \
+  input_lexer.h input_parser.h first.h path.h
+bin_PROGRAMS = cas aide xcas
+cas_SOURCES = cas.cc 
+cas_LDADD = -lgiac -lgmp #-lcurses
+cas_LDFLAGS = -L../src/.libs /usr/lib/libc.a /usr/lib/libm.a /usr/lib/gcc-lib/i386-redhat-linux/2.96/libstdc++.a /usr/local/lib/libgsl.a /usr/local/lib/libgslcblas.a /usr/local/lib/libpari.a /usr/local/lib/libntl.a
+#mycas_SOURCES = mycas.cc 
+#mycas_LDFLAGS = -s -L../src/.libs 
+#mycas_LDADD = -lgiac -lgmp #-lcurses
+aide_SOURCES = help.cc aide.cc
+aide_LDADD = #-lcurses
+aide_LDFLAGS = -s -L../src/.libs 
+# If you want a static binary remove the hash below and comment -lcurses
+xcas_SOURCES = xcas.cc plotfltk.cc sheet.cc #$(libgiac_la_SOURCES) 
+xcas_LDADD = -lgiac -lgmp # /usr/local/lib/libfltk.a  -lcurses
+xcas_LDFLAGS = -L../src/.libs /usr/lib/libc.a /usr/lib/libm.a /usr/lib/gcc-lib/i386-redhat-linux/2.96/libstdc++.a /usr/local/lib/libgsl.a /usr/local/lib/libgslcblas.a /usr/local/lib/libpari.a /usr/local/lib/libntl.a #-s --static 
+#cas2tex_SOURCES = cas2tex.cc
+#cas2tex_LDADD = libgiac.la -lgmp
+#integrate_SOURCES = integrate.cc
+#integrate_LDADD = libgiac.la -lgmp
+#factor_SOURCES = factor.cc
+#factor_LDADD = libgiac.la -lgmp
+#normalize_SOURCES = normalize.cc
+#normalize_LDADD = libgiac.la -lgmp
+#partfrac_SOURCES = partfrac.cc
+#partfrac_LDADD = libgiac.la -lgmp
+
+INCLUDES = -I$(srcdir) -I$(top_srcdir)
+LFLAGS = -Pgiac_yy -olex.yy.c
+YFLAGS = -p giac_yy -d
+EXTRA_DIST = .gdbinit prime.table gen_user \
+	input_parser.h \
+	mkxcas mkwcas mkgcas mkaout \
+	Makefile.ipaq Makefile.fast Makefile.win Makefile.O3 \
+	normalize.cc integrate.cc partfrac.cc factor.cc spread.cc\
+	xcas.fl xcas.h xcas.cxx plotfltk.h sheet.h \
+	progfr.cc renee.cc renee.h cas2.cc README.ipaq \
+	readme.doc latex.bat xdvi.bat dvips.bat xcasfr.bat xcases.bat \
+	xcasfr.sh xcases.sh xcasen.sh
+
+install-exec-hook:
+	../mkinstalldirs $(prefix)/share/giac
+	cp -f prime.table $(prefix)/share/giac
+	ln -sf aide $(bindir)/cas_help
+	ln -sf aide $(bindir)/en_cas_help
+	ln -sf aide $(bindir)/es_cas_help
+	ln -sf aide $(bindir)/fr_cas_help
+#	ln -sf $(bindir)/cas $(bindir)/cas2tex
+#	ln -sf $(bindir)/cas $(bindir)/+
+#	ln -sf $(bindir)/cas $(bindir)/-
+#	ln -sf $(bindir)/cas $(bindir)/\*
+#	ln -sf $(bindir)/cas $(bindir)/\%
+#	ln -sf $(bindir)/cas $(bindir)/\^
+#	ln -sf $(bindir)/cas $(bindir)/abs
+#	ln -sf $(bindir)/cas $(bindir)/algvar
+#	ln -sf $(bindir)/cas $(bindir)/acos
+#	ln -sf $(bindir)/cas $(bindir)/arccos
+#	ln -sf $(bindir)/cas $(bindir)/acosh
+#	ln -sf $(bindir)/cas $(bindir)/arccosh
+#	ln -sf $(bindir)/cas $(bindir)/alog
+#	ln -sf $(bindir)/cas $(bindir)/alog10
+#	ln -sf $(bindir)/cas $(bindir)/arg
+#	ln -sf $(bindir)/cas $(bindir)/asin
+#	ln -sf $(bindir)/cas $(bindir)/arcsin
+#	ln -sf $(bindir)/cas $(bindir)/asinh
+#	ln -sf $(bindir)/cas $(bindir)/arcsinh
+#	ln -sf $(bindir)/cas $(bindir)/atan
+#	ln -sf $(bindir)/cas $(bindir)/arctan
+#	ln -sf $(bindir)/cas $(bindir)/atanh
+#	ln -sf $(bindir)/cas $(bindir)/arctanh
+#	ln -sf $(bindir)/cas $(bindir)/chinrem
+#	ln -sf $(bindir)/cas $(bindir)/conj
+#	ln -sf $(bindir)/cas $(bindir)/cos
+#	ln -sf $(bindir)/cas $(bindir)/cosh
+#	ln -sf $(bindir)/cas $(bindir)/cross
+#	ln -sf $(bindir)/cas $(bindir)/cyclotomic
+#	ln -sf $(bindir)/cas $(bindir)/derive
+#	ln -sf $(bindir)/cas $(bindir)/det
+#	ln -sf $(bindir)/cas $(bindir)/dot
+#	ln -sf $(bindir)/cas $(bindir)/e2r
+#	ln -sf $(bindir)/cas $(bindir)/egcd
+#	ln -sf $(bindir)/cas $(bindir)/egv
+#	ln -sf $(bindir)/cas $(bindir)/egvl
+#	ln -sf $(bindir)/cas $(bindir)/evalf
+#	ln -sf $(bindir)/cas $(bindir)/exp
+#	ln -sf $(bindir)/cas $(bindir)/factor
+#	ln -sf $(bindir)/cas $(bindir)/fdistrib
+#	ln -sf $(bindir)/cas $(bindir)/gauss
+#	ln -sf $(bindir)/cas $(bindir)/gcd
+#	ln -sf $(bindir)/cas $(bindir)/ichinrem
+#	ln -sf $(bindir)/cas $(bindir)/idn
+#	ln -sf $(bindir)/cas $(bindir)/ifactor
+#	ln -sf $(bindir)/cas $(bindir)/im
+#	ln -sf $(bindir)/cas $(bindir)/image
+#	ln -sf $(bindir)/cas $(bindir)/integrate
+#	ln -sf $(bindir)/cas $(bindir)/inv
+#	ln -sf $(bindir)/cas $(bindir)/iquo
+#	ln -sf $(bindir)/cas $(bindir)/iquorem
+#	ln -sf $(bindir)/cas $(bindir)/irem
+#	ln -sf $(bindir)/cas $(bindir)/is_prime
+#	ln -sf $(bindir)/cas $(bindir)/isom
+#	ln -sf $(bindir)/cas $(bindir)/jacobi
+#	ln -sf $(bindir)/cas $(bindir)/jordan
+#	ln -sf $(bindir)/cas $(bindir)/ker
+#	ln -sf $(bindir)/cas $(bindir)/lcm
+#	ln -sf $(bindir)/cas $(bindir)/legendre
+#	ln -sf $(bindir)/cas $(bindir)/lin
+#	ln -sf $(bindir)/cas $(bindir)/linsolve
+#	ln -sf $(bindir)/cas $(bindir)/lim
+#	ln -sf $(bindir)/cas $(bindir)/lname
+#	ln -sf $(bindir)/cas $(bindir)/Log
+#	ln -sf $(bindir)/cas $(bindir)/log10
+#	ln -sf $(bindir)/cas $(bindir)/lvar
+#	ln -sf $(bindir)/cas $(bindir)/max
+#	ln -sf $(bindir)/cas $(bindir)/maple2mupad
+#	ln -sf $(bindir)/cas $(bindir)/maple2xcas
+#	ln -sf $(bindir)/cas $(bindir)/maplec
+#	ln -sf $(bindir)/cas $(bindir)/mupad2maple
+#	ln -sf $(bindir)/cas $(bindir)/mupad2xcas
+#	ln -sf $(bindir)/cas $(bindir)/mupadc
+#	ln -sf $(bindir)/cas $(bindir)/mkisom
+#	ln -sf $(bindir)/cas $(bindir)/min
+#	ln -sf $(bindir)/cas $(bindir)/moyal
+#	ln -sf $(bindir)/cas $(bindir)/nextprime
+#	ln -sf $(bindir)/cas $(bindir)/normal
+#	ln -sf $(bindir)/cas $(bindir)/partfrac
+#	ln -sf $(bindir)/cas $(bindir)/pcar
+#	ln -sf $(bindir)/cas $(bindir)/proot
+#	ln -sf $(bindir)/cas $(bindir)/pcoeff
+#	ln -sf $(bindir)/cas $(bindir)/peval
+#	ln -sf $(bindir)/cas $(bindir)/prevprime
+#	ln -sf $(bindir)/cas $(bindir)/quo
+#	ln -sf $(bindir)/cas $(bindir)/quorem
+#	ln -sf $(bindir)/cas $(bindir)/rem
+#	ln -sf $(bindir)/cas $(bindir)/r2e
+#	ln -sf $(bindir)/cas $(bindir)/ranm
+#	ln -sf $(bindir)/cas $(bindir)/re
+#	ln -sf $(bindir)/cas $(bindir)/resultant
+#	ln -sf $(bindir)/cas $(bindir)/rref
+#	ln -sf $(bindir)/cas $(bindir)/series
+#	ln -sf $(bindir)/cas $(bindir)/sign
+#	ln -sf $(bindir)/cas $(bindir)/sin
+#	ln -sf $(bindir)/cas $(bindir)/sinh
+#	ln -sf $(bindir)/cas $(bindir)/simplify
+#	ln -sf $(bindir)/cas $(bindir)/smod
+#	ln -sf $(bindir)/cas $(bindir)/solve
+#	ln -sf $(bindir)/cas $(bindir)/sqrt
+#	ln -sf $(bindir)/cas $(bindir)/sto
+#	ln -sf $(bindir)/cas $(bindir)/subst
+#	ln -sf $(bindir)/cas $(bindir)/tan
+#	ln -sf $(bindir)/cas $(bindir)/tanh
+#	ln -sf $(bindir)/cas $(bindir)/texpand
+#	ln -sf $(bindir)/cas $(bindir)/tlin
+#	ln -sf $(bindir)/cas $(bindir)/trace
+#	ln -sf $(bindir)/cas $(bindir)/tran
+	ln -sf cas $(bindir)/giac

@@ -1,0 +1,56 @@
+ restart;maple_mode(1);cas_setup(0,0,0,1,0,1e-10,10,[1,50,0,25],0,0,0); #radians,pas de cmplx, pas de  Sqrt
+/* -------------------Polynome caracteristique et mineurs diagonaux------------------------------------------------------------------------------*/
+n:=5; In:={seq(i,i=1..n)}; In minus {2,4};
+ extr:=proc(A,II,JJ)
+ matrix([seq([seq(A[i,j],j=JJ)],i=II)]);
+ end_proc;
+/* Attention, diff(f,x,y) derive en x puis y, alors que diff(f,[x,y])£donne la liste des derive en x et en y.*/
+diff(x*y,x,y);diff(x*y,[x,y]);
+ purge(a,x);
+ n:=5;A:=matrix(n,n,(i,j)->a[i,j]);
+ d:=diag(seq(x[i],i=1..n));
+ II:=In minus {1,3};# on essaye (i,j)=(1,3)
+ extr(A,II,II);
+ dij:=diff(det(A-d),x[1],x[3]);
+ normal(det( extr(A,II,II)) - subs(x=[0,0,0,0,0],dij));
+ II:=In minus {2,3};# on essaye (i,j)=(2,3)
+ extr(A,II,II);
+ dij:=diff(det(A-d),x[2],x[3]);
+ normal(det( extr(A,II,II)) - subs(x=[0,0,0,0,0],dij));
+ II:=In minus {4,5};# on essaye (i,j)=(4,5)
+ extr(A,II,II);
+ dij:=diff(det(A-d),x[4],x[5]);
+ normal(det( extr(A,II,II)) - subs(x=[0,0,0,0,0],dij));
+ B:=A-x*identity(n);
+ d:=seq(normal(subs(x=0,diff(det(B),x,i))/i!),i=n..1);
+ P:=charpoly(A);
+ monpolyfaddeev:=proc(A)
+ local a,n,B,P;
+ n:=dim(A)[1];a:=1:B:=identity(n);P:=[a];
+ for i from n-1 to 0 by -1 do 
+ B:=normal(B*A);
+ a:=trace(B)/(i-n);
+ P:=[op(P),a];B:=B+a*identity(n) od; 
+ P;
+ end proc:
+ n:=30;A:=matrix(n,n,(i,j)->rand(21)-10):
+ normal(poly2symb(monpolyfaddeev(A),x));
+  charpoly(A)-monpolyfaddeev(A);
+time(monpolyfaddeev(A)):
+time(charpoly(A)):
+ coeff(3*x^4+2*x^3+y^3,x,3);
+ A:=matrix(3,4,2);matrix(op(dim(A)));
+ cf:=proc(P,k)
+ local i,j;
+ matrix(op(dim(P)),(i,j)->coeff(P[i,j],x,k));
+ end_proc;
+ P:=matrix[[2*x^4+2*x^3+x^2+4,2*x^4+5*x^2+5*x+3,3*x^2+5],[2*x^4+3*x^3+6*x^2+5*x+5,x^4+4*x^3+2*x^2+x,5*x^4+5*x^3+x^2+6*x+6],[x^4+2*x^3+2*x^2+x+6,6*x^4+x^3+x^2+2,x^4+2*x^3+5*x^2+2*x+5]]; // matrix(3,3,(i,j)->add(rand(7)*x^l,l=0..4));
+A:=matrix(3,3,(i,j)->a[i,j]);
+cf(P,4);
+R:=P;k:=4;Q:=0;
+R:=normal(R-cf(R,k)*x^(k-1)*(x*identity(3)-A));Q:=cf(R,k)*x^(k-1)+Q:k:=k-1;
+R:=normal(R-cf(R,k)*x^(k-1)*(x*identity(3)-A));Q:=cf(R,k)*x^(k-1)+Q:k:=k-1;
+R:=normal(R-cf(R,k)*x^(k-1)*(x*identity(3)-A));Q:=cf(R,k)*x^(k-1)+Q:k:=k-1;
+R:=normal(R-cf(R,k)*x^(k-1)*(x*identity(3)-A));Q:=cf(R,k)*x^(k-1)+Q:k:=k-1;
+R2:=add(cf(P,i)*A^i,i=0..4):;
+normal(R2-R);

@@ -1,0 +1,28 @@
+CXXFLAGS = -g -I. -I.. -I/usr/local/include -D_I386_ -DIN_GIAC -DSMARTPTR64 -DHAVE_CONFIG_H  # -pg
+#CXXFLAGS = -O2 -I. -I.. -I/usr/local/include -D_I386_ -DIN_GIAC -DSMARTPTR64 -DHAVE_CONFIG_H  # -pg
+CXX=g++
+GIACOBJS = sym2poly.o gausspol.o threaded.o maple.o ti89.o mathml.o moyal.o misc.o permu.o quater.o desolve.o input_parser.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o intgab.o risch.o lin.o series.o subst.o vecteur.o csturm.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o plot3d.o rpn.o prog.o pari.o cocoa.o TmpLESystemSolver.o TmpFGLM.o unary.o usual.o identificateur.o gen.o input_lexer.o 
+OBJS =  History.o Input.o Xcas1.o Equation.o Print.o Tableur.o Editeur.o Cfg.o Flv_CStyle.o Flve_Check_Button.o Flve_Input.o Flv_Style.o Flv_Data_Source.o Flve_Combo.o Flv_List.o Flv_Table.o Graph.o Graph3d.o Help1.o gl2ps.o
+LIBS = -L/usr/local/lib -L/usr/X11R6/lib  -lmpfr  -lflvw -lfltk_images -lfltk -lpng -lz -lX11 -ldl -lgsl -lgslcblas -lntl -lcocoa -lgmp -lpari -lpthread
+STATLIBS = /usr/lib/libmpfr.a /usr/local/lib/libfltk_images.a /usr/local/lib/libfltk_gl.a /usr/local/lib/libfltk.a  /usr/lib/libpng.a /usr/lib/libz.a -lX11 -lXft -lXinerama -ldl /usr/lib/libgsl.a /usr/lib/libgslcblas.a /usr/local/lib/libntl.a /usr/local/lib/libcocoa.a /usr/lib/libpari.a /usr/lib/libgmp.a /usr/lib/libreadline.a /usr/lib/libhistory.a /usr/lib/libncurses.a /usr/lib/libjpeg.a -lpthread
+GLIBS= -lGL -lX11 -lXext
+xcas:	$(GIACOBJS) $(OBJS) hist.o 
+	$(CXX) $(CXXFLAGS) -o xcas hist.o $(GIACOBJS) $(OBJS) $(STATLIBS) $(GLIBS)
+#	$(CXX) $(CXXFLAGS) -o xcas -s $(GIACOBJS) sheet.o xcas.o plotfltk.o Eqw.o first.o $(STATLIBS)
+icas:	$(GIACOBJS) $(OBJS) icas.o first.o
+	$(CXX) $(CXXFLAGS) -o icas $(GIACOBJS) $(OBJS) icas.o first.o $(LIBS) -lreadline -lhistory -lncurses 
+casce:	$(GIACOBJS) casce.o first.o
+	$(CXX) $(CXXFLAGS) -o casce $(GIACOBJS) casce.o first.o $(LIBS) -lreadline -lhistory -lncurses 
+statcas:    $(GIACOBJS) $(OBJS) icas.o first.o	
+#	$(CXX) $(CXXFLAGS) -o icas -s --static $(GIACOBJS) icas.o first.o $(LIBS) -lreadline -lhistory -lncurses 
+	$(CXX) $(CXXFLAGS) -o icas -s $(GIACOBJS) $(OBJS) icas.o first.o $(STATLIBS) $(GLIBS)
+essai:    $(GIACOBJS) essai.o first.o	
+	$(CXX) $(CXXFLAGS) -o essai $(GIACOBJS) essai.o first.o $(LIBS) -lreadline -lhistory -lncurses 
+hist.o: 	hist.cxx
+	$(CXX) $(CXXFLAGS) -c hist.cxx
+hist.cxx:	hist.fl
+	fluid -c hist.fl
+Help1.o:	Help1.cc
+	$(CXX)  -I.. -g -c Help1.cc
+.cc.o:
+	$(CXX) $(CXXFLAGS) -c $<

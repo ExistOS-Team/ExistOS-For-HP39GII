@@ -1,0 +1,13 @@
+xyztrange(-6.0,6.0,-7.0,4.0,-10.0,10.0,-3.0,3.0,-6.0,6.0,-2.0,4.0,1);
+purge(x);
+purge(y);
+purge(t);
+purge(tt);
+d:=x*(cos(2*t)-cos(t))+y*(sin(2*t)-sin(t))-sin(2*t);
+enveloppe(d);
+tt:=element(-3..4);
+dd:=subst(d,t,tt);
+aa:=derive(dd,y);
+bb:=derive(dd,x);
+cc:=subst(subst(dd,x=0),y=0);
+plotfunc((-bb*x-cc)/aa,x);

@@ -1,0 +1,43 @@
+giac use several global variables that must be initialized in a very
+specific order:
+- the global var of input_lexer.ll must be loaded first because
+they contain tables to auto-registering functions of all other modules
+- then the global var of gen.cc
+- the global var of identificateur.cc must be loaded before the
+global var of usual.cc
+- the global var of symbolic.cc should be loaded last
+FIXME: all unary_function_ptr tables should be replace by
+unary_function_ptr * tables.
+Under linux and win32 gcc, it seems the loader make static
+initializations in object file in reversed order, therefore linking
+must be done finishing with usual.o identificateur.o and input_lexer.o
+Under MacOSX gcc, the converse rule should be applied.
+
+List of global variables in modules (function not included)
+input_lexer.o: syms, lexer_functions, lexer_function_registered
+gen.o: zero, minus_one, plus_one, plus_two, plus_three, cst_i
+identificateur.o and or usual.o: cst_pi, cst_two_pi, 1/2, ..., 
+tables of unary_function_ptr
+
+**********
+Modifs a faire:
+linalg[ker] ou linalg::ker qui doit se traduire en linalg[ker]
+linalg doit etre declare comme unary_op
+si f est un unary_function_ptr, 
+f[qqchose](x) doit renvoyer f([qqchose,x]) avec un vecteur de subtype
+special. Pour les fonctions comme linalg, on utilise la meme fonction
+giac qui forme la chaine "f[qqchose]", cherche dans la table du lexer
+la fonction correspondante et l'appelle sur x.
+Donc with(linalg) ou export(linalg)
+rajoute les fonctions renvoyees par linalg() dans la liste reconnue
+par le lexer de la maniere suivante
+il doit y avoir une premiere table nom de commande tapé
+-> nom de commande interprete par le lexer -> puis traduction 
+Par exemple, si on fait with(linalg), la 1ere table contient
+"ker" -> "linalg[ker]"
+alors que la fonction ker est renommee "linalg[ker]"
+On peut aussi ajouter et enlever des fonctions de la 1ere table
+avec register et unregister.
+Protect et unprotect: on cree un vecteur string unprotected, si le nom
+lexe appartient a ce vecteur alors le teste d'appartenance a la 1ere
+table n'est pas effectue (le nom devient donc un nom de variable)

@@ -1,0 +1,142 @@
+ restart;maple_mode(1);cas_setup(0,0,0,1,0,1e-10,10,[1,50,0,25],0,0,0); #radians,pas de cmplx, pas de  Sqrt
+l:={1,4,5,6,7};a:=rand(10):
+member(a,l);
+a; #verification.
+7 + 4 mod 3; (7+4)mod 3;
+ maple_mode(1); # en mode maple
+ ln(exp(1));ln(e);  #ca n'est que la lettre e, pas le reel.
+ maple_mode(0);
+ evalf(e); //la doc fait reference au mode xcas.
+ maple_mode(1);
+ evalf(exp(1));
+ ln(exp(1));
+ log(exp(1)); # les 2 marchent
+/*  bete comme le crible d'eratostene sont en O(p), et bete n'use pas de memoire.£ donc asymptotiquement, le crible n'est pas avantageux.*/
+ bete:=proc(n)
+ i:=3;
+ a:=0;
+ SQ:=evalf(sqrt(n)); #pour ne le faire qu'une fois. ne pas le mettre dans le while!
+ while (i<SQ) 
+    do if (n mod i) <>0 then i:=i+2; 
+       else a:=i;i:=n;
+       fi ; 
+    od;
+ if a<>0 then a; else n fi; 
+ end;
+i:=4;N:=nextprime(10^i+5432)*nextprime(2*10^i+1234);
+bete(N);
+i:=5;N:=nextprime(10^i+5432)*nextprime(2*10^i+1234); #i=6 passe encore mais...
+bete(N);
+/*  Attention, pour que  la suite r\'ecurrente soit bien programmee, il ne faut pas£ recalculer tous les termes jusque u_i ni u_2i a chaque etape!*/
+ pollard := proc(n) 
+ local x,y ; 
+ x:=1; y:=x^2+1; 
+ while member ( igcd(y-x,n) , {1,n} ) do 
+      x:=(x^2+1) mod n ; 
+      y:=((y^2+1)^2+1) mod n ; 
+      od ; 
+ igcd(y-x,n); 
+ end proc;
+ N:=nextprime(10^6)*nextprime(2*10^6):
+ pollard(N);
+ N:=nextprime(10^8+5*rand(1000))*nextprime(2*10^8+11*rand(1000)):
+ pollard(N);
+/*  pollard est en O(sqrt(p)) ssi la fonction suivante est bornee.*/
+ comptep:=proc(n)
+ local x,y,j ;
+ x:=1; y:=x^2+1 ;j:=0;
+ while member ( igcd(y-x,n) , {1,n} ) do
+      x:=(x^2+1) mod n ;
+      y:=((y^2+1)^2+1) mod n ;
+      j:=j+1;od ;
+ evalf(j/sqrt(igcd(y-x,n))); 
+ end proc;
+/* On cr\'ee une liste de valeurs. Il ne faut pas des nombres trop petits pour que£pollard ait de bonne chance d'aboutir. On fait imprimer a chaque etape pour£voir s'il blocque a une etape.*/
+ l:=[]; 
+ for i from 7 to 30 do
+ N:=nextprime((rand(3^(i))))*nextprime((rand(2^(i+1))));
+ t:=comptep(N);
+ print(i,t);
+ l:=append(l,t);
+ N:=nextprime((rand(3^(i))))*nextprime((rand(2^(i+1))));
+ t:=comptep(N);
+ print(i,t);
+ l:=append(l,t);
+ N:=nextprime((rand(3^(i))))*nextprime((rand(2^(i+1))));
+ t:=comptep(N);
+ print(i,t);
+ l:=append(l,t);
+ od;
+plotlist(l); #ca a bien l'air borne
+ P:=i->product(1-j/p,j=1..i-1);
+ i:=2;limit(log(P(i))/(i*(i-1)/2/p),p,+infinity);
+/*  On devine que P(i) equivaut a: -i*(i-1)/(2p), on l'illustre ainsi:*/
+ l:=limit(log(P(2))/(i*(i-1)/2/p),p,+infinity);
+ for i from 3 to 50 do l:=l,limit(log(P(i))/(i*(i-1)/2/p),p,+infinity) od;
+/*  Puisque ln est croissante, on se demande quand ln(P(i))>ln(0.5). On compare£ donc -ln(0.5) avec i^2/2p*/
+sqrt(-2*ln(0.5)); #ca fait a peu pres le 1.18 de l'enonce  
+/*   u_2i=u_i est mauvais pour cette suite recurent, c'est en O(p) comme la methode bete.£  En effet u_2i=a^i u_i +c(a^i-1)/(a-1) [p], donc u_2i=u_i ssi£  (a^i-1)(-ui+c/(a-1))=0[p]. Mais a^i=1[p] par ex si a generateur,£  alors i>=p-1 */
+ 
+/*  illustration: on fait afficher le rapport entre le nombre de tours et sqrt(p). */
+ a:=54321123;c:=nextprime(10^4);
+ comptelin:=proc(n,a,c)
+ local x,y ;
+ x:=1; y:=(a*x+c) mod n ;j:=0;
+ while member ( igcd(y-x,n) , {1,n} ) do
+      x:=(a*x+c) mod n ;
+      y:=(a*(a*y+c)+c) mod n ;
+      j:=j+1;od ;
+ evalf(j/sqrt(igcd(y-x,n))); 
+ end proc;
+ l:=[];rand(3^4);
+ for i from 4 to 19 do
+ N:=nextprime(rand(3^i))*nextprime(rand(2^(i+1)));
+ t:=comptelin(N,a,c);
+print(i,t);
+l:=append(l,t);
+od;
+plotlist(l); # ca n'a plus l'air borne
+ l:=[seq(rand(2),i=1..100)]:
+ histogram(classes(l,0,1)); #On commence a 0, largeur constante 1. 
+ l:=[seq(rand(2),i=1..1000)]:
+ histogram(classes(l,0,1));  
+ N:=nextprime(10^6)*nextprime(2*10^6);
+ u:=n->if n=0 then 2 else ((u(n-1))^2+1) mod N fi; 
+ u(10); # u(10000);Error, (in u) too many levels of recursion
+
+ etudesuite := proc(n,M) 
+ local x,l; 
+ x:=12345;l:=[];
+ for i from 1 to M do 
+      x:=(x^2+1) mod n ; 
+      l:=[op(l),x];
+      od ; 
+ l; 
+ end;
+ donnees:=(etudesuite(N,2000));  
+ cldonnees:=classes(donnees,0,N/40); #40 classes
+ bar_plot(cldonnees); #on peut cacher les noms dans le menu Cfg
+/* -----------------Test d'une variante de pollard------------------------------------------£ cette variante de pollard pour minimiser le nombre de igcd n'apporte pas d'amalioration£ sous xcas, elle me semble meme un peu plus longue!!!!!!!*/
+ pollard2 := proc(n) 
+ local x,y,c,,yy,xx,pp ; 
+ xx:=1; yy:=xx^2+1 ;pp:=1;
+ while member(igcd(pp,n), {1}) do
+ x:=xx;y:=yy;
+ for c from 1 to 20 do
+      xx:=(xx^2+1) mod n ; 
+      yy:=((yy^2+1)^2+1) mod n ; 
+ pp:=(pp*(xx-yy)) mod n;
+ od ; 
+ od;
+ while member ( igcd(y-x,n) , {1} ) do 
+      x:=(x^2+1) mod n ; 
+      y:=((y^2+1)^2+1) mod n ; 
+      od ; 
+      pp:=igcd(y-x,n);
+ if (pp<>n) then pp else print("pas trouve") fi; 
+ end proc:
+ N:=nextprime(10^6)*nextprime(2*10^6):
+ pollard2(N);
+ N:=nextprime(10^8+5*rand(1000))*nextprime(2*10^8+11*rand(1000)):
+ pollard2(N);
+ pollard(N);

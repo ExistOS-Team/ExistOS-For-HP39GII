@@ -1,0 +1,21 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=Xcas
+GenericName=Computer Algebra System
+GenericName[de]=Computeralgebrasystem
+GenericName[fr]=Système de calcul formel
+Comment=The swiss knife for mathematics
+Comment[de]=Das Schweizer Messer für Mathematik
+Comment[fr]=Le couteau suisse des mathématiques
+TryExec=xcas
+Exec=xcas %F
+Icon=xcas
+Terminal=false
+Type=Application
+Categories=Education;Math;
+MimeType=application/x-xcas;
+
+X-AppInstall-Package=xcas
+X-AppInstall-Popcon=330
+X-AppInstall-Section=universe

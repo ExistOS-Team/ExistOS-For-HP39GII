@@ -1,0 +1,8 @@
+x := 13*17*31;
+y := 13*19*29;
+for j from 1 to 200 do
+   print(gcd(x^(300 + irem(j,181)), y^(200 + irem(j,183))))
+end_for;
+
+purge(x);
+purge(y);

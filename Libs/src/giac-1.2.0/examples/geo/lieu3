@@ -1,0 +1,9 @@
+C1:=cercle(A,B);
+O:=milieu(A,B);
+t:=element(0..2*pi);
+C:=element(C1,t);
+D1:=perpendiculaire(C,droite(o,C));
+D2:=parallele(o,droite(A,C));
+M:=inter(D1,D2);
+N:=M[0];
+lieu(N,C);

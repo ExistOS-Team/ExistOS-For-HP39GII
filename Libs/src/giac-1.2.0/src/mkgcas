@@ -1,0 +1,4 @@
+#! /bin/bash
+#fluid -c xcas.fl
+c++ -o xcas -g -I.. -L/usr/X11R6/lib sym2poly.o gausspol.o moyal.o maple.o mathml.o ti89.o misc.o permu.o quater.o desolve.o input_parser.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o risch.o lin.o series.o subst.o vecteur.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o rpn.o prog.o pari.o usual.o identificateur.o gen.o  unary.o input_lexer.o sheet.o xcas.o plotfltk.o Eqw.o first.o /usr/local/lib/libmpfr.a -lntl /usr/local/lib/libgmp.a -lflvw -lfltk -lX11 -ldl -lgsl -lgslcblas -lpari
+

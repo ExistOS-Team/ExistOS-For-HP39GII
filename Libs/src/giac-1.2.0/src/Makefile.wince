@@ -1,0 +1,118 @@
+CXX = /usr/local/wince/bin/arm-wince-pe-g++ 
+CXXFLAGS = -g -I. -I.. -march=armv4 -mapcs-32 -malignment-traps -msoft-float -DNEWLIB -DSARM -DWIN32 -DGNUWINCE -DSOFTMATH
+GIACOBJS = sym2poly.o gausspol.o maple.o ti89.o mathml.o moyal.o misc.o permu.o quater.o desolve.o input_parser.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o intgab.o risch.o lin.o series.o subst.o vecteur.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o plot3d.o rpn.o prog.o pari.o usual.o identificateur.o gen.o  unary.o input_lexer.o softmath.o cocoa.o csturm.o
+#LIBS = -lflvw -lfleditor -lfltk -lmpfr -lgmp -lgsl -lgslcblas -lintl -lintl.dll
+LIBS = -L/usr/local/wince/lib/ -lmpfr -lgmp -lreadline -lgsl -lgslcblas -lm /usr/local/wince/arm-wince-pe/lib/libc.a -lgcc -lwinsock -lcoredll
+#WLIBS = -lgdi32 -lwsock32 
+WLIBS =
+all: cas.exe # xcasce.exe xcasctrl.exe cas.exe
+xcas:	 $(GIACOBJS) xcas.o plotfltk.o Eqw.o pari.o sheet.o first.o
+	$(CXX) $(CXXFLAGS) -s --static $(GIACOBJS) sheet.o xcas.o plotfltk.o Eqw.o first.o -o xcas $(LIBS) $(WLIBS)
+giac.dll:   $(GIACOBJS) first.o
+	$(CXX)  $(CXXFLAGS) -s  --static -shared $(GIACOBJS) first.o -o giac.dll $(LIBS) $(WLIBS)
+gxcas: 	$(GIACOBJS) plotfltk.o Eqw.o xcas.o pari.o sheet.o first.o
+	$(CXX) $(CXXFLAGS) $(GIACOBJS) xcas.o plotfltk.o Eqw.o first.o -o xcas $(LIBS) $(WLIBS)
+cas.exe: 	$(GIACOBJS) casce.o first.o
+	$(CXX) $(CXXFLAGS) -s --static $(GIACOBJS) casce.o first.o -o cas.exe $(LIBS) $(WLIBS) 
+xcasce.exe: 	$(GIACOBJS) xcasce.o first.o
+	$(CXX) $(CXXFLAGS) -s --static $(GIACOBJS) xcasce.o first.o -o xcasce.exe $(LIBS) $(WLIBS) 
+xcasctrl.exe: 	xcasctrl.cc
+	$(CXX) $(CXXFLAGS) -s --static xcasctrl.cc -o xcasce.exe $(WLIBS) 
+# cas.exe: 	$(GIACOBJS) cas.o first.o
+#	$(CXX) $(CXXFLAGS) -s --static $(GIACOBJS) cas.o first.o -o cas.exe $(LIBS) $(WLIBS) 
+sym2poly.o:	sym2poly.cc
+	$(CXX)   $(CXXFLAGS) -c sym2poly.cc 
+prog.o:	prog.cc
+	$(CXX)   $(CXXFLAGS) -c prog.cc 
+cas.o:	cas.cc 
+	$(CXX)   $(CXXFLAGS) -c cas.cc 
+xcas.o:	xcas.cc xcas.cxx
+	$(CXX)   $(CXXFLAGS) -c xcas.cc 
+xcas.cxx: xcas.fl
+	fluid -c xcas.fl
+pari.o:	pari.cc
+	$(CXX)   $(CXXFLAGS) -c pari.cc 
+gausspol.o:	gausspol.cc
+	$(CXX)   $(CXXFLAGS) -c gausspol.cc 
+gen.o:	gen.cc
+	$(CXX)   $(CXXFLAGS) -c gen.cc 
+input_parser.o:	 input_parser.cc
+	$(CXX)   $(CXXFLAGS) -c  input_parser.cc
+input_lexer.o:	 input_lexer.cc
+	$(CXX)   $(CXXFLAGS) -c  input_lexer.cc
+identificateur.o:	identificateur.cc
+	$(CXX)   $(CXXFLAGS) -c identificateur.cc 
+unary.o:	unary.cc
+	$(CXX)   $(CXXFLAGS) -c unary.cc
+symbolic.o:	 symbolic.cc
+	$(CXX)   $(CXXFLAGS) -c  symbolic.cc
+index.o:	 index.cc
+	$(CXX)   $(CXXFLAGS) -c  index.cc
+modpoly.o:	 modpoly.cc
+	$(CXX)   $(CXXFLAGS) -c  modpoly.cc
+modfactor.o:	 modfactor.cc
+	$(CXX)   $(CXXFLAGS) -c  modfactor.cc 
+ezgcd.o:	 ezgcd.cc
+	$(CXX)   $(CXXFLAGS) -c  ezgcd.cc 
+derive.o:	  derive.cc
+	$(CXX)   $(CXXFLAGS) -c   derive.cc 
+solve.o:	solve.cc
+	$(CXX)   $(CXXFLAGS) -c solve.cc
+intg.o:	 intg.cc
+	$(CXX)   $(CXXFLAGS) -c  intg.cc
+risch.o:	 risch.cc
+	$(CXX)   $(CXXFLAGS) -c  risch.cc
+lin.o:	 lin.cc
+	$(CXX)   $(CXXFLAGS) -c  lin.cc
+series.o:	 series.cc
+	$(CXX)   $(CXXFLAGS) -c  series.cc 
+subst.o:	  subst.cc
+	$(CXX)   $(CXXFLAGS) -c   subst.cc 
+usual.o:	usual.cc
+	$(CXX)   $(CXXFLAGS) -c usual.cc 
+vecteur.o:	vecteur.cc
+	$(CXX)   $(CXXFLAGS) -c vecteur.cc
+moyal.o:	 moyal.cc
+	$(CXX)   $(CXXFLAGS) -c  moyal.cc
+maple.o:	 maple.cc
+	$(CXX)   $(CXXFLAGS) -c  maple.cc
+ti89.o:	 ti89.cc
+	$(CXX)   $(CXXFLAGS) -c  ti89.cc
+mathml.o:	 mathml.cc
+	$(CXX)   $(CXXFLAGS) -c  mathml.cc
+tex.o:	 tex.cc
+	$(CXX)   $(CXXFLAGS) -c  tex.cc
+global.o:	 global.cc
+	$(CXX)   $(CXXFLAGS) -c  global.cc 
+ifactor.o:	  ifactor.cc
+	$(CXX)   $(CXXFLAGS) -c   ifactor.cc 
+alg_ext.o:	alg_ext.cc
+	$(CXX)   $(CXXFLAGS) -c alg_ext.cc
+gauss.o:	 gauss.cc
+	$(CXX)   $(CXXFLAGS) -c  gauss.cc 
+isom.o:	isom.cc
+	$(CXX)   $(CXXFLAGS) -c isom.cc 
+plot.o:	plot.cc
+	$(CXX)   $(CXXFLAGS) -c plot.cc
+plotfltk.o:	plotfltk.cc
+	$(CXX)   $(CXXFLAGS) -c plotfltk.cc
+Eqw.o:	Eqw.cc
+	$(CXX)   $(CXXFLAGS) -c Eqw.cc
+help.o:	help.cc
+	$(CXX)   $(CXXFLAGS) -c help.cc
+rpn.o:	rpn.cc
+	$(CXX)   $(CXXFLAGS) -c rpn.cc 
+quater.o:	quater.cc
+	$(CXX)   $(CXXFLAGS) -c quater.cc 
+desolve.o:	desolve.cc
+	$(CXX)   $(CXXFLAGS) -c desolve.cc 
+sheet.o:	sheet.cc
+	$(CXX)   $(CXXFLAGS) -c sheet.cc 
+first.o:	first.cc
+	$(CXX)   $(CXXFLAGS) -c first.cc 
+permu.o :	 permu.cc
+	$(CXX)   $(CXXFLAGS) -c  permu.cc
+misc.o :	 misc.cc
+	$(CXX)   $(CXXFLAGS) -c  misc.cc
+softmath.o :	 softmath.cc
+	$(CXX)   $(CXXFLAGS) -c  softmath.cc

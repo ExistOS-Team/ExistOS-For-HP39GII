@@ -1,0 +1,8 @@
+purge(t);
+ed:=y-2*t*x-t^2;
+ed1:=derive(ed,t);
+M:=solve([ed,ed1],[x,y])[0];
+plotparam(M[0]+i*M[1],t);
+t:=element(-3..3);
+d:=plotfunc(2*t*x+t^2,x);
+d1:=plotfunc(ed1,x);

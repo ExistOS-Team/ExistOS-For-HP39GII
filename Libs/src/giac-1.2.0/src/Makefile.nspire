@@ -1,0 +1,49 @@
+GCC = nspire-gcc
+CXX = nspire-g++
+LD = nspire-ld
+GCCFLAGS =  -marm -I~/Ndless/ndless-sdk/include -Os -fno-strict-aliasing -DGIAC_GENERIC_CONSTANTS -DHAVE_CONFIG_H -I. -I..  -DIN_GIAC -DTIMEOUT -DNSPIRE_NEWLIB
+LDFLAGS = -Wl,--nspireio,--gc-sections -lmpfi -lmpfr -lgmp
+#GCCFLAGS =  -marm -I~/Ndless/ndless-sdk/include -Os -fno-strict-aliasing -DGIAC_GENERIC_CONSTANTS -DHAVE_CONFIG_H -I. -I..  -DIN_GIAC -DNO_PHYSICAL_CONSTANTS -DHAVE_CONFIG_H -DNO_STDEXCEPT -DSTATIC_BUILTIN_LEXER_FUNCTIONS -DGIAC_BINARY_ARCHIVE -DNO_UNARY_FUNCTION_COMPOSE -DTIMEOUT -DNO_TEMPLATE_MULTGCD -DUSE_GMP_REPLACEMENTS -DNSPIRE_NEWLIB
+#LDFLAGS = -Wl,--nspireio,--gc-sections -ltommath
+GENZEHN = genzehn
+
+EXE = luagiac.luax.tns
+
+OBJS = sym2poly.o gausspol.o threaded.o maple.o ti89.o mathml.o moyal.o misc.o permu.o desolve.o input_parser.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o intgab.o risch.o lin.o series.o subst.o vecteur.o sparse.o csturm.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o plot3d.o rpn.o prog.o pari.o cocoa.o unary.o usual.o identificateur.o gen.o input_lexer.o tinymt32.o quater.o first.o
+DISTDIR = .
+vpath %.tns $(DISTDIR)
+
+all: $(EXE) $(LUATNS)
+
+.cc.o:
+	$(CXX) $(GCCFLAGS) -c $<
+
+luagiac.o: luagiac.c
+	$(GCC) -Os -Wall -W -marm -c $<
+
+missing.o: missing.c
+	$(GCC) -Os -Wall -W -marm -c $<
+
+luagiac.luax.elf: $(OBJS) missing.o luagiac.o luabridge.o 
+	$(LD) $^ -o $(DISTDIR)/$@ $(LDFLAGS)
+
+luagiac.luax.tns.zehn: luagiac.luax.elf
+	$(GENZEHN) --input $(DISTDIR)/$^ --output $(DISTDIR)/$@ --name "luagiac"
+
+luagiac.luax.tns: luagiac.luax.tns.zehn
+	make-prg $(DISTDIR)/$^ $(DISTDIR)/$@
+
+clean:
+	rm -f *.o luagiac.luax.* 
+
+khicas.tns: khicas.lua
+	luna khicas.lua khicas.tns
+
+giac.tns:	$(OBJS) giacnspire.o missing.o
+	nspire-ld -o giac.elf giacnspire.o $(OBJS) missing.o $(LDFLAGS) 
+	$(GENZEHN) --input giac.elf --output giac.tns.zehn --name "giac"
+	make-prg giac.tns.zehn giac.tns
+	
+libgiac.a:   $(OBJS) 
+	arm-none-eabi-ar rcs libgiac.a $(OBJS) 
+	arm-none-eabi-ranlib libgiac.a

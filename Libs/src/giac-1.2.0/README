@@ -1,0 +1,52 @@
+General Information
+===================
+See giac homepage:
+http://www-fourier.ujf-grenoble.fr/~parisse/giac.html (English)
+http://www-fourier.ujf-grenoble.fr/~parisse/giac_fr.html (French)
+
+LICENSES
+========
+* The giac library and the Xcas program are released under the GPL license,
+version 3 or above, as published by the Free Software Foundation, 
+see <http://www.gnu.org/licenses/> or the COPYING file.
+The copyright holders are
+(c) B. Parisse, Institut Fourier, 2002-2014
+    R. De Graeve, 2002-2014
+except for:
+a/ The first GNUification of the giac package (automake,autoconf) is
+(c) Richard Kreckel, Universitat Mainz, 10/2000 and the complete
+rewrite 10/2008 of the auto-tool files 
+(c) A. Sheplyakov 
+b/ The very first version of the expression parser was a modification from 
+GiNaC expression parser
+GiNaC Copyright (C) 1999-2000 Johannes Gutenberg University Mainz, Germany
+c/ The mathml/svg conversion is (c) Jean-Pierre Branchard, 2003-2004, later modified by F. Han
+d/ implicit3d plot code by Paul Bourke and Cory Gene Bloyd in plot3d.cc
+e/ gl2ps code copyrighted by Christophe Geuzaine
+f/ Fl* code part of FLTK
+
+* Documentation:
+  The on-line help is included in Xcas and giac/icas. The resposible
+file is doc/aide_cas. It is released under the GPL version 3 or above
+and is copyrighted by R. de Graeve, B. Parisse (English/French), M. Lopez de la Fuente
+and X. Vidaux (Spanish), and A. Akritas (Greek).
+  The English documentation is currently incomplete (help welcome!). A tutorial
+is available in English, released under the FDL,
+copyrighted by B. Parisse. A few information are also available in the
+files giac_us.texinfo and giac_es.texinfo, both files are released under
+the GPL version 3 or above and are (c) B. Parisse or M. Lopez de la Fuente.
+  The French documentation is *not* released under the GPL. It is (c)
+by Renee de Graeve. It can be freely distributed for non commercial purpose.
+Other kind of redistributions require the consent of the copyright holder.
+
+Installation
+============
+See the file "INSTALL" or look at the Install section of the info manual
+(e.g. open doc/giac_us.info with emacs command C-u C-h i)
+If you are really in a hurry: 
+install at least GMP, untar the archive, configure, make, make install, then run xcas
+
+Credits:
+========
+See www-fourier.ujf-grenoble.fr/~parisse/giac.html#thanks
+

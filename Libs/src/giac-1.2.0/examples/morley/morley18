@@ -1,0 +1,59 @@
+a1:=0.2;
+a2:=0.4;
+A:=[0,1+i*texpand(tan(a1)),1+i*texpand(tan(2*a1)),1+i*texpand(tan(pi/3+a1)),
+1+i*texpand(tan(2*a1+2*pi/3)),1+i*texpand(tan(a1+2*pi/3)),
+1+i*texpand(tan(pi/3+2*a1))];
+B:=[1,i*texpand(tan(2*a2)),i*texpand(tan(a2)),i*texpand(tan(2*a2+2*pi/3)),
+i*texpand(tan(a2+pi/3)),i*texpand(tan(pi/3+2*a2)),i*texpand(tan(2*pi/3+a2))];
+C0:=texpand(tan(a2*3)/(tan(a1*3)+tan(a2*3))*(1+i*tan(a1*3)));
+C:=[C0,C0+1+i*texpand(tan(pi/3+2*a1-a2)),C0+1+i*texpand(tan(2*pi/3+a1-2*a2)),
+C0+1+i*texpand(tan(2*pi/3+2*a1-a2)),C0+1+i*texpand(tan(pi/3+a1-2*a2)),
+C0+1+i*texpand(tan(2*a1-a2)),C0+1+i*texpand(tan(a1-2*a2))];
+P1:=[];
+P2:=[];
+P3:=[];
+for (k:=1;k<=6;k++) {
+  for (j:=1;j<=6;j++){
+    P1:=concat(P1,affixe((inter(droite(A[0],A[k]),droite(B[0],B[j])))[0]));
+    P3:=concat(P3,affixe((inter(droite(A[0],A[k]),droite(C[0],C[j])))[0]));
+    P2:=concat(P2,affixe((inter(droite(B[0],B[k]),droite(C[0],C[j])))[0]));
+  }
+};
+
+LO12:=[];
+for (k:=0;k<36;k++) {
+  LOL12:=[];
+  for (j:=0;j<36;j++){
+    LOL12:=concat(LOL12,longueur2(P1[k],P2[j]));
+  }
+LO12:=append(LO12,LOL12);
+};
+LO23:=[];
+for (k:=0;k<36;k++) {
+  LOL23:=[];
+  for (j:=0;j<36;j++){
+    LOL23:=concat(LOL23,longueur2(P2[k],P3[j]));
+  }
+LO23:=append(LO23,LOL23);
+};
+LO13:=[];
+for (k:=0;k<36;k++) {
+  LOL13:=[];
+  for (j:=0;j<36;j++){
+    LOL13:=concat(LOL13,longueur2(P1[k],P3[j]));
+  }
+LO13:=append(LO13,LOL13);
+};
+trequi:=[];
+for (k:=0;k<36;k++) {
+  for (j:=0;j<36;j++){
+    l:=LO12[k,j];
+    for (s:=0;s<36;s++){
+      if ((abs(normal(l-LO23[j,s]))<0.0000001) and 
+          (abs(normal(l-LO13[k,s]))<0.0000001)){
+        trequi:=append(trequi,[[iquo(k,6)+1,irem(k,6)+1],[iquo(j,6)+1,irem(j,6)+1],[irem(s,6)+1,iquo(s,6)+1]]);
+      }
+    }
+  }
+};
+trequi;

@@ -33,7 +33,7 @@ static uint32_t inline syscall_4(uint32_t nr, uint32_t p1, uint32_t p2, uint32_t
 }
 
 
-void ll_delay(uint32_t ms) 
+volatile void ll_delay(uint32_t ms) 
 {
     register uint32_t r0 asm("r0") = ms;
     __asm volatile(
@@ -46,7 +46,7 @@ void ll_delay(uint32_t ms)
 
 }
 
-uint32_t ll_putStr(char *s)
+volatile uint32_t ll_putStr(char *s)
 {
     register uint32_t r0 asm("r0") = (uint32_t)s;
     __asm__ volatile(
@@ -59,7 +59,7 @@ uint32_t ll_putStr(char *s)
     return r0;
 }
 
-uint32_t ll_putStr2(char *s, uint32_t len)
+volatile uint32_t ll_putStr2(char *s, uint32_t len)
 {
     register uint32_t r0 asm("r0") = (uint32_t)s;
     register uint32_t r1 asm("r1") = (uint32_t)len;
@@ -73,7 +73,7 @@ uint32_t ll_putStr2(char *s, uint32_t len)
     return r0;
 }
 
-uint32_t ll_putChr(char c)
+volatile uint32_t ll_putChr(char c)
 {
     register uint32_t r0 asm("r0") = (uint32_t)c;
     __asm__ volatile(
@@ -86,7 +86,7 @@ uint32_t ll_putChr(char c)
     return r0;
 }
 
-uint32_t ll_gettime_us()
+volatile uint32_t ll_gettime_us()
 {
     register uint32_t r0 asm("r0");
     __asm__ volatile(
@@ -99,7 +99,7 @@ uint32_t ll_gettime_us()
     return r0;
 }
 
-void ll_irq_set_Vector(void *p)
+volatile void ll_irq_set_Vector(void *p)
 {
     register uint32_t r0 asm("r0") = (uint32_t)p;
     __asm__ volatile(
@@ -111,7 +111,7 @@ void ll_irq_set_Vector(void *p)
     ); 
 }
 
-void ll_irq_set_Stack(void *p)
+volatile void ll_irq_set_Stack(void *p)
 {
     register uint32_t r0 asm("r0") = (uint32_t)p;
     __asm__ volatile(
@@ -123,7 +123,7 @@ void ll_irq_set_Stack(void *p)
     ); 
 }
 
-void ll_irq_enable(bool enable)
+volatile void ll_irq_enable(bool enable)
 {
 
     register uint32_t r0 asm("r0");
@@ -146,7 +146,7 @@ void ll_irq_enable(bool enable)
     }
 }
 
-void ll_irq_get_context(uint32_t *save)
+volatile void ll_irq_get_context(uint32_t *save)
 {
     register uint32_t r0 asm("r0") = (uint32_t)save;
     __asm__ volatile(
@@ -158,7 +158,7 @@ void ll_irq_get_context(uint32_t *save)
     ); 
 }
 
-void ll_irq_set_context(uint32_t *load)
+volatile void ll_irq_set_context(uint32_t *load)
 {
     register uint32_t r0 asm("r0") = (uint32_t)load;
     __asm__ volatile(
@@ -171,8 +171,8 @@ void ll_irq_set_context(uint32_t *load)
 }
 
 
-void ll_irq_restore_context() __attribute__((naked));
-void ll_irq_restore_context()
+volatile void ll_irq_restore_context() __attribute__((naked));
+volatile void ll_irq_restore_context()
 {
     register uint32_t r0 asm("r0");
     __asm__ volatile(
@@ -184,7 +184,7 @@ void ll_irq_restore_context()
     ); 
 }
 
-void ll_systick_set_period(uint32_t periodMs)
+volatile void ll_systick_set_period(uint32_t periodMs)
 {
     register uint32_t r0 asm("r0") = (uint32_t)periodMs;
     __asm__ volatile(
@@ -196,7 +196,7 @@ void ll_systick_set_period(uint32_t periodMs)
     ); 
 }
 
-void ll_systick_enable(bool enable)
+volatile void ll_systick_enable(bool enable)
 {
     register uint32_t r0 asm("r0") = (uint32_t)enable;
     __asm__ volatile(

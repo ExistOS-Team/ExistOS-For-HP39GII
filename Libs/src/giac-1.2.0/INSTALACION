@@ -1,0 +1,246 @@
+INSTALACION 
+=============
+Última rev:12/06/2002
+J.Manrique: jsmanrique_lopez@yahoo.es
+
+
+Vista rápida
+===========
+1/ Comprueba que el fichero /etc/ld.so.conf tiene la línea
+/usr/local/lib
+si no es así, edítalo y añade esa línea
+2/ Consigue e instala GMP, FLTK 1.0 (no 1.1), FLVW y readline, opcionalmente GSL 
+si quieres capacidades numéricas, PARI para artimética avanzada (mira el parche 
+más abajo), NTL para trabajo rápido con polinomios (ver configuración compatible con giac abajo).
+Mira en la sección de requisitos section para las direcciones de descarga e instruccuiones.
+3/ Ejecuta ldconfig como root para asegurarte que las librerías nuevas instaladas son reconocidas
+en tu sistema
+4/ Vete al directorio giac
+Si quieres compilación rápida, teclea respectivamente para tcsh o bash
+  $ setenv CXXFLAGS -g
+  $ export CXXFLAGS=-g
+entonces
+  $ ./configure
+  $ make
+hazte root
+  # make install
+  # ldconfig
+* Diviértete!
+
+Requisitos
+=========
+* Si quieres compilación cruzada para la arquitectura ARM mira también en
+el fichero src/README.ipaq
+* Debes comprobar primero que tienes instalado GMP (disponible en cualquier ftp GNU
+ o mirror, mira en  www.gnu.org, por ejemplo en  España prueba ftp.rediris.es)
+* Si quieres funciones numéricas deberías instalar la Librería Científica GNU
+ (http://sources.redhat.com/gsl)
+* Si quieres usar NTL, consigue la versión >= 5.2 en http://www.shoup.net, 
+comprueba que configuraste con namespace activado (no está activado
+por defecto) y con GMP activado (no está por defecto, pero tampoco es obligatorio)
+Si no estás seguro de tu instalación, vete al directorio NTL y teclea
+$ make clean
+$ ./configure NTL_GMP_LIP=on NTL_STD_CXX=on
+$ make
+$ make install
+* Si quieres funciones de aritmética avanzada, consigue PARI en
+http://www.parigp-home.de
+Si planeas PARI SIN NTL entonces DEBES HACER LOS
+SIGUIENTES ARREGLOS (parches) en el directorio fuente de PARI
+Fichero src/basemath/polarit2.c borra la palabra static de la declaración
+static GEN 
+combine_factors(...)
+Fichero src/headers/paridecl.h
+Añade 
+GEN     combine_factors(GEN a, GEN famod, GEN p, long klim, long hint);
+en la sección polarit2.c
+Recompila (make all) y reinstala PARI (make install y comprueba que
+libpari.a ha sido actualizada o cópiala explícitamente desde el directorio O<os>)
+Reemplaza en /usr/local/include/pari/pariinl.h labs por std::abs o podrías
+obtener errores de compilación.
+Comprueba en el directorio src de giac, el fichero pari.cc que la memoria reservada
+a la pila de PARI se ajusta a tus necesidades (por defecto son 10MB de RAM) o modifica
+  long pari_mem_size=10000000;
+* Si quieres soporte GUI, comprueba que tengas FLTK 1.0 (o FLNX) instalado 
+(disponible en http://www.fltk.org). Para la hoja de cálculo y el editor de matrices
+necesitas FLVW disponible en http://flvw.sourceforge.net/.
+Adicionalmente puedes obtener modificaciones de B. Parisse para FLTK 1.0.11 en 
+http://www-fourier.ujf-grenoble.fr/~parisse/fltkpar.tgz
+esto añade auto-selección de paréntesis.
+NOTA Actualmente xcas no trabaja con FLTK 1.1.
+* TeXmacs puede ser usado como interface con giac. 
+Si tienes TeXmacs instalado (www.texmacs.org), después de haber instalado giac,
+ejecuta texmacs y usa Insert->Session->giac.
+Si copias Init.scm en tu directorio ~/.TeXmacs/progs obtendrás
+un menú Cas para giac.
+* Si quieres garbage collection, consigue la librería gc
+http://www.hpl.hp.com/personal/Hans_Boehm/gc/
+Después borra todas las librerías de config.h excepto gmp (mira config.h.gc), 
+añade #define HAVE_LIBGC 1
+reemplaza malloc/realloc en input_parser.cc/input_lexer.cc por
+GC_MALLOC_UNCOLLECTABLE y GC_realloc
+rm -f *.o y mira en Makefile.fast por el objetivo cas2
+
+INSTALACIÓN (UNIX)
+===================
+Como con cualquier software GNU auto-configurable, puedes teclear:
+
+ $ ./configure 
+[añade opciones necesarias: prueba ./configure -help para información sobre opciones,
+mira la sección OPCIONES DE INSTALACIÓN más abajo]
+ $ make
+ $ make check
+[hazte root si es necesario]
+ # make install-strip
+
+Alternativas o trucos:
+------------------------
+** Si estás actualizando giac para corregir errores, puedes ejecutar
+  $ ./config.status 
+en vez de ./configure, esto mantendrá las mismas opciones de configuración
+
+** Si tienes permiso de escritura en /usr/local/, FLTK y GSL instalados y 
+no quieres soporte de depuración, puedes teclear
+ $ ./inst
+
+** Si tienes FLTK y GSL instalados y quieres soporte de depuración, teclea
+ $ ./setup
+ $ su
+ # make install
+
+** Si no quieres optimizaciones, configura la variable de entorno CXXFLAGS
+a -g antes de ejecutar configure
+(tcsh) setenv CXXFLAGS -g
+(bash) CXXFLAGS=-g
+
+** Si sólo quieres construir xcas,
+ $ ./configure 
+ $ cd src
+ $ make -f Makefile.fast
+Reemplaza -g por -O2 en Makefile.fast si quieres optimizaciones completas.
+
+** Si quieres construir xcas para el iPaq con la distribución Familiar
+asumiendo que tienes la herramienta skiff instalada y FLTL instalado.
+Comprueba que config.h define HAVE_LIBFLTK y no define HAVE_LIBGSL
+y HAVE_LIBGSLCBLAS si no tienes estas librerías también, entonces
+ $ make -f Makefile.ipaq
+Nota que nunca se ha conseguido construir para el iPaq con optimización.
+
+** Si quieres sólo el cas en línea de comandos, ejecuta
+ $ ./configure --disable-gui
+ $ make
+
+INSTALACIÓN (WIN)
+==================
+Hay algún soporte para aquellos que deben usar Microsoft Windows (R). 
+Asumiendo que tienes instalado las herramientas cygwin, gmp, FLTK, FLVW (mira 
+http://sources.redhat.com/cygwin por cygwin, cualquier mirror GNU por gmp,  
+http://www.fltk.org por FLTK), ejecuta cygwin,
+vete al directorio giac-0.2.2 y
+$ cp config.h.win config.h
+o edita config.h y modifica para ajustarlo a tus necesidades, después
+vete al directorio src y ejecuta
+$ make -f Makefile.win
+Después de ello, podrías ejecutar xcas.exe, con /usr/bin/cygwin1.dll
+copiado en el path (p.e. en el mismo directorio que xcas.exe)
+Puedes compilar la versión librería de giac como en Unix usando
+$ sh configure ; make 
+
+PROBLEMAS
+============
+*Cygwin: error compilando sym2poly.cc
+...sys/types.h ... no define nada
+Borra las líneas #undef off_t de config.h.in y las líneas #define de config.h
+* Si tienes un error sobre libtool no encontrada cuando ejecutas make, ejecuta
+  $ ./ltconfig ltmain.sh
+* Si has instalado recientemente una librería y parece que no es
+reconocida, teclea
+  $ rm config.cache
+antes de ejecutar configure
+* La optimización requiere mucha memoria para compilar. Si estás bajo de memoria
+edita src/Makefile y si es necesario reemplaza la línea :
+CXXFLAGS = -g -O2
+por :
+CXXFLAGS = -g
+* No ha sido posible compilar FLTK con gcc 3. Baja a 2.95 o 2.96
+o reconfigura sin soporte FLTK o compila sólo la versión en línea de comandos
+de giac (cd src; make -f Makefile.fast cas).
+Si tienes problemas compilando plot.cc con gcc 3, borra #define WITH_GNUPLOT
+de config.h
+* Si tienes un error como
+autoheader: Symbol 'CONSTANT_DEBUG_SUPPORT' is not covered by ...
+ejecuta
+autoheader --localdir=.
+* Si tienes un error cuando compiles modpoly.cc, es casi seguro porque
+compilaste NTL sin namespaces. Recompílalo (mira la sección de Requisitos
+más arriba)
+* Si tienes un error de enlazador sobre combine_factors no encontrados en modfactor.o
+es porque no modificaste PARI correctamente u olvidaste re-instalar las 
+librerías PARI
+* Compilar Giac con Cygwin con PARI 2.1.1 requiere hacer algún
+arreglo. No ha sido posible obtener la versión dinámica de la librería PARI.
+Por ello ha tenido que hacerse la instalación a mano:
+cp libpari.a /usr/local/lib
+mkdir /usr/local/include/pari
+cp src/headers/*.h /usr/local/include/pari 
+cp Ocygwin/*.h /usr/local/include/pari 
+Entoneces se obtuvo un error compilando pari.cc que desapareció comentando
+la línea ofensiva en la cabecera /usr/local/include/pari/paricom.h
+Después de esto, todo ha ido correctamente.
+* Si tu instalación de cygwin falta de soporte de internacionalización (tendrás
+errores sobre #include <libintl.h> en plotfltk.h)
+debes modificar xcas.fl para quitar el soporte para internacionalización support, ejecuta
+fluid xcas.fl
+menú Edit->Preferences, deselecciona gettext y escoge None
+(El programa fluid.exe debería estar en tu directorio fuente fltk-1.0.x, en el
+subdirectorio fluid)
+Después edita plotfltk.h y comenta 
+#include <locale.h>
+#include <libintl.h>
+así como la definición de la clase object_bidon
+Edita plotfltk.cc y comenta
+   objet_bidon mon_objet_bidon;
+
+DOCUMENTACIÓN
+=================
+ Si quieres alguna documentación, vete al directorio doc
+ $ cd doc
+ y teclea
+
+ $ make dvi
+
+NOTAS
+=======
+Al final de la compilación, deberías tener:
+* xcas, cas, aide (programas) in /usr/local/bin
+* un montón de enlaces a cas
+* las librerías libgiac en /usr/local/lib 
+* los ficheros include en /usr/local/include/giac
+* el fichero ayuda en-línea es /usr/local/share/aide.cas
+
+OPCIONES DE INSTALACIÓN
+==========================
+Cuando ejecutas
+./configure 
+las siguientes opciones están admitidas
+1/ --enable-debug
+  Permite imprimir vectores y añade algún código de depuración
+2/ --enable-fltk
+  Soporte para GUI 
+3/ --enable-gsl
+  Usa la Librería Científica GNU para coma flotante (p.e. funciones especiales..)
+4/ --enable-sscl
+  Permite la inclusión de código para algorítmos semi-clásicos (producto Moyal, ...)
+  No disponible todavía
+5/ --enable-ntl
+  Permite la inclusión de código NTL
+6/ --enable-pari
+  Permite la inclusión de código PARI
+Estas opciones pueden ser desactivadas usando  --disable-nombre-opción en vez de
+--enable-nombre-opción. Por defecto configure usará estas opciones si
+las librerías están disponibles en tu sistema.
+Para conseguir binarios mas rápidos haz (bash)
+$ export CXXFLAGS="-O3 -fexpensive-optimizations -malign-loops=2 -malign-jumps=2 -malign-functions=2"
+o (tcsh)
+$ setenv CXXFLAGS "-O3 -fexpensive-optimizations -malign-loops=2 -malign-jumps=2 -malign-functions=2"
+Asegúrate de configurar sin soporte de depuración (por defecto) y compilar estáticamente.

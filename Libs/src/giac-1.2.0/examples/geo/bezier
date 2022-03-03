@@ -1,0 +1,56 @@
+// -*- mode:C++ -*- fonction de bezier f(0)=A f(1)=C f'(0)=AB f'(1)=BC qui renvoie 1 pt
+bezier3(A,B,C,x):={
+  evalf(A*(1-x)^2+2*B*x*(1-x)+C*x^2);
+};
+
+//dessin de la courbe en parametrique passant par A et C et tgte a AB et a BC 
+courb(A,B,C):={plotparam(affixe(bezier3(A,B,C,x)),x,0,1);};
+
+//fonction donnant le barycentre de (A1,t) et de (A2, 1-t)
+bary(A1,A2,t):={evalf(t*A2+(1-t)*A1);};
+
+//dessin de la courbe barycentre de (courb(A1,B1,C1),t) et de (courb(A2,B2,C2),1-t)
+//on place les 6 pts puis on definit t:=element(0..1) on peut voir 
+//la deformation de la courbe qd on fait varier t.
+baryc(A1,B1,C1,A2,B2,C2,t):={
+  local M1,M2,M3;
+  M1:=bary(A1,A2,t);
+  M2:=bary(B1,B2,t);
+  M3:=bary(C1,C2,t);
+  courb(M1,M2,M3);
+};
+
+baryl(L1,L2,t):={
+  local L3,s1,s2;
+  s1:=size(L1);
+  s2:=size(L2);
+  if (s1 !=s2) {s1:=min(s1,s2);}
+  L3:=[];
+  for (k:=0;k<s1;k++) {
+  L3:=append(L3,bary(L1[k],L2[k],t));
+  }
+  return(eval(L3));
+};
+barycl(L1,L2,t):={evalf(t*L2+(1-t)*L1)};
+
+bezierl(L,x):={
+  local LS,A,B,C;
+  LS:=[];
+  for(j:=0;j<size(L)-2;j:=j+2){
+  A:=L[j];B:=L[j+1];C:=L[j+2]; 
+  LS:=append(LS,affixe(evalf(A*(1-x)^2+2*B*x*(1-x)+C*x^2)));
+  };
+  eval(LS);
+};
+
+courbl(L):={
+  local LB,LS;
+  LS:=[];
+  LB:=bezierl(L,x);
+  //print(LB);
+  for (j:=0;j<size(LB);j:=j+1) {
+  LS:=concat(LS,plotparam(LB[j],x,0,1));
+  //print(j,LS);
+  };
+  return(LS);
+};

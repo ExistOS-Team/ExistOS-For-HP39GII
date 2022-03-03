@@ -1,0 +1,23 @@
+# -*- mode:Makefile -*-
+# Building xcas/icas with giac.dll
+# run ./configure
+# with export CXXFLAGS="-L/usr/X11R6/lib -L/usr/local/lib -I/usr/local/include"
+# then make -f Makefilenew.win xcasdll / icasdll
+CXXFLAGS = -DHAVE_CONFIG_H -DIN_GIAC /I. /I.. /Ivcc /I'c:\Program Files\Microsoft Visual Studio 10.0\VC\include/' /I'c:\Program Files\Microsoft SDKs\Windows\v7.0A\Include'  /EHsc /Zi /MDd /W3 # /D "_UNICODE" /D "UNICODE" -pg
+CFLAGS = -DHAVE_CONFIG_H -DIN_GIAC /I. /I.. /Ivcc /I'c:\Program Files\Microsoft Visual Studio 10.0\VC\include/' /I'c:\Program Files\Microsoft SDKs\Windows\v7.0A\Include' /EHsc  /MDd /W3 #/Zi /D "_UNICODE" /D "UNICODE" # -pg
+CXX=cl.exe
+# OBJS =  History.obj Input.obj Xcas1.obj Equation.obj Print.obj Tableur.obj Cfg.obj Flv_CStyle.obj Flve_Check_Button.obj Flve_Input.obj Flv_Style.obj Flv_Data_Source.obj Flve_Combo.obj Flv_List.obj Flv_Table.obj Graph.obj Graph3d.obj Editeur.obj Help1.obj gl2ps.obj
+GIACOBJS = sym2poly.obj gausspol.obj threaded.obj maple.obj ti89.obj mathml.obj moyal.obj misc.obj permu.obj quater.obj desolve.obj input_parser.obj symbolic.obj index.obj modpoly.obj modfactor.obj ezgcd.obj derive.obj solve.obj intg.obj intgab.obj risch.obj lin.obj series.obj subst.obj vecteur.obj csturm.obj tex.obj global.obj ifactor.obj alg_ext.obj gauss.obj isom.obj help.obj plot.obj plot3d.obj rpn.obj prog.obj pari.obj cocoa.obj unary.obj usual.obj identificateur.obj gen.obj input_lexer.obj # TmpLESystemSolver.obj TmpFGLM.obj 
+LIBS = mpfr.lib mpir.lib
+
+giac_oo.lib:   $(GIACOBJS) first.obj
+	lib /out:giac_oo.lib $(GIACOBJS) first.obj 
+%.obj:	%.cc
+	$(CXX) $(CXXFLAGS) /c $<
+example.exe:	example.obj giac_oo.lib
+	~/VC/bin/link /DEBUG /LIBPATH:'c:\Program Files\Microsoft Visual Studio 10.0\VC\lib' /LIBPATH:'c:\Program Files\Microsoft SDKs\Windows\v7.0A\lib' example.obj giac_oo.lib $(LIBS) shell32.lib
+icas.exe:	icas.obj giac_oo.lib
+	~/VC/bin/link /DEBUG /LIBPATH:'c:\Program Files\Microsoft Visual Studio 10.0\VC\lib' /LIBPATH:'c:\Program Files\Microsoft SDKs\Windows\v7.0A\lib' icas.obj giac_oo.lib $(LIBS) shell32.lib /NODEFAULTLIB:libcmt.lib
+clean:
+	rm -f $(GIACOBJS) $(OBJS) giac_oo.lib
+

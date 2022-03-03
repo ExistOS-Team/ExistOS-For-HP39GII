@@ -1,0 +1,2 @@
+C:=rotation(A,pi/6,B);
+D:=rotation(A,2*pi/3,B);

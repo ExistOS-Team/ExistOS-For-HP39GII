@@ -1,0 +1,24 @@
+Hints for building rpm packages:
+Check giac.specs and giac.specs32
+NB 32 bits: export CXXFLAGS='-m32 -I/usr32/include'
+            export CFLAGS='-m32 -I/usr32/include'
+            export LDFLAGS='-L/usr32/lib -lX11'
+	    
+preparation:
+  rpmbuild -bp --short-circuit giac.specs
+compilation:
+  rpmbuild -bc --short-circuit giac.specs
+installation:
+  rpmbuild -bi --short-circuit giac.specs
+make package
+  rpmbuild -bb --short-circuit giac.specs
+
+make all:
+  rpmbuild -ba giac.specs
+  bug gcc 4.7: stopper le process apres configuration, et faire
+/bin/sh ../libtool --tag=CXX   --mode=compile g++ -DHAVE_CONFIG_H -I. -I..  -DIN_GIAC -I. -I.. -I. -I..       -g -m64 -fmessage-length=0 -D_FORTIFY_SOURCE=2 -fstack-protector -funwind-tables -fasynchronous-unwind-tables -fno-strict-aliasing -DGIAC_GENERIC_CONSTANTS -c -o prog.lo prog.cc
+/bin/sh ../libtool --tag=CXX   --mode=compile g++ -DHAVE_CONFIG_H -I. -I..  -DIN_GIAC -I. -I.. -I. -I..       -g -m64 -fmessage-length=0 -D_FORTIFY_SOURCE=2 -fstack-protector -funwind-tables -fasynchronous-unwind-tables -fno-strict-aliasing -DGIAC_GENERIC_CONSTANTS -c -o usual.lo usual.cc
+OU
+  rpmbuild --target=i386 giac.specs32
+/bin/sh ../libtool --tag=CXX   --mode=compile g++ -DHAVE_CONFIG_H -I. -I..  -DIN_GIAC -I. -I.. -I. -I..       -g -m32 -fmessage-length=0 -D_FORTIFY_SOURCE=2 -fstack-protector -funwind-tables -fasynchronous-unwind-tables -fno-strict-aliasing -DGIAC_GENERIC_CONSTANTS -c -o prog.lo prog.cc
+/bin/sh ../libtool --tag=CXX   --mode=compile g++ -DHAVE_CONFIG_H -I. -I..  -DIN_GIAC -I. -I.. -I. -I..       -g -m32 -fmessage-length=0 -D_FORTIFY_SOURCE=2 -fstack-protector -funwind-tables -fasynchronous-unwind-tables -fno-strict-aliasing -DGIAC_GENERIC_CONSTANTS -c -o usual.lo usual.cc

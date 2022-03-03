@@ -1,0 +1,2 @@
+C3:=cercle(A,B-A);
+mediatrice(inter(C3,droite(A,B)));

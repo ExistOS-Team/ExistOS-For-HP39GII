@@ -20,30 +20,30 @@
 #define HEAP_END        (SYS_STACK_ADDR - 0x400)
 
 // DATA   SYS   SWAP
-#define DISK_PARTITION      {85, 10, 5, 0}
+#define DISK_PARTITION      {80, 15, 5, 0}
 
 #define PAGE_SIZE           4096
 #define SEG_SIZE            1048576
 
 #define NUM_CACHEPAGE       64
 
-#define SIZE_SWAPAREA_MB    2
+
 
 //#define SIZE_SWAPFILE_MB    2
 
 #define PAGES_SWAPFILE      (SIZE_SWAPFILE_MB * 1048576 / PAGE_SIZE)
 
 #define VM_ROM_BASE         (0x00100000)
-#define VM_ROM_SIZE         (1048576 * 2)
+#define VM_ROM_SIZE         (1048576 * 10)
 #define VM_ROM_SEG          (VM_ROM_BASE >> 20)
 #define VM_ROM_NUM_SEG      (VM_ROM_SIZE / SEG_SIZE)
 
-#define VM_RAM_BASE         (0x00300000)
-#define VM_RAM_SIZE         (1048576 * 2)
+#define VM_RAM_BASE         (0x02000000)
+#define VM_RAM_SIZE         (1048576 * 4)
 #define VM_RAM_SEG          (VM_ROM_BASE >> 20)
 #define VM_RAM_NUM_SEG      (VM_RAM_SIZE / SEG_SIZE)
 
 #define TOTAL_VM_SEG        ((VM_ROM_SIZE + VM_RAM_SIZE) / SEG_SIZE)
 
 
-
+#define SIZE_SWAPAREA_MB    (VM_RAM_SIZE / 1048576)

@@ -1,0 +1,102 @@
+arbre1(h):={
+si (h<5) alors
+avance(h);
+recule(h);
+sinon
+avance(h);
+tourne_droite(45);
+arbre1(h/2);
+tourne_gauche(90);
+arbre1(h/2):
+tourne_droite(45);
+recule(h);
+fsi;
+};
+arbre2(h,n):={
+si (n==0) alors
+avance(h);
+recule(h);
+sinon
+avance(h);
+tourne_droite(45);
+arbre2(h/2,n-1);
+tourne_gauche(90);
+arbre2(h/2,n-1):
+tourne_droite(45);
+recule(h);
+fsi;
+};
+arbre3(h,p):={
+si (h<5) alors
+avance(h);
+recule(h);
+sinon
+avance(h);
+tourne_droite(90*(p-1)/p);
+repete(p,arbre3(h/2,p),tourne_gauche(180/p));
+tourne_droite(90*(p+1)/p);
+recule(h);
+fsi
+};
+arbre4(h,p,n):={
+si (n==0) alors
+avance(h);
+recule(h);
+sinon
+avance(h);
+tourne_droite(90*(p-1)/p);
+repete(p,arbre4(h/2,p,n-1),tourne_gauche(180/p));
+tourne_droite(90*(p+1)/p);
+recule(h);
+fsi
+};
+arbre5(h,p,n):={
+local k;
+si (n==0) alors
+avance(h);
+recule(h);
+sinon
+avance(h);
+tourne_droite(90*(p-1)/p);
+k:=rand(0,1);
+repete(p,arbre5(h*k,p,n-1),tourne_gauche(180/p));
+tourne_droite(90*(p+1)/p);
+recule(h);
+fsi;
+};
+arbre6(h,p,n):={
+si (n==0) alors
+avance(h);
+recule(h);
+sinon
+avance(h);
+tourne_droite(90*(p-1)/p);
+repete(p,arbre6(h*rand(0,1),p,n-1),tourne_gauche(180/p));
+tourne_droite(90*(p+1)/p);
+recule(h);
+fsi;
+};
+arbre7(h,p):={
+si (p==2) alors
+avance(h);
+recule(h);
+sinon
+avance(h);
+tourne_droite(90*(p-1)/p);
+repete(p,arbre7(h,p-1),tourne_gauche(180/p));
+tourne_droite(90*(p+1)/p);
+recule(h);
+fsi;
+};
+arbre8(h,p,n):={
+si (n==0) ou (p==2) alors
+avance(h);
+recule(h);
+sinon
+avance(h);
+tourne_droite(90*(p-1)/p);
+repete(p,arbre8(h,p-1,n-1),tourne_gauche(180/p));
+tourne_droite(90*(p+1)/p);
+recule(h);
+fsi;
+};

@@ -1,0 +1,4 @@
+#! /bin/sh
+export LANG=en_US.UTF8
+../src/icas testgeo > geo.tst
+diff geo.tst geo.out

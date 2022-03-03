@@ -1,0 +1,188 @@
+\documentclass[12pt,a4paper]{report}
+\parindent=0pt
+\begin{document}
+SymbolicC++ introduces, amongst others, the \verb|Symbolic| class
+which is used for all symbolic computation. The \verb|Symbolic|
+class provides almost all of the features required for symbolic computation
+including symbolic terms, substitution, non-commutative multiplication
+and vectors and matrices.\\
+
+All the necessary classes and definitions are obtained by
+\begin{verbatim}
+ #include "symbolicc++.h"
+\end{verbatim}
+int the C++ source file.\\
+
+There are a number of constructors available for \verb|Symbolic|:
+\begin{verbatim}
+ Symbolic zero;                           // default value is 0
+ Symbolic int_one1(1), int_one2 = 1;      // construction from int
+ Symbolic dbl_one1(1.0), dbl_one2 = 1.0;  // construction from double
+ Symbolic half = Symbolic(1)/2;           // fraction 1/2
+ Symbolic a("a");                         // symbol a
+ Symbolic b("b", 3);                      // vector (b0, b1, b2)
+ Symbolic c = b(2);                       // copy constructor, c = b2
+ Symbolic A("A", 2, 3);                   // matrix A with 2 rows and 3 columns
+ Symbolic d = A(1, 2);                    // copy constructor, d = A(1, 2);
+ Symbolic e = (a, c, d);                  // vector (a, b2, A(1, 2))
+ Symbolic B = ( ( half,      a ),         // matrix B = [  1/2     a    ]
+                ( c,    A(0,0) ) );       //            [   b2   A(0,0) ]
+\end{verbatim}
+
+The \verb|,| operator has been overloaded to create lists of type STL 
+\verb|list<Symbolic>| which can be assigned to \verb|Symbolic| to create
+vectors and matrices as shown for \verb|v| and \verb|B|. Matrices
+and vectors are indexed using the \verb|()| and \verb|(,)| operators.\\
+
+All the standard arithmetic operators are provided for \verb|Symbolic|
+as well as the usual functions \verb|cos|, \verb|sin|, \verb|exp|,
+\verb|tan|, \verb|cot|, \verb|sec|, \verb|csc|, \verb|sinh|, \verb|cosh|,
+\verb|ln|, \verb|pow| or alternatively \verb|(x^y)|, and \verb|sqrt|.
+The precedence of \verb|^| is lower than \verb |+| so the parenthesis
+\verb|(x^y)| are usually necessary.\\
+
+Symbolic C++ also includes an \verb|Equation| class for expressing
+equality (or substitution) usually constructed using the \verb|==| operator:
+\begin{verbatim}
+ Equation eq = (a == a*c - d);
+\end{verbatim}
+
+\verb|Equations| also serve as logical variables, in the sense that they
+can be cast to \verb|bool|:
+\begin{verbatim}
+ if(eq) cout << "a == a*c - d" << endl;   // a != a*c - d
+ else   cout << "a != a*c - d" << endl;
+ if(a == a)                               // creates the equation (a == a)
+  cout << "a is a" << endl;               // the if statement implicitly
+                                          // casts the equation to bool
+\end{verbatim}
+
+Symbols can depend on eachother using the \verb|[]| operator:
+\begin{verbatim}
+ Symbolic x("x"), y("y"), t("t");
+ cout << y << endl;                       // independent y
+ cout << y[x] << endl;                    // y[x] (y dependent on x, explicit)
+ cout << y << endl;                       // independent y
+ cout << y[x,t] << endl;                  // y[x,t] (y dependent on x and t)
+ cout << y << endl;                       // independent y
+ x = x[t];                                // x depends on t (implicit)
+ y = y[x];                                // y depends on x
+ cout << y << endl;                       // y[x[t]]
+\end{verbatim}
+
+Substitution is specified via equations and the \verb|[]| operator:
+\begin{verbatim}
+ Symbolic v("v");
+ Symbolic u = (v^5) + cos(v-2);           // u depends implicitly on v
+ cout << u[v == 2] << endl;               // 33
+ cout << u[cos(v-2) == sin(v-2), v == 2]  // 32
+      << endl;
+ cout << u[v == 2, cos(v-2) == sin(v-2)]  // 33
+      << endl;
+ cout << u.subst(v == 2) << endl;         // 33
+ cout << u.subst_all(v == 2) << endl;     // 33
+ cout << u.subst(v == v*v) << endl;       // v^10 + cos(v^2 - 2)
+ cout << u.subst_all(v == v*v) << endl;   // never returns
+\end{verbatim}
+
+The above example demonstrates that substitution proceeds from left to
+right. The member function \verb|subst| can also be used for substitution,
+as well as \verb|subst_all|. The difference between the two methods is that
+\verb|subst| substitutes in each component of an expression only once
+while \verb|subst_all| attempts to perform the substitution until the
+substitution fails, thus for \verb|v| $\to$ \verb|v*v| we have the
+never ending substitution sequence
+\verb|v| $\to$ \verb|v^2| $\to$ \verb|v^4| $\to$ \verb|v^8| $\to\cdots$.\\
+
+Symbolic variables can be either commutative or non-commutative. By
+default symbolic variables are commutative, commutativity is toggled
+using the \verb|~| operator:
+\begin{verbatim}
+ Symbolic P("P"), Q("Q");
+ cout << P*Q - Q*P << endl;               // 0
+ cout << ~P*~Q - ~Q*~P << endl;           // P*Q - Q*P
+ cout << P*Q - Q*P << endl;               // 0
+ P = ~P;                                  // P is non-commutative
+ cout << P*Q - Q*P << endl;               // 0
+ Q = ~Q;                                  // Q is non-commutative
+ cout << P*Q - Q*P << endl;               // P*Q - Q*P
+ cout << (P*Q - Q*P)[Q == ~Q] << endl;    // 0
+ cout << P*Q - Q*P << endl;               // P*Q - Q*P
+ Q = ~Q;                                  // Q is commutative
+ cout << P*Q - Q*P << endl;               // 0
+\end{verbatim}
+
+It is also possible to determine the coefficient of expressions
+using the method \verb|coeff|, and additional power can be specified:
+\begin{verbatim}
+ Symbolic m("m"), n("n");
+ Symbolic result = (2*m - 2*n)^2;         // 4*(m^2) - 8*m*n + 4*(n^2)
+ cout << result.coeff(m^2) << endl;       // 4
+ cout << result.coeff(n,2) << endl;       // 4
+ cout << result.coeff(m) << endl;         // -8*n
+ cout << result.coeff(m*n) << endl;       // -8
+ cout << result.coeff(m,0) << endl;       // constant term: 4*(n^2)         
+ cout << result.coeff(m^2,0) << endl;     // constant term: -8*m*n + 4*(n^2)
+ cout << result.coeff(m*n,0) << endl;     // constant term: 4*(m^2) + 4*(n^2)
+\end{verbatim}
+
+Differentiation and elementary intergration is supported via the
+functions \verb|df| and \verb|integrate|:
+\begin{verbatim}
+ Symbolic p("p"), q("q");
+ cout << df(p, q) << endl;                // 0
+ cout << df(p[q], q) << endl;             // df(p[q], q)
+ cout << df(p[q], q, 2) << endl;          // df(p[q], q, q) (2nd derivative)
+ cout << df(cos(p[q]^2) - (q^2)*sin(q),q) // -2*sin(p[q]^(2))*p[q]*df(p[q],q)   
+      << endl;                            //  - 2*q*sin(q)-q^(2)*cos(q)
+ cout << integrate(p, q) << endl;         // p*q
+ cout << integrate(p[q], q) << endl;      // integrate(p[q], q)
+ cout << integrate(ln(q), q) << endl;     // q*ln(q) - q
+\end{verbatim}
+
+A number of operattions are defined on \verb|Symbolic| which are dependent
+on the underlying value. For example, a symbolic expression which evaluates
+to an integer can be cast to \verb|int| and similarly for \verb|double|.
+Note that \verb|double| is never simplified to \verb|int|, for example
+$2.0\not \to 2$ while fractions do $\frac{2}{2}\to 1$.
+
+\begin{verbatim}
+ Symbolic z("z");
+ cout << int(((z-2)^2) - z*(z-4))         // 4
+      << endl;
+ cout << int(((z-2)^2) - z*(z-4.0))       // 4
+      << endl;
+ cout << int(((z-2.0)^2) - z*(z+4))       // error: -8*z
+      << endl;
+ cout << int(((z-2.0)^2) - z*(z-4))       // error: 4.0 is not an integer
+      << endl;
+ cout << double(((z-2.0)^2) - z*(z-4))    // 4.0
+      << endl;
+\end{verbatim}
+
+The matrix operations \verb|det| and \verb|tr|, scalar product \verb$a|b$,
+cross product \verb|%| and methods \verb|rows|, \verb|columns|, \verb|row|
+\verb|column|, \verb|identity|, \verb|transpose|, \verb|vec|, \verb|kron|
+\verb|dsum| and \verb|inverse| are only defined on matrices with
+appropriate properties.
+
+\begin{verbatim}
+ Symbolic X("X", 3, 3), Y("Y", 3, 3);
+ cout << tr(X) << endl;                   // X(0,0) + X(1,1) + X(2,2)
+ cout << det(Y) << endl;
+ cout << "X: " << X.rows()                // X: 3 x 3
+      << " x " << X.columns() << endl;
+ cout << X.identity() << endl;
+ cout << X << endl;
+ cout << X.transpose() << endl;
+ cout << X*Y << endl;
+ cout << X.vec() << endl;                 // vec operator
+ cout << X.kron(Y) << endl;               // Kronecker product
+ cout << X.dsum(Y) << endl;               // direct sum
+ cout << X.inverse() << endl;             // direct sum
+ cout << X.row(0) * Y.column(1) << endl;
+ cout << (X.column(0) | Y.column(0)) << endl; // scalar product
+ cout << (X.column(0) % Y.column(0)) << endl; // vector product
+\end{verbatim}
+
+\end{document}

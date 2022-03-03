@@ -1,0 +1,505 @@
+// xcas version=1.1.0 fontsize=20 font=0 currentlevel=24
+// fltk 7Fl_Tile 25 -2082 938 61 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 -2082 938 34 20 0
+7 ,
+restart,
+// fltk N4xcas10Log_OutputE 25 -2048 938 1 20 0
+
+,
+// fltk N4xcas8EquationE 25 -2047 938 26 20 0 1
+[K,L,P,est_irred,g,h,irred,rapide]
+]
+,
+// fltk 7Fl_Tile 25 -2019 938 50 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 -2019 938 49 20 0
+Creation du corps fini a p^m elements GF(p,m), en representation£Z/pZ[X]/polynome irreductible, recherche d'un poly irreductible de degre m
+,
+// fltk N4xcas10Log_OutputE 25 -1970 938 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 25 -1967 938 495 20 0
+[
+// fltk N4xcas7EditeurE 25 -1967 938 299 20 0
+1044 ,
+// on peut bien sur utiliser directement powmod
+rapide(A,n,P):={ 
+  // powerpc rapide mod P un polynome
+  local B;
+  if (n==0) return 1;
+  if (n==1) return A;
+  B:=rapide(A,iquo(n,2),P);
+  B:=rem(B*B,P);
+  return when(irem(n,2),rem(A*B,P),B);
+}:;
+
+est_irred(P,p):={
+  // teste si P est irreductible dans Z/pZ[X]
+  // en calculant le pgcd de P avec X^(p^k)-X
+  // pour k<=deg(P)/2 qui doit donner 1
+  local m,k,Xpk,X,un;
+  m:=degree(P)/2;
+  X:=poly1[1,0]%p;
+  Xpk:=X;
+  un:=poly1[1]%p;
+  for (k:=1;k<=m;k++){
+    // X^(p^k) mod P
+    Xpk:=rapide(Xpk,p,P); 
+    if (gcd(Xpk-X,P)!=un) return 0;
+  }
+  return 1;
+}:;
+
+irred(p,m):={
+  // calcul d'un polynome irreductible P
+  // tel que GF(p,m)=Z/pZ[X]/P
+  local n,irr,mini,pm;
+  if (!isprime(p)) return p+" non premier!";
+  pm:=p^m;
+  // essai systematique de tous les poly, 
+  // on pourrait aussi choisir n au hasard jusqu'au succes
+  for (n:=1;n<=pm;n++){
+    irr:=op(convert(n,base,p));
+    irr:=poly1[1,0$(m-size(irr)),irr] % p;
+    if (est_irred(irr,p)) return irr;
+  }
+  return "erreur!";
+}:;,
+// fltk N4xcas10Log_OutputE 25 -1668 938 170 20 0
+// InterprÃ¨te rapide£// Attention: rapide, declarÃ©e(s) comme variable(s) globale(s) lors de la compilation rapide£// InterprÃ¨te est_irred£// Attention: %p,rapide, declarÃ©e(s) comme variable(s) globale(s) lors de la compilation est_irred£// InterprÃ¨te irred£// Attention: est_irred, declarÃ©e(s) comme variable(s) globale(s) lors de la compilation irred£rapide: dÃ©finition rÃ©cursive£
+,
+// fltk N4xcas8EquationE 25 -1498 938 26 20 0 1
+"Done","Done","Done"
+]
+,
+// fltk 7Fl_Tile 25 -1470 938 61 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 -1470 938 34 20 0
+13 ,
+P:=irred(2,4),
+// fltk N4xcas10Log_OutputE 25 -1436 938 1 20 0
+
+,
+// fltk N4xcas8EquationE 25 -1435 938 26 20 0 1
+poly1[1 % 2,0 % 2,0 % 2,1 % 2,1 % 2]
+]
+,
+// fltk 7Fl_Tile 25 -1407 938 33 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 -1407 938 32 20 0
+on verifie que P=x^4+x+1 est bien irreductible (alors que x^4+1 ne l'est pas)
+,
+// fltk N4xcas10Log_OutputE 25 -1375 938 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 25 -1372 938 74 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 -1372 938 34 20 0
+40 ,
+factor(horner(P,x)%2); factor((x^4+1)%2),
+// fltk N4xcas10Log_OutputE 25 -1338 938 1 20 0
+
+,
+// fltk N4xcas8EquationE 25 -1337 938 39 20 0 1
+(1 % 2)*x^4+(1 % 2)*x+1 % 2,((1 % 2)*x+1 % 2)^4
+]
+,
+// fltk 7Fl_Tile 25 -1296 938 33 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 -1296 938 32 20 0
+autre methode (inutilisable pour p^m grand), on prend un facteur de degre 4 de x^(p^m)-x
+,
+// fltk N4xcas10Log_OutputE 25 -1264 938 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 25 -1261 938 94 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 -1261 938 34 20 0
+18 ,
+factor((x^15-1)%2),
+// fltk N4xcas10Log_OutputE 25 -1227 938 1 20 0
+
+,
+// fltk N4xcas8EquationE 25 -1226 938 59 20 0 1
+((1 % 2)*x+1 % 2)*((1 % 2)*x^2+(1 % 2)*x+1 % 2)*((1 % 2)*x^4+(1 % 2)*x+1 % 2)*((1 % 2)*x^4+(1 % 2)*x^3+1 % 2)*((1 % 2)*x^4+(1 % 2)*x^3+(1 % 2)*x^2+(1 % 2)*x+1 % 2)
+]
+,
+// fltk 7Fl_Tile 25 -1165 938 100 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 -1165 938 100 20 0
+GF(2,4) renvoie un polynome irreductible qui est aussi primitif£il est bien sur dans la liste des facteurs ci-dessus.£Pour travailler dans le corps GF(2,4), on peut directement utiliser le generateur renvoye£par exemple si c'est g, on peut ecrire g*(g^3+g)
+,
+// fltk N4xcas10Log_OutputE 25 -1065 938 0 20 0
+
+]
+,
+// fltk 7Fl_Tile 25 -1063 938 171 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 -1063 938 34 20 0
+8 ,
+GF(2,4);,
+// fltk N4xcas10Log_OutputE 25 -1029 938 98 20 0
+ParamÃ¨tres g comme gÃ©nÃ©rateur du corps de Galois K£(variable polynomiale auxiliaire pour reprÃ©sentation additivek)£Assigne les variablesg et K£Par exemple g^200+1 construira un Ã©lÃ©ment de K£
+,
+// fltk N4xcas8EquationE 25 -931 938 39 20 0 1
+GF(2,k^4+k+1,[k,K,g],undef)
+]
+,
+// fltk 7Fl_Tile 25 -890 938 74 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 -890 938 34 20 0
+9 ,
+g*(g^3+g),
+// fltk N4xcas10Log_OutputE 25 -856 938 1 20 0
+
+,
+// fltk N4xcas8EquationE 25 -855 938 39 20 0 1
+g^2+g+1
+]
+,
+// fltk 7Fl_Tile 25 -814 938 184 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 -814 938 181 20 0
+Pour trouver un polynome primitif, on calcule le poly minimal d'un element£primitif choisi au hasard dans le corps quotient Z/pZ[X]/P (poly irreductible).£On commence donc par chercher a primitif, il faut que a^(p^m-1)=1 soit£la premiere puissance realisant cette egalite,£i.e. a^((p^m-1)/d) != 1 pour tout d diviseur premier de p^m-1.£Pour trouver le poly minimal, on calcule en colonnes 1,a,...,a^(p-1)£dans la base canonique des polynomes modulo P et on calcule£le noyau de cette matrice (modulo p)
+,
+// fltk N4xcas10Log_OutputE 25 -633 938 3 20 0
+
+]
+,
+// fltk 7Fl_Tile 25 -628 938 31 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 -628 938 30 20 0
+première méthode, avec les instructions de xcas
+,
+// fltk N4xcas10Log_OutputE 25 -598 938 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 25 -595 938 85 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 -595 938 45 20 0
+76 ,
+A:=x^2+1:; Q:=x^4+x+1:; powmod(A,15,2,Q); powmod(A,5,2,Q); powmod(A,3,2,Q); ,
+// fltk N4xcas10Log_OutputE 25 -550 938 1 20 0
+
+,
+// fltk N4xcas8EquationE 25 -549 938 39 20 0 1
+"Done","Done",1,x^2+x+1,x^3+x
+]
+,
+// fltk 7Fl_Tile 25 -508 938 111 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 -508 938 71 20 0
+95 ,
+Ap:=[0$(degree(Q)+1)]:; Ap[0]:=1%2:; 
+for (j:=1;j<size(Ap);j++){ Ap[j]:=rem(Ap[j-1]*A,Q,x); }; ,
+// fltk N4xcas10Log_OutputE 25 -437 938 1 20 0
+
+,
+// fltk N4xcas8EquationE 25 -436 938 39 20 0 1
+"Done","Done",[1 % 2,(1 % 2)*x^2+1 % 2,(1 % 2)*x,x^3+x,2*x^3-x^2]
+]
+,
+// fltk 7Fl_Tile 25 -395 938 61 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 -395 938 34 20 0
+39 ,
+B:=seq(coeffs(Ap[j],x),j,0,size(Ap)-1);,
+// fltk N4xcas10Log_OutputE 25 -361 938 1 20 0
+
+,
+// fltk N4xcas8EquationE 25 -360 938 26 20 0 1
+[poly1[1 % 2],poly1[1 % 2,0,1 % 2],poly1[1 % 2,0],poly1[1,0,1,0],poly1[2,-1,0,0]]
+]
+,
+// fltk 7Fl_Tile 25 -332 938 221 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 -332 938 34 20 0
+70 ,
+for (j:=0;j<size(B);j++){ B[j]:=[0$(degree(Q)-size(B[j])),op(B[j])]; },
+// fltk N4xcas10Log_OutputE 25 -298 938 1 20 0
+
+,
+// fltk N4xcas8EquationE 25 -297 938 186 20 0 1
+[[0,0,0,1 % 2],[0,1 % 2,0,1 % 2],[0,0,1 % 2,0],[1,0,1,0],[2,-1,0,0]]
+]
+,
+// fltk 7Fl_Tile 25 -109 938 61 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 -109 938 34 20 0
+12 ,
+ker(tran(B)),
+// fltk N4xcas10Log_OutputE 25 -75 938 1 20 0
+
+,
+// fltk N4xcas8EquationE 25 -74 938 26 20 0 1
+[[1 % 2,1 % 2,0 % 2,0 % 2,1 % 2]]
+]
+,
+// fltk 7Fl_Tile 25 -46 938 31 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 -46 938 30 20 0
+2ème méthode avec notre programme rapide et en représentation liste
+,
+// fltk N4xcas10Log_OutputE 25 -16 938 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 25 -13 938 61 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 -13 938 34 20 0
+49 ,
+a:=5; A:=poly1[op(revlist(convert(a,base,2)%2))];,
+// fltk N4xcas10Log_OutputE 25 21 938 1 20 0
+
+,
+// fltk N4xcas8EquationE 25 22 938 26 20 0 1
+5,poly1[1 % 2,0 % 2,1 % 2]
+]
+,
+// fltk 7Fl_Tile 25 50 938 61 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 50 938 34 20 0
+46 ,
+rapide(A,15,P); rapide(A,5,P); rapide(A,3,P);],
+// fltk N4xcas10Log_OutputE 25 84 938 1 20 0
+
+,
+// fltk N4xcas8EquationE 25 85 938 26 20 0 1
+poly1[1 % 2],poly1[1 % 2,1 % 2,1 % 2],poly1[1 % 2,0 % 2,1 % 2,0 % 2]
+]
+,
+// fltk 7Fl_Tile 25 113 938 81 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 113 938 34 20 0
+61 ,
+A1:=A;A2:=rapide(A,2,P); A3:=rapide(A,3,P); A4:=rapide(A,4,P),
+// fltk N4xcas10Log_OutputE 25 147 938 1 20 0
+
+,
+// fltk N4xcas8EquationE 25 148 938 46 20 0 1
+poly1[1 % 2,0 % 2,1 % 2],poly1[1 % 2,0 % 2],poly1[1 % 2,0 % 2,1 % 2,0 % 2],poly1[1 % 2,0 % 2,0 % 2]
+]
+,
+// fltk 7Fl_Tile 25 196 938 181 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 196 938 34 20 0
+62 ,
+M:=tran([[0,0,0,1],[0,1,0,1],[0,0,1,0],[1,0,1,0],[0,1,0,0]])%2,
+// fltk N4xcas10Log_OutputE 25 230 938 1 20 0
+
+,
+// fltk N4xcas8EquationE 25 231 938 146 20 0 1
+[[0 % 2,0 % 2,0 % 2,1 % 2,0 % 2],[0 % 2,1 % 2,0 % 2,0 % 2,1 % 2],[0 % 2,0 % 2,1 % 2,1 % 2,0 % 2],[1 % 2,1 % 2,0 % 2,0 % 2,0 % 2]]
+]
+,
+// fltk 7Fl_Tile 25 379 938 61 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 25 379 938 34 20 0
+6 ,
+ker(M),
+// fltk N4xcas10Log_OutputE 25 413 938 1 20 0
+
+,
+// fltk N4xcas8EquationE 25 414 938 26 20 0 1
+[[1 % 2,1 % 2,0 % 2,0 % 2,1 % 2]]
+]
+,
+// fltk 7Fl_Tile 25 442 938 31 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 25 442 938 30 20 0
+donc x^4+x^3+1 est bien irreductible primitif
+,
+// fltk N4xcas10Log_OutputE 25 472 938 1 20 0
+
+]
+// context 3783 giac archive
+7 0 22 8 0 0 'cas_setup' 7 0 12 0 0 0
+0 0 0
+0 0 0
+0 1 0
+0 0 0
+7 0 2 1 vIhÂ%<=
+1 Vçž¯Ò<
+0 12 0
+7 0 4 0 1 0
+0 50 0
+0 0 0
+0 25 0
+0 0 0
+0 0 0
+0 1 0
+0 1 0
+8 0 0 'xyztrange' 7 0 16 1      $À
+1      $@
+1      $À
+1      $@
+1      $À
+1      $@
+1      $À
+1      $@
+1      $À
+1      $@
+1 afffffö¿
+1 ™™™™™ñ?
+0 1 0
+1        
+1      ð?
+0 3 0
+7 0 0 7 0 0 8 0 15 7 1 2 7 10 3 15 0 1 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 15 0 1 0
+ 0 2 0
+ 6 1 A 8 0 15 7 1 2 7 10 3 15 0 1 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 15 0 1 0
+ 0 2 0
+ 6 2 A1 8 0 15 7 1 2 7 10 2 15 0 1 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 6 2 A2 8 0 15 7 1 2 7 10 4 15 0 1 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 15 0 1 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 6 2 A3 8 0 15 7 1 2 7 10 3 15 0 1 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 6 2 A4 8 0 15 7 1 2 7 0 5 15 0 1 0
+ 0 2 0
+ 8 0 1 7 1 2 8 0 4 7 1 2 15 0 1 0
+ 0 2 0
+ 8 0 7 7 1 2 6 1 x 0 2 0
+15 0 1 0
+ 0 2 0
+ 8 0 4 7 1 2 15 0 1 0
+ 0 2 0
+ 6 1 x 8 0 1 7 1 2 8 0 7 7 1 2 6 1 x 0 3 0
+6 1 x 8 0 1 7 1 2 8 0 4 7 1 2 0 2 0
+8 0 7 7 1 2 6 1 x 0 3 0
+8 0 2 8 0 7 7 1 2 6 1 x 0 2 0
+6 2 Ap 8 0 15 7 1 2 7 0 5 7 0 4 0 0 0
+0 0 0
+0 0 0
+15 0 1 0
+ 0 2 0
+ 7 0 4 0 0 0
+15 0 1 0
+ 0 2 0
+ 0 0 0
+15 0 1 0
+ 0 2 0
+ 7 0 4 0 0 0
+0 0 0
+15 0 1 0
+ 0 2 0
+ 0 0 0
+7 0 4 0 1 0
+0 0 0
+0 1 0
+0 0 0
+7 0 4 0 2 0
+0 -1 0
+0 0 0
+0 0 0
+6 1 B 8 0 15 7 1 2 16GF(2,[1,0,0,1,1],[k,K,g],undef)
+6 1 K 8 0 15 7 1 2 7 0 4 7 0 5 15 0 0 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 15 0 1 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 7 0 5 15 0 0 0
+ 0 2 0
+ 15 0 1 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 15 0 1 0
+ 0 2 0
+ 7 0 5 15 0 0 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 15 0 1 0
+ 0 2 0
+ 15 0 1 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 7 0 5 15 0 1 0
+ 0 2 0
+ 15 0 1 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 6 1 M 8 0 15 7 1 2 7 10 5 15 0 1 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 15 0 0 0
+ 0 2 0
+ 15 0 1 0
+ 0 2 0
+ 15 0 1 0
+ 0 2 0
+ 6 1 P 8 0 15 7 1 2 8 0 1 7 1 3 8 0 7 7 1 2 6 1 x 0 4 0
+6 1 x 0 1 0
+6 1 Q 8 0 15 7 1 2 0 5 0
+6 1 a 8 0 15 7 1 2 8 0 73 7 1 3 7 1 2 6 1 P 6 1 p 7 1 2 0 0 0
+0 0 0
+8 0 42 7 1 2 7 0 2 7 1 5 6 1 m 6 1 k 6 3 Xpk 6 1 X 6 2 un 7 1 0 7 0 8 8 0 15 7 1 2 8 0 5 7 1 2 8 0 0 'degree' 6 1 P 0 2 0
+6 1 m 8 0 15 7 1 2 7 10 2 0 1 0
+0 0 0
+6 1 X 6 2 %p 8 0 15 7 1 2 6 1 X 6 3 Xpk 8 0 15 7 1 2 7 10 1 0 1 0
+6 2 un 6 2 %p 8 0 71 7 0 4 8 0 15 7 1 2 0 1 0
+6 1 k 8 0 36 7 1 2 6 1 k 6 1 m 8 0 75 6 1 k 8 0 72 7 1 2 8 0 15 7 1 2 8 0 81 7 1 2 6 6 rapide 7 1 3 6 3 Xpk 6 1 p 6 1 P 6 3 Xpk 8 0 70 7 0 3 8 0 39 7 1 2 8 0 0 'gcd' 7 1 2 8 0 1 7 1 2 6 3 Xpk 8 0 2 6 1 X 6 1 P 6 2 un 8 0 43 0 0 0
+0 0 0
+8 0 43 0 1 0
+6 9 est_irred 8 0 15 7 1 2 16GF(2,[1,0,0,1,1],[k,K,g],[1,0])
+6 1 g 8 0 15 7 1 2 8 0 73 7 1 3 7 1 2 6 1 p 6 1 m 7 1 2 0 0 0
+0 0 0
+8 0 42 7 1 2 7 0 2 7 1 4 6 1 n 6 3 irr 6 4 mini 6 2 pm 7 1 0 7 0 4 8 0 70 7 0 3 8 0 32 8 0 0 'isprime' 6 1 p 8 0 43 8 0 1 7 1 2 6 1 p 12 13 | non premier! 0 0 0
+8 0 15 7 1 2 8 0 7 7 1 2 6 1 p 6 1 m 6 2 pm 8 0 71 7 0 4 8 0 15 7 1 2 0 1 0
+6 1 n 8 0 36 7 1 2 6 1 n 6 2 pm 8 0 75 6 1 n 8 0 72 7 1 3 8 0 15 7 1 2 8 0 0 op 8 0 0 'convert' 7 1 3 6 1 n 0 104 10
+6 1 p 6 3 irr 8 0 15 7 1 2 8 0 83 7 1 2 7 10 3 0 1 0
+8 0 62 7 1 2 0 0 0
+8 0 1 7 1 2 6 1 m 8 0 2 8 0 0 size 6 3 irr 6 3 irr 6 1 p 6 3 irr 8 0 70 7 0 3 8 0 81 7 1 2 6 9 est_irred 7 1 2 6 3 irr 6 1 p 8 0 43 6 3 irr 0 0 0
+8 0 43 12 7 |erreur! 6 5 irred 8 0 15 7 1 2 0 5 0
+6 1 j 8 0 15 7 1 2 8 0 73 7 1 3 7 1 3 6 1 A 6 1 n 6 1 P 7 1 3 0 0 0
+0 0 0
+0 0 0
+8 0 42 7 1 2 7 0 2 7 1 1 6 1 B 7 1 0 7 0 5 8 0 70 7 0 3 8 0 74 7 1 2 6 1 n 0 0 0
+8 0 43 0 1 0
+0 0 0
+8 0 70 7 0 3 8 0 74 7 1 2 6 1 n 0 1 0
+8 0 43 6 1 A 0 0 0
+8 0 15 7 1 2 8 0 81 7 1 2 6 6 rapide 7 1 3 6 1 A 8 0 0 'iquo' 7 1 2 6 1 n 0 2 0
+6 1 P 6 1 B 8 0 15 7 1 2 8 0 0 'rem' 7 1 2 8 0 4 7 1 2 6 1 B 6 1 B 6 1 P 6 1 B 8 0 43 8 0 0 when 7 1 3 8 0 0 'irem' 7 1 2 6 1 n 0 2 0
+8 0 0 'rem' 7 1 2 8 0 4 7 1 2 6 1 A 6 1 B 6 1 P 6 1 B 6 6 rapide 8 0 0 'xcas_mode' 0 0 0
+

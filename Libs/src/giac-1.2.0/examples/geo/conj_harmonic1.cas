@@ -1,0 +1,5 @@
+ 
+(A,B,C)-> 
+{ local D; 
+  D:=A+(B-A)*(C-A)/(C-B+C-A);  
+  return(D); }

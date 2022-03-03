@@ -1,0 +1,13 @@
+enveloppe(d):={
+local zM,a,b,c,a1,b1,c1,dpd1;
+a:=derive(d,y);
+b:=derive(d,x);
+c:=subst(subst(d,x=0),y=0);
+a1:=derive(a,t);b1:=derive(b,t);c1:=derive(c,t);
+dpd1:=a*b1-b*a1;
+if (dpd1!=0) {
+  zM:=(i*(-c*b1+b*c1)+(c*a1-a*c1))/dpd1;
+  return(plotparam(zM,t));
+}
+else return("Droites paralleles");
+};

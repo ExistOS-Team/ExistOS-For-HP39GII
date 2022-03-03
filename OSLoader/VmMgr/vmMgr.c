@@ -237,7 +237,8 @@ static void mkswap()
 
 static void taskAccessFaultAddr(pageFaultInfo_t *info)
 {
-    VM_ERR("Access Invalid Address.\n");
+    VM_ERR("Fault Task:%s\n", pcTaskGetTaskName(info->FaultTask));
+    VM_ERR("Access Invalid Address:%08x\n", info->FaultMemAddr);
 }
 
 void vmMgr_task()

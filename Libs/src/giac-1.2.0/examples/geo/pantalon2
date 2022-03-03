@@ -1,0 +1,33 @@
+switch_axes(0);
+xyztrange(-1.0,10.0,-7.0,1.0,-10.0,10.0,-1.0,6.0,-1.0,10.0,-7.0,1.0,0); 
+p:=element(0..5);
+h:=2;
+l:=8;
+f:=l+5;
+j:=element(1..3);
+segment(l-h*i,l);
+segment(-h*i,0);
+y:=-sqrt((x^2*(-l+x)^2*j^2)/(p^2*l^2-j^2*x^2));
+m:=min(l,p*l/j);
+plotfunc(y,x,0,m);
+a:=element(0..l);
+b:=-sqrt((a^2*(-l+a)^2*j^2)/(p^2*l^2-j^2*a^2));
+//O:=point(-0.4,0);
+//P:=point(l+0.4,0);
+//J:=point(a,b+0.2);
+couleur(segment(a+i*b,0),2);
+couleur(segment(a+i*b,l),2);
+ap:=sqrt((l-a)^2+b^2);
+ao:=sqrt(a^2+b^2);
+c:=ao+ap;
+//dessin des forces
+couleur(segment(a+i*b,a+(b-j)*i),1);
+couleur(segment(a+i*b,a+i*b+(l-a-b*i)*p/sqrt((-l+a)^2+b^2)),1); 
+couleur(segment(a+i*b,a+i*b+(-l+a+b*i)*p/sqrt((-l+a)^2+b^2)+j*i),1); 
+couleur(segment(a+i*b,a+i*b+(l-a-b*i)*p/sqrt((-l+a)^2+b^2)-j*i),4);
+//dessin de la poulie
+cercle(l,0.2);
+if (c<f){
+[couleur(segment(l+0.1,l+0.1+i*(c-f)),2),couleur( segment(l+i*(c-f),l+i*(c-f-p/10)),1),couleur( segment(l+0.2+i*(c-f),l+0.2+i*(c-f-p/10)),1),couleur( segment(l+0.2+i*(c-f),l+i*(c-f)),1),couleur( segment(l+0.2+i*(c-f-p/10),l+i*(c-f-p/10)),1)];
+};
+

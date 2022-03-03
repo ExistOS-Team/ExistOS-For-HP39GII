@@ -1,0 +1,9 @@
+est_parallele(droite(P1[0],P2[0]),droite(P1[8],P2[8]));
+est_parallele(droite(P1[0],P2[0]),droite(P1[0],P3[6]));
+est_parallele(droite(P1[0],P2[0]),droite(P1[4],P2[4]));
+est_parallele(droite(P1[4],P2[4]),droite(P1[4],P3[1]));
+est_parallele(droite(P1[0],P2[0]),droite(P1[8],P2[8]));
+est_parallele(droite(P1[8],P2[8]),droite(P1[8],P3[5]));
+est_parallele(droite(P1[0],P2[0]),droite(P3[6],P2[5]));
+est_parallele(droite(P1[4],P2[4]),droite(P1[2],P3[3]));
+

@@ -1,0 +1,14 @@
+det(hilbert(80),rational_det);
+
+h40:=hilbert(40);
+hinv:=inverse(hilbert(40),rational_det); 
+hinv*h40;
+
+h70:=hilbert(70);
+hinv:=inverse(hilbert(70),rational_det);
+hinv*h70;
+
+
+purge(h40);
+purge(h70);
+purge(hinv);

@@ -1,0 +1,68 @@
+***********************************
+*  GRAPHIC OBJECTS IN GIAC/XCAS *
+***********************************
+
+=================
+Short description of gen g such that g.is_symb_of_sommet(at_pnt) in C++ (or g[0]=='pnt' in Xcas) 
+Then g.feuille is a vecteur of length 2 or 3 :
+* f=g.feuille[0] in C++ (or g[1] in Xcas) is the analytic geometric object,
+* a=g.feuille[1] in C++ (or g[2] in Xcas) is the attribut for display
+* g.feuille[2] in C++ (or eval(g,1)[3] in Xcas) is the name of the object, it is removed during
+   normal evaluation (hence the unusual syntax in Xcas to keep it)
+
+Analytic geometric object description (the analytic object may be fetched by 
+f=remove_at_pnt(g) in C++ or g[1] in Xcas):
+* points are coded by a complex number (in 2-d) or 
+   by a gen of type _VECT and subtype _POINT__VECT (in 3-d)
+* segments, halfline, line, geometric vectors by a gen of type _VECT and subtype listed
+   in dispatch.h (0 segment, _LINE__VECT, _HALFLINE__VECT, _VECTOR__VECT),
+   the vector has length 2 and contains the affixes of the 2 points defining it.
+* polygons by a gen of type _VECT with the affixes of the vertices of the polygon
+* circles (and arcs of circles) are coded by a gen of type _SYMB and sommet at_circle, 
+   f.is_symb_of_sommet(at_circle)==true, f._SYMBptr->feuille[0] is the diameter of the circle, 
+   f._SYMBptr->feuille[1] and [2] are the angles. 
+   An additionnal parameter of value 1 may be used to add an angle symbol, of value 
+   2 for an arrow inside the arc.
+* function/parametric/polar plot, conics are represented with a parametrization, they are coded by a gen of type _SYMB and sommet at_curve, f.is_symb_of_sommet(at_curve)==true. 
+   f._SYMBptr->feuille[0] is the parametrization with the affix of a point in the curve, 
+  the variable, the discretization (min, max of parameter), and 0 or 1 (hide/show equation)
+  e.g. plot(sin(x),x=-5..5,xstep=0.125)[1][1]==[x+i*sin(x),x,-5,5.0625,0]
+  f._SYMBptr->feuille[1] is the discretization computed, ready for display (as a polygon)
+
+Attributes description (a=g._SYMBptr->feuille[1] in C++ or g[2] in Xcas)
+Attribute is either an atomic gen (an int most of the time) or a vecteur that contains the display 
+attribute and a curve where the geometric object may move (for point on curves). See code 
+below from Graph.cc (void fltk_draw) or in native/Apps/geometry.cpp (void CGeoplot::fltk_draw
+and refer to dispatch_h at enum color_values for attributes values.
+    string the_legend;
+    vecteur style(get_style(a,the_legend));
+    int styles=style.size();
+    // color
+    int ensemble_attributs = style.front().val;
+    bool hidden_name = false;
+    if (style.front().type==_ZINT){
+      ensemble_attributs = mpz_get_si(*style.front()._ZINTptr);
+      hidden_name=true;
+    }
+    else
+      hidden_name=ensemble_attributs<0;
+    int width           =(ensemble_attributs & 0x00070000) >> 16; // 3 bits
+    int epaisseur_point =(ensemble_attributs & 0x00380000) >> 19; // 3 bits
+    int type_line       =(ensemble_attributs & 0x01c00000) >> 22; // 3 bits
+    if (type_line>4)
+      type_line=(type_line-4)<<8;
+    int type_point      =(ensemble_attributs & 0x0e000000) >> 25; // 3 bits
+    int labelpos        =(ensemble_attributs & 0x30000000) >> 28; // 2 bits
+    bool fill_polygon   =(ensemble_attributs & 0x40000000) >> 30;
+    int couleur         =(ensemble_attributs & 0x0000ffff);
+    epaisseur_point += 2;
+
+==================
+Cursors: a gen g such that g.is_symb_of_sommet(at_parameter) is a cursor, it is used to move a 
+1-d parameter value. There are two instructions to produce a parameter: assume and element. 
+* assume: may be used to define symbolic cursor, they have a numeric value that is used only when a numeric evaluation is done (or a geometric display), while the parameter will keep it's symbolic value in exact evaluation, example
+assume(a=[0.4,-5,5,0.1]) returns parameter([a,-5,5,0.4,0.1]) and stores a special value in a such that
+eval(a) will stay a, evalf(a) returns 0.4, (-5 and 5 are the limits, 0.1 is the step)
+* element: will assign the numeric value to the parameter a in exact and numeric evaluation.
+a:=element(-5..5,0.4,0.1) returns parameter([a,-5,5,0.4,0.1]) and stores 0.4 in a
+(eval(a) and evalf(a) both returns 0.4)

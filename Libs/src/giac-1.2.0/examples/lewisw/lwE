@@ -1,0 +1,6 @@
+s := 0;
+for j from 1 to 10 do
+   s := s + i*y*t^j/(y + abs(5-j)*t)^j
+end_for;
+normal(s);
+purge(s);

@@ -1,0 +1,13 @@
+Trad:J.Manrique López de la Fuente
+Rev: 12/06/2002
+--------------------
+Ejecutando xcas:
+Después de descomprimir xcas en un directorio, click sobre
+xcas.exe (inglés)
+xcasfr.bat (francés)
+xcases.bat (español)
+Si quieres tener soporte para impresión, deberías instalar AsTeX, mirar en
+http://www.univ-orleans.fr/EXT/ASTEX
+Una vez instales AsTeX, la vista preliminar e impresión debería funcionar en Windows NT. 
+En Windows 9x, podrías necesitar editar el fichero
+latex.bat con wordpad o notepad y borrar el ^ antes de &latex2e

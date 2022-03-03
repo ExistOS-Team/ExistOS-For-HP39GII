@@ -1,0 +1,17 @@
+A:= point(-0.795-1.2*i); 
+B:= point(1.89-1.68*i);
+C:= point(0.722+1.9*i);
+a1:=(angle(A,B,C))/3;  
+b1:=(angle(B,C,A))/3;  
+c1:=eval(pi/3-a1-b1);  
+AD1:=droite(A,A+3*(B-A)*exp(i*a1));
+AD3:=droite(A,A+2*(B-A)*exp(i*(a1+pi/3)));
+AD5:=droite(A,A+2*(B-A)*exp(i*(a1+2*pi/3)));
+BD1:=droite(B,B-2*(B-A)*exp(-2*i*b1));
+BD3:=droite(B,B-3*(B-A)*exp(i*(-2*b1+pi/3)));
+BD5:=droite(B,B+2*(B-A)*2*exp(i*(-2*b1+2*pi/3)));
+M:=inter(rotation(A,a1,droite(A,B)),rotation(B,-2*b1,droite(B,A)))[0];  
+N:=inter(rotation(A,a1+pi/3,droite(A,B)),rotation(B,-2*b1+pi/3,droite(B,A)))[0];  
+O:=inter(rotation(A,a1+2*pi/3,droite(A,B)),rotation(B,-2*b1+2*pi/3,droite(B,A)))[0]; 
+triangle(M,N,O);
+triangle(A,B,C);

@@ -1,0 +1,952 @@
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
+
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+
+SHELL = /bin/sh
+
+srcdir = .
+top_srcdir = ..
+
+prefix = /usr/local
+exec_prefix = ${prefix}
+
+bindir = ${exec_prefix}/bin
+sbindir = ${exec_prefix}/sbin
+libexecdir = ${exec_prefix}/libexec
+datadir = ${prefix}/share
+sysconfdir = ${prefix}/etc
+sharedstatedir = ${prefix}/com
+localstatedir = ${prefix}/var
+libdir = ${exec_prefix}/lib
+infodir = ${prefix}/info
+mandir = ${prefix}/man
+includedir = ${prefix}/include
+oldincludedir = /usr/include
+
+DESTDIR =
+
+pkgdatadir = $(datadir)/giac
+pkglibdir = $(libdir)/giac
+pkgincludedir = $(includedir)/giac
+
+top_builddir = ..
+
+ACLOCAL = aclocal
+AUTOCONF = autoconf
+AUTOMAKE = automake
+AUTOHEADER = autoheader
+
+INSTALL = /usr/bin/install -c
+INSTALL_PROGRAM = ${INSTALL} $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = ${INSTALL} -m 644
+INSTALL_SCRIPT = ${INSTALL}
+transform = s,x,x,
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+host_alias = 
+host_triplet = powerpc-apple-darwin8.6.0
+CATALOGS =  es.gmo fr.gmo el.gmo pt.gmo it.gmo en.gmo
+CATOBJEXT = .gmo
+CC = gcc
+CXX = g++
+CXXCPP = g++ -E
+DATADIRNAME = share
+GENCAT = 
+GIACLIB_BINARY_AGE = 0
+GIACLIB_INTERFACE_AGE = 0
+GIACLIB_MAJOR_VERSION = 0
+GIACLIB_MICRO_VERSION = 6
+GIACLIB_MINOR_VERSION = 8
+GIACLIB_VERSION = 0.8.6
+GMOFILES =  es.gmo fr.gmo el.gmo pt.gmo it.gmo en.gmo
+GMSGFMT = /usr/local/bin/msgfmt
+GT_NO = 
+GT_YES = #YES#
+INCLUDE_LOCALE_H = #include <locale.h>
+INSTOBJEXT = .mo
+INTLDEPS = $(top_builddir)/intl/libintl.a
+INTLLIBS = $(top_builddir)/intl/libintl.a
+INTLOBJS = $(GETTOBJS)
+LEX = flex
+LIBTERMCAP = -lncurses
+LIBTOOL = $(SHELL) $(top_builddir)/libtool
+MAINT = #
+MAKEINFO = makeinfo
+MKINSTALLDIRS = $(top_srcdir)/mkinstalldirs
+MSGFMT = /usr/local/bin/msgfmt
+PACKAGE = giac
+POFILES =  es.po fr.po el.po pt.po it.po en.po
+POSUB = po
+RANLIB = ranlib
+USE_INCLUDED_LIBINTL = yes
+USE_NLS = yes
+VERSION = 0.8.6
+YACC = bison -y
+l = 
+
+lib_LTLIBRARIES = libgiac.la libxcas.la
+libgiac_la_SOURCES = sym2poly.cc gausspol.cc threaded.cc   moyal.cc maple.cc ti89.cc mathml.cc   misc.cc permu.cc quater.cc desolve.cc input_parser.yy   symbolic.cc index.cc modpoly.cc modfactor.cc   ezgcd.cc derive.cc solve.cc intg.cc intgab.cc risch.cc lin.cc series.cc   subst.cc vecteur.cc csturm.cc tex.cc global.cc   ifactor.cc alg_ext.cc gauss.cc isom.cc plot.cc plot3d.cc help.cc rpn.cc prog.cc   pari.cc cocoa.cc unary.cc usual.cc identificateur.cc gen.cc input_lexer.ll first.cc   TmpLESystemSolver.C TmpFGLM.C
+
+giacincludedir = $(includedir)/giac
+giacinclude_HEADERS = dispatch.h fraction.h gen.h desolve.h misc.h ti89.h   mathml.h   identificateur.h unary.h symbolic.h index.h modpoly.h modfactor.h permu.h   monomial.h poly.h gausspol.h threaded.h sym2poly.h ezgcd.h derive.h   solve.h quater.h   subst.h usual.h intg.h intgab.h risch.h lin.h series.h   vecteur.h csturm.h moyal.h tex.h global.h   ifactor.h alg_ext.h gauss.h isom.h plot.h plot3d.h help.h rpn.h prog.h   pari.h cocoa.h giac.h lexer.h   input_lexer.h input_parser.h first.h maple.h giacintl.h path.h libintl.h   TmpFGLM.H TmpLESystemSolver.H
+
+
+libxcas_la_SOURCES = History.cc Input.cc Xcas1.cc Equation.cc Print.cc 	Tableur.cc Editeur.cc Graph.cc Graph3d.cc Help1.cc Cfg.cc 	Flv_CStyle.cc 	Flve_Check_Button.cc Flve_Input.cc Flv_Style.cc Flv_Data_Source.cc 	Flve_Combo.cc Flv_List.cc Flv_Table.cc gl2ps.c 
+
+xcasincludedir = $(includedir)/xcas
+xcasinclude_HEADERS = History.h Input.h Xcas1.h Equation.h Print.h Tableur.h 	Editeur.h Graph.h Graph3d.h Help1.h Cfg.h 	Flv_CStyle.H  Flve_Check_Button.H  Flve_Input.H  Flv_Style.H 	Flv_Data_Source.H  Flve_Combo.H Flv_List.H Flv_Table.H gl2ps.h
+
+
+bin_PROGRAMS = icas aide xcas 
+icas_SOURCES = icas.cc 
+#if test -f /usr/lib/libreadline.a; then \
+#	icas_LDADD = -lxcas -lgiac -lgmp /usr/lib/libreadline.a \
+#else \
+#	icas_LDADD = -lxcas -lgiac -lgmp \
+#fi
+icas_LDADD = -lxcas -lgiac -lgmp
+icas_LDFLAGS = -L../src/.libs 
+#mycas_SOURCES = mycas.cc 
+#mycas_LDFLAGS = -s -L../src/.libs 
+#mycas_LDADD = -lgiac -lgmp #-lcurses
+aide_SOURCES = help.cc aide.cc
+aide_LDADD = -lgiac -lgmp#-lcurses
+aide_LDFLAGS = -L../src/.libs 
+# If you want a static binary remove the hash below and comment -lcurses
+#xcas_SOURCES = xcas.cc plotfltk.cc sheet.cc Eqw.cc Flv_CStyle.cc Flve_Check_Button.cc Flve_Input.cc Flv_Style.cc Flv_Data_Source.cc Flve_Combo.cc Flv_List.cc Flv_Table.cc #$(libgiac_la_SOURCES) 
+#xcas_LDADD = -lgiac -lgmp # /usr/local/lib/libfltk.a  -lcurses
+#xcas_LDFLAGS = -L../src/.libs  #-s --static 
+xcas_SOURCES = xcas.cxx 
+xcas_LDADD = -lxcas -lgiac -lgmp # /usr/local/lib/libfltk.a  -lcurses
+xcas_LDFLAGS = -L../src/.libs  #-s --static 
+
+INCLUDES = -I$(srcdir) -I$(top_srcdir)
+#LFLAGS = -Pgiac_yy -olex.yy.c
+YFLAGS = -p giac_yy -d
+EXTRA_DIST = .gdbinit xgiac pgiac prime.table gen_user 	input_parser.h softmath.h softmath.cc 	mkxcas mkwcas mkgcas mkaout Makefile.wince 	Makefile.rpm Makefile.ipaq Makefilenew.ipaq ipaq_usr.tgz 	Makefile.fast Makefilenew.win Makefile.O3 Makefile.64 	normalize.cc integrate.cc partfrac.cc factor.cc xcas.cc 	hist.fl hist.h hist.cxx  	progfr.cc renee.cc renee.h cas2.cc README.ipaq README.WIN   	readme.doc latex.bat xdvi.bat dvips.bat xcasfr.bat xcases.bat 	xcasfr.sh xcases.sh xcasen.sh mkstat mkhist updatecas update.sh update.bat 	giac.pl cas2html.cc all_global_var find_global_var.cc static_init 	Fl_GDI_Printer.cxx  Fl_PS_Printer.cxx Fl_Gl_Choice.H 	casce.cc xcasce.cc xcasctrl.cc casctrl.cc config.h.vcc Makefile.vcc giac_oo.cpp giaclib.vcproj
+
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../config.h
+CONFIG_CLEAN_FILES = 
+LTLIBRARIES =  $(lib_LTLIBRARIES)
+
+
+DEFS = -DHAVE_CONFIG_H -I. -I$(srcdir) -I..
+CPPFLAGS = 
+LDFLAGS = 
+LIBS = -lcocoa -lmpfr -lpthread -lntl -lfltk_images -ljpeg -lpng -lz -lfltk -lfltk_gl -lgsl -lgslcblas -lreadline -lncurses -lm  -L/usr/X11R6/lib -lX11 -lXext -lgmp
+X_CFLAGS = 
+X_LIBS =  -L/usr/X11R6/lib
+X_EXTRA_LIBS = 
+X_PRE_LIBS =  -lSM -lICE
+libgiac_la_LDFLAGS = 
+libgiac_la_LIBADD = 
+libgiac_la_OBJECTS =  sym2poly.lo gausspol.lo threaded.lo moyal.lo \
+maple.lo ti89.lo mathml.lo misc.lo permu.lo quater.lo desolve.lo \
+input_parser.lo symbolic.lo index.lo modpoly.lo modfactor.lo ezgcd.lo \
+derive.lo solve.lo intg.lo intgab.lo risch.lo lin.lo series.lo subst.lo \
+vecteur.lo csturm.lo tex.lo global.lo ifactor.lo alg_ext.lo gauss.lo \
+isom.lo plot.lo plot3d.lo help.lo rpn.lo prog.lo pari.lo cocoa.lo \
+unary.lo usual.lo identificateur.lo gen.lo input_lexer.lo first.lo \
+TmpLESystemSolver.lo TmpFGLM.lo
+libxcas_la_LDFLAGS = 
+libxcas_la_LIBADD = 
+libxcas_la_OBJECTS =  History.lo Input.lo Xcas1.lo Equation.lo Print.lo \
+Tableur.lo Editeur.lo Graph.lo Graph3d.lo Help1.lo Cfg.lo Flv_CStyle.lo \
+Flve_Check_Button.lo Flve_Input.lo Flv_Style.lo Flv_Data_Source.lo \
+Flve_Combo.lo Flv_List.lo Flv_Table.lo gl2ps.lo
+PROGRAMS =  $(bin_PROGRAMS)
+
+icas_OBJECTS =  icas.o
+icas_DEPENDENCIES = 
+aide_OBJECTS =  help.o aide.o
+aide_DEPENDENCIES = 
+xcas_OBJECTS =  xcas.o
+xcas_DEPENDENCIES = 
+CXXFLAGS = -g -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 -L/usr/local/lib -I/usr/local/include -DGIAC_GENERIC_CONSTANTS -DDOUBLEVAL -DIN_GIAC
+CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
+LEX_OUTPUT_ROOT = lex.yy
+LEXLIB = -ll
+CFLAGS = -g -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 -L/usr/local/lib -I/usr/local/include  -DGIAC_GENERIC_CONSTANTS -DDOUBLEVAL -DIN_GIAC
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+HEADERS =  $(giacinclude_HEADERS) $(xcasinclude_HEADERS)
+
+DIST_COMMON =  README COPYING Makefile.am Makefile.in TODO \
+input_lexer.cc input_parser.cc
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = tar
+GZIP_ENV = --best
+SOURCES = $(libgiac_la_SOURCES) $(libxcas_la_SOURCES) $(icas_SOURCES) $(aide_SOURCES) $(xcas_SOURCES)
+OBJECTS = $(libgiac_la_OBJECTS) $(libxcas_la_OBJECTS) $(icas_OBJECTS) $(aide_OBJECTS) $(xcas_OBJECTS)
+
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .C .S .c .cc .cxx .ll .lo .o .s .yy
+$(srcdir)/Makefile.in: # Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps src/Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-libLTLIBRARIES:
+
+clean-libLTLIBRARIES:
+	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
+
+distclean-libLTLIBRARIES:
+
+maintainer-clean-libLTLIBRARIES:
+
+install-libLTLIBRARIES: $(lib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)
+	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(libdir)/$$p"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(libdir)/$$p; \
+	  else :; fi; \
+	done
+
+uninstall-libLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  $(LIBTOOL)  --mode=uninstall rm -f $(DESTDIR)$(libdir)/$$p; \
+	done
+
+.c.o:
+	$(COMPILE) -c $<
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+.c.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.s.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.S.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
+
+distclean-libtool:
+
+maintainer-clean-libtool:
+
+libgiac.la: $(libgiac_la_OBJECTS) $(libgiac_la_DEPENDENCIES)
+	$(CXXLINK) -rpath $(libdir) $(libgiac_la_LDFLAGS) $(libgiac_la_OBJECTS) $(libgiac_la_LIBADD) $(LIBS)
+
+libxcas.la: $(libxcas_la_OBJECTS) $(libxcas_la_DEPENDENCIES)
+	$(CXXLINK) -rpath $(libdir) $(libxcas_la_LDFLAGS) $(libxcas_la_OBJECTS) $(libxcas_la_LIBADD) $(LIBS)
+
+mostlyclean-binPROGRAMS:
+
+clean-binPROGRAMS:
+	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+
+distclean-binPROGRAMS:
+
+maintainer-clean-binPROGRAMS:
+
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo " $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	  else :; fi; \
+	done
+
+uninstall-binPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	done
+
+icas: $(icas_OBJECTS) $(icas_DEPENDENCIES)
+	@rm -f icas
+	$(CXXLINK) $(icas_LDFLAGS) $(icas_OBJECTS) $(icas_LDADD) $(LIBS)
+
+aide: $(aide_OBJECTS) $(aide_DEPENDENCIES)
+	@rm -f aide
+	$(CXXLINK) $(aide_LDFLAGS) $(aide_OBJECTS) $(aide_LDADD) $(LIBS)
+
+xcas: $(xcas_OBJECTS) $(xcas_DEPENDENCIES)
+	@rm -f xcas
+	$(CXXLINK) $(xcas_LDFLAGS) $(xcas_OBJECTS) $(xcas_LDADD) $(LIBS)
+.C.o:
+	$(CXXCOMPILE) -c $<
+.C.lo:
+	$(LTCXXCOMPILE) -c $<
+.cc.o:
+	$(CXXCOMPILE) -c $<
+.cc.lo:
+	$(LTCXXCOMPILE) -c $<
+.cxx.o:
+	$(CXXCOMPILE) -c $<
+.cxx.lo:
+	$(LTCXXCOMPILE) -c $<
+.ll.cc:
+	$(LEX) $(AM_LFLAGS) $(LFLAGS) $< && mv $(LEX_OUTPUT_ROOT).c $@
+.yy.cc:
+	$(YACC) $(AM_YFLAGS) $(YFLAGS) $< && mv y.tab.c $*.cc
+	if test -f y.tab.h; then \
+	if cmp -s y.tab.h $*.h; then rm -f y.tab.h; else mv y.tab.h $*.h; fi; \
+	else :; fi
+input_parser.hh: input_parser.cc
+
+
+install-giacincludeHEADERS: $(giacinclude_HEADERS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(giacincludedir)
+	@list='$(giacinclude_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(giacincludedir)/$$p"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(giacincludedir)/$$p; \
+	done
+
+uninstall-giacincludeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	list='$(giacinclude_HEADERS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(giacincludedir)/$$p; \
+	done
+
+install-xcasincludeHEADERS: $(xcasinclude_HEADERS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(xcasincludedir)
+	@list='$(xcasinclude_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(xcasincludedir)/$$p"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(xcasincludedir)/$$p; \
+	done
+
+uninstall-xcasincludeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	list='$(xcasinclude_HEADERS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(xcasincludedir)/$$p; \
+	done
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags -o $$here/TAGS $(ETAGS_ARGS) $$tags  $$unique $(LISP))
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = src
+
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+aide.o: aide.cc first.h config.h help.h
+alg_ext.lo alg_ext.o : alg_ext.cc first.h config.h gen.h dispatch.h \
+	global.h help.h vecteur.h fraction.h gausspol.h poly.h index.h \
+	monomial.h identificateur.h usual.h sym2poly.h symbolic.h \
+	unary.h series.h modpoly.h alg_ext.h solve.h subst.h plot.h \
+	plot3d.h derive.h ezgcd.h prog.h intg.h csturm.h lin.h ti89.h
+Cfg.lo Cfg.o : Cfg.cc giac/first.h giac/config.h giac/global.h \
+	giac/first.h giac/help.h giac/gen.h giac/dispatch.h \
+	giac/global.h giac/vecteur.h giac/fraction.h giac/prog.h \
+	giac/gen.h History.h giac/giac.h giac/poly.h giac/index.h \
+	giac/monomial.h giac/identificateur.h giac/unary.h \
+	giac/symbolic.h giac/modpoly.h giac/modfactor.h giac/gausspol.h \
+	giac/sym2poly.h giac/series.h giac/derive.h giac/solve.h \
+	giac/subst.h giac/usual.h giac/intg.h giac/lin.h giac/moyal.h \
+	giac/maple.h giac/ti89.h giac/mathml.h giac/tex.h \
+	giac/ifactor.h giac/alg_ext.h giac/gauss.h giac/isom.h \
+	giac/plot.h giac/plot3d.h giac/rpn.h giac/prog.h giac/pari.h \
+	giac/quater.h giac/desolve.h Xcas1.h Graph.h Input.h \
+	giac/identificateur.h giac/giacintl.h config.h Editeur.h \
+	giac/input_lexer.h Cfg.h
+cocoa.o: cocoa.cc first.h config.h cocoa.h gausspol.h poly.h fraction.h \
+	index.h monomial.h gen.h dispatch.h global.h help.h vecteur.h \
+	identificateur.h
+csturm.lo csturm.o : csturm.cc first.h config.h gen.h dispatch.h \
+	global.h help.h vecteur.h fraction.h csturm.h modpoly.h unary.h \
+	index.h symbolic.h usual.h sym2poly.h poly.h monomial.h \
+	identificateur.h gausspol.h series.h solve.h prog.h subst.h \
+	permu.h alg_ext.h ti89.h plot.h plot3d.h modfactor.h
+derive.lo derive.o : derive.cc first.h config.h derive.h gen.h \
+	dispatch.h global.h help.h vecteur.h fraction.h \
+	identificateur.h usual.h symbolic.h unary.h index.h poly.h \
+	monomial.h sym2poly.h gausspol.h series.h tex.h prog.h intg.h \
+	subst.h plot.h plot3d.h modpoly.h
+desolve.lo desolve.o : desolve.cc first.h config.h desolve.h gen.h \
+	dispatch.h global.h help.h vecteur.h fraction.h \
+	identificateur.h derive.h intg.h subst.h usual.h symbolic.h \
+	unary.h index.h poly.h monomial.h sym2poly.h gausspol.h \
+	series.h tex.h modpoly.h solve.h ifactor.h prog.h rpn.h lin.h \
+	intgab.h
+Editeur.lo Editeur.o : Editeur.cc Editeur.h giac/first.h giac/config.h \
+	giac/gen.h giac/first.h giac/dispatch.h giac/global.h \
+	giac/help.h giac/vecteur.h giac/fraction.h Input.h \
+	giac/identificateur.h giac/giacintl.h config.h Graph.h \
+	giac/giac.h giac/poly.h giac/index.h giac/monomial.h giac/gen.h \
+	giac/identificateur.h giac/unary.h giac/symbolic.h \
+	giac/modpoly.h giac/modfactor.h giac/gausspol.h giac/sym2poly.h \
+	giac/series.h giac/derive.h giac/solve.h giac/subst.h \
+	giac/usual.h giac/intg.h giac/lin.h giac/moyal.h giac/maple.h \
+	giac/ti89.h giac/mathml.h giac/tex.h giac/ifactor.h \
+	giac/alg_ext.h giac/gauss.h giac/isom.h giac/plot.h \
+	giac/plot3d.h giac/rpn.h giac/prog.h giac/pari.h giac/quater.h \
+	giac/desolve.h Xcas1.h History.h giac/input_lexer.h Print.h \
+	Equation.h
+Equation.lo Equation.o : Equation.cc giac/first.h giac/config.h \
+	Equation.h giac/giac.h giac/first.h giac/global.h giac/help.h \
+	giac/poly.h giac/fraction.h giac/index.h giac/monomial.h \
+	giac/gen.h giac/dispatch.h giac/vecteur.h giac/identificateur.h \
+	giac/unary.h giac/symbolic.h giac/modpoly.h giac/modfactor.h \
+	giac/gausspol.h giac/sym2poly.h giac/series.h giac/derive.h \
+	giac/solve.h giac/subst.h giac/usual.h giac/intg.h giac/lin.h \
+	giac/moyal.h giac/maple.h giac/ti89.h giac/mathml.h giac/tex.h \
+	giac/ifactor.h giac/alg_ext.h giac/gauss.h giac/isom.h \
+	giac/plot.h giac/plot3d.h giac/rpn.h giac/prog.h giac/pari.h \
+	giac/quater.h giac/desolve.h giac/giacintl.h config.h History.h \
+	Xcas1.h Graph.h Input.h giac/gen.h giac/identificateur.h \
+	Editeur.h giac/input_lexer.h
+ezgcd.lo ezgcd.o : ezgcd.cc first.h config.h ezgcd.h gausspol.h poly.h \
+	fraction.h index.h monomial.h gen.h dispatch.h global.h help.h \
+	vecteur.h sym2poly.h identificateur.h symbolic.h unary.h \
+	series.h
+first.lo first.o : first.cc first.h config.h
+Flv_CStyle.lo Flv_CStyle.o : Flv_CStyle.cc giac/first.h giac/config.h \
+	Flv_CStyle.H Flv_Style.H
+Flv_Data_Source.lo Flv_Data_Source.o : Flv_Data_Source.cc
+Flv_List.lo Flv_List.o : Flv_List.cc giac/first.h giac/config.h \
+	Flv_List.H Flv_Style.H
+Flv_Style.lo Flv_Style.o : Flv_Style.cc giac/first.h giac/config.h \
+	Flv_Style.H
+Flv_Table.lo Flv_Table.o : Flv_Table.cc giac/first.h giac/config.h \
+	Flv_Table.H Flv_List.H Flv_Style.H
+Flve_Check_Button.lo Flve_Check_Button.o : Flve_Check_Button.cc \
+	giac/first.h giac/config.h Flve_Check_Button.H Flv_List.H \
+	Flv_Style.H
+Flve_Combo.lo Flve_Combo.o : Flve_Combo.cc giac/first.h giac/config.h \
+	Flve_Combo.H Flv_List.H Flv_Style.H
+Flve_Input.lo Flve_Input.o : Flve_Input.cc giac/first.h giac/config.h \
+	Flve_Input.H Flv_List.H Flv_Style.H
+gauss.lo gauss.o : gauss.cc first.h config.h gauss.h gen.h dispatch.h \
+	global.h help.h vecteur.h fraction.h derive.h identificateur.h \
+	subst.h usual.h sym2poly.h poly.h index.h monomial.h symbolic.h \
+	unary.h gausspol.h series.h solve.h ti89.h plot.h plot3d.h \
+	misc.h ifactor.h prog.h
+gausspol.lo gausspol.o : gausspol.cc first.h config.h gausspol.h poly.h \
+	fraction.h index.h monomial.h gen.h dispatch.h global.h help.h \
+	vecteur.h modpoly.h modfactor.h solve.h alg_ext.h sym2poly.h \
+	identificateur.h symbolic.h unary.h series.h prog.h plot.h \
+	plot3d.h threaded.h ezgcd.h
+gen.lo gen.o : gen.cc first.h config.h gen.h dispatch.h global.h help.h \
+	vecteur.h fraction.h gausspol.h poly.h index.h monomial.h \
+	identificateur.h usual.h input_lexer.h sym2poly.h symbolic.h \
+	unary.h series.h modpoly.h alg_ext.h prog.h rpn.h plot.h \
+	plot3d.h intg.h subst.h derive.h threaded.h ezgcd.h maple.h \
+	solve.h
+gl2ps.lo gl2ps.o : gl2ps.c giac/first.h giac/config.h gl2ps.h
+global.lo global.o : global.cc first.h config.h global.h help.h gen.h \
+	dispatch.h vecteur.h fraction.h identificateur.h symbolic.h \
+	unary.h index.h sym2poly.h poly.h monomial.h gausspol.h \
+	series.h plot.h plot3d.h rpn.h prog.h usual.h tex.h path.h \
+	input_lexer.h
+Graph.lo Graph.o : Graph.cc Graph.h giac/giac.h giac/first.h \
+	giac/config.h giac/global.h giac/help.h giac/poly.h \
+	giac/fraction.h giac/index.h giac/monomial.h giac/gen.h \
+	giac/dispatch.h giac/vecteur.h giac/identificateur.h \
+	giac/unary.h giac/symbolic.h giac/modpoly.h giac/modfactor.h \
+	giac/gausspol.h giac/sym2poly.h giac/series.h giac/derive.h \
+	giac/solve.h giac/subst.h giac/usual.h giac/intg.h giac/lin.h \
+	giac/moyal.h giac/maple.h giac/ti89.h giac/mathml.h giac/tex.h \
+	giac/ifactor.h giac/alg_ext.h giac/gauss.h giac/isom.h \
+	giac/plot.h giac/plot3d.h giac/rpn.h giac/prog.h giac/pari.h \
+	giac/quater.h giac/desolve.h Xcas1.h giac/first.h History.h \
+	Input.h giac/gen.h giac/identificateur.h giac/giacintl.h \
+	config.h giac/input_lexer.h Editeur.h giac/path.h giac/plot.h \
+	Equation.h Print.h Graph3d.h Tableur.h Flv_Table.H Flv_List.H \
+	Flv_Style.H Flve_Input.H
+Graph3d.lo Graph3d.o : Graph3d.cc Graph3d.h giac/giac.h giac/first.h \
+	giac/config.h giac/global.h giac/help.h giac/poly.h \
+	giac/fraction.h giac/index.h giac/monomial.h giac/gen.h \
+	giac/dispatch.h giac/vecteur.h giac/identificateur.h \
+	giac/unary.h giac/symbolic.h giac/modpoly.h giac/modfactor.h \
+	giac/gausspol.h giac/sym2poly.h giac/series.h giac/derive.h \
+	giac/solve.h giac/subst.h giac/usual.h giac/intg.h giac/lin.h \
+	giac/moyal.h giac/maple.h giac/ti89.h giac/mathml.h giac/tex.h \
+	giac/ifactor.h giac/alg_ext.h giac/gauss.h giac/isom.h \
+	giac/plot.h giac/plot3d.h giac/rpn.h giac/prog.h giac/pari.h \
+	giac/quater.h giac/desolve.h Xcas1.h giac/first.h History.h \
+	Graph.h Input.h giac/gen.h giac/identificateur.h \
+	giac/giacintl.h config.h Editeur.h giac/input_lexer.h \
+	giac/path.h giac/misc.h Equation.h Print.h gl2ps.h
+help.lo help.o : help.cc first.h config.h path.h help.h global.h \
+	input_lexer.h
+Help1.lo Help1.o : Help1.cc Help1.h giac/first.h giac/config.h \
+	giac/gen.h giac/first.h giac/dispatch.h giac/global.h \
+	giac/help.h giac/vecteur.h giac/fraction.h \
+	giac/identificateur.h giac/giacintl.h config.h Xcas1.h \
+	History.h giac/giac.h giac/poly.h giac/index.h giac/monomial.h \
+	giac/gen.h giac/identificateur.h giac/unary.h giac/symbolic.h \
+	giac/modpoly.h giac/modfactor.h giac/gausspol.h giac/sym2poly.h \
+	giac/series.h giac/derive.h giac/solve.h giac/subst.h \
+	giac/usual.h giac/intg.h giac/lin.h giac/moyal.h giac/maple.h \
+	giac/ti89.h giac/mathml.h giac/tex.h giac/ifactor.h \
+	giac/alg_ext.h giac/gauss.h giac/isom.h giac/plot.h \
+	giac/plot3d.h giac/rpn.h giac/prog.h giac/pari.h giac/quater.h \
+	giac/desolve.h Graph.h Input.h Editeur.h giac/input_lexer.h
+History.lo History.o : History.cc giac/first.h giac/config.h History.h \
+	giac/giac.h giac/first.h giac/global.h giac/help.h giac/poly.h \
+	giac/fraction.h giac/index.h giac/monomial.h giac/gen.h \
+	giac/dispatch.h giac/vecteur.h giac/identificateur.h \
+	giac/unary.h giac/symbolic.h giac/modpoly.h giac/modfactor.h \
+	giac/gausspol.h giac/sym2poly.h giac/series.h giac/derive.h \
+	giac/solve.h giac/subst.h giac/usual.h giac/intg.h giac/lin.h \
+	giac/moyal.h giac/maple.h giac/ti89.h giac/mathml.h giac/tex.h \
+	giac/ifactor.h giac/alg_ext.h giac/gauss.h giac/isom.h \
+	giac/plot.h giac/plot3d.h giac/rpn.h giac/prog.h giac/pari.h \
+	giac/quater.h giac/desolve.h Input.h giac/gen.h \
+	giac/identificateur.h giac/giacintl.h config.h Equation.h \
+	Print.h Graph.h Xcas1.h giac/input_lexer.h Editeur.h Graph3d.h \
+	Tableur.h Flv_Table.H Flv_List.H Flv_Style.H Flve_Input.H Cfg.h \
+	giac/tex.h
+icas.o: icas.cc first.h config.h global.h help.h gen.h dispatch.h \
+	vecteur.h fraction.h index.h sym2poly.h poly.h monomial.h \
+	identificateur.h symbolic.h unary.h gausspol.h series.h \
+	derive.h intg.h tex.h lin.h solve.h modpoly.h usual.h moyal.h \
+	ifactor.h gauss.h isom.h plot.h plot3d.h prog.h rpn.h pari.h \
+	input_lexer.h Xcas1.h giac/first.h History.h giac/giac.h \
+	giac/first.h giac/global.h giac/poly.h giac/fraction.h \
+	giac/gen.h giac/identificateur.h giac/unary.h giac/symbolic.h \
+	giac/index.h giac/modpoly.h giac/modfactor.h giac/monomial.h \
+	giac/gausspol.h giac/sym2poly.h giac/derive.h giac/solve.h \
+	giac/subst.h giac/usual.h giac/intg.h giac/lin.h giac/series.h \
+	giac/vecteur.h giac/moyal.h giac/maple.h giac/ti89.h \
+	giac/mathml.h giac/tex.h giac/ifactor.h giac/alg_ext.h \
+	giac/gauss.h giac/isom.h giac/plot.h giac/plot3d.h giac/help.h \
+	giac/rpn.h giac/prog.h giac/pari.h giac/quater.h giac/desolve.h \
+	Graph.h giac/config.h Input.h giac/gen.h giac/identificateur.h \
+	giac/giacintl.h config.h Editeur.h giac/input_lexer.h Cfg.h
+identificateur.lo identificateur.o : identificateur.cc first.h config.h \
+	identificateur.h global.h help.h gen.h dispatch.h vecteur.h \
+	fraction.h sym2poly.h poly.h index.h monomial.h symbolic.h \
+	unary.h gausspol.h series.h rpn.h prog.h
+ifactor.lo ifactor.o : ifactor.cc first.h config.h path.h ifactor.h \
+	global.h help.h gen.h dispatch.h vecteur.h fraction.h unary.h \
+	index.h symbolic.h identificateur.h pari.h usual.h sym2poly.h \
+	poly.h monomial.h gausspol.h series.h rpn.h prog.h misc.h
+index.lo index.o : index.cc first.h config.h index.h
+Input.lo Input.o : Input.cc giac/first.h giac/config.h Input.h \
+	giac/gen.h giac/first.h giac/dispatch.h giac/global.h \
+	giac/help.h giac/vecteur.h giac/fraction.h \
+	giac/identificateur.h giac/giacintl.h config.h History.h \
+	giac/giac.h giac/poly.h giac/index.h giac/monomial.h giac/gen.h \
+	giac/identificateur.h giac/unary.h giac/symbolic.h \
+	giac/modpoly.h giac/modfactor.h giac/gausspol.h giac/sym2poly.h \
+	giac/series.h giac/derive.h giac/solve.h giac/subst.h \
+	giac/usual.h giac/intg.h giac/lin.h giac/moyal.h giac/maple.h \
+	giac/ti89.h giac/mathml.h giac/tex.h giac/ifactor.h \
+	giac/alg_ext.h giac/gauss.h giac/isom.h giac/plot.h \
+	giac/plot3d.h giac/rpn.h giac/prog.h giac/pari.h giac/quater.h \
+	giac/desolve.h Xcas1.h Graph.h Editeur.h giac/input_lexer.h \
+	Tableur.h Flv_Table.H Flv_List.H Flv_Style.H Flve_Input.H \
+	Graph3d.h Help1.h giac/plot.h giac/help.h giac/global.h
+input_lexer.lo input_lexer.o : input_lexer.cc first.h config.h \
+	input_lexer.h global.h help.h gen.h dispatch.h vecteur.h \
+	fraction.h identificateur.h usual.h derive.h series.h intg.h \
+	sym2poly.h poly.h index.h monomial.h symbolic.h unary.h \
+	gausspol.h moyal.h subst.h modpoly.h lin.h solve.h ifactor.h \
+	alg_ext.h gauss.h isom.h plot.h plot3d.h prog.h rpn.h ezgcd.h \
+	tex.h risch.h input_parser.h
+input_parser.lo input_parser.o : input_parser.cc first.h config.h \
+	index.h gen.h dispatch.h global.h help.h vecteur.h fraction.h \
+	lexer.h input_lexer.h usual.h derive.h identificateur.h \
+	sym2poly.h poly.h monomial.h symbolic.h unary.h gausspol.h \
+	series.h modpoly.h alg_ext.h prog.h rpn.h intg.h plot.h \
+	plot3d.h
+intg.lo intg.o : intg.cc first.h config.h sym2poly.h poly.h fraction.h \
+	index.h monomial.h gen.h dispatch.h global.h help.h vecteur.h \
+	identificateur.h symbolic.h unary.h gausspol.h series.h usual.h \
+	intg.h subst.h derive.h lin.h plot.h plot3d.h prog.h modpoly.h \
+	tex.h ifactor.h risch.h solve.h intgab.h moyal.h maple.h rpn.h
+intgab.lo intgab.o : intgab.cc first.h config.h sym2poly.h poly.h \
+	fraction.h index.h monomial.h gen.h dispatch.h global.h help.h \
+	vecteur.h identificateur.h symbolic.h unary.h gausspol.h \
+	series.h usual.h intgab.h subst.h derive.h lin.h plot.h \
+	plot3d.h prog.h modpoly.h tex.h ifactor.h risch.h solve.h \
+	intg.h desolve.h alg_ext.h misc.h maple.h rpn.h
+isom.lo isom.o : isom.cc first.h config.h isom.h gen.h dispatch.h \
+	global.h help.h vecteur.h fraction.h derive.h identificateur.h \
+	subst.h usual.h symbolic.h unary.h index.h sym2poly.h poly.h \
+	monomial.h gausspol.h series.h
+lin.lo lin.o : lin.cc first.h config.h sym2poly.h poly.h fraction.h \
+	index.h monomial.h gen.h dispatch.h global.h help.h vecteur.h \
+	identificateur.h symbolic.h unary.h gausspol.h series.h usual.h \
+	lin.h subst.h modpoly.h prog.h
+maple.lo maple.o : maple.cc first.h config.h sym2poly.h poly.h \
+	fraction.h index.h monomial.h gen.h dispatch.h global.h help.h \
+	vecteur.h identificateur.h symbolic.h unary.h gausspol.h \
+	series.h usual.h moyal.h solve.h intg.h prog.h misc.h maple.h \
+	plot.h plot3d.h ifactor.h subst.h input_parser.h modpoly.h \
+	lin.h derive.h ti89.h
+mathml.lo mathml.o : mathml.cc gen.h first.h config.h dispatch.h \
+	global.h help.h vecteur.h fraction.h symbolic.h unary.h index.h \
+	usual.h intg.h derive.h identificateur.h series.h plot.h \
+	plot3d.h tex.h mathml.h
+misc.lo misc.o : misc.cc first.h config.h misc.h global.h help.h gen.h \
+	dispatch.h vecteur.h fraction.h unary.h index.h symbolic.h \
+	usual.h sym2poly.h poly.h monomial.h identificateur.h \
+	gausspol.h series.h rpn.h prog.h derive.h subst.h intg.h \
+	ifactor.h solve.h modpoly.h permu.h plot.h plot3d.h lin.h \
+	desolve.h alg_ext.h input_parser.h input_lexer.h maple.h
+modfactor.lo modfactor.o : modfactor.cc first.h config.h sym2poly.h \
+	poly.h fraction.h index.h monomial.h gen.h dispatch.h global.h \
+	help.h vecteur.h identificateur.h symbolic.h unary.h gausspol.h \
+	series.h modpoly.h modfactor.h pari.h
+modpoly.o: modpoly.cc first.h config.h sym2poly.h poly.h fraction.h \
+	index.h monomial.h gen.h dispatch.h global.h help.h vecteur.h \
+	identificateur.h symbolic.h unary.h gausspol.h series.h \
+	modpoly.h usual.h prog.h derive.h ezgcd.h
+moyal.lo moyal.o : moyal.cc first.h config.h sym2poly.h poly.h \
+	fraction.h index.h monomial.h gen.h dispatch.h global.h help.h \
+	vecteur.h identificateur.h symbolic.h unary.h gausspol.h \
+	series.h usual.h moyal.h solve.h intg.h
+pari.lo pari.o : pari.cc first.h config.h gen.h dispatch.h global.h \
+	help.h vecteur.h fraction.h identificateur.h sym2poly.h poly.h \
+	index.h monomial.h symbolic.h unary.h gausspol.h series.h \
+	plot.h plot3d.h prog.h usual.h input_lexer.h modpoly.h pari.h \
+	input_parser.h
+permu.lo permu.o : permu.cc first.h config.h permu.h global.h help.h \
+	gen.h dispatch.h vecteur.h fraction.h unary.h index.h \
+	symbolic.h usual.h sym2poly.h poly.h monomial.h \
+	identificateur.h gausspol.h series.h rpn.h prog.h derive.h \
+	subst.h misc.h plot.h plot3d.h intg.h ifactor.h lin.h modpoly.h
+plot.lo plot.o : plot.cc first.h config.h gen.h dispatch.h global.h \
+	help.h vecteur.h fraction.h usual.h prog.h rpn.h \
+	identificateur.h subst.h symbolic.h unary.h index.h derive.h \
+	solve.h intg.h path.h sym2poly.h poly.h monomial.h gausspol.h \
+	series.h input_parser.h input_lexer.h ti89.h isom.h plot.h \
+	plot3d.h ifactor.h gauss.h misc.h lin.h
+plot3d.lo plot3d.o : plot3d.cc first.h config.h gen.h dispatch.h \
+	global.h help.h vecteur.h fraction.h usual.h plot.h plot3d.h \
+	prog.h rpn.h identificateur.h subst.h symbolic.h unary.h \
+	index.h derive.h solve.h intg.h path.h sym2poly.h poly.h \
+	monomial.h gausspol.h series.h input_parser.h input_lexer.h \
+	ti89.h isom.h ifactor.h gauss.h
+Print.lo Print.o : Print.cc giac/first.h giac/config.h Print.h \
+	giac/gen.h giac/first.h giac/dispatch.h giac/global.h \
+	giac/help.h giac/vecteur.h giac/fraction.h giac/giacintl.h \
+	config.h History.h giac/giac.h giac/poly.h giac/index.h \
+	giac/monomial.h giac/gen.h giac/identificateur.h giac/unary.h \
+	giac/symbolic.h giac/modpoly.h giac/modfactor.h giac/gausspol.h \
+	giac/sym2poly.h giac/series.h giac/derive.h giac/solve.h \
+	giac/subst.h giac/usual.h giac/intg.h giac/lin.h giac/moyal.h \
+	giac/maple.h giac/ti89.h giac/mathml.h giac/tex.h \
+	giac/ifactor.h giac/alg_ext.h giac/gauss.h giac/isom.h \
+	giac/plot.h giac/plot3d.h giac/rpn.h giac/prog.h giac/pari.h \
+	giac/quater.h giac/desolve.h Equation.h Graph.h Xcas1.h Input.h \
+	giac/identificateur.h giac/input_lexer.h Editeur.h Graph3d.h \
+	Tableur.h Flv_Table.H Flv_List.H Flv_Style.H Flve_Input.H \
+	Fl_PS_Printer.cxx
+prog.lo prog.o : prog.cc first.h config.h prog.h gen.h dispatch.h \
+	global.h help.h vecteur.h fraction.h identificateur.h \
+	symbolic.h unary.h index.h usual.h sym2poly.h poly.h monomial.h \
+	gausspol.h series.h subst.h plot.h plot3d.h tex.h \
+	input_parser.h input_lexer.h rpn.h ti89.h permu.h modpoly.h \
+	maple.h giacintl.h config.h
+quater.lo quater.o : quater.cc first.h config.h quater.h gen.h \
+	dispatch.h global.h help.h vecteur.h fraction.h unary.h index.h \
+	sym2poly.h poly.h monomial.h identificateur.h symbolic.h \
+	gausspol.h series.h usual.h intg.h subst.h derive.h lin.h \
+	plot.h plot3d.h prog.h modpoly.h tex.h ifactor.h risch.h \
+	solve.h
+risch.lo risch.o : risch.cc first.h config.h sym2poly.h poly.h \
+	fraction.h index.h monomial.h gen.h dispatch.h global.h help.h \
+	vecteur.h identificateur.h symbolic.h unary.h gausspol.h \
+	series.h usual.h intg.h subst.h derive.h lin.h plot.h plot3d.h \
+	prog.h modpoly.h tex.h ifactor.h risch.h misc.h
+rpn.lo rpn.o : rpn.cc first.h config.h rpn.h gen.h dispatch.h global.h \
+	help.h vecteur.h fraction.h symbolic.h unary.h index.h prog.h \
+	usual.h identificateur.h input_lexer.h plot.h plot3d.h tex.h
+series.lo series.o : series.cc first.h config.h derive.h gen.h \
+	dispatch.h global.h help.h vecteur.h fraction.h \
+	identificateur.h subst.h series.h symbolic.h unary.h index.h \
+	usual.h poly.h monomial.h sym2poly.h gausspol.h tex.h prog.h \
+	misc.h intg.h maple.h lin.h plot.h plot3d.h
+solve.lo solve.o : solve.cc first.h config.h gen.h dispatch.h global.h \
+	help.h vecteur.h fraction.h solve.h modpoly.h unary.h index.h \
+	symbolic.h usual.h sym2poly.h poly.h monomial.h \
+	identificateur.h gausspol.h series.h subst.h derive.h plot.h \
+	plot3d.h prog.h alg_ext.h intg.h rpn.h lin.h misc.h cocoa.h \
+	ti89.h
+subst.lo subst.o : subst.cc first.h config.h subst.h gen.h dispatch.h \
+	global.h help.h vecteur.h fraction.h identificateur.h \
+	symbolic.h unary.h index.h sym2poly.h poly.h monomial.h \
+	gausspol.h series.h usual.h derive.h intg.h prog.h lin.h \
+	solve.h plot.h plot3d.h modpoly.h maple.h ti89.h
+sym2poly.lo sym2poly.o : sym2poly.cc first.h config.h sym2poly.h poly.h \
+	fraction.h index.h monomial.h gen.h dispatch.h global.h help.h \
+	vecteur.h identificateur.h symbolic.h unary.h gausspol.h \
+	series.h usual.h subst.h modpoly.h alg_ext.h solve.h \
+	input_parser.h ezgcd.h prog.h ifactor.h plot.h plot3d.h misc.h
+symbolic.lo symbolic.o : symbolic.cc first.h config.h symbolic.h unary.h \
+	gen.h dispatch.h global.h help.h vecteur.h fraction.h index.h \
+	identificateur.h usual.h prog.h rpn.h plot.h plot3d.h
+Tableur.lo Tableur.o : Tableur.cc giac/first.h giac/config.h Tableur.h \
+	giac/gen.h giac/first.h giac/dispatch.h giac/global.h \
+	giac/help.h giac/vecteur.h giac/fraction.h Flv_Table.H \
+	Flv_List.H Flv_Style.H Flve_Input.H Input.h \
+	giac/identificateur.h giac/giacintl.h config.h Graph.h \
+	giac/giac.h giac/poly.h giac/index.h giac/monomial.h giac/gen.h \
+	giac/identificateur.h giac/unary.h giac/symbolic.h \
+	giac/modpoly.h giac/modfactor.h giac/gausspol.h giac/sym2poly.h \
+	giac/series.h giac/derive.h giac/solve.h giac/subst.h \
+	giac/usual.h giac/intg.h giac/lin.h giac/moyal.h giac/maple.h \
+	giac/ti89.h giac/mathml.h giac/tex.h giac/ifactor.h \
+	giac/alg_ext.h giac/gauss.h giac/isom.h giac/plot.h \
+	giac/plot3d.h giac/rpn.h giac/prog.h giac/pari.h giac/quater.h \
+	giac/desolve.h Xcas1.h History.h giac/input_lexer.h Editeur.h \
+	Graph3d.h Print.h giac/vecteur.h giac/usual.h giac/prog.h \
+	giac/misc.h
+tex.lo tex.o : tex.cc first.h config.h gen.h dispatch.h global.h help.h \
+	vecteur.h fraction.h gausspol.h poly.h index.h monomial.h \
+	identificateur.h symbolic.h unary.h usual.h tex.h prog.h rpn.h \
+	plot.h plot3d.h
+threaded.lo threaded.o : threaded.cc first.h config.h threaded.h \
+	gausspol.h poly.h fraction.h index.h monomial.h gen.h \
+	dispatch.h global.h help.h vecteur.h ezgcd.h sym2poly.h \
+	identificateur.h symbolic.h unary.h series.h usual.h
+ti89.lo ti89.o : ti89.cc first.h config.h misc.h global.h help.h gen.h \
+	dispatch.h vecteur.h fraction.h unary.h index.h symbolic.h \
+	usual.h sym2poly.h poly.h monomial.h identificateur.h \
+	gausspol.h series.h rpn.h prog.h derive.h subst.h intg.h \
+	ifactor.h solve.h modpoly.h permu.h plot.h plot3d.h lin.h \
+	desolve.h alg_ext.h moyal.h ti89.h maple.h input_parser.h \
+	input_lexer.h
+TmpFGLM.o: TmpFGLM.C config.h
+TmpLESystemSolver.o: TmpLESystemSolver.C config.h
+unary.lo unary.o : unary.cc first.h config.h unary.h gen.h dispatch.h \
+	global.h help.h vecteur.h fraction.h index.h usual.h rpn.h \
+	tex.h input_lexer.h symbolic.h
+usual.lo usual.o : usual.cc first.h config.h gen.h dispatch.h global.h \
+	help.h vecteur.h fraction.h identificateur.h symbolic.h unary.h \
+	index.h poly.h monomial.h usual.h series.h modpoly.h sym2poly.h \
+	gausspol.h moyal.h subst.h ifactor.h prog.h rpn.h plot.h \
+	plot3d.h pari.h tex.h intg.h ti89.h solve.h alg_ext.h lin.h \
+	derive.h
+vecteur.lo vecteur.o : vecteur.cc first.h config.h gen.h dispatch.h \
+	global.h help.h vecteur.h fraction.h modpoly.h unary.h index.h \
+	symbolic.h usual.h sym2poly.h poly.h monomial.h \
+	identificateur.h gausspol.h series.h solve.h prog.h subst.h \
+	permu.h plot.h plot3d.h misc.h
+xcas.o: xcas.cc config.h hist.cxx giac/giacintl.h giac/first.h \
+	giac/config.h config.h hist.h Xcas1.h giac/first.h History.h \
+	giac/giac.h giac/first.h giac/global.h giac/help.h giac/poly.h \
+	giac/fraction.h giac/index.h giac/monomial.h giac/gen.h \
+	giac/dispatch.h giac/vecteur.h giac/identificateur.h \
+	giac/unary.h giac/symbolic.h giac/modpoly.h giac/modfactor.h \
+	giac/gausspol.h giac/sym2poly.h giac/series.h giac/derive.h \
+	giac/solve.h giac/subst.h giac/usual.h giac/intg.h giac/lin.h \
+	giac/moyal.h giac/maple.h giac/ti89.h giac/mathml.h giac/tex.h \
+	giac/ifactor.h giac/alg_ext.h giac/gauss.h giac/isom.h \
+	giac/plot.h giac/plot3d.h giac/rpn.h giac/prog.h giac/pari.h \
+	giac/quater.h giac/desolve.h Graph.h giac/config.h Input.h \
+	giac/gen.h giac/identificateur.h giac/giacintl.h Editeur.h \
+	giac/input_lexer.h Help1.h Equation.h Tableur.h Flv_Table.H \
+	Flv_List.H Flv_Style.H Flve_Input.H Graph3d.h Cfg.h giac/misc.h
+Xcas1.lo Xcas1.o : Xcas1.cc giac/first.h giac/config.h Xcas1.h History.h \
+	giac/giac.h giac/first.h giac/global.h giac/help.h giac/poly.h \
+	giac/fraction.h giac/index.h giac/monomial.h giac/gen.h \
+	giac/dispatch.h giac/vecteur.h giac/identificateur.h \
+	giac/unary.h giac/symbolic.h giac/modpoly.h giac/modfactor.h \
+	giac/gausspol.h giac/sym2poly.h giac/series.h giac/derive.h \
+	giac/solve.h giac/subst.h giac/usual.h giac/intg.h giac/lin.h \
+	giac/moyal.h giac/maple.h giac/ti89.h giac/mathml.h giac/tex.h \
+	giac/ifactor.h giac/alg_ext.h giac/gauss.h giac/isom.h \
+	giac/plot.h giac/plot3d.h giac/rpn.h giac/prog.h giac/pari.h \
+	giac/quater.h giac/desolve.h Graph.h Input.h giac/gen.h \
+	giac/identificateur.h giac/giacintl.h config.h Editeur.h \
+	giac/input_lexer.h Equation.h Graph3d.h Tableur.h Flv_Table.H \
+	Flv_List.H Flv_Style.H Flve_Input.H Print.h giac/global.h \
+	giac/misc.h
+
+info-am:
+info: info-am
+dvi-am:
+dvi: dvi-am
+check-am: all-am
+check: check-am
+installcheck-am:
+installcheck: installcheck-am
+install-exec-am: install-libLTLIBRARIES install-binPROGRAMS
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
+install-exec: install-exec-am
+
+install-data-am: install-giacincludeHEADERS install-xcasincludeHEADERS
+install-data: install-data-am
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-am
+uninstall-am: uninstall-libLTLIBRARIES uninstall-binPROGRAMS \
+		uninstall-giacincludeHEADERS \
+		uninstall-xcasincludeHEADERS
+uninstall: uninstall-am
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(HEADERS)
+all-redirect: all-am
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
+installdirs:
+	$(mkinstalldirs)  $(DESTDIR)$(libdir) $(DESTDIR)$(bindir) \
+		$(DESTDIR)$(giacincludedir) $(DESTDIR)$(xcasincludedir)
+
+
+mostlyclean-generic:
+
+clean-generic:
+
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+
+maintainer-clean-generic:
+	-test -z "input_lexerccinput_parserhhinput_parsercc" || rm -f input_lexercc input_parserhh input_parsercc
+mostlyclean-am:  mostlyclean-libLTLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-binPROGRAMS \
+		mostlyclean-tags mostlyclean-generic
+
+mostlyclean: mostlyclean-am
+
+clean-am:  clean-libLTLIBRARIES clean-compile clean-libtool \
+		clean-binPROGRAMS clean-tags clean-generic \
+		mostlyclean-am
+
+clean: clean-am
+
+distclean-am:  distclean-libLTLIBRARIES distclean-compile \
+		distclean-libtool distclean-binPROGRAMS distclean-tags \
+		distclean-generic clean-am
+	-rm -f libtool
+
+distclean: distclean-am
+
+maintainer-clean-am:  maintainer-clean-libLTLIBRARIES \
+		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-binPROGRAMS maintainer-clean-tags \
+		maintainer-clean-generic distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-am
+
+.PHONY: mostlyclean-libLTLIBRARIES distclean-libLTLIBRARIES \
+clean-libLTLIBRARIES maintainer-clean-libLTLIBRARIES \
+uninstall-libLTLIBRARIES install-libLTLIBRARIES mostlyclean-compile \
+distclean-compile clean-compile maintainer-clean-compile \
+mostlyclean-libtool distclean-libtool clean-libtool \
+maintainer-clean-libtool mostlyclean-binPROGRAMS distclean-binPROGRAMS \
+clean-binPROGRAMS maintainer-clean-binPROGRAMS uninstall-binPROGRAMS \
+install-binPROGRAMS uninstall-giacincludeHEADERS \
+install-giacincludeHEADERS uninstall-xcasincludeHEADERS \
+install-xcasincludeHEADERS tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
+check-am installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
+
+
+install-exec-hook:
+	../mkinstalldirs $(prefix)/share/giac
+	cp -f updatecas $(bindir)
+	cp -f xgiac $(bindir)
+	cp -f pgiac $(bindir)
+	ln -sf aide $(bindir)/cas_help
+	ln -sf aide $(bindir)/en_cas_help
+	ln -sf aide $(bindir)/es_cas_help
+	ln -sf aide $(bindir)/fr_cas_help
+	ln -sf icas $(bindir)/giac
+	ln -sf xcas $(bindir)/xcasnew
+	../mkinstalldirs $(prefix)/share/giac/src
+	cp -f $(libgiac_la_SOURCES) $(prefix)/share/giac/src
+	../mkinstalldirs $(includedir)
+	../mkinstalldirs $(includedir)/giac
+	cp -f ../config.h $(includedir)/giac
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:

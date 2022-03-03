@@ -1,0 +1,73 @@
+parcours() :={
+  local T,r;
+  T:=0;
+  r:=rand(2);
+  for (k:=1;k<6;k++){
+    if (r==1){
+      T:=T+1;
+    }
+    r:=rand(2);
+  }
+  return(T);
+}; 
+parcoursim(n) :={
+  local T,r,A;
+  A:=[0,0,0,0,0,0];
+  for (j:=1;j<n+1;j++){
+    r:=rand(2);
+    T:=0;
+    for (k:=1;k<6;k++){
+      if (r==1){
+        T:=T+1;
+      }    
+    r:=rand(2);
+    }
+  A[T]:=A[T]+1;
+  }
+  xyztrange(-0.5,5.2,-0.1,16.0,-10.0,10.0,-10.0,-10.0,
+            -0.5,5.2,-0.1,16.0,1);
+  switch_axes(NULL);
+  return([A,segment(0,i*A[0]),segment(1,1+i*A[1]),
+     segment(2,2+i*A[2]),segment(3,3+i*A[3]),segment(4,4+i*A[4]),
+     segment(5,5+i*A[5])]);
+}; 
+parcours2() :={
+  local X,Y,r;
+  X:=0;
+  Y:=0;
+  r:=rand(2);
+  for (k:=1;k<6;k++){
+    if (r==1){
+       X:=X+1;
+    } else {
+       Y:=Y+1;
+    }
+    r:=rand(2);
+  }
+  return([X,Y]);
+}; 
+parcoursim2(n) :={
+  local X,Y,r,A;
+  A:=[0,0,0,0,0,0];
+  for (j:=1;j<n+1;j++){
+    r:=rand(2);
+    X:=0;
+    Y:=0;
+    for (k:=1;k<6;k++){
+      if (r==1){
+        X:=X+1;
+      } else {
+        Y:=Y+1;
+      }
+    r:=rand(2);
+    }
+  A[X]:=A[X]+1;
+  }
+  switch_axes(NULL);
+  xyztrange(-0.5,5.2,-0.1,16.0,-10.0,10.0,-10.0,-10.0,
+            -0.5,5.2,-0.1,16.0,1);
+  
+  return([A,segment(0,i*A[0]),segment(1,1+i*A[1]),
+     segment(2,2+i*A[2]),segment(3,3+i*A[3]),segment(4,4+i*A[4]),
+     segment(5,5+i*A[5])]);
+}; 

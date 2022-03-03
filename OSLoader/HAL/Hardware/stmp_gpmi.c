@@ -49,6 +49,7 @@ typedef struct GPMI_DMA_Desc
 typedef struct GPMI_Timing_t {
     uint32_t tPROG_us;
     uint32_t tBERS_us;
+    uint32_t tREAD_us;
     unsigned char DataSetup_ns;
     unsigned char DataHold_ns;
     unsigned char AddressSetup_ns;
@@ -57,10 +58,11 @@ typedef struct GPMI_Timing_t {
 
 static struct GPMI_Timing_t defaultTiming =
 {
-        .DataSetup_ns = 30,
-        .DataHold_ns = 25,
-        .AddressSetup_ns = 20,
+        .DataSetup_ns = 15,
+        .DataHold_ns = 12,
+        .AddressSetup_ns = 15,
         .SampleDelay_cyc = 0,
+        .tREAD_us = 10,
         .tPROG_us = 250,
         .tBERS_us = 2000
 };
@@ -104,6 +106,7 @@ static uint32_t CopyECCResult;
 
 static uint32_t LastProgTime = 0;
 static uint32_t LastEraseTime = 0;
+static uint32_t LastReadTime = 0;
 
 static void GPMI_EnableDMAChannel(bool enable)
 {
@@ -144,8 +147,14 @@ static void GPMI_SetAccessTiming(GPMI_Timing_t timing)
 
 static void GPMI_ClockConfigure()
 {
-    BF_SET(CLKCTRL_CLKSEQ, BYPASS_GPMI);    //24MHz XTAL
-    GPMIFreq = 24000000;
+    BF_CLR(CLKCTRL_GPMI, CLKGATE);
+    BF_CLR(CLKCTRL_FRAC, CLKGATEIO);
+
+    HW_CLKCTRL_GPMI_WR(BF_CLKCTRL_GPMI_DIV(2));    // 480 / 2 = 240MHz
+
+    BF_CLR(CLKCTRL_CLKSEQ, BYPASS_GPMI);    //240MHz
+
+    GPMIFreq = 240000000;
 
 }
 

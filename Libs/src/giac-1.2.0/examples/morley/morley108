@@ -1,0 +1,38 @@
+//assume(a1=0.3); 
+//[0.00597664509739,0.00303053313965]
+//assume(a2=0.4);
+//(a1+a2+a2=pi/3);
+a1:=0.2;
+a2:=0.4;
+A:=[0,1+i*texpand(tan(a1)),1+i*texpand(tan(2*a1)),1+i*texpand(tan(a1+2*pi/3)),1+i*texpand(tan(pi/3+2*a1)),1+i*texpand(tan(pi/3+a1)),1+i*texpand(tan(2*a1+2*pi/3))];
+B:=[1,i*texpand(tan(2*a2)),i*texpand(tan(a2)),i*texpand(tan(pi/3+2*a2)),i*texpand(tan(2*pi/3+a2)),i*texpand(tan(2*a2+2*pi/3)),i*texpand(tan(a2+pi/3))];
+C0:=texpand(tan(a2*3)/(tan(a1*3)+tan(a2*3))*(1+i*tan(a1*3)));
+C:=[C0,C0+1+i*texpand(tan(pi/3+2*a1-a2)),C0+1+i*texpand(tan(2*pi/3+a1-2*a2)),C0+1+i*texpand(tan(2*a1-a2)),C0+1+i*texpand(tan(a1-2*a2)),C0+1+i*texpand(tan(2*pi/3+2*a1-a2)),C0+1+i*texpand(tan(pi/3+a1-2*a2))];
+P:=[];
+for (k:=1;k<=6;k++) {
+for (j:=1;j<=6;j++){
+P:=concat(P,affixe((inter(droite(A[0],A[k]),droite(B[0],B[j])))[0]));
+P:=concat(P,affixe((inter(droite(B[0],B[k]),droite(C[0],C[j])))[0]));
+P:=concat(P,affixe((inter(droite(A[0],A[k]),droite(C[0],C[j])))[0]));
+}
+};
+
+LO:=[];
+for (k:=0;k<108;k++) {
+LOL:=[];
+for (j:=0;j<108;j++){
+LOL:=concat(LOL,longueur2(P[k],P[j]));
+}
+LO:=append(LO,LOL);
+};
+trequi:=[];
+for (k:=0;k<106;k++) {
+for (j:=k+1;j<107;j++){
+l:=LO[k,j];
+for (s:=j+1;s<108;s++){
+if ((abs(normal(l-LO[j,s]))<0.0000001) and (abs(normal(l-LO[k,s]))<0.0000001)){
+trequi:=append(trequi,[k,j,s]);
+}
+}
+}
+};

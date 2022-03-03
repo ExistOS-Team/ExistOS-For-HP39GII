@@ -1,0 +1,100 @@
+Trad:J.Manrique Lopez de la Fuente 
+jsmanrique_lopez@yahoo.es
+Rev:12/06/2002
+---------------------------
+Distribución binaria
+===================
+Copia xcas_ipaq.tgz al directorio /tmp de tu iPaq, después
+# cd /
+# tar xvfz /tmp/xcas_ipaq.tgz
+Edita, por ejemplo con ae el archivo /usr/bin/xcas y cambia 
+export LANGUAGE=es_ES:es o fr_FR:fr
+Desafortunadamente localización no parece funcionar por ahora :-(
+
+NOTA: Es importanta ejecutar xcas desde un directorio RAM o si no
+podrías tener penalizaciones de velocidad y/o problemas de hardware puesto
+que los archivos serían grabados en el Flash ROM.
+
+Por supuesto, podrías modificar tu gestor de ventanas para incluir xcas en el menú
+
+Gracias a Pierre Coupard de LINEO, la distribución binaria debería funcionar
+en el Sharp Zaurus si tienes X11 instalado en él. Mira las instrucciones
+en http://www.zauruszone.com/, sección Downloads,
+y después Zaurus X11 Applications
+
+La documentación está disponible en
+http://www-fourier.ujf-grenoble.fr/~parisse/giac_us.html (Inglés)
+http://www-fourier.ujf-grenoble.fr/~parisse/giac.html (Francés)
+http://www-fourier.ujf-grenoble.fr/~parisse/giac_es.html (Español)
+
+***************************************************************************
+Distribución codigo fuente:
+======================
+Construcción nativa
+=================
+./configure ; make 
+
+Construcción en Linux x86 
+=======================
+* Consigue las herramientas para arm disponibles en
+ftp://ftp.handhelds.org/pub/linux/arm/toolchain/
+e instala
+cd / ; tar xvfz arm-linux-toolchain-post-2.2.13.tar.gz 
+* Consigue las librerías compiladas GSL, FLTK, FLVW, GMP, PARI en
+http://www-fourier.ujf-grenoble.fr/~parisse/libgsl_ipaq.tgz
+http://www-fourier.ujf-grenoble.fr/~parisse/libgslcblas_ipaq.tgz
+http://www-fourier.ujf-grenoble.fr/~parisse/libpari_ipaq.tgz
+http://www-fourier.ujf-grenoble.fr/~parisse/libgmp_ipaq.tgz
+http://www-fourier.ujf-grenoble.fr/~parisse/libfltk_ipaq.tgz
+http://www-fourier.ujf-grenoble.fr/~parisse/libflvw.a
+y descomprime/copialas en /skiff/local/lib
+NOTA: Se ha modificado el fichero de FLTK fl_file_chooser.cxx para adaptarlo a la pantalla
+/*----------------------- The Main Routine ----------------------*/
+#define HEIGHT_BOX	(4*WIDTH_SPC+HEIGHT_BUT+HEIGHT_INPUT+HEIGHT_BROWSER)
+#define HEIGHT_BUT	23
+#define HEIGHT_INPUT	23
+#define HEIGHT_BROWSER	(9*HEIGHT_BUT+2) // must be > buttons*HEIGHT_BUT
+#define WIDTH_BOX	(3*WIDTH_SPC+WIDTH_BUT+WIDTH_BROWSER)
+#define WIDTH_BROWSER	117
+#define WIDTH_BUT	117
+#define WIDTH_OK	60
+#define WIDTH_SPC	2
+Same for FLTK's fl_ask.cxx line 57-82 and 106-107
+static Fl_Window *makeform() {
+ if (message_form) {
+   message_form->size(230,103);
+   return message_form;
+ }
+ Fl_Window *w = message_form = new Fl_Window(230,103);
+ // w->clear_border();
+ // w->box(FL_UP_BOX);
+ (message = new Fl_Box(60, 25, 170, 20))
+   ->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE|FL_ALIGN_WRAP);
+ (input = new Fl_Input(60, 37, 170, 23))->hide();
+ {Fl_Box* o = icon = new Fl_Box(10, 10, 50, 50);
+  o->box(FL_THIN_UP_BOX);
+  o->labelfont(FL_TIMES_BOLD);
+  o->labelsize(34);
+  o->color(FL_WHITE);
+  o->labelcolor(FL_BLUE);
+ }
+ (button[0] = new Fl_Button(155, 70, 45, 23))->shortcut("^[");
+ button[1] = new Fl_Return_Button(105, 70, 45, 23);
+ button[2] = new Fl_Button(55, 70, 45, 23);
+ w->resizable(new Fl_Box(60,10,110-60,27));
+ w->end();
+ w->set_modal();
+ return w;
+}
+// Line 106-107 (innards function)
+  if (b0) {button[0]->show(); button[0]->label(b0); button[1]->position(105,70);}
+  else {button[0]->hide(); button[1]->position(155,70);}
+
+* Consigue las cabeceras
+http://www-fourier.ujf-grenoble.fr/~parisse/headers_ipaq.tgz
+y descomprímelas en /skiff/local/include
+* Descomprime giac.tgz y vete al directorio giac-0.2.2, edita config.h para adaptarlo
+a tus necesidades (incluye GSL o no, incluye PARI o no) o 
+cp config.h.ipaq config.h
+después vete al directorio src y teclea
+make -f Makefile.ipaq

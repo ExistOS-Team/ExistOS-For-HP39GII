@@ -1,0 +1,11 @@
+Change following files, path given from source top level directory
+configure.in: GIACLIB_MAJOR_VERSION=0 GIACLIB_MINOR_VERSION=3 GIACLIB_MICRO_VERSION=0
+giac.specs, giac.specs32: version/release
+debian/changelog, debianold/changelog
+mkdebian
+If you have links, update them, e.g.
+cd ..
+rm doc
+ln -s giac-0.3.x/doc
+
+etc...

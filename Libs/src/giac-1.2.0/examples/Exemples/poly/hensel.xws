@@ -1,0 +1,556 @@
+// xcas version=1.0.0 fontsize=20 font=0 currentlevel=39
+// fltk 7Fl_Tile 29 -1713 829 82 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -1713 829 35 20 0
+7 ,
+restart,
+// fltk N4xcas10Log_OutputE 29 -1678 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -1677 829 46 20 0 1
+[P,P1,P11,P12,P2,P21,P3,P31,P32,Q,Q1,Q11,Q2,Q3,Q31,newP,newQ,u,u2,v,v1,v2]
+]
+,
+// fltk 7Fl_Tile 29 -1629 829 31 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -1629 829 30 20 0
+On part de la factorisation obtenue modulo 5 (fichier berle.xws), 3 facteurs
+,
+// fltk N4xcas10Log_OutputE 29 -1599 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -1596 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -1596 829 35 20 0
+31 ,
+P:=x^7+x^5+2*x^4+x^3+x^2+2*x+1;,
+// fltk N4xcas10Log_OutputE 29 -1561 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -1560 829 39 20 0 1
+x^7+x^5+2*x^4+x^3+x^2+2*x+1
+]
+,
+// fltk 7Fl_Tile 29 -1519 829 62 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -1519 829 35 20 0
+8 ,
+P1:=x+2;,
+// fltk N4xcas10Log_OutputE 29 -1484 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -1483 829 26 20 0 1
+x+2
+]
+,
+// fltk 7Fl_Tile 29 -1455 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -1455 829 35 20 0
+12 ,
+P2:=x^3+x+1;,
+// fltk N4xcas10Log_OutputE 29 -1420 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -1419 829 39 20 0 1
+x^3+x+1
+]
+,
+// fltk 7Fl_Tile 29 -1378 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -1378 829 35 20 0
+18 ,
+P3:=x^3-2*x^2-x-2;,
+// fltk N4xcas10Log_OutputE 29 -1343 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -1342 829 39 20 0 1
+x^3-2*x^2-x-2
+]
+,
+// fltk 7Fl_Tile 29 -1301 829 28 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -1301 829 27 20 0
+1ere etape de remontee
+,
+// fltk N4xcas10Log_OutputE 29 -1274 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -1271 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -1271 829 35 20 0
+26 ,
+Q:=normal((P-P1*P2*P3)/5);,
+// fltk N4xcas10Log_OutputE 29 -1236 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -1235 829 39 20 0 1
+x^5+x^4+2*x^3+2*x^2+2*x+1
+]
+,
+// fltk 7Fl_Tile 29 -1194 829 27 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -1194 829 26 20 0
+on rÈsout u*P1+v*P2*P3=Q
+,
+// fltk N4xcas10Log_OutputE 29 -1168 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -1165 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -1165 829 35 20 0
+39 ,
+[u,v]:=abcuv(P1 % 5,P2*(P3 % 5),Q % 5);,
+// fltk N4xcas10Log_OutputE 29 -1130 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -1129 829 39 20 0 1
+[(-2 % 5)*x^5+(-1 % 5)*x^4+(-2 % 5)*x^3+(2 % 5)*x^2+(-1 % 5)*x,2 % 5]
+]
+,
+// fltk 7Fl_Tile 29 -1088 829 28 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -1088 829 27 20 0
+On normalise les degrÈs de u et v -> v1*P1+Q1*P2*P3=Q
+,
+// fltk N4xcas10Log_OutputE 29 -1061 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -1058 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -1058 829 35 20 0
+23 ,
+v1:=rem(u,(P2*P3) % 5);,
+// fltk N4xcas10Log_OutputE 29 -1023 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -1022 829 39 20 0 1
+(-2 % 5)*x^5+(-1 % 5)*x^4+(-2 % 5)*x^3+(2 % 5)*x^2+(-1 % 5)*x
+]
+,
+// fltk 7Fl_Tile 29 -981 829 62 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -981 829 35 20 0
+18 ,
+Q1:=rem(v,P1 % 5);,
+// fltk N4xcas10Log_OutputE 29 -946 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -945 829 26 20 0 1
+2 % 5
+]
+,
+// fltk 7Fl_Tile 29 -917 829 31 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -917 829 31 20 0
+On rÈsout ensuite u2*P2+v2*P3=v1 donc u2*P2*P1+v2*P3*P1+Q1*P2*P3=Q
+,
+// fltk N4xcas10Log_OutputE 29 -886 829 0 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -884 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -884 829 35 20 0
+33 ,
+[u2,v2]:=abcuv(P2 % 5,P3 % 5,v1);,
+// fltk N4xcas10Log_OutputE 29 -849 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -848 829 39 20 0 1
+[(-2 % 5)*x^2+(-1 % 5)*x,0]
+]
+,
+// fltk 7Fl_Tile 29 -807 829 28 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -807 829 27 20 0
+On normalise les degrÈs de u2 et v2 -> Q3*P2*P1+Q2*P3*P1+Q1*P2*P3=Q
+,
+// fltk N4xcas10Log_OutputE 29 -780 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -777 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -777 829 35 20 0
+38 ,
+Q2:=rem(v2,P2 % 5);Q3:=rem(u2,P3 % 5);,
+// fltk N4xcas10Log_OutputE 29 -742 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -741 829 39 20 0 1
+0,(-2 % 5)*x^2+(-1 % 5)*x
+]
+,
+// fltk 7Fl_Tile 29 -700 829 27 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -700 829 26 20 0
+On vÈrifie la relation Q3*P2*P1+Q2*P3*P1+Q1*P2*P3=Q
+,
+// fltk N4xcas10Log_OutputE 29 -674 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -671 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -671 829 35 20 0
+35 ,
+normal(Q1*P2*P3+Q2*P1*P3+Q3*P1*P2);,
+// fltk N4xcas10Log_OutputE 29 -636 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -635 829 39 20 0 1
+(1 % 5)*x^5+(1 % 5)*x^4+(2 % 5)*x^3+(2 % 5)*x^2+(2 % 5)*x+1 % 5
+]
+,
+// fltk 7Fl_Tile 29 -594 829 30 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -594 829 29 20 0
+On calcule ensuite les nouveaux P1, P2, P3 modulo 25
+,
+// fltk N4xcas10Log_OutputE 29 -565 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -562 829 113 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -562 829 73 20 0
+78 ,
+P11:=P1+5*normal(Q1%0); P21:=P2+5*normal(Q2%0);
+P31:=normal(P3+5*normal(Q3%0)),
+// fltk N4xcas10Log_OutputE 29 -489 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -488 829 39 20 0 1
+x+2+10,x^3+x+1,x^3-12*x^2-6*x-2
+]
+,
+// fltk 7Fl_Tile 29 -447 829 30 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -447 829 29 20 0
+On vÈrifie que P11*P21*P31=P modulo 25
+,
+// fltk N4xcas10Log_OutputE 29 -418 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -415 829 62 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -415 829 35 20 0
+29 ,
+normal(P-P11*P21*(P31 % 25));,
+// fltk N4xcas10Log_OutputE 29 -380 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -379 829 26 20 0 1
+0
+]
+,
+// fltk 7Fl_Tile 29 -351 829 29 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -351 829 28 20 0
+P21=P2 on teste donc s'il s'agit d'un vrai facteur dans Q[X]
+,
+// fltk N4xcas10Log_OutputE 29 -323 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -320 829 62 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -320 829 35 20 0
+11 ,
+rem(P,P21);,
+// fltk N4xcas10Log_OutputE 29 -285 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -284 829 26 20 0 1
+0
+]
+,
+// fltk 7Fl_Tile 29 -256 829 30 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -256 829 29 20 0
+Oui, donc on simplifie le probleme, reste ‡ factoriser P/P21
+,
+// fltk N4xcas10Log_OutputE 29 -227 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -224 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -224 829 35 20 0
+17 ,
+newP:=quo(P,P21);,
+// fltk N4xcas10Log_OutputE 29 -189 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -188 829 39 20 0 1
+x^4+x+1
+]
+,
+// fltk 7Fl_Tile 29 -147 829 28 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -147 829 27 20 0
+On remonte modulo 125 la factorisation newP=P11*P31
+,
+// fltk N4xcas10Log_OutputE 29 -120 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -117 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -117 829 35 20 0
+32 ,
+newQ:=normal((newP-P11*P31)/25);,
+// fltk N4xcas10Log_OutputE 29 -82 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -81 829 39 20 0 1
+6*x^2+3*x+1
+]
+,
+// fltk 7Fl_Tile 29 -40 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -40 829 35 20 0
+39 ,
+[u,v]:=abcuv(P11 % 5,P31 % 5,newQ % 5);,
+// fltk N4xcas10Log_OutputE 29 -5 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -4 829 39 20 0 1
+[(-1 % 5)*x^2+(0 % 5)*x-1 % 5,1 % 5]
+]
+,
+// fltk 7Fl_Tile 29 37 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 37 829 35 20 0
+40 ,
+Q31:=rem(u,P31 % 5);Q11:=rem(v,P11 % 5);,
+// fltk N4xcas10Log_OutputE 29 72 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 73 829 39 20 0 1
+(-1 % 5)*x^2-1 % 5,1 % 5
+]
+,
+// fltk 7Fl_Tile 29 114 829 30 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 114 829 29 20 0
+VÈrification, newQ=6*x^2+3*x+1=Q31*P11+Q11*P31 modulo 5
+,
+// fltk N4xcas10Log_OutputE 29 143 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 146 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 146 829 35 20 0
+24 ,
+normal(Q31*P11+Q11*P31);,
+// fltk N4xcas10Log_OutputE 29 181 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 182 829 39 20 0 1
+(1 % 5)*x^2+(-2 % 5)*x+1 % 5
+]
+,
+// fltk 7Fl_Tile 29 223 829 62 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 223 829 35 20 0
+34 ,
+P12:=normal(P11+25*normal(Q11%0));,
+// fltk N4xcas10Log_OutputE 29 258 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 259 829 26 20 0 1
+x+37
+]
+,
+// fltk 7Fl_Tile 29 287 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 287 829 35 20 0
+34 ,
+P32:=normal(P31+25*normal(Q31%0));,
+// fltk N4xcas10Log_OutputE 29 322 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 323 829 39 20 0 1
+x^3-37*x^2-6*x-27
+]
+,
+// fltk 7Fl_Tile 29 364 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 364 829 35 20 0
+23 ,
+normal(P12*(P32 % 125)),
+// fltk N4xcas10Log_OutputE 29 399 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 400 829 39 20 0 1
+(1 % 125)*x^4+(1 % 125)*x+1 % 125
+]
+,
+// fltk 7Fl_Tile 29 441 829 28 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 441 829 27 20 0
+On teste si P12 ou P32 est un vrai facteur de newP=x^4+x+1
+,
+// fltk N4xcas10Log_OutputE 29 468 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 471 829 62 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 471 829 35 20 0
+13 ,
+rem(newP,P12),
+// fltk N4xcas10Log_OutputE 29 506 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 507 829 26 20 0 1
+1874125
+]
+,
+// fltk 7Fl_Tile 29 535 829 28 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 535 829 27 20 0
+Non, en vertu de la borne sur les facteurs on en dÈduit newP irrÈductible
+,
+// fltk N4xcas10Log_OutputE 29 562 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 565 829 33 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 565 829 32 20 0
+0 ,
+,
+// fltk N4xcas10Log_OutputE 29 597 829 1 20 0
+
+]
+// context 2583 giac archive
+7 0 27 8 0 0 'cas_setup' 7 0 12 0 0 0
+0 0 0
+0 0 0
+0 1 0
+0 0 0
+7 0 2 1 ÅvIh¬%<=
+1 VÁûØ“<
+0 12 0
+7 0 4 0 1 0
+0 50 0
+0 0 0
+0 25 0
+0 0 0
+0 1 0
+0 0 0
+0 1 0
+8 0 0 'xyztrange' 7 0 16 1      $¿
+1      $@
+1      $¿
+1      $@
+1      $¿
+1      $@
+1      $¿
+1      $@
+1      $¿
+1      $@
+1 afffffˆø
+1 ÅôôôôôÒ?
+0 1 0
+1        
+1      ?
+0 3 0
+7 0 0 7 0 0 8 0 15 7 1 2 8 0 1 7 1 7 8 0 7 7 1 2 6 1 x 0 7 0
+8 0 7 7 1 2 6 1 x 0 5 0
+8 0 4 7 1 2 0 2 0
+8 0 7 7 1 2 6 1 x 0 4 0
+8 0 7 7 1 2 6 1 x 0 3 0
+8 0 7 7 1 2 6 1 x 0 2 0
+8 0 4 7 1 2 0 2 0
+6 1 x 0 1 0
+6 1 P 8 0 15 7 1 2 8 0 1 7 1 2 6 1 x 0 2 0
+6 2 P1 8 0 15 7 1 2 8 0 1 7 1 3 6 1 x 0 2 0
+0 10 0
+6 3 P11 8 0 15 7 1 2 8 0 1 7 1 2 6 1 x 0 37 0
+6 3 P12 8 0 15 7 1 2 8 0 1 7 1 3 8 0 7 7 1 2 6 1 x 0 3 0
+6 1 x 0 1 0
+6 2 P2 8 0 15 7 1 2 8 0 1 7 1 3 8 0 7 7 1 2 6 1 x 0 3 0
+6 1 x 0 1 0
+6 3 P21 8 0 15 7 1 2 8 0 1 7 1 4 8 0 7 7 1 2 6 1 x 0 3 0
+8 0 2 8 0 4 7 1 2 0 2 0
+8 0 7 7 1 2 6 1 x 0 2 0
+8 0 2 6 1 x 0 -2 0
+6 2 P3 8 0 15 7 1 2 8 0 1 7 1 4 8 0 7 7 1 2 6 1 x 0 3 0
+8 0 2 8 0 4 7 1 2 0 12 0
+8 0 7 7 1 2 6 1 x 0 2 0
+8 0 2 8 0 4 7 1 2 0 6 0
+6 1 x 0 -2 0
+6 3 P31 8 0 15 7 1 2 8 0 1 7 1 4 8 0 7 7 1 2 6 1 x 0 3 0
+8 0 2 8 0 4 7 1 2 0 37 0
+8 0 7 7 1 2 6 1 x 0 2 0
+8 0 2 8 0 4 7 1 2 0 6 0
+6 1 x 0 -27 0
+6 3 P32 8 0 15 7 1 2 8 0 1 7 1 6 8 0 7 7 1 2 6 1 x 0 5 0
+8 0 7 7 1 2 6 1 x 0 4 0
+8 0 4 7 1 2 0 2 0
+8 0 7 7 1 2 6 1 x 0 3 0
+8 0 4 7 1 2 0 2 0
+8 0 7 7 1 2 6 1 x 0 2 0
+8 0 4 7 1 2 0 2 0
+6 1 x 0 1 0
+6 1 Q 8 0 15 7 1 2 15 0 2 0
+ 0 5 0
+ 6 2 Q1 8 0 15 7 1 2 15 0 1 0
+ 0 5 0
+ 6 3 Q11 8 0 15 7 1 2 0 0 0
+6 2 Q2 8 0 15 7 1 2 8 0 1 7 1 2 8 0 4 7 1 2 15 0 -2 0
+ 0 5 0
+ 8 0 7 7 1 2 6 1 x 0 2 0
+8 0 4 7 1 2 15 0 -1 0
+ 0 5 0
+ 6 1 x 6 2 Q3 8 0 15 7 1 2 8 0 1 7 1 2 8 0 4 7 1 2 15 0 -1 0
+ 0 5 0
+ 8 0 7 7 1 2 6 1 x 0 2 0
+15 0 -1 0
+ 0 5 0
+ 6 3 Q31 8 0 15 7 1 2 8 0 1 7 1 3 8 0 7 7 1 2 6 1 x 0 4 0
+6 1 x 0 1 0
+6 4 newP 8 0 15 7 1 2 8 0 1 7 1 3 8 0 4 7 1 2 0 6 0
+8 0 7 7 1 2 6 1 x 0 2 0
+8 0 4 7 1 2 0 3 0
+6 1 x 0 1 0
+6 4 newQ 8 0 15 7 1 2 8 0 1 7 1 3 8 0 4 7 1 2 15 0 -1 0
+ 0 5 0
+ 8 0 7 7 1 2 6 1 x 0 2 0
+8 0 4 7 1 2 15 0 0 0
+ 0 5 0
+ 6 1 x 15 0 -1 0
+ 0 5 0
+ 6 1 u 8 0 15 7 1 2 8 0 1 7 1 2 8 0 4 7 1 2 15 0 -2 0
+ 0 5 0
+ 8 0 7 7 1 2 6 1 x 0 2 0
+8 0 4 7 1 2 15 0 -1 0
+ 0 5 0
+ 6 1 x 6 2 u2 8 0 15 7 1 2 15 0 1 0
+ 0 5 0
+ 6 1 v 8 0 15 7 1 2 8 0 1 7 1 5 8 0 4 7 1 2 15 0 -2 0
+ 0 5 0
+ 8 0 7 7 1 2 6 1 x 0 5 0
+8 0 4 7 1 2 15 0 -1 0
+ 0 5 0
+ 8 0 7 7 1 2 6 1 x 0 4 0
+8 0 4 7 1 2 15 0 -2 0
+ 0 5 0
+ 8 0 7 7 1 2 6 1 x 0 3 0
+8 0 4 7 1 2 15 0 2 0
+ 0 5 0
+ 8 0 7 7 1 2 6 1 x 0 2 0
+8 0 4 7 1 2 15 0 -1 0
+ 0 5 0
+ 6 1 x 6 2 v1 8 0 15 7 1 2 0 0 0
+6 2 v2 8 0 0 'xcas_mode' 0 0 0
+

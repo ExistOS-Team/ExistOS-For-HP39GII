@@ -1,0 +1,410 @@
+// xcas version=1.0.0 fontsize=20 font=0 currentlevel=16
+// fltk 7Fl_Tile 29 -1902 829 31 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -1902 829 30 20 0
+Divers algorithmes de calcul de PGCD, intÃ©rÃªt du PGCD modulaire
+,
+// fltk N4xcas10Log_OutputE 29 -1872 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -1869 829 541 20 0
+[
+// fltk N4xcas7EditeurE 29 -1869 829 321 20 0
+1456 ,
+// algorithme d'Eculide
+pgcd0:= (P,Q)-> 
+{ local R; 
+  while(Q!=0){ 
+    R:=rem(P,Q);  
+    P:=Q;  
+    Q:=R;
+    print(R);
+  };  
+  return(P);  
+}:;
+
+// avec pseudo-division
+pgcd1:= (P,Q)-> { 
+  local R,a,dd; 
+  while(Q!=0){ 
+    a:=lcoeff(Q);  
+    dd:=degree(P)-degree(Q)+1;  
+    R:=rem(a^dd*P,Q);  
+    P:=Q;  
+    Q:=R;
+    print(R);  
+  };  
+  return(P);  
+}:;
+
+// division par le contenu a chaque etape
+pgcd2:= (a,b)-> { 
+  local P,p,Q,q,R,g,h,d; 
+  P:=symb2poly(a);  
+  p:=lgcd(P);  
+  P:=P/p;  
+  Q:=symb2poly(b);  
+  q:=lgcd(Q);  
+  Q:=Q/q;  
+  if ((size(P))<(size(Q))) { 
+    R:=P;  
+    P:=Q;  
+    Q:=R;  
+  };  
+  p:=gcd(p,q);  
+  g:=1;  
+  h:=1;  
+  while((size(Q))!=1){ 
+    q:=Q[0];  
+    d:=size(P)-size(Q);  
+    R:=rem(q^(d+1)*P,Q);  
+    if ((size(R))==0){
+      return(p*poly2symb(Q/(lgcd(Q)),x)) ;  
+    }
+    P:=Q;  
+    Q:=R/(lgcd(R));  
+    print(Q);  
+  };  
+  return(p);  
+}:;
+
+// sous-resultant
+pgcd3:= (a,b)-> { 
+  local P,p,Q,q,R,g,h,d; 
+  P:=symb2poly(a);  
+  p:=lgcd(P);  
+  P:=P/p;  
+  Q:=symb2poly(b);  
+  q:=lgcd(Q);  
+  Q:=Q/q;  
+  if ((size(P))<(size(Q))) { 
+    R:=P;  
+    P:=Q;  
+    Q:=R;  
+  };  
+  p:=gcd(p,q);  
+  g:=1;  
+  h:=1;  
+  while((size(Q))!=1){ 
+    q:=Q[0];  
+    d:=size(P)-size(Q);  
+    R:=rem(q^(d+1)*P,Q);  
+    if ((size(R))==0) {
+      return(p*poly2symb(Q/(lgcd(Q)),x)) ; 
+    } 
+    P:=Q;  
+    Q:=R/(g*h^d);  
+    print(Q);  
+    g:=q;  
+    h:=(q^d)/(h^(d-1));  
+  };  
+  return(p);  
+}:;,
+// fltk N4xcas10Log_OutputE 29 -1548 829 194 20 0
+// SuccÃ¨s£// End defining pgcd0£// SuccÃ¨s£// End defining pgcd1£// Attention: x, dÃ©clarÃ©e(s) comme variable(s) globale(s)£// End defining pgcd2£// Attention: x, dÃ©clarÃ©e(s) comme variable(s) globale(s)£// End defining pgcd3£
+,
+// fltk N4xcas8EquationE 29 -1354 829 26 20 0 1
+"Done","Done","Done","Done"
+]
+,
+// fltk 7Fl_Tile 29 -1326 829 159 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -1326 829 99 20 0
+105 ,
+P1:=(x+1)^7-(x-1)^6; Q1:=diff(P1); 
+P2:=(x+1)^20-(x-1)^19;Q2:=diff(P2);
+P3:=(x+1)^7*(x-1)^6;Q3:=diff(P3);,
+// fltk N4xcas10Log_OutputE 29 -1227 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 -1226 829 59 20 0 1
+(x+1)^7-(x-1)^6,7*(x+1)^6-6*(x-1)^5,(x+1)^20-(x-1)^19,20*(x+1)^19-19*(x-1)^18,(x+1)^7*(x-1)^6,7*(x+1)^6*(x-1)^6+(x+1)^7*6*(x-1)^5
+]
+,
+// fltk 7Fl_Tile 29 -1165 829 255 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -1165 829 35 20 0
+12 ,
+pgcd0(P1,Q1),
+// fltk N4xcas10Log_OutputE 29 -1130 829 170 20 0
+R:(162*x^5)/49+(-390*x^4)/49+(1060*x^3)/49+(-780*x^2)/49+(474*x)/49-78/49£R:(157780*x^4)/729+(-507640*x^3)/2187+(290864*x^2)/729+(-101528*x)/729+28028/729£R:((1400328*x^3)/2645+(-732888*x^2)/2645+(1133352*x)/3703-732888/18515)/49£R:((2161816376832*x^2)/4669921+(-555436846944*x)/4669921+301917024864/4669921)/2187£R:((469345063045455*x)/129411872-47641670106615/129411872)/907235£R:5497465490623352995840/209648836272383412129£R:0£
+,
+// fltk N4xcas8EquationE 29 -960 829 50 20 0 1
+5497465490623352995840/209648836272383412129
+]
+,
+// fltk 7Fl_Tile 29 -908 829 231 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -908 829 35 20 0
+20 ,
+pgcd0(P1 %11,Q1 %11),
+// fltk N4xcas10Log_OutputE 29 -873 829 170 20 0
+R:(-5 % 11)*x^5+(-1 % 11)*x^4+(3 % 11)*x^3+(-2 % 11)*x^2+(-2 % 11)*x+2 % 11£R:(-5 % 11)*x^4+(-5 % 11)*x^3+(-3 % 11)*x^2+(-3 % 11)*x£R:(2 % 11)*x^3+(3 % 11)*x^2+(0 % 11)*x+2 % 11£R:(-4 % 11)*x^2+(2 % 11)*x+3 % 11£R:(-2 % 11)*x+5 % 11£R:5 % 11£R:0£
+,
+// fltk N4xcas8EquationE 29 -703 829 26 20 0 1
+5 % 11
+]
+,
+// fltk 7Fl_Tile 29 -675 829 103 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -675 829 102 20 0
+le pgcd dans Z/11Z[X] est dÃ©terminÃ© beaucoup plus facilement que dans Q[X]£oÃ¹ les fractions deviennent assez grandes.£illustration ci-dessous de la taille des coefficients des restes intermÃ©diaires£si on utilise la pseudo-division (calculs dans Z[X])
+,
+// fltk N4xcas10Log_OutputE 29 -573 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -570 829 251 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -570 829 35 20 0
+12 ,
+pgcd1(P1,Q1),
+// fltk N4xcas10Log_OutputE 29 -535 829 170 20 0
+R:162*x^5-390*x^4+1060*x^3-780*x^2+474*x-78£R:5680080*x^4-6091680*x^3+10471104*x^2-3655008*x+1009008£R:17080988542248960*x^3-8939656659548160*x^2+9874611277977600*x-1277093808506880£R:1620751818387361789401766420835362406400*x^2-416420788246156138518908596501925068800*x+226352511848168658657852779704143052800£R:16601080599279110052908839302615690450580626256882195477399064794823467416168431766994944000000*x-1685120964503646294208477778588834130532507351651880766705535227577111069404037782700032000000£R:55334858510813000659552233196155476678357253974299742428215010236397972196587317675022338073363698517452450124577192651336763743704825876159361253923027507115662656151159105570453879515591557997402979320436097024000000000000000£R:0£
+,
+// fltk N4xcas8EquationE 29 -365 829 46 20 0 1
+55334858510813000659552233196155476678357253974299742428215010236397972196587317675022338073363698517452450124577192651336763743704825876159361253923027507115662656151159105570453879515591557997402979320436097024000000000000000
+]
+,
+// fltk 7Fl_Tile 29 -317 829 31 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -317 829 30 20 0
+Il est donc judicieux de simplifier, pgcd2 simplifie les restes par leur contenu
+,
+// fltk N4xcas10Log_OutputE 29 -287 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -284 829 207 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -284 829 35 20 0
+12 ,
+pgcd2(P1,Q1),
+// fltk N4xcas10Log_OutputE 29 -249 829 146 20 0
+Q:poly1[81,-195,530,-390,237,-39]£Q:poly1[2415,-2590,4452,-1554,429]£Q:poly1[15127,-7917,8745,-1131]£Q:poly1[96528,-24801,13481]£Q:poly1[744473,-75569]£Q:poly1[1]£
+,
+// fltk N4xcas8EquationE 29 -103 829 26 20 0 1
+1
+]
+,
+// fltk 7Fl_Tile 29 -75 829 31 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 -75 829 30 20 0
+pgcd3 simplifie par un coefficient calculÃ© Ã  priori, presque optimal.
+,
+// fltk N4xcas10Log_OutputE 29 -45 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 -42 829 207 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 -42 829 35 20 0
+12 ,
+pgcd3(P1,Q1),
+// fltk N4xcas10Log_OutputE 29 -7 829 146 20 0
+Q:poly1[162,-390,1060,-780,474,-78]£Q:poly1[115920,-124320,213696,-74592,20592]£Q:poly1[271075840,-141872640,156710400,-20267520]£Q:poly1[619953782784,-159285116928,86582099968]£Q:poly1[524587741741056,-53249172307968]£Q:poly1[54990356076298240]£
+,
+// fltk N4xcas8EquationE 29 139 829 26 20 0 1
+1
+]
+,
+// fltk 7Fl_Tile 29 167 829 53 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 167 829 52 20 0
+Exemple de reconstruction de PGCD dans Z[X] Ã  partir de £plusieurs PGCD dans Z/piZ[X]
+,
+// fltk N4xcas10Log_OutputE 29 219 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 222 829 100 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 222 829 35 20 0
+25 ,
+P4:=normal((11x+2)*(3x+5),
+// fltk N4xcas10Log_OutputE 29 257 829 26 20 0
+Warning adding 1 ) at end of input£
+,
+// fltk N4xcas8EquationE 29 283 829 39 20 0 1
+33*x^2+61*x+10
+]
+,
+// fltk 7Fl_Tile 29 324 829 75 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 324 829 35 20 0
+26 ,
+Q4:=normal((11x+2)*(2x+3)),
+// fltk N4xcas10Log_OutputE 29 359 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 360 829 39 20 0 1
+22*x^2+37*x+6
+]
+,
+// fltk 7Fl_Tile 29 401 829 62 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 401 829 35 20 0
+14 ,
+gcd(P4%5,Q4%5),
+// fltk N4xcas10Log_OutputE 29 436 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 437 829 26 20 0 1
+(1 % 5)*x+2 % 5
+]
+,
+// fltk 7Fl_Tile 29 465 829 62 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 465 829 35 20 0
+14 ,
+gcd(P4%7,Q4%7),
+// fltk N4xcas10Log_OutputE 29 500 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 501 829 26 20 0 1
+(1 % 7)*x-3 % 7
+]
+,
+// fltk 7Fl_Tile 29 529 829 31 20 0
+[
+// fltk N4xcas23Comment_Multiline_InputE 29 529 829 30 20 0
+calcul du coefficient constant
+,
+// fltk N4xcas10Log_OutputE 29 559 829 1 20 0
+
+]
+,
+// fltk 7Fl_Tile 29 562 829 62 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 562 829 35 20 0
+22 ,
+ichinrem(22%5,-33%7)%0,
+// fltk N4xcas10Log_OutputE 29 597 829 1 20 0
+
+,
+// fltk N4xcas8EquationE 29 598 829 26 20 0 1
+2
+]
+,
+// fltk 7Fl_Tile 29 626 829 33 20 0
+[
+// fltk N4xcas16Xcas_Text_EditorE 29 626 829 32 20 0
+0 ,
+,
+// fltk N4xcas10Log_OutputE 29 658 829 1 20 0
+
+]
+// context 4889 giac archive
+7 0 17 8 0 0 'cas_setup' 7 0 12 0 0 0
+0 0 0
+0 0 0
+0 1 0
+0 0 0
+7 0 2 1 ¡½×Ùß|Û=
+1 Vçž¯Ò<
+0 12 0
+7 0 4 0 1 0
+0 50 0
+0 0 0
+0 25 0
+0 0 0
+0 0 0
+0 0 0
+0 1 0
+8 0 0 'xyztrange' 7 0 16 1      $À
+1      $@
+1      $À
+1      $@
+1      $À
+1      $@
+1      $À
+1      $@
+1      $À
+1      $@
+1 afffffö¿
+1 ™™™™™ñ?
+0 1 0
+1        
+1      ð?
+0 3 0
+7 0 0 7 0 0 8 0 15 7 1 2 8 0 1 7 1 2 8 0 7 7 1 2 8 0 1 7 1 2 6 1 x 0 1 0
+0 7 0
+8 0 2 8 0 7 7 1 2 8 0 1 7 1 2 6 1 x 0 -1 0
+0 6 0
+6 2 P1 8 0 15 7 1 2 8 0 1 7 1 2 8 0 7 7 1 2 8 0 1 7 1 2 6 1 x 0 1 0
+0 20 0
+8 0 2 8 0 7 7 1 2 8 0 1 7 1 2 6 1 x 0 -1 0
+0 19 0
+6 2 P2 8 0 15 7 1 2 8 0 4 7 1 2 8 0 7 7 1 2 8 0 1 7 1 2 6 1 x 0 1 0
+0 7 0
+8 0 7 7 1 2 8 0 1 7 1 2 6 1 x 0 -1 0
+0 6 0
+6 2 P3 8 0 15 7 1 2 8 0 1 7 1 3 8 0 4 7 1 2 0 33 0
+8 0 7 7 1 2 6 1 x 0 2 0
+8 0 4 7 1 2 0 61 0
+6 1 x 0 10 0
+6 2 P4 8 0 15 7 1 2 8 0 1 7 1 2 8 0 4 7 1 2 0 7 0
+8 0 7 7 1 2 8 0 1 7 1 2 6 1 x 0 1 0
+0 6 0
+8 0 2 8 0 4 7 1 2 0 6 0
+8 0 7 7 1 2 8 0 1 7 1 2 6 1 x 0 -1 0
+0 5 0
+6 2 Q1 8 0 15 7 1 2 8 0 1 7 1 2 8 0 4 7 1 2 0 20 0
+8 0 7 7 1 2 8 0 1 7 1 2 6 1 x 0 1 0
+0 19 0
+8 0 2 8 0 4 7 1 2 0 19 0
+8 0 7 7 1 2 8 0 1 7 1 2 6 1 x 0 -1 0
+0 18 0
+6 2 Q2 8 0 15 7 1 2 8 0 1 7 1 2 8 0 4 7 1 3 0 7 0
+8 0 7 7 1 2 8 0 1 7 1 2 6 1 x 0 1 0
+0 6 0
+8 0 7 7 1 2 8 0 1 7 1 2 6 1 x 0 -1 0
+0 6 0
+8 0 4 7 1 3 8 0 7 7 1 2 8 0 1 7 1 2 6 1 x 0 1 0
+0 7 0
+0 6 0
+8 0 7 7 1 2 8 0 1 7 1 2 6 1 x 0 -1 0
+0 5 0
+6 2 Q3 8 0 15 7 1 2 8 0 1 7 1 3 8 0 4 7 1 2 0 22 0
+8 0 7 7 1 2 6 1 x 0 2 0
+8 0 4 7 1 2 0 37 0
+6 1 x 0 6 0
+6 2 Q4 8 0 15 7 1 2 8 0 73 7 1 3 7 1 2 6 1 P 6 1 Q 7 1 2 0 0 0
+0 0 0
+8 0 42 7 1 2 7 0 2 7 1 1 6 1 R 7 1 0 7 0 2 8 0 71 7 0 4 0 0 0
+8 0 39 7 1 2 6 1 Q 0 0 0
+0 0 0
+8 0 72 7 1 4 8 0 15 7 1 2 8 0 0 'rem' 7 1 2 6 1 P 6 1 Q 6 1 R 8 0 15 7 1 2 6 1 Q 6 1 P 8 0 15 7 1 2 6 1 R 6 1 Q 8 0 0 print 6 1 R 8 0 43 6 1 P 6 5 pgcd0 8 0 15 7 1 2 8 0 73 7 1 3 7 1 2 6 1 P 6 1 Q 7 1 2 0 0 0
+0 0 0
+8 0 42 7 1 2 7 0 2 7 1 3 6 1 R 6 1 a 6 2 dd 7 1 0 7 0 2 8 0 71 7 0 4 0 0 0
+8 0 39 7 1 2 6 1 Q 0 0 0
+0 0 0
+8 0 72 7 1 6 8 0 15 7 1 2 8 0 0 'lcoeff' 6 1 Q 6 1 a 8 0 15 7 1 2 8 0 1 7 1 3 8 0 0 'degree' 6 1 P 8 0 2 8 0 0 'degree' 6 1 Q 0 1 0
+6 2 dd 8 0 15 7 1 2 8 0 0 'rem' 7 1 2 8 0 4 7 1 2 8 0 7 7 1 2 6 1 a 6 2 dd 6 1 P 6 1 Q 6 1 R 8 0 15 7 1 2 6 1 Q 6 1 P 8 0 15 7 1 2 6 1 R 6 1 Q 8 0 0 print 6 1 R 8 0 43 6 1 P 6 5 pgcd1 8 0 15 7 1 2 8 0 73 7 1 3 7 1 2 6 1 a 6 1 b 7 1 2 0 0 0
+0 0 0
+8 0 42 7 1 2 7 0 2 7 1 8 6 1 P 6 1 p 6 1 Q 6 1 q 6 1 R 6 1 g 6 1 h 6 1 d 7 1 0 7 0 12 8 0 15 7 1 2 8 0 0 'symb2poly' 6 1 a 6 1 P 8 0 15 7 1 2 8 0 0 'lgcd' 6 1 P 6 1 p 8 0 15 7 1 2 8 0 5 7 1 2 6 1 P 6 1 p 6 1 P 8 0 15 7 1 2 8 0 0 'symb2poly' 6 1 b 6 1 Q 8 0 15 7 1 2 8 0 0 'lgcd' 6 1 Q 6 1 q 8 0 15 7 1 2 8 0 5 7 1 2 6 1 Q 6 1 q 6 1 Q 8 0 70 7 0 3 8 0 35 7 1 2 8 0 0 size 6 1 P 8 0 0 size 6 1 Q 8 0 72 7 1 3 8 0 15 7 1 2 6 1 P 6 1 R 8 0 15 7 1 2 6 1 Q 6 1 P 8 0 15 7 1 2 6 1 R 6 1 Q 0 0 0
+8 0 15 7 1 2 8 0 0 'gcd' 7 1 2 6 1 p 6 1 q 6 1 p 8 0 15 7 1 2 0 1 0
+6 1 g 8 0 15 7 1 2 0 1 0
+6 1 h 8 0 71 7 0 4 0 0 0
+8 0 39 7 1 2 8 0 0 size 6 1 Q 0 1 0
+0 0 0
+8 0 72 7 1 7 8 0 15 7 1 2 8 0 82 7 1 2 6 1 Q 0 0 0
+6 1 q 8 0 15 7 1 2 8 0 1 7 1 2 8 0 0 size 6 1 P 8 0 2 8 0 0 size 6 1 Q 6 1 d 8 0 15 7 1 2 8 0 0 'rem' 7 1 2 8 0 4 7 1 2 8 0 7 7 1 2 6 1 q 8 0 1 7 1 2 6 1 d 0 1 0
+6 1 P 6 1 Q 6 1 R 8 0 70 7 0 3 8 0 74 7 1 2 8 0 0 size 6 1 R 0 0 0
+8 0 43 8 0 4 7 1 2 6 1 p 8 0 0 'poly2symb' 7 1 2 8 0 5 7 1 2 6 1 Q 8 0 0 'lgcd' 6 1 Q 6 1 x 0 0 0
+8 0 15 7 1 2 6 1 Q 6 1 P 8 0 15 7 1 2 8 0 5 7 1 2 6 1 R 8 0 0 'lgcd' 6 1 R 6 1 Q 8 0 0 print 6 1 Q 8 0 43 6 1 p 6 5 pgcd2 8 0 15 7 1 2 8 0 73 7 1 3 7 1 2 6 1 a 6 1 b 7 1 2 0 0 0
+0 0 0
+8 0 42 7 1 2 7 0 2 7 1 8 6 1 P 6 1 p 6 1 Q 6 1 q 6 1 R 6 1 g 6 1 h 6 1 d 7 1 0 7 0 12 8 0 15 7 1 2 8 0 0 'symb2poly' 6 1 a 6 1 P 8 0 15 7 1 2 8 0 0 'lgcd' 6 1 P 6 1 p 8 0 15 7 1 2 8 0 5 7 1 2 6 1 P 6 1 p 6 1 P 8 0 15 7 1 2 8 0 0 'symb2poly' 6 1 b 6 1 Q 8 0 15 7 1 2 8 0 0 'lgcd' 6 1 Q 6 1 q 8 0 15 7 1 2 8 0 5 7 1 2 6 1 Q 6 1 q 6 1 Q 8 0 70 7 0 3 8 0 35 7 1 2 8 0 0 size 6 1 P 8 0 0 size 6 1 Q 8 0 72 7 1 3 8 0 15 7 1 2 6 1 P 6 1 R 8 0 15 7 1 2 6 1 Q 6 1 P 8 0 15 7 1 2 6 1 R 6 1 Q 0 0 0
+8 0 15 7 1 2 8 0 0 'gcd' 7 1 2 6 1 p 6 1 q 6 1 p 8 0 15 7 1 2 0 1 0
+6 1 g 8 0 15 7 1 2 0 1 0
+6 1 h 8 0 71 7 0 4 0 0 0
+8 0 39 7 1 2 8 0 0 size 6 1 Q 0 1 0
+0 0 0
+8 0 72 7 1 9 8 0 15 7 1 2 8 0 82 7 1 2 6 1 Q 0 0 0
+6 1 q 8 0 15 7 1 2 8 0 1 7 1 2 8 0 0 size 6 1 P 8 0 2 8 0 0 size 6 1 Q 6 1 d 8 0 15 7 1 2 8 0 0 'rem' 7 1 2 8 0 4 7 1 2 8 0 7 7 1 2 6 1 q 8 0 1 7 1 2 6 1 d 0 1 0
+6 1 P 6 1 Q 6 1 R 8 0 70 7 0 3 8 0 74 7 1 2 8 0 0 size 6 1 R 0 0 0
+8 0 43 8 0 4 7 1 2 6 1 p 8 0 0 'poly2symb' 7 1 2 8 0 5 7 1 2 6 1 Q 8 0 0 'lgcd' 6 1 Q 6 1 x 0 0 0
+8 0 15 7 1 2 6 1 Q 6 1 P 8 0 15 7 1 2 8 0 5 7 1 2 6 1 R 8 0 4 7 1 2 6 1 g 8 0 7 7 1 2 6 1 h 6 1 d 6 1 Q 8 0 0 print 6 1 Q 8 0 15 7 1 2 6 1 q 6 1 g 8 0 15 7 1 2 8 0 5 7 1 2 8 0 7 7 1 2 6 1 q 6 1 d 8 0 7 7 1 2 6 1 h 8 0 1 7 1 2 6 1 d 0 -1 0
+6 1 h 8 0 43 6 1 p 6 5 pgcd3 8 0 0 'xcas_mode' 0 0 0
+

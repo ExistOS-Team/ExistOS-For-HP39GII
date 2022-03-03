@@ -1,0 +1,9 @@
+//2pts A et B, calcul de la longueur de AE qd EB=2 E=2exp(it)
+//A:=point(-2);
+//B:=point(i);
+C:=cercle(B,2);
+fig(A,B,t):=evalf(longueur(A,B+2*exp(i*t)));
+D:=plotfunc(fig(A,B,x));
+t:=element(0..pi);
+E:=element(cercle(B,2),t);
+F:=element(D,t);

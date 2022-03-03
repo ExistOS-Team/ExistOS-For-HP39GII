@@ -1,0 +1,25 @@
+The files in this directory compile JNI version of giac for Mac OS X
+10.6 or 10.8. (Maybe other versions will also work, untested.) 10.6 is
+preferred since if compiled under 10.8 the JNI cannot be used on earlier
+Mac OS X versions.
+
+Prerequisites:
+
+  * Mac OS X 10.6 or 10.8 (either real or running in VirtualBox)
+  * Xcode 3.2 (for 10.6) or a recent one (for 10.8)
+  * Admin privileges for the current user
+
+Usage:
+
+  * Enter "make" to compile the JNI version. You will be asked to give
+    the admin password to install some dependencies into /usr/local.
+  * The file libjavagiac.jnilib will be put in giac-1.1.0/src/.
+  * You can do some testing by running "make test". You should see
+    that the .jnilib file is a 18 MB bundle having no .dylib
+    dependencies (i.e. libgmp, libgsl, libmpfr and libgettext are
+    statically linked into it).
+
+Authors:
+
+  * Bernard Parisse
+  * Zoltan Kovacs

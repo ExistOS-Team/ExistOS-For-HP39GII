@@ -1,0 +1,10 @@
+//ld=[a,b,c] si ay+bx+c=0
+purge(t);
+xyztrange(-6.0,6.0,-7.0,4.0,-10.0,10.0,-3.0,3.0,-6.0,6.0,-2.0,4.0,1);
+ld:=[1,-2*t,-t^2];
+ld1:=derive(ld,t);
+dpd1:=ld[0]*ld1[1]-ld[1]*ld1[0];
+if (dpd1!=0) {M:=(i*(-ld[2]*ld1[1]+ld[1]*ld1[2])+(ld[2]*ld1[0]-ld[0]*ld1[2]))/dpd1;
+plotparam(M,t);};
+t:=element(-3..3);
+d:=plotfunc(2*t*x+t^2,x);

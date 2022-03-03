@@ -1,0 +1,3 @@
+#! /bin/tcsh
+wc *.[ch] */*.[ch] */*.cc */*.fl
+

@@ -1,0 +1,22 @@
+hornerl(l,a):={
+//ne marche pas pour les polys constants (de degre=0) 
+local s,val,lq;
+s:=size(l);
+lq:=[];
+val:=0;
+for (j:=0;j<s-1;j++) {
+val:=val*a+l[j];
+lq:=append(lq,val);
+}
+val:=val*a+l[s-1];
+return([val,lq]);
+};
+hornerp(p,a,x):={
+//ne marche pas pour les polys constants (de degre=0) 
+local l,val,lh;
+l:=e2r(p,x);
+lh:=hornerl(l,a);
+p:=r2e(lh[1],x);
+val:=lh[0];
+return([val,p]);
+};

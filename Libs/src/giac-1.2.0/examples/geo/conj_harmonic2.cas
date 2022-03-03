@@ -1,0 +1,6 @@
+ 
+(A,B,t)-> 
+{ local C,D; 
+  C:=element(droite(A,B),t);  
+  D:=A+(1-t)/(1-2*t)*(B-A);  
+  return([C,D]); }

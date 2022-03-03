@@ -12,7 +12,7 @@
 #undef errno
 extern int errno;
 
-#define HEAP_END    0x004A0000
+#define HEAP_END    0x02200000
 
 
 extern unsigned int __HEAP_START;
@@ -32,8 +32,9 @@ caddr_t _sbrk ( int incr )
     }
     prev_heap = heap;
     if(((uint32_t)heap + incr) > HEAP_END){
-        printf("heap:%p, incr:%d\n", heap, incr);
-        return 0;
+        //printf("heap:%p, incr:%d\n", heap, incr);
+        ll_putStr("MEMORY OVER FLOW\n");
+        //return 0;
     }
     heap += incr;
 
@@ -80,6 +81,11 @@ int _isatty_r(struct _reent *pReent, int file) {
     return -1;
 }
 
+int _isatty(int file)
+{
+    return -1;
+}
+
 int _kill_r(struct _reent *pReent, int pid, int signal) {
     pReent->_errno = ENOTSUP;
     return -1;
@@ -97,16 +103,19 @@ _off_t _lseek_r(struct _reent *pReent, int file, _off_t offset, int whence) {
 
 int _mkdir_r(struct _reent *pReent, const char *pathname, int mode) {
     pReent->_errno = ENOTSUP;
+    printf("_mkdir_r\n");
     return -1;
 }
 
 int _open_r(struct _reent *pReent, const char *file, int flags, int mode) {
     pReent->_errno = ENOTSUP;
+    printf("_open_r\n");
     return -1;
 }
 
 _ssize_t _read_r(struct _reent *pReent, int fd, void *ptr, size_t len) {
     pReent->_errno = ENOTSUP;
+    printf("_read_r\n");
     return -1;
 }
 
@@ -124,6 +133,7 @@ int _stat_r(struct _reent *pReent, const char *__restrict __path, struct stat *_
 
 _CLOCK_T_ _times_r(struct _reent *pReent, struct tms *tbuf) {
     pReent->_errno = ENOTSUP;
+    //ll_putStr("GET TIME\n");
     return -1;
 }
 
@@ -151,6 +161,8 @@ _ssize_t _write_r(struct _reent *pReent, int fd, const void *buf, size_t nbytes)
 
 int _gettimeofday_r(struct _reent *pReent, struct timeval *__tp, void *__tzp) {
     pReent->_errno = ENOTSUP;
+
+    printf("GET _gettimeofday_r\n");
     return -1;
 }
 
@@ -206,12 +218,13 @@ char *getcwd(char *buf, size_t size) {
 
 void abort(void) {
     //Abort called
+    printf("abort\n");
     while (1)
         ;
 }
 
 void _exit(int i) {
-
+    printf("_exit\n");
     while (1)
         ;
 }

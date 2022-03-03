@@ -1,0 +1,138 @@
+sphinxd(x,y):={
+local z,u,t;
+DispG();
+z:=x+2*(y-x)/3*exp(evalf(pi)*i/3);
+t:= y+(x-y)/3*exp(-evalf(pi)*i/3);
+u:=t+(x-y)/3;
+segment(x,z);
+segment(z,u);
+segment(u,t);
+segment(t,y);
+segment(y,x);
+};
+sphinxg(x,y):={
+local z,u,t;
+DispG();
+z:=y+2*(x-y)/3*exp(-evalf(pi)*i/3);
+t:= x+(y-x)/3*exp(evalf(pi)*i/3);
+u:=t+(y-x)/3;
+segment(y,z);
+segment(z,u);
+segment(u,t);
+segment(t,x);
+segment(x,y);
+};
+sphinxd4(x,y):={
+local z,u,t;
+DispG();
+z:=x+2*(y-x)/3*exp(3.14*i/3);
+t:= y+(x-y)/3*exp(-3.14*i/3);
+u:=t+(x-y)/3;
+segment(x,z);
+segment(z,u);
+segment(u,t);
+segment(t,y);
+segment(y,x);
+sphinxg(x,(x+y)/2);
+sphinxg((x+y)/2,y);
+sphinxg(t,t+(x-y)/2);
+sphinxd(z,(3*x+z)/4);
+};
+sphinxg4(x,y):={
+local z,u,t;
+DispG();
+z:=y+2*(x-y)/3*exp(-evalf(pi)*i/3);
+t:= x+(y-x)/3*exp(evalf(pi)*i/3);
+u:=t+(y-x)/3;
+segment(y,z);
+segment(z,u);
+segment(u,t);
+segment(t,x);
+segment(x,y);
+sphinxd(x,(x+y)/2);
+sphinxd((x+y)/2,y);
+sphinxd(t+(y-x)/2,t);
+sphinxg((3*y+z)/4,z);
+};
+sphinxds(x,y,n):={
+local z,u,t;
+DispG();
+if (n==0) return 0;
+z:=x+2*(y-x)/3*exp(evalf(pi)*i/3);
+t:= y+(x-y)/3*exp(-evalf(pi)*i/3);
+u:=t+(x-y)/3;
+segment(x,z);
+segment(z,u);
+segment(u,t);
+segment(t,y);
+segment(y,x);
+sphinxgs(x,(x+y)/2,n-1);
+sphinxgs((x+y)/2,y,n-1);
+sphinxgs(t,t+(x-y)/2,n-1);
+sphinxds(z,(3*x+z)/4,n-1);
+};
+sphinxgs(x,y,n):={
+local z,u,t,p;
+DispG();
+if (n==0) return 0;
+z:=y+2*(x-y)/3*exp(-evalf(pi)*i/3);
+t:= x+(y-x)/3*exp(evalf(pi)*i/3);
+u:=t+(y-x)/3;
+segment(y,z);
+segment(z,u);
+segment(u,t);
+segment(t,x);
+segment(x,y);
+sphinxds(x,(x+y)/2,n-1);
+sphinxds((x+y)/2,y,n-1);
+sphinxds(t+(y-x)/2,t,n-1);
+sphinxgs((3*y+z)/4,z,n-1);
+};
+sphinxdps(x,y,n):={
+local z,u,t;
+DispG();
+if (n==1) {sphinxd(x,y);return 0;}
+z:=x+2*(y-x)/3*exp(evalf(pi)*i/3);
+t:= y+(x-y)/3*exp(-evalf(pi)*i/3);
+u:=t+(x-y)/3;
+sphinxgps(x,(x+y)/2,n-1);
+sphinxgps((x+y)/2,y,n-1);
+sphinxgps(t,t+(x-y)/2,n-1);
+sphinxdps(z,(3*x+z)/4,n-1);
+};
+sphinxgps(x,y,n):={
+local z,u,t,p;
+DispG();
+if (n==1) {sphinxg(x,y);return 0}
+z:=y+2*(x-y)/3*exp(-evalf(pi)*i/3);
+t:= x+(y-x)/3*exp(evalf(pi)*i/3);
+u:=t+(y-x)/3;
+sphinxdps(x,(x+y)/2,n-1);
+sphinxdps((x+y)/2,y,n-1);
+sphinxdps(t+(y-x)/2,t,n-1);
+sphinxgps((3*y+z)/4,z,n-1);
+};
+sphinxdpst(x,y,n):={
+local z,u,t;
+DispG();
+if (n==1) return sphinxd(x,y);
+z:=x+2*(y-x)/3*exp(evalf(pi)*i/3);
+t:= y+(x-y)/3*exp(-evalf(pi)*i/3);
+u:=t+(x-y)/3;
+sphinxgpst(x,(x+y)/2,n-1);
+sphinxgpst((x+y)/2,y,n-1);
+segment(t,t+(x-y)/3);
+sphinxdpst(z,(3*x+z)/4,n-1);
+};
+sphinxgpst(x,y,n):={
+local z,u,t,p;
+DispG();
+if (n==1) return sphinxg(x,y);
+z:=y+2*(x-y)/3*exp(-evalf(pi)*i/3);
+t:= x+(y-x)/3*exp(evalf(pi)*i/3);
+u:=t+(y-x)/3;
+sphinxdpst(x,(x+y)/2,n-1);
+sphinxdpst((x+y)/2,y,n-1);
+segment(t+(y-x)/3,t);
+sphinxgpst((3*y+z)/4,z,n-1);
+};

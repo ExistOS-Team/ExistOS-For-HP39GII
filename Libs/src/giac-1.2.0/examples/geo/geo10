@@ -1,0 +1,5 @@
+E:=inter(droite(C,D),cercle(A,B));
+E1:=E[0];
+E2:=E[1];
+triangle(E1,A,B);
+triangle(E2,A,B);

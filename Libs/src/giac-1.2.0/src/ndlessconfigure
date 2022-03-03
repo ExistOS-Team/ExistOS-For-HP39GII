@@ -1,0 +1,9 @@
+#! /bin/bash
+export CC=nspire-gcc
+export CXX=nspire-g++
+export LD=nspire-ld
+export AS=nspire-as
+export NM=/home/parisse/Ndless/ndless-sdk/toolchain/install/bin/arm-none-eabi-nm
+export RANLIB=/home/parisse/Ndless/ndless-sdk/toolchain/install/bin/arm-none-eabi-ranlib
+# GMP/MPFR configure command 
+# ./configure --host=none --prefix=/home/parisse/Ndless/ndless-sdk
