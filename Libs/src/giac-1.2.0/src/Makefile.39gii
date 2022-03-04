@@ -11,7 +11,7 @@ CXXFLAGS += -DEXISTOS -DNSPIRE_NEWLIB -DHAVE_CONFIG_H -DIN_GIAC -DTIMEOUT -DNO_P
 
 OBJS = sym2poly.o gausspol.o threaded.o maple.o ti89.o mathml.o moyal.o misc.o permu.o desolve.o input_parser.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o intgab.o risch.o lin.o series.o subst.o vecteur.o sparse.o csturm.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o plot3d.o rpn.o prog.o pari.o cocoa.o unary.o usual.o identificateur.o gen.o input_lexer.o tinymt32.o first.o quater.o 
 
-all: libgiac.a
+all: mv
 
 .cc.o:
 	$(CXX) $(CXXFLAGS) -c $<
@@ -19,7 +19,10 @@ all: libgiac.a
 clean:
 	rm -f *.o
 
-libgiac.a: $(OBJS) 
-	$(PREFIX)ar rcs libgiac.a $(OBJS) 
-	$(PREFIX)ranlib libgiac.a
+libgiac.libcpp: $(OBJS) 
+	$(PREFIX)ar rcs libgiac.libcpp $(OBJS) 
+	$(PREFIX)ranlib libgiac.libcpp
 	$(PREFIX)objcopy --redefine-sym mp_init=mp_tm_init $@
+
+mv: libgiac.libcpp
+	mv libgiac.libcpp ../../../

@@ -1376,7 +1376,7 @@ namespace giac {
   }
 
   polynome & operator *= (polynome & th, const polynome & other) {
-#ifdef NSPIRE
+#if (defined NSPIRE) || (defined EXISTOS)
     th=th*other;
 #else
     mulpoly(th,other,th,0);

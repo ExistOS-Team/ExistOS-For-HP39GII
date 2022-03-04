@@ -18,6 +18,10 @@
 #undef min
 //#define GIAC_VECTOR
 
+#define EXISTOS
+#define NSPIRE_NEWLIB
+#define TIMEOUT
+
 #ifndef _GIAC_FIRST_H_
 #define _GIAC_FIRST_H_
 

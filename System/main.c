@@ -9,6 +9,8 @@ int coremain(void);
 
 void testcpp();
 
+char ctrlC = 0;
+
 uint32_t IRQ_Context[16];
 volatile void IRQ_ISR(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t par3) __attribute__((naked));
 volatile void IRQ_ISR(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t par3)
@@ -17,11 +19,15 @@ volatile void IRQ_ISR(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t pa
     switch (IRQNum)
     {
     case LL_IRQ_KEYBOARD:
-        //printf("Key:%d, Press:%d\n", par1, par2);
+        printf("Key:%d, Press:%d\n", par1, par2);
         //ll_putStr("KEY IRQ\n");
+        if((par1 == 80) && (par2 == 1))
+        {
+            ctrlC = 1;
+        }
         break;
     case LL_IRQ_TIMER:
-        //printf("TimerTick\n");
+        printf("TimerTick\n");
         break;
     default:
         break;
@@ -40,17 +46,27 @@ void delayms(uint32_t ms)
 
 }
 
+int system_checkCtrlC()
+{
+    if(ctrlC)
+    {
+        ctrlC = 0;
+        return 1;
+    }
+    return 0;
+}
+
 
 void main()
 {
 
     ll_irq_set_Stack((uint32_t *)0x02400000);
-    /*
+    
     ll_irq_set_Vector(IRQ_ISR);
     ll_irq_enable(true);
 
-    ll_systick_set_period(500);
-    ll_systick_enable(true);*/
+//    ll_systick_set_period(500);
+//    ll_systick_enable(true);
 
 /*
     printf("Core Mark Testing..\n");

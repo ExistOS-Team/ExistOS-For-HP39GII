@@ -42,6 +42,9 @@ static bool vmMgrInit = false;
 static uint32_t SwapPartSectorStart;
 static uint32_t SwapPartSectors;
 
+//extern SemaphoreHandle_t LL_upSysContextMutex;
+extern TaskHandle_t upSystem;
+extern bool upSystemInException;
 
 uint32_t vmMgr_mapFile(FIL *file, uint32_t perm, uint32_t MemAddrStart, uint32_t FileAddrStart, uint32_t memSize)
 {
@@ -251,6 +254,10 @@ void vmMgr_task()
     {
         while(xQueueReceive(PageFaultQueue, &currentFault, portMAX_DELAY) == pdTRUE){
             vTaskSuspend(currentFault.FaultTask);
+            if(currentFault.FaultTask == upSystem)
+            {
+                upSystemInException = true;
+            }
             /*
             VM_INFO("REC FAULT TASK [%s] DAB. access %08x, FSR:%08x\n", 
                 pcTaskGetName(currentFault.FaultTask), currentFault.FaultMemAddr, currentFault.FSR);*/
@@ -310,6 +317,12 @@ void vmMgr_task()
             default:
                 VM_ERR("Unknown Task Operation.\n");
                 break;
+            }
+
+
+            if(currentFault.FaultTask == upSystem)
+            {
+                upSystemInException = false;
             }
 
         }

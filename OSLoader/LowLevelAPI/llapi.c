@@ -22,9 +22,9 @@ typedef struct LLAPI_TimerInfo_t
 static bool LLEnableIRQ;
 static bool LLInIRQ;
 
-static TaskHandle_t upSystem;
 
-static uint32_t savedContext[16];
+
+static uint32_t savedContext[16], SPSR;
 
 static uint32_t LL_IRQVector;
 static uint32_t LL_IRQStack;
@@ -32,11 +32,14 @@ static uint32_t LL_IRQStack;
 static xTimerHandle LL_SYSTimer;
 static uint32_t LL_SYSTimerPeriod;
 
-static SemaphoreHandle_t LL_upSysContextMutex;
+SemaphoreHandle_t LL_upSysContextMutex;
+TaskHandle_t upSystem;
+
+bool upSystemInException = false;
 
 static void LL_TrapInIRQ(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t par3)
 {
-    uint32_t *r;
+    uint32_t *r, *t;
     vTaskSuspend(upSystem);
     portYIELD();
 
@@ -44,9 +47,11 @@ static void LL_TrapInIRQ(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t
 
     LLInIRQ = true;
     r = (uint32_t *)(((uint32_t *)upSystem)[1]) - 16;
-    memcpy(savedContext, r, sizeof(savedContext));
+    t = (uint32_t *)(((uint32_t *)upSystem)[1]) - 20;
 
-    
+    memcpy(savedContext, r, sizeof(savedContext));
+    SPSR = t[0];
+
     r[0] = IRQNum;
     r[1] = par1;
     r[2] = par2;
@@ -58,6 +63,7 @@ static void LL_TrapInIRQ(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t
 
     LLAPI_INFO("IRQ STACK:%08x\n", r[13]);
     r[15] = LL_IRQVector + 4; // against   "SUBS  PC,R14,#4"
+
     taskEXIT_CRITICAL();
 
     vTaskResume(upSystem);
@@ -65,15 +71,17 @@ static void LL_TrapInIRQ(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t
 
 static void LL_IRQReturn()
 {
-    uint32_t *r;
+    uint32_t *r, *t;
     vTaskSuspend(upSystem);
     portYIELD();
     taskENTER_CRITICAL();
     r = (uint32_t *)(((uint32_t *)upSystem)[1]) - 16;
+    t = (uint32_t *)(((uint32_t *)upSystem)[1]) - 20;
 
     LL_IRQStack = r[13];
 
     memcpy(r, savedContext, sizeof(savedContext));
+    t[0] = SPSR;
     taskEXIT_CRITICAL();
     vTaskResume(upSystem);
     LLInIRQ = false;
@@ -108,6 +116,9 @@ void LLIRQ_task(void *pvParameters)
             if(LLEnableIRQ){
                 if(LLInIRQ == false){
                     LLAPI_INFO("LL_TrapInIRQ\n");
+                    while(upSystemInException){
+                        vTaskDelay(1);
+                    }
                     xSemaphoreTake(LL_upSysContextMutex, portMAX_DELAY);
                     LL_TrapInIRQ(curIRQ.IRQNum, curIRQ.r1, curIRQ.r2, curIRQ.r3);
                     xSemaphoreGive(LL_upSysContextMutex);

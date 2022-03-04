@@ -122,7 +122,6 @@ namespace giac {
     (* (gen *) (&r)).type = 0;
     return * (double *)(&r); 
   }
-
 #ifdef TIMEOUT
 #ifndef EMCC
   double time(int ){
@@ -132,10 +131,22 @@ namespace giac {
   time_t caseval_begin,caseval_current;
   double caseval_maxtime=15; // max 15 seconds
   int caseval_n=0,caseval_mod=0,caseval_unitialized=-123454321;
+
   void control_c(){
 #ifdef NSPIRE
     if (on_key_pressed()){ ctrl_c=true; interrupted=true; }
 #else
+  #ifdef EXISTOS
+    {
+      if(giac_checkCtrlC() == 1){
+
+        ctrl_c=true; 
+        interrupted=true;
+
+      }
+
+    }
+  #else
     if (caseval_unitialized!=-123454321){
       caseval_unitialized=-123454321;
       caseval_mod=0;
@@ -158,6 +169,8 @@ namespace giac {
 	  } 
       } 
     }
+    #endif
+
 #endif // NSPIRE
   }
 #endif // TIMEOUT
@@ -4118,7 +4131,7 @@ unsigned int ConvertUTF8toUTF16 (
     return wname;
   }
 
-#ifdef NSPIRE
+#if (defined NSPIRE) || (defined EXISTOS)
   unsigned wcslen(const wchar_t * c){
     unsigned i=0;
     for (;*c;++i)

@@ -1,13 +1,12 @@
 include_directories(./include)
 include_directories(./coremarkTest)
-include_directories(./lib)
-include_directories(./lib/giac1.2)
-include_directories(./lib/gmp)
+include_directories(${CMAKE_SOURCE_DIR}/Libs/src/)
+include_directories(${CMAKE_SOURCE_DIR}/Libs/src/giac-1.2.0/src)
+include_directories(${CMAKE_SOURCE_DIR}/Libs/src/gmp/include)
 
 
 aux_source_directory(.                          SYS_SRCS)
 aux_source_directory(./coremarkTest             SYS_SRCS)
-
 
 
 add_executable(sys.elf ${SYS_SRCS})

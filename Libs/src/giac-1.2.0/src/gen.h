@@ -1511,6 +1511,8 @@ namespace giac {
   }
 #endif
 
+  int giac_checkCtrlC(void);
+
   // should be in input_lexer.h
   // return true/false to tell if s is recognized. return the appropriate gen if true
   bool CasIsBuildInFunction(char const *s, gen &g);
