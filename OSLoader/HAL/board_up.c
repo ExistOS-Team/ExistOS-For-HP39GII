@@ -31,3 +31,10 @@ void boardInit(void)
 
 
 }
+
+
+unsigned int boardGetSysTickCount()
+{
+    
+}
+

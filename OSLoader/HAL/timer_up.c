@@ -5,11 +5,9 @@
 #include "interrupt_up.h"
 
 #define LF_TimerFreq    (configTICK_RATE_HZ)
-#define HF_TimerFreq    (configTICK_RATE_HZ * 5)
 
 volatile unsigned long ulHighFrequencyTimerTicks;
 
-int HFTimer = -1;
 int LFTimer = -1;
 
 
@@ -22,16 +20,12 @@ bool up_TimerSetup( void ){
 
     portTimerInit();
 
-    HFTimer = portGetHighFrequencyTimer();
     LFTimer = portGetLowFrequencyTimer();
     
     portSetTimerPeriod(LFTimer, 1000000 / (LF_TimerFreq));
-    portSetTimerPeriod(HFTimer, 1000000 / (HF_TimerFreq));
 
-    portEnableTimerIRQ(HFTimer, true);
     portEnableTimerIRQ(LFTimer, true);
 
-    portEnableTimer(HFTimer, true);
     portEnableTimer(LFTimer, true);
     
     return true;
@@ -48,7 +42,3 @@ void up_LowFrequencyTimerTick()
 }
 
 
-void up_HighFrequencyTimerTick()
-{
-	ulHighFrequencyTimerTicks++;
-}

@@ -3,208 +3,218 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #include "llapi_code.h"
 #include "sys_llapi.h"
 
-
-static uint32_t inline syscall_2(uint32_t nr, uint32_t p1, uint32_t p2)
+ void ll_delay(uint32_t ms) __attribute__((naked));
+ void ll_delay(uint32_t ms) 
 {
-    register uint32_t r0 asm("r0") = p1;
-    register uint32_t r1 asm("r1") = p2;
-    __asm volatile("swi %[nr]\n"
-        : "=r" (r0)
-        : [nr] "i" (nr), "r" (r0), "r" (r1)
-        : "memory", "r2", "r3", "r12", "lr");
-    return (uint32_t) r0;
-}
+    __asm volatile("push {r0-r3}");
+    __asm volatile("swi %0" :: "i"(LL_SWI_DELAY_MS));
 
-static uint32_t inline syscall_4(uint32_t nr, uint32_t p1, uint32_t p2, uint32_t p3, uint32_t p4)
-{
-    register uint32_t r0 asm("r0") = p1;
-    register uint32_t r1 asm("r1") = p2;
-    register uint32_t r2 asm("r2") = p3;
-    register uint32_t r3 asm("r3") = p4;
-    __asm volatile("swi %[nr]\n"
-        : "=r" (r0)
-        : [nr] "i" (nr), "r" (r0), "r" (r1), "r" (r2), "r" (r3)
-        : "memory", "r12", "lr");
-    return (uint32_t) r0;
-}
-
-
-volatile void ll_delay(uint32_t ms) 
-{
+    __asm volatile("pop {r0-r3}");
+    __asm volatile("bx lr");
+    /*
     register uint32_t r0 asm("r0") = ms;
-    __asm volatile(
+    __asm (
     "svc %[num]" 
         : "=r"(r0)
         : [num] "i"(LL_SWI_DELAY_MS), 
             "r"(r0)
         : "memory", "r1", "r2", "r3", "r12", "lr"
     ); 
-
+*/
 }
 
-volatile uint32_t ll_putStr(char *s)
+ void ll_putStr(char *s) __attribute__((naked));
+ void ll_putStr(char *s)
 {
+    /*
     register uint32_t r0 asm("r0") = (uint32_t)s;
-    __asm__ volatile(
+    __asm volatile (
     "swi %[num]" 
         : "=r"(r0)
         : [num] "i"(LL_SWI_WRITE_STRING1), 
             "r"(r0)
         : "memory", "r1", "r2", "r3", "r12", "lr"
-    ); 
-    return r0;
+    ); */
+    
+    __asm volatile("push {r0-r12}");
+    __asm volatile("swi %0" :: "i"(LL_SWI_WRITE_STRING1));
+    __asm volatile("pop {r0-r12}");
+    __asm volatile("bx lr");
+
 }
 
-volatile uint32_t ll_putStr2(char *s, uint32_t len)
+ void ll_putStr2(char *s, uint32_t len) __attribute__((naked));
+ void ll_putStr2(char *s, uint32_t len)
 {
-    register uint32_t r0 asm("r0") = (uint32_t)s;
-    register uint32_t r1 asm("r1") = (uint32_t)len;
-    __asm__ volatile(
-    "swi %[num]" 
-        : "=r"(r0)
-        : [num] "i"(LL_SWI_WRITE_STRING2), 
-            "r"(r0), "r"(r1)
-        : "memory", "r2", "r3", "r12", "lr"
-    ); 
-    return r0;
+    __asm volatile("swi %0" :: "i"(LL_SWI_WRITE_STRING2));
+    __asm volatile("bx lr");
+
 }
 
-volatile uint32_t ll_putChr(char c)
+ void ll_putChr(char c) __attribute__((naked));
+ void ll_putChr(char c)
 {
-    register uint32_t r0 asm("r0") = (uint32_t)c;
-    __asm__ volatile(
+    __asm volatile("swi %0" :: "i"(LL_SWI_PUT_CH));
+    __asm volatile("bx lr");
+
+    
+}
+
+ uint32_t ll_gettime_us()  __attribute__((naked));
+ uint32_t ll_gettime_us()
+{
+    __asm volatile("swi %0" :: "i"(LL_SWI_GET_TIME_US));
+    __asm volatile("bx lr");
+}
+
+
+
+void ll_setTimer(bool enbale, uint32_t period_ms) __attribute__((naked));
+void ll_setTimer(bool enbale, uint32_t period_ms)
+{
+    __asm volatile("swi %0" :: "i"(LL_SWI_ENABLE_TIMER));
+    __asm volatile("bx lr");
+}
+
+void ll_set_configAddr(uint32_t addr) __attribute__((naked));
+void ll_set_configAddr(uint32_t addr)
+{
+    __asm volatile("swi %0" :: "i"(LL_SWI_SET_CONFIG_ADDR));
+    __asm volatile("bx lr");
+}
+
+void ll_set_irq_vector(uint32_t addr) __attribute__((naked));
+void ll_set_irq_vector(uint32_t addr)
+{
+    __asm volatile("swi %0" :: "i"(LL_SWI_SET_IRQ_VECTOR));
+    __asm volatile("bx lr");
+}
+
+
+void ll_set_irq_stack(uint32_t addr) __attribute__((naked));
+void ll_set_irq_stack(uint32_t addr)
+{
+    __asm volatile("swi %0" :: "i"(LL_SWI_SET_IRQ_STACK));
+    __asm volatile("bx lr");
+}
+
+void ll_load_context(uint32_t addr) __attribute__((naked));
+void ll_load_context(uint32_t addr)
+{
+    __asm volatile("swi %0" :: "i"(LL_SWI_LOAD_CONTEXT));
+    //__asm volatile("bx lr");
+}
+
+
+
+//void ll_enable_irq(bool enable) __attribute__((naked));
+void ll_enable_irq(bool enable)
+{
+    __asm volatile("swi %0" :: "i"(LL_SWI_ENABLE_IRQ));
+}
+
+
+ uint32_t ll_DispFlush(DispFlushInfo_t *s) __attribute__((naked));
+ uint32_t ll_DispFlush(DispFlushInfo_t *s)
+{
+    __asm volatile("swi %0" :: "i"(LL_SWI_DISPLAY_FLUSH));
+
+    __asm volatile("bx lr");
+}
+
+
+void ll_DispPutArea(uint8_t *dat, uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1)
+{
+    register DispFlushInfo_t *info;
+    info = malloc(sizeof(DispFlushInfo_t));
+    info->vram = dat;
+    info->x0 = x0;
+    info->x1 = x1;
+    info->y0 = y0;
+    info->y1 = y1;
+    
+    __asm volatile (
     "swi %[num]" 
-        : "=r"(r0)
-        : [num] "i"(LL_SWI_PUT_CH), 
-            "r"(r0)
+        : "=r"(info)
+        : [num] "i"(LL_SWI_DISPLAY_FLUSH), 
+            "r"(info)
         : "memory", "r1", "r2", "r3", "r12", "lr"
-    ); 
-    return r0;
+    );
+
+    free(info);
 }
 
-volatile uint32_t ll_gettime_us()
+void ll_DispPutStr(char *s, uint32_t x0, uint32_t y0, uint8_t fg, uint8_t bg, uint8_t fontsize)
 {
-    register uint32_t r0 asm("r0");
-    __asm__ volatile(
+
+    register DispPutStrInfo_t *info;
+
+    info = malloc(sizeof(DispPutStrInfo_t));
+    info->string = s;
+    info->x0 = x0;
+    info->y0 = y0;
+    info->fg = fg;
+    info->bg = bg;
+    info->fontsize = fontsize;
+    
+    __asm volatile (
     "swi %[num]" 
-        : "=r"(r0)
-        : [num] "i"(LL_SWI_GET_TIME_US), 
-            "r"(r0)
+        : "=r"(info)
+        : [num] "i"(LL_SWI_DISPLAY_PUTSTR), 
+            "r"(info)
         : "memory", "r1", "r2", "r3", "r12", "lr"
-    ); 
-    return r0;
+    );
+
+    free(info);
 }
 
-volatile void ll_irq_set_Vector(void *p)
+
+void ll_DispPutBox(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, bool fill, uint8_t color)
 {
-    register uint32_t r0 asm("r0") = (uint32_t)p;
-    __asm__ volatile(
+
+    register DispPutBoxInfo_t *info;
+
+    info = malloc(sizeof(DispPutBoxInfo_t));
+    info->color = color;
+    info->x0 = x0;
+    info->x1 = x1;
+    info->y0 = y0;
+    info->y1 = y1;
+    info->fill = fill;
+    
+    __asm volatile (
     "swi %[num]" 
-        : "=r"(r0)
-        : [num] "i"(LL_SWI_SET_IRQ_VECTOR), 
-            "r"(r0)
+        : "=r"(info)
+        : [num] "i"(LL_SWI_DISPLAY_PUT_BOX), 
+            "r"(info)
         : "memory", "r1", "r2", "r3", "r12", "lr"
-    ); 
+    );
+
+    free(info);
 }
 
-volatile void ll_irq_set_Stack(void *p)
+void ll_DispHLine(uint32_t y, uint32_t x0, uint8_t x1, uint8_t color)
 {
-    register uint32_t r0 asm("r0") = (uint32_t)p;
-    __asm__ volatile(
-    "swi %[num]" 
-        : "=r"(r0)
-        : [num] "i"(LL_SWI_SET_IRQ_STACK), 
-            "r"(r0)
-        : "memory", "r1", "r2", "r3", "r12", "lr"
-    ); 
+    __asm volatile("swi %0" :: "i"(LL_SWI_DISPLAY_HLINE));
 }
 
-volatile void ll_irq_enable(bool enable)
+void ll_DispVLine(uint32_t x, uint32_t y0, uint8_t y1, uint8_t color)
 {
-
-    register uint32_t r0 asm("r0");
-    if(enable){
-    __asm__ volatile(
-        "swi %[num]" 
-            : "=r"(r0)
-            : [num] "i"(LL_SWI_ENABLE_IRQ), 
-                "r"(r0)
-            : "memory", "r1", "r2", "r3", "r12", "lr"
-        ); 
-    }else{
-        __asm__ volatile(
-        "swi %[num]" 
-            : "=r"(r0)
-            : [num] "i"(LL_SWI_DISABLE_IRQ), 
-                "r"(r0)
-            : "memory", "r1", "r2", "r3", "r12", "lr"
-        ); 
-    }
+    __asm volatile("swi %0" :: "i"(LL_SWI_DISPLAY_VLINE));
 }
 
-volatile void ll_irq_get_context(uint32_t *save)
+
+void ll_DispSetIndicate(uint32_t indicateBit, uint8_t BatInt)
 {
-    register uint32_t r0 asm("r0") = (uint32_t)save;
-    __asm__ volatile(
-    "swi %[num]" 
-        : "=r"(r0)
-        : [num] "i"(LL_SWI_IRQ_GET_CONTEXT), 
-            "r"(r0)
-        : "memory", "r1", "r2", "r3", "r12", "lr"
-    ); 
+    __asm volatile("swi %0" :: "i"(LL_SWI_DISPLAY_SETINDICATE));
 }
 
-volatile void ll_irq_set_context(uint32_t *load)
+void ll_DispSendScreen()
 {
-    register uint32_t r0 asm("r0") = (uint32_t)load;
-    __asm__ volatile(
-    "swi %[num]" 
-        : "=r"(r0)
-        : [num] "i"(LL_SWI_IRQ_SET_CONTEXT), 
-            "r"(r0)
-        : "memory", "r1", "r2", "r3", "r12", "lr"
-    ); 
+    __asm volatile("swi %0" :: "i"(LL_SWI_DISPLAY_SEND_SCREEN));
 }
-
-
-volatile void ll_irq_restore_context() __attribute__((naked));
-volatile void ll_irq_restore_context()
-{
-    register uint32_t r0 asm("r0");
-    __asm__ volatile(
-    "swi %[num]" 
-        : "=r"(r0)
-        : [num] "i"(LL_SWI_IRQ_RESTORE_CONTEXT), 
-            "r"(r0)
-        : "memory", "r1", "r2", "r3", "r12", "lr"
-    ); 
-}
-
-volatile void ll_systick_set_period(uint32_t periodMs)
-{
-    register uint32_t r0 asm("r0") = (uint32_t)periodMs;
-    __asm__ volatile(
-    "swi %[num]" 
-        : "=r"(r0)
-        : [num] "i"(LL_SWI_SYSTICK_SET_PERIOD), 
-            "r"(r0)
-        : "memory", "r1", "r2", "r3", "r12", "lr"
-    ); 
-}
-
-volatile void ll_systick_enable(bool enable)
-{
-    register uint32_t r0 asm("r0") = (uint32_t)enable;
-    __asm__ volatile(
-    "swi %[num]" 
-        : "=r"(r0)
-        : [num] "i"(LL_SWI_ENABLE_IRQ), 
-            "r"(r0)
-        : "memory", "r1", "r2", "r3", "r12", "lr"
-    ); 
-}
-

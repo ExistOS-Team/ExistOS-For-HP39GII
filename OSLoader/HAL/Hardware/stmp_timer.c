@@ -44,13 +44,13 @@ void portAckTimerIRQ(IRQNumber IRQNum, IRQInfo IRQInfo)
         
         BF_CLRn(TIMROT_TIMCTRLn, 0, IRQ);
         up_LowFrequencyTimerTick();
-        return;
+        return;/*
     case HW_IRQ_TIMER1:
         
         BF_CLRn(TIMROT_TIMCTRLn, 1, IRQ);
-        up_HighFrequencyTimerTick();
-        return;
 
+        return;
+*/
     default:
         PANNIC("ERR IRQNum%d\n", IRQNum);
         return;

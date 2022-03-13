@@ -1,12 +1,15 @@
-include_directories(./include)
+include_directories(./)
+include_directories(./Config)
 include_directories(./coremarkTest)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/)
+#include_directories(${CMAKE_SOURCE_DIR}/Libs/src/giac-1.4.9/)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/giac-1.2.0/src)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/gmp/include)
 
 
-aux_source_directory(.                          SYS_SRCS)
-aux_source_directory(./coremarkTest             SYS_SRCS)
+
+aux_source_directory(.                                         SYS_SRCS)
+aux_source_directory(./coremarkTest                            SYS_SRCS)
 
 
 add_executable(sys.elf ${SYS_SRCS})
@@ -19,12 +22,17 @@ target_link_options(sys.elf PRIVATE
 
 
 target_link_libraries(sys.elf  -lm -lc -lstdc++ -nostartfiles
-${CMAKE_SOURCE_DIR}/Libs/libgiac.libcpp ${CMAKE_SOURCE_DIR}/Libs/libgmp.libcpp
+#${CMAKE_SOURCE_DIR}/Libs/libgiac1.4.9.libcpp
+${CMAKE_SOURCE_DIR}/Libs/libgiac1.2.0.libcpp
+#${CMAKE_SOURCE_DIR}/Libs/libtommath.libcpp
+${CMAKE_SOURCE_DIR}/Libs/libgmp.libcpp
 )
 
 
 target_compile_options(sys.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian 
--Os -pipe -fdata-sections -ffunction-sections -fcommon -fno-strict-aliasing #-fno-exceptions
+-Os -pipe -fdata-sections -ffunction-sections -fcommon -fno-strict-aliasing 
+#-fpermissive
+#-fno-exceptions
 )
 
 add_custom_target(

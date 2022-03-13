@@ -38,7 +38,6 @@ void _init()
 
 	asm volatile(".global bootTimes");
 
-	
 }
 
 void switch_mode(int mode) __attribute__((naked));
@@ -110,7 +109,6 @@ void _boot(){
 	
 	
 	asm volatile("b _startup");
-	
 	
 }
 

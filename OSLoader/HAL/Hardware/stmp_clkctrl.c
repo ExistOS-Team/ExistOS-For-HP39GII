@@ -16,18 +16,26 @@ static void PLLEnable(bool enable)
 
 static void setHCLKDivider(uint32_t div)
 {
+    uint32_t val = BF_RD(CLKCTRL_HBUS, DIV);
     if(!div){
         return;
     }
-    BF_SETV(CLKCTRL_HBUS, DIV, div);
+    BF_SETV(CLKCTRL_HBUS, DIV, div | 1);
+    if(!(val & 1)){
+        BF_CLRV(CLKCTRL_HBUS, DIV, 1);
+    }
 }
 
 static void setCPUDivider(uint32_t div)
 {
+    uint32_t val = BF_RD(CLKCTRL_CPU, DIV_CPU);
     if(!div){
         return;
     }
-    BF_SETV(CLKCTRL_CPU, DIV_CPU, div);
+    BF_SETV(CLKCTRL_CPU, DIV_CPU, div | 1);
+    if(!(val & 1)){
+        BF_CLRV(CLKCTRL_CPU, DIV_CPU, 1);
+    }
 }
 
 static void setCPU_HFreqDomain(bool enable)
@@ -56,9 +64,9 @@ uint32_t portGetCoreFreqHz()
 
 void portCLKCtrlInit(void)
 {
+    BF_SETV(POWER_VDDDCTRL,TRG,26); // Set voltage = 1.45 V
     PLLEnable(true);
 
-    BF_SETV(POWER_VDDDCTRL,TRG,26); // Set voltage = 1.45 V
 
     setCPUDivider(2);
     setHCLKDivider(2);

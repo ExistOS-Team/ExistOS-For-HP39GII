@@ -18,6 +18,8 @@ typedef enum {
     DISPOPA_VLINE,
     DISPOPA_BOX,
     DISPOPA_FILL_BOX,
+    DISPOPA_SET_INDICATE,
+    DISPOPA_READ_VRAM
 }DispOpa;
 
 typedef struct DisplayOpaQueue_t
@@ -37,6 +39,28 @@ void DisplayClean(void)
     xQueueSend(DisplayOpaQueue, &opa, portMAX_DELAY);
 }
 
+
+void DisplayReadArea(uint32_t x_start, uint32_t y_start, uint32_t x_end, uint32_t y_end, uint8_t *buf, bool *fin)
+{
+    *fin = false;
+    if((x_end - x_start + 1) * (y_end - y_start + 1) > 4096){
+        *fin = true;
+        return;
+    }
+    DisplayOpaQueue_t opa;
+    uint32_t *pars = pvPortMalloc(6 * sizeof(uint32_t));
+    if(!pars)return;
+    pars[0] = x_start;
+    pars[1] = y_start;
+    pars[2] = x_end;
+    pars[3] = y_end;
+    pars[4] = (uint32_t )buf;
+    pars[5] = (uint32_t )fin;
+    opa.opa = DISPOPA_READ_VRAM;
+    opa.parNum = 5;
+    opa.pars = pars;
+    xQueueSend(DisplayOpaQueue, &opa, portMAX_DELAY);
+}
 
 void DisplayFlushArea(uint32_t x_start, uint32_t y_start, uint32_t x_end, uint32_t y_end, uint8_t *buf)
 {
@@ -153,6 +177,18 @@ void DisplayFillBox(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint8_t 
     xQueueSend(DisplayOpaQueue, &opa, portMAX_DELAY);
 }
 
+void DisplaySetIndicate(uint32_t Indicate, uint32_t batInd)
+{
+    DisplayOpaQueue_t opa;
+    uint32_t *pars = pvPortMalloc(2 * sizeof(uint32_t));
+    if(!pars)return;
+    pars[0] = Indicate;
+    pars[1] = batInd;
+    opa.opa = DISPOPA_SET_INDICATE;
+    opa.parNum = 2;
+    opa.pars = pars;
+    xQueueSend(DisplayOpaQueue, &opa, portMAX_DELAY);
+}
 
 static void innerDispHLine(uint32_t x0, uint32_t x1, uint32_t y,uint8_t c)
 {
@@ -193,6 +229,7 @@ void DisplayTask()
                     uint32_t y_end = curOpa.pars[3]; 
                     uint8_t *buf = (uint8_t *)curOpa.pars[4];
                     portDispFlushAreaBuf(x_start, y_start, x_end, y_end, buf);
+                    
                     vPortFree(curOpa.pars);
                 }
 
@@ -317,7 +354,29 @@ void DisplayTask()
                     }
                     vPortFree(curOpa.pars);
             }
+                break;
 
+            case DISPOPA_SET_INDICATE:
+                {
+                    uint32_t indicate = curOpa.pars[0];
+                    uint32_t batIndicate = curOpa.pars[1];
+                    portDispSetIndicate(indicate, batIndicate);
+                    vPortFree(curOpa.pars);
+                }
+                break;
+            case DISPOPA_READ_VRAM:
+                {   
+                    uint32_t x_start = curOpa.pars[0];
+                    uint32_t y_start = curOpa.pars[1]; 
+                    uint32_t x_end = curOpa.pars[2]; 
+                    uint32_t y_end = curOpa.pars[3]; 
+                    uint8_t *buf = (uint8_t *)curOpa.pars[4];
+                    bool *fin = (bool *)curOpa.pars[5];
+                    portDispReadBackVRAM(x_start, y_start, x_end, y_end, buf);
+                    
+                    vPortFree(curOpa.pars);
+                    *fin = true;
+                }
                 break;
         default:
             break;

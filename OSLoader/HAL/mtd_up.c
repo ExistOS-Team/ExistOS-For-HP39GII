@@ -28,7 +28,7 @@ void MTD_InterfaceInit()
 }
 
 
-static uint8_t MTD_PageBuffer[ 4096 ];
+static uint8_t MTD_PageBuffer[ 2048 ];
 
 bool MTD_isDeviceInited()
 {

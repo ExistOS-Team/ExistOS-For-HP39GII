@@ -9,42 +9,159 @@
 
 #include "sys_llapi.h"
 
+
+
 #undef errno
 extern int errno;
 
-#define HEAP_END    0x02200000
+#define HEAP_END    0x023F0000
 
 
 extern unsigned int __HEAP_START;
 static void *heap = NULL;
 
-void __sync_synchronize()  __attribute__((naked));
+//void __sync_synchronize()  __attribute__((naked));
 void __sync_synchronize()
 {
-    asm volatile("" : : : "memory");
+    //asm volatile("" : : : "memory");
 }
 
-caddr_t _sbrk ( int incr )
+void debugPutch(char ch)
 {
+    volatile uint8_t *UARTDBG = (uint8_t *)0x80070000;
+    volatile uint32_t *UARTDBG1 = (uint32_t *)0x80070018;
+    while(*UARTDBG1 & (1 << 3)){
+        ;
+    }
+
+    *UARTDBG = ch;
+}
+
+
+void dbg_printhex(int data) {
+    int i = 0;
+    char c;
+    for (i = sizeof(int) * 2 - 1; i >= 0; i--) {
+        c = data >> (i * 4);
+        c &= 0xf;
+        if (c > 9)
+            debugPutch(c - 10 + 'A');
+        else
+            debugPutch(c + '0');
+    }
+}
+
+void dbg_printhex8(int data) {
+    int i = 0;
+    char c;
+    for (i = sizeof(char) * 2 - 1; i >= 0; i--) {
+        c = data >> (i * 4);
+        c &= 0xf;
+        if (c > 9)
+            debugPutch(c - 10 + 'A');
+        else
+            debugPutch(c + '0');
+    }
+}
+
+int Pos_Div(int x, int y) {
+    int ans = 0;
+    int i;
+    for (i = 31; i >= 0; i--) {
+        if ((x >> i) >= y) {
+            ans += (1 << i);
+            x -= (y << i);
+        }
+    }
+
+    return ans;
+}
+
+void dbg_printint(int data) {
+
+    int i = 0;
+    char str[10] = {0};
+    int j = 0;
+    while (j < 10 && data) {
+        str[j] = data % 10;
+        data = Pos_Div(data, 10);
+        j++;
+    }
+
+    for (i = j - 1; i >= 0; i--) {
+        debugPutch(str[i] + '0');
+    }
+}
+
+void dbg_printf(char *fmt, ...) {
+    va_list args;
+    int one;
+    va_start(args, fmt);
+    while (*fmt) {
+
+        if (*fmt == '%') {
+            fmt++;
+            switch (*fmt) {
+
+            case 'x':
+            case 'X':
+                dbg_printhex(va_arg(args, int));
+                break;
+            case 'd':
+            case 'D':
+                dbg_printint(va_arg(args, int));
+                break;
+            case '%':
+                debugPutch('%');
+                break;
+            default:
+                break;
+            }
+
+        } else {
+            debugPutch(*fmt);
+        }
+        fmt++;
+    }
+    va_end(args);
+}
+
+
+caddr_t _sbrk ( uint32_t incr )
+{
+
+    
 	void *prev_heap;
     if(heap == NULL){
         heap = &__HEAP_START;
     }
     prev_heap = heap;
+    
     if(((uint32_t)heap + incr) > HEAP_END){
-        //printf("heap:%p, incr:%d\n", heap, incr);
-        ll_putStr("MEMORY OVER FLOW\n");
-        //return 0;
+        dbg_printf("MEMORY OVER FLOW\n");
+        
+        return 0;
     }
     heap += incr;
-
+    dbg_printf("heap:%x, incr:%d\n", heap, incr);
     return (caddr_t)prev_heap;
+
 }
 
-size_t xPortGetFreeHeapSize( void ){
+size_t xPortGetFreeHeapSize( void )
+{
 	return HEAP_END - (uint32_t)heap;
 }
 
+size_t xPortGetTotalHeapSize( void )
+{
+	return HEAP_END - (uint32_t)(&__HEAP_START);
+}
+
+uint32_t getHeapAddr()
+{
+    return (uint32_t)heap;
+}
 
 int _close_r(struct _reent *pReent, int fd) {
     pReent->_errno = ENOTSUP;
@@ -150,10 +267,25 @@ int _wait_r(struct _reent *pReent, int *wstat) {
 _ssize_t _write_r(struct _reent *pReent, int fd, const void *buf, size_t nbytes) {
 
     int i;
-
+    const char *ch = buf;
+/*
+    if(muxWrite == NULL)
+    {
+        muxWrite = xSemaphoreCreateMutex();
+    }
+*/
 	if(fd < 3){
+
+       // xSemaphoreTake(muxWrite, portMAX_DELAY);
         pReent->_errno = 0;
-        return ll_putStr2((char *)buf, nbytes);
+        /*
+        for(int i = 0; i< nbytes; i++)
+        {
+            debugPutch( ch[i] );
+        }*/
+        ll_putStr2((char *)buf, nbytes);
+        return nbytes;
+       // xSemaphoreGive(muxWrite);
 
     }
     return -1;

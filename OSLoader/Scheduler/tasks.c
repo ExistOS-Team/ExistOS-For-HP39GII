@@ -1055,7 +1055,9 @@ static void prvInitialiseNewTask( TaskFunction_t pxTaskCode,
                     #if ( portCONTEXT_REGS_IN_TCB == 1 )
                         //printf("pxNewTCB %p\n",pxNewTCB);
                         pxNewTCB->pxTopOfStack = pxTopOfStack;
+                        memset(pxNewTCB->REGFrame, 0xFE, portCONTEXT_FRAME_SIZE);
                         pxNewTCB->pxTopOfREGFrameStack = pxPortInitialiseStack(pxNewTCB->REGFrame, pxTopOfStack, pxTaskCode, pvParameters );
+                        
                         //pxNewTCB->pxTopOfStack = pxPortInitialiseStack((BaseType_t *)pxNewTCB, pxTopOfStack, pxTaskCode, pvParameters );
                     #else
                         pxNewTCB->pxTopOfStack = pxPortInitialiseStack( pxTopOfStack, pxTaskCode, pvParameters );

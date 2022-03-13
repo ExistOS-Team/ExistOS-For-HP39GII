@@ -60,6 +60,8 @@ static void *heap = NULL;
 caddr_t _sbrk ( int incr )
 {
 	void *prev_heap;
+
+    
     if(heap == NULL){
         heap = &__HEAP_START;
     }
@@ -178,13 +180,14 @@ _ssize_t _write_r(struct _reent *pReent, int fd, const void *buf, size_t nbytes)
         pReent->_errno = 0;
         for(i = 0; i < nbytes; i++){
             uart_putc(((char *)buf)[i]);
+/*
             if(tud_cdc_available()){
                 tud_cdc_n_write_char(0, ((char *)buf)[i]);
                 if(((char *)buf)[i] == '\n'){
-                    
                     tud_cdc_write_flush();
                 }
             }
+*/
         }
         return i;
 

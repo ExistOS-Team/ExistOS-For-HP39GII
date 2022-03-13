@@ -5,6 +5,12 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+
+
+#define EXCEPTION_IRQ      1
+#define EXCEPTION_SWI      2
+
+
 typedef struct LLAPI_CallInfo_t
 {
     TaskHandle_t task;
@@ -25,12 +31,21 @@ typedef struct LLIRQ_Info_t
     uint32_t r3;
 }LLIRQ_Info_t;
 
+
+typedef struct LLAPI_KBD_t
+{
+    uint8_t key;
+    uint8_t press;
+}LLAPI_KBD_t;
+
 QueueHandle_t LLAPI_Queue;
-QueueHandle_t LLIRQ_Queue;
+QueueHandle_t LLAPI_KBDQueue;
 
 void LLAPI_init(TaskHandle_t upSys);
 void LLAPI_Task(void);
 void LLIRQ_task(void *pvParameters);
+
+bool LL_timerTick();
 
 void LLIRQ_PostIRQ(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t par3);
 

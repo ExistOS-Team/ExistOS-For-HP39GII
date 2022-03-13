@@ -28,6 +28,8 @@
 #include "llapi.h"
 #include "llapi_code.h"
 
+#include "tusb.h"
+
 
 PARTITION VolToPart[FF_VOLUMES] = {
     {0, 1},     /* "0:" ==> 1st partition on the pd#0 */
@@ -46,7 +48,9 @@ uint32_t FTL_status = 0;
 static bool fileSystemOK = false;
 static bool diskInit = false;
 
-char pcWriteBuffer[4096];
+uint32_t runningTick;
+
+char pcWriteBuffer[6123];
 void printTaskList() {
     vTaskList((char *)&pcWriteBuffer);
     printf("=============================================\r\n");
@@ -67,6 +71,7 @@ void vTask1(void *pvParameters) {
 		printTaskList();
 
 /*
+    uint32_t *r;
     vTaskSuspend(pSysTask);
     portYIELD();
     
@@ -77,8 +82,8 @@ void vTask1(void *pvParameters) {
         INFO("REG[%d]: %08X\n", i, r[i]);
     }
     INFO("\n");
-    vTaskResume(pSysTask);
-*/
+    vTaskResume(pSysTask);*/
+
     }
 }
 
@@ -178,7 +183,10 @@ bool bootSystem()
 
 
     vmMgr_mapSwap();
+    //vmMgr_createSwapfile();
     vmMgr_mapFile(sysFile, PERM_R, VM_ROM_BASE, 0, (sysFinfo.fsize + PAGE_SIZE) & 0xFFFFF000);
+
+
     vTaskResume(pLLAPITask);
     vTaskResume(pSysTask);
     
@@ -759,6 +767,7 @@ void vMainThread(void *pvParameters)
       if(needClean)
       {
         DisplayClean();
+        DisplaySetIndicate(0, 0xF);
         RenderMainW(selectItem);
         needClean = false;
       }
@@ -793,6 +802,30 @@ void vMainThread(void *pvParameters)
 
       case KEY_ENTER:
         keyEnter = true;
+        break;
+
+      case KEY_PLOT:
+      { 
+          uint8_t *buf = pvPortMalloc(4096);
+          bool fin = false;
+          if(buf == NULL){
+            break;
+          }
+          for(int i = 0; i < 128; i+=16){
+              DisplayReadArea(0, i, 255, (i + 15), buf, &fin);
+              while(!fin);
+
+            if(tud_cdc_available()){
+              for(int i = 0; i < 4096; i++){
+                tud_cdc_n_write_char(0, ((char *)buf)[i]);    
+              }
+              tud_cdc_write_flush();
+            }
+
+          }
+          vPortFree(buf);
+          
+      }
         break;
 
       default:
@@ -849,14 +882,20 @@ void vVMMgrSvc(void *pvParameters)
   }
 }
 
+
+
 void vLLKkbd(void *pvParameters)
 {
-    uint8_t curKey;
-    bool press;
+    //uint8_t curKey;
+    //bool press;
+    LLAPI_KBD_t key;
+
     for(;;){
-      kb_isAnyKeyPress(&curKey, &press);
-      if(curKey != 255){
-        LLIRQ_PostIRQ(LL_IRQ_KEYBOARD, curKey, press, 0);
+      kb_isAnyKeyPress(&key.key, (bool *)&key.press);
+      if(key.key != 255){
+
+
+        xQueueSend(LLAPI_KBDQueue, &key, portMAX_DELAY);
       }
       vTaskDelay(30);
     }
@@ -867,7 +906,6 @@ void vLLAPISvc(void *pvParameters)
 
   LLAPI_init(pSysTask);
   
-  xTaskCreate(LLIRQ_task, "LLIRQ Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
   xTaskCreate(vLLKkbd, "LLKbd Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
 
   for(;;){
@@ -893,21 +931,23 @@ void _startup(){
 
   boardInit();
 
-	xTaskCreate( vMTDSvc, "MTD Svc", configMINIMAL_STACK_SIZE, NULL, 5, NULL );
-	xTaskCreate( vFTLSvc, "FTL Svc", configMINIMAL_STACK_SIZE, NULL, 4, NULL );
+	xTaskCreate( vMTDSvc, "MTD Svc", configMINIMAL_STACK_SIZE, NULL, 8, NULL );
+	xTaskCreate( vFTLSvc, "FTL Svc", configMINIMAL_STACK_SIZE, NULL, 7, NULL );
 
-  xTaskCreate( vVMMgrSvc, "VM Svc", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
-	xTaskCreate( vTaskTinyUSB, "TinyUSB", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
+  xTaskCreate( vVMMgrSvc, "VM Svc", configMINIMAL_STACK_SIZE, NULL, 6, NULL );
+	xTaskCreate( vTaskTinyUSB, "TinyUSB", configMINIMAL_STACK_SIZE, NULL, 6, NULL );
+	xTaskCreate( vKeysSvc, "Keys Svc", configMINIMAL_STACK_SIZE, NULL, 6, NULL );
+	xTaskCreate( vDispSvc, "Display Svc", configMINIMAL_STACK_SIZE, NULL, 6, NULL );
 
-	xTaskCreate( vKeysSvc, "Keys Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
-	xTaskCreate( vDispSvc, "Display Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
-  xTaskCreate( vLLAPISvc, "LLAPI Svc", configMINIMAL_STACK_SIZE, NULL, 2, &pLLAPITask );
+  xTaskCreate( vLLAPISvc, "LLAPI Svc", configMINIMAL_STACK_SIZE * 2, NULL, 5, &pLLAPITask );
   
   
-	xTaskCreate( vMainThread, "Main Thread", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
+	xTaskCreate( vMainThread, "Main Thread", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
   xTaskCreate( System, "System", configMINIMAL_STACK_SIZE, NULL, 1, &pSysTask);
+  //pSysTask = xTaskCreateStatic( (TaskFunction_t)0x00100000, "System", VM_RAM_SIZE, NULL, 1, VM_RAM_BASE, pvPortMalloc(sizeof(StaticTask_t)));
 
-	xTaskCreate( vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
+
+	xTaskCreate( vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, 5, NULL );
 
   vTaskSuspend(pSysTask);
   vTaskSuspend(pLLAPITask);
@@ -934,7 +974,7 @@ void vApplicationGetTimerTaskMemory( StaticTask_t ** ppxTimerTaskTCBBuffer,
                                      uint32_t * pulTimerTaskStackSize 
 )
 {
-  *ppxTimerTaskTCBBuffer =  (StaticTask_t * )pvPortMalloc(2048);
+  *ppxTimerTaskTCBBuffer =  (StaticTask_t * )pvPortMalloc(sizeof(StaticTask_t));
   *ppxTimerTaskStackBuffer = (StackType_t * )pvPortMalloc(configMINIMAL_STACK_SIZE * 4);
   *pulTimerTaskStackSize = configMINIMAL_STACK_SIZE;
 }

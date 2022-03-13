@@ -28,7 +28,7 @@ void portDISP_ISR();
 
 bool up_isr( void )
 {
-    bool YIELD;
+    bool YIELD = false;
     bool IRQvaild;
     IRQTypes IRQType;
     IRQInfo IRQInfo;

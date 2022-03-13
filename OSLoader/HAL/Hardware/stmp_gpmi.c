@@ -89,7 +89,7 @@ static uint32_t FlashSendParaBuffer[4];
 static uint32_t FlashRecCommandBuffer[4];
 static uint32_t  ECCResult;
 
-static uint32_t GPMI_AuxiliaryBuffer[ 256 / 4 ] __attribute__((aligned(4)));
+static uint32_t GPMI_AuxiliaryBuffer[ 512 / 4 ] __attribute__((aligned(4)));
 static uint32_t GPMI_DataBuffer[ 2048 / 4 ] __attribute__((aligned(4)));
 
 static uint32_t ReserveBlock[32];
@@ -151,6 +151,7 @@ static void GPMI_ClockConfigure()
     BF_CLR(CLKCTRL_FRAC, CLKGATEIO);
 
     HW_CLKCTRL_GPMI_WR(BF_CLKCTRL_GPMI_DIV(2));    // 480 / 2 = 240MHz
+    //BF_CS1(CLKCTRL_GPMI, DIV, 2);
 
     BF_CLR(CLKCTRL_CLKSEQ, BYPASS_GPMI);    //240MHz
 

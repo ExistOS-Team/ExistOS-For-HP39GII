@@ -9,8 +9,9 @@
 
 //#define DFLPT_BASE  0x800C0000
 
+#define L1PTE_NUM       (2049)
 
-uint32_t L1PTE[4096] __attribute__((aligned(8192)));
+uint32_t L1PTE[L1PTE_NUM] __attribute__((aligned(8192)));
 
 uint32_t DFLPT_BASE = (uint32_t)&L1PTE;
 
@@ -56,6 +57,15 @@ void mmu_clean_dcache(uint32_t buffer, uint32_t size)
     }
 }
 
+void mmu_drain_buffer()
+{
+    register uint32_t reg;
+    reg = 0;
+    __asm volatile("mcr p15,0,%0,c7,c10,4" :: "r"(reg));
+
+
+}
+
 void mmu_invalidate_dcache(uint32_t buffer, uint32_t size)
 {
     register uint32_t ptr;
@@ -71,10 +81,11 @@ void mmu_invalidate_dcache(uint32_t buffer, uint32_t size)
 
 void mmu_invalidate_tlb()
 {
-    register uint32_t value;
+    register uint32_t value asm("r0");
 
     value = 0;
     __asm volatile ("mcr p15, 0, %0, c8, c7, 0" :: "r"(value) );
+
 }
 
 void mmu_invalidate_icache()
@@ -185,7 +196,7 @@ static inline void SetL1PTE(uint32_t pte, uint32_t interpret, uint32_t targetAdd
 void mmu_dumpMapInfo()
 {
     uint32_t *L1PTE = (uint32_t *)DFLPT_BASE;
-    for(int i = 0; i < 4096; i++)
+    for(int i = 0; i < L1PTE_NUM; i++)
     {
         if(L1PTE[i] != 0){
             switch (GetPTEMapType(L1PTE[i]))
@@ -248,6 +259,7 @@ void mmu_map_page(uint32_t vaddr, uint32_t paddr,
     val |= 2;
 
     L2PTE[(vaddr >> 12) & 0xFF] = val;
+    //INFO("SET VAL:%08x\n", val);
 
 }
 
@@ -258,7 +270,7 @@ void mmu_init()
 
     SetMPTELoc(0, 0);
     SetL1PTE(0      , L1PTE_INTERPRET_SECTION, 0         , OSLOADER_MEMORY_DOMAIN, AP_SYSRW_USROR, false, false);
-    SetL1PTE(0x800  , L1PTE_INTERPRET_SECTION, 0x80000000, HARDWARE_MEMORY_DOMAIN, AP_SYSRW_USROR, false, false);
+    SetL1PTE(0x800  , L1PTE_INTERPRET_SECTION, 0x80000000, HARDWARE_MEMORY_DOMAIN, AP_SYSRW_USRRW, false, false);
     
     uint32_t j = 0;
     for(int i = 0; i < VM_ROM_NUM_SEG; i++)

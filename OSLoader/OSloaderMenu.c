@@ -33,10 +33,21 @@ char stList[] = {'\\', '|', '/', '-'};
 void vTaskIndicate(void *pvParameters)
 {
   flushInd = true;
+  int ind = 1;
+  int k = 0;
   for (;;) {
     for(int i = 0; i < sizeof(stList); i++){
-        if(flushInd)
+        if(flushInd){
           DisplayPutChar(31*8,0,stList[i],0,255, 16);
+
+          ind <<= 1;k++;
+          if(k == 8){
+            k = 0;
+            ind = 1;
+          }
+          DisplaySetIndicate(ind, 0xF);
+
+        }
         vTaskDelay(pdMS_TO_TICKS(300));
     }
   }

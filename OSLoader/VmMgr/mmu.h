@@ -40,7 +40,7 @@ void mmu_invalidate_dcache(uint32_t buffer, uint32_t size);
 void mmu_invalidate_tlb(void);
 void mmu_invalidate_icache(void);
 void mmu_invalidate_dcache_all(void);
-
+void mmu_drain_buffer(void);
 
 void mmu_dumpMapInfo(void);
 

@@ -26,6 +26,7 @@ typedef struct CachePageInfo_t
     uint32_t onSector;
     uint32_t LRUCount;
     bool dirty;
+    bool lock;
 }CachePageInfo_t;
 
 static uint8_t CachePage[PAGE_SIZE * NUM_CACHEPAGE] __attribute__((aligned(PAGE_SIZE)));
@@ -45,6 +46,9 @@ static uint32_t SwapPartSectors;
 //extern SemaphoreHandle_t LL_upSysContextMutex;
 extern TaskHandle_t upSystem;
 extern bool upSystemInException;
+
+
+TaskHandle_t vmBlockTask;
 
 uint32_t vmMgr_mapFile(FIL *file, uint32_t perm, uint32_t MemAddrStart, uint32_t FileAddrStart, uint32_t memSize)
 {
@@ -86,7 +90,7 @@ inline static uint32_t findOptimisticCachePage()
 
     for(int i = 0; i < NUM_CACHEPAGE; i++)
     {
-        if(CachePageInfo[i].LRUCount > MaxLRU)
+        if((CachePageInfo[i].LRUCount > MaxLRU) && (CachePageInfo[i].lock == false)   )
         {
             MaxLRU = CachePageInfo[i].LRUCount;
             MaxLRU_i = i;
@@ -124,7 +128,7 @@ inline static void mapCachePageInNewVirtMem(uint32_t CachePage_i, uint32_t newVi
         
 
         mmu_clean_invalidated_dcache(CachePageInfo[CachePage_i].mapToVirtAddr, PAGE_SIZE);
-
+        //mmu_clean_dcache(CachePageInfo[CachePage_i].mapToVirtAddr, PAGE_SIZE);
 
         if(CachePageInfo[CachePage_i].onPart == -1){
             faddr = CachePageInfo[CachePage_i].onFileAddr;
@@ -184,11 +188,11 @@ inline static void mapCachePageInNewVirtMem(uint32_t CachePage_i, uint32_t newVi
 
     CachePageInfo[CachePage_i].dirty = false;
     mmu_map_page(newVirtMemAddr, CachePageInfo[CachePage_i].PageOnPhyAddr, 
-    AP_READONLY, true, true);
-
+    AP_READONLY, VM_CACHE_ENABLE, VM_BUFFER_ENABLE);
+    
     mmu_clean_invalidated_dcache(CachePageInfo[CachePage_i].mapToVirtAddr, PAGE_SIZE);
-    mmu_invalidate_icache();
-
+    //mmu_clean_dcache(CachePageInfo[CachePage_i].mapToVirtAddr, PAGE_SIZE);
+    
 
 }
 
@@ -202,15 +206,16 @@ inline static void remapCacheWithRW(uint32_t ind)
 
     mmu_map_page(CachePageInfo[ind].mapToVirtAddr, 
         CachePageInfo[ind].PageOnPhyAddr, 
-        AP_SYSRW_USRRW, true, true);
-
+        AP_SYSRW_USRRW, VM_CACHE_ENABLE, VM_BUFFER_ENABLE);
+    
+    mmu_clean_invalidated_dcache(CachePageInfo[ind].mapToVirtAddr, PAGE_SIZE);
 }
 
-static void vmMgr_createSwapfile()
+void vmMgr_createSwapfile()
 {
     UINT bw;
-    fres = f_mount(&fsys, "/SYS/", 1);
-    VM_INFO("vm_mount:%d\n", fres);
+    //fres = f_mount(&fsys, "/SYS/", 1);
+    //VM_INFO("vm_mount:%d\n", fres);
     fres = f_open(&fswap, "/SYS/swapfile", 	FA_CREATE_ALWAYS | FA_WRITE | FA_READ);
     VM_INFO("vm_open:%d\n", fres);
 
@@ -219,6 +224,8 @@ static void vmMgr_createSwapfile()
     fres = f_write(&fswap, "1", 1, &bw);
     fres = f_sync(&fswap);
     VM_INFO("f_sync:%d\n", fres);
+
+    vmMgr_mapFile(&fswap, PERM_R | PERM_W, VM_RAM_BASE, 0, SIZE_SWAPAREA_MB * 1048576);
 }
 
 static void mkswap()
@@ -234,15 +241,28 @@ static void mkswap()
         FTL_TrimSector(i);
     }*/
 
-    VM_INFO("Swap FTL_TrimSector Fin\n");
+    VM_INFO("mkswap FTL_TrimSector Fin\n");
     
 }
 
-static void taskAccessFaultAddr(pageFaultInfo_t *info)
+static void taskAccessFaultAddr(pageFaultInfo_t *info, char *res)
 {
     VM_ERR("Fault Task:%s\n", pcTaskGetTaskName(info->FaultTask));
     VM_ERR("Access Invalid Address:%08x\n", info->FaultMemAddr);
+    VM_ERR("%s\n", res);
+
+    uint32_t *regs = (uint32_t *)info->FaultTask;
+    regs = (uint32_t*)regs[1];
+
+    regs -= 16;
+    for(int i = 0; i < 16; i++){
+        VM_ERR("SAVED REGS[%d]:%08x\n",i,regs[i]);
+    }    
+    vTaskSuspend(vmBlockTask);
 }
+
+
+extern volatile uint32_t swapping;
 
 void vmMgr_task()
 {
@@ -253,18 +273,17 @@ void vmMgr_task()
     for(;;)
     {
         while(xQueueReceive(PageFaultQueue, &currentFault, portMAX_DELAY) == pdTRUE){
+            //vTaskResume(vmBlockTask);
             vTaskSuspend(currentFault.FaultTask);
-            if(currentFault.FaultTask == upSystem)
-            {
-                upSystemInException = true;
-            }
-            /*
+            swapping = 3;
+            
+            
             VM_INFO("REC FAULT TASK [%s] DAB. access %08x, FSR:%08x\n", 
-                pcTaskGetName(currentFault.FaultTask), currentFault.FaultMemAddr, currentFault.FSR);*/
+                pcTaskGetName(currentFault.FaultTask), currentFault.FaultMemAddr, currentFault.FSR);
 
             if(vmMgr_CheckAddrVaild(currentFault.FaultMemAddr) == false)
             {
-                    taskAccessFaultAddr(&currentFault);
+                    taskAccessFaultAddr(&currentFault, "Area is not mapped.");
                     continue;
             }
 
@@ -284,8 +303,10 @@ void vmMgr_task()
                     mmu_invalidate_tlb();
                     
                     //mmu_dumpMapInfo();
+                    
 
                     vTaskResume(currentFault.FaultTask);
+                    //vTaskSuspend(vmBlockTask);
                 }
                 break;
             
@@ -294,36 +315,32 @@ void vmMgr_task()
                     mapinfo = mapList_findVirtAddrInWhichMap(currentFault.FaultMemAddr);
                     if((mapinfo->perm & PERM_W) == 0){
                         VM_ERR("READ ONLY PAGE!\n");
-                        taskAccessFaultAddr(&currentFault);
+                        taskAccessFaultAddr(&currentFault, "Area is not allow write.");
                         continue;
                     }
 
                     OptimisticCachePage = findVirtAddrInCachePage(currentFault.FaultMemAddr);
                     VM_INFO("got DAB RDONLY Page:%d\n", OptimisticCachePage);
                     if(OptimisticCachePage == 0xFFFFFFFF){
-                        taskAccessFaultAddr(&currentFault);
+                        taskAccessFaultAddr(&currentFault, "????????");
                         continue;
                     }
                     CachePageInfo[OptimisticCachePage].dirty = true;
                     remapCacheWithRW(OptimisticCachePage);
-                    mmu_invalidate_tlb();
-
+                    mmu_invalidate_tlb(); 
+                    
 
                     //mmu_dumpMapInfo();
-
                     vTaskResume(currentFault.FaultTask);
+                    //vTaskSuspend(vmBlockTask);
+                    
                 }
                 break;
             default:
                 VM_ERR("Unknown Task Operation.\n");
                 break;
             }
-
-
-            if(currentFault.FaultTask == upSystem)
-            {
-                upSystemInException = false;
-            }
+            swapping = 0;
 
         }
     }
@@ -342,6 +359,77 @@ void vmMgr_mapSwap()
         );
 }
 
+int vmMgr_CheckAndMount(uint32_t address, uint32_t perm)
+{
+    pageFaultInfo_t currentFault;
+
+    if(vmMgr_CheckAddrVaild(address) == false)
+    {
+        return -1;
+    }
+
+    for(int i = 0; i < NUM_CACHEPAGE; i++){
+        if(((CachePageInfo[i].mapToVirtAddr & 0xFFFFF000) == (address & 0xFFFFF000))){
+            return 1;
+        }
+    }
+
+    if(perm & PERM_R){
+        currentFault.FaultTask = xTaskGetCurrentTaskHandle();
+        currentFault.FaultMemAddr = address;
+        currentFault.FSR = FSR_DATA_ACCESS_UNMAP;
+        xQueueSend(PageFaultQueue, &currentFault, portMAX_DELAY);
+    }
+
+    if(perm & PERM_W){
+        currentFault.FaultTask = xTaskGetCurrentTaskHandle();
+        currentFault.FaultMemAddr = address;
+        currentFault.FSR = FSR_DATA_WR_RDONLY;
+        xQueueSend(PageFaultQueue, &currentFault, portMAX_DELAY);
+    }
+
+    return 2;
+}
+
+uint32_t vmMgr_getMountPhyAddressAndLock(uint32_t vaddr, uint32_t perm)
+{
+    if(vmMgr_CheckAndMount(vaddr, perm) < 0){
+        return 1;
+    }
+
+    for(int i = 0; i < NUM_CACHEPAGE; i++){
+        if((CachePageInfo[i].mapToVirtAddr & 0xFFFFF000) == (vaddr & 0xFFFFF000)){
+            CachePageInfo[i].lock = true;
+            mmu_invalidate_dcache(CachePageInfo[i].mapToVirtAddr & 0xFFFFF000, PAGE_SIZE);
+            return (CachePageInfo[i].PageOnPhyAddr + (vaddr & (PAGE_SIZE - 1)));
+        }
+    }
+
+    return 2;
+}
+
+int vmMgr_unlockMap(uint32_t vaddr)
+{
+    if(vmMgr_CheckAndMount(vaddr, PERM_R) < 0){
+        return -1;
+    }
+    for(int i = 0; i < NUM_CACHEPAGE; i++){
+        if((CachePageInfo[i].mapToVirtAddr & 0xFFFFF000 == (vaddr & 0xFFFFF000))){
+            CachePageInfo[i].lock = false;
+            return 0;
+        }
+    }
+    return -1;
+}
+
+void vVmBlockTask(void *p)
+{
+    for(;;)
+    {
+        ;
+    }
+}
+
 void vmMgr_init()
 {
     PageFaultQueue = xQueueCreate(32, sizeof(pageFaultInfo_t));
@@ -356,11 +444,13 @@ void vmMgr_init()
         CachePageInfo[i].onSector = 0;        
         CachePageInfo[i].PageOnPhyAddr = CACHE_PAGEn_BASE(i);
         CachePageInfo[i].mapToVirtAddr = 0xFFFFFFFF;
+        CachePageInfo[i].lock = false;
     }
     
     mapListInit();
     mmu_init();
-
+    xTaskCreate(vVmBlockTask, "VM Swap IO Waiting", 12, NULL, 6, &vmBlockTask);
+    vTaskSuspend(vmBlockTask);
 
     for(int i =0 ;i< NUM_CACHEPAGE; i++)
     {

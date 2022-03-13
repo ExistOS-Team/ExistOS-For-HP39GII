@@ -17,9 +17,17 @@ uint32_t nsToCycles(uint32_t nstime, uint32_t period, uint32_t min)
     return (k > min) ? k : min;
 }
 
+uint32_t boardTick = 0;
+
 uint32_t portBoardGetTime_us()
 {
-    return HW_DIGCTL_MICROSECONDS_RD();
+    return HW_DIGCTL_MICROSECONDS_RD() - boardTick;
+}
+
+void portBoardResetTick()
+{
+    boardTick = HW_DIGCTL_MICROSECONDS_RD();
+    //HW_DIGCTL_MICROSECONDS_CLR(0xFFFFFFFF);
 }
 
 void portDelayus(uint32_t us)

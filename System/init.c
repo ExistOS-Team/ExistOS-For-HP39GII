@@ -8,38 +8,60 @@ extern unsigned int data_load_start;
 extern unsigned int data_size;
 extern unsigned int data_start;
 
+extern void (*__preinit_array_start []) (void) __attribute__((weak));
+extern void (*__preinit_array_end []) (void) __attribute__((weak));
+extern void (*__init_array_start []) (void) __attribute__((weak));
+extern void (*__init_array_end []) (void) __attribute__((weak));
+
 void main();
-void __libc_init_array(void);
 
-
-void _init() __attribute__((section(".init"))) __attribute__((naked));
-void _init()
+/*
+void __libc_init_array (void)
 {
-    unsigned int *src = &data_load_start;
-    unsigned int *dst = &data_start;
-    unsigned int size = ((unsigned int)&data_size) / 4;
-    
-    __asm volatile("mov r13,#0x02300000");
+  size_t count;
+  size_t i;
 
-    for(char *i = (char *)&_sbss; i < (char *)&_ebss; i++){
-		*i = 0;		//clear bss
-	}
+  count = __preinit_array_end - __preinit_array_start;
+  for (i = 0; i < count; i++)
+    __preinit_array_start[i] ();
+
+
+
+  count = __init_array_end - __init_array_start;
+  for (i = 0; i < count; i++)
+    __init_array_start[i] ();
+}*/
+
+void volatile ___init() __attribute__((section(".init"))) __attribute__((naked));
+void volatile ___init()
+{
+
+
+    __asm volatile("mov r13,#0x02300000");
+    __asm volatile("add r13,#0x000FA000");
+
+    char *src = (char *)&data_load_start;
+    char *dst = (char *)&data_start;
+    unsigned int size = ((unsigned int)&data_size);
+    
+
+
+
 
     for(unsigned int i = 0; i < size; i++){
         *dst++ = *src++;    //copy data
     }
     
+    for(char *i = (char *)&_sbss; i < (char *)&_ebss; i++){
+		  *i = 0;		//clear bss
+	  }
+
     //__libc_init_array();
 
 
-    typedef void(*pfunc)();
-    extern pfunc __ctors_start__[];
-    extern pfunc __ctors_end__[];
-    pfunc *p;
 
-    for (p = __ctors_start__; p < __ctors_end__; p++)
-        (*p)();
          
+
     main();
 
 

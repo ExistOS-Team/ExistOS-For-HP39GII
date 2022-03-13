@@ -13,6 +13,9 @@
 
 #include "ff.h"
 
+#include "mmu.h"
+#include "SystemConfig.h"
+
 #define    SWAP_PART    (2)
 
 #define    PERM_None    (0)
@@ -38,6 +41,11 @@ void vmMgr_init(void);
 void vmMgr_task(void);
 bool vmMgrInited(void);
 void vmMgr_mapSwap(void);
+void vmMgr_createSwapfile(void);
+int vmMgr_unlockMap(uint32_t vaddr);
+
+uint32_t vmMgr_getMountPhyAddressAndLock(uint32_t vaddr, uint32_t perm);
+
 
 uint32_t vmMgr_mapFile(FIL *file, uint32_t perm, uint32_t MemAddrStart, uint32_t FileAddrStart, uint32_t memSize);
 
