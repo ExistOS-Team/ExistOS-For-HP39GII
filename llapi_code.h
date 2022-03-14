@@ -79,7 +79,10 @@ typedef struct DispPutBoxInfo_t
 #define LL_SWI_DISPLAY_SEND_SCREEN     (LL_SWI_BASE + 24)
 
 
-
+#define LL_SWI_TASK_CREATE             (LL_SWI_BASE + 30)
+#define LL_SWI_ENTER_CRITICAL          (LL_SWI_BASE + 31)
+#define LL_SWI_EXIT_CRITICAL           (LL_SWI_BASE + 32)
+#define LL_SWI_TASK_SLEEP_US           (LL_SWI_BASE + 33)
 
 
 #define LL_IRQ_KEYBOARD                (0)

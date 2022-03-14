@@ -99,25 +99,8 @@ void volatile arm_vector_swi()
     ((uint32_t *)pxCurrentTCB)[1] = ((uint32_t *)pxCurrentTCB)[1] + 18*4;   //Reset Registers frame stack pointer
     ((uint32_t *)pxCurrentTCB)[0] = SWI_REGS_Frame[13];                         //Reset task stack pointer
 
-
-    uint32_t SWINum = *((uint32_t *)(pRegFram[17] - 8)) & 0x00FFFFFF;
-
-    if((SWINum >= LL_SWI_BASE) && (SWINum < LL_SWI_BASE + LL_SWI_NUM))
-    {
-        LLAPI_CallInfo_t LLSWI;
-        BaseType_t SwitchContext;
-        LLSWI.para0 = SWI_REGS_Frame[0];
-        LLSWI.para1 = SWI_REGS_Frame[1];
-        LLSWI.para2 = SWI_REGS_Frame[2];
-        LLSWI.para3 = SWI_REGS_Frame[3];
-        LLSWI.pRet = (uint32_t *)&pRegFram[2]; //R0
-        LLSWI.task = xTaskGetCurrentTaskHandle();
-        beComp = LLSWI.task;
-        LLSWI.SWINum = SWINum;
-        if( xQueueSendFromISR(LLAPI_Queue, &LLSWI, &SwitchContext) == pdFALSE)
-        {
-            printf("ERROR QUEUE FULL!\n");
-        }
+    if(pxCurrentTCB == upSystem){
+        LL_Scheduler_(L_SWI, (uint32_t *)&pRegFram[2]);
     }
 
     {
@@ -173,9 +156,8 @@ void arm_vector_irq()
     ((uint32_t *)pxCurrentTCB)[0] = IRQ_REGS_Frame[13];                         //Reset task stack pointer
     
 
-    if(xTaskGetCurrentTaskHandle() == upSystem)
-    {
-
+    if(pxCurrentTCB == upSystem){
+        LL_Scheduler_(L_IRQ, (uint32_t *)&pRegFram[2]);
     }
 
     if(up_isr())
@@ -301,6 +283,11 @@ void arm_vector_dab()
     ((uint32_t *)pxCurrentTCB)[1] = ((uint32_t *)pxCurrentTCB)[1] + 18*4;   //Reset Registers frame stack pointer
     ((uint32_t *)pxCurrentTCB)[0] = DAB_REGS_Frame[13];                         //Reset task stack pointer
     
+    if(pxCurrentTCB == upSystem){
+        LL_Scheduler_(L_DAB,  (uint32_t *)&pRegFram[2]);
+    }
+
+
     swapping = 1;
 
     __asm volatile("PUSH	{R0}");
@@ -370,6 +357,11 @@ void arm_vector_pab()
 {
 
 	__asm volatile("STMDB   SP, {R0-R14}^");
+/*
+    __asm volatile("MRS		R0, CPSR");
+    __asm volatile("ORR		R0, R0, #0xC0");
+    __asm volatile("MSR		CPSR, R0");*/
+
     __asm volatile("SUB		SP, SP, #60");
 	__asm volatile("LDR     R0, =PAB_REGS_Frame");
 	__asm volatile("ADD		R0, R0, #60");
@@ -381,6 +373,7 @@ void arm_vector_pab()
 	__asm volatile("LDR		R1, [SP]");         //Copy R0
 	__asm volatile("STR		R1, [R0, #-60]");
     __asm volatile("ADD		SP, SP, #60");
+
 
 
     __asm volatile("PUSH	{R0}");
@@ -417,6 +410,9 @@ void arm_vector_pab()
     ((uint32_t *)pxCurrentTCB)[1] = ((uint32_t *)pxCurrentTCB)[1] + 18*4;   //Reset Registers frame stack pointer
     ((uint32_t *)pxCurrentTCB)[0] = PAB_REGS_Frame[13];                         //Reset task stack pointer
 
+    if(pxCurrentTCB == upSystem){
+        LL_Scheduler_(L_PAB, (uint32_t *)&pRegFram[2]);
+    }
 
     insAddress = pRegFram[17];
 

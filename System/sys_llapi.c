@@ -218,3 +218,25 @@ void ll_DispSendScreen()
 {
     __asm volatile("swi %0" :: "i"(LL_SWI_DISPLAY_SEND_SCREEN));
 }
+
+
+uint32_t ll_taskCreate(uint32_t stack, void *entry)
+{
+    __asm volatile("swi %0" :: "i"(LL_SWI_TASK_CREATE));
+}
+
+
+void ll_taskEnterCritical()
+{
+    __asm volatile("swi %0" :: "i"(LL_SWI_ENTER_CRITICAL));
+}
+
+void ll_taskExitCritical()
+{
+    __asm volatile("swi %0" :: "i"(LL_SWI_EXIT_CRITICAL));
+}
+
+void ll_taskSleepUs(int64_t us)
+{
+    __asm volatile("swi %0" :: "i"(LL_SWI_TASK_SLEEP_US));
+}

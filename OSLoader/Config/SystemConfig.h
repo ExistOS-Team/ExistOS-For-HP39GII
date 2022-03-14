@@ -25,7 +25,7 @@
 #define PAGE_SIZE           4096
 #define SEG_SIZE            1048576
 
-#define NUM_CACHEPAGE       (64 + 8 + 3)
+#define NUM_CACHEPAGE       (64 + 4 + 0)
 
 
 

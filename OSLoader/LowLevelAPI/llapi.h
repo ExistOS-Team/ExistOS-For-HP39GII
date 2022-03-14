@@ -5,6 +5,12 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#define L_SWI       0
+#define L_IRQ       1
+#define L_PAB       2
+#define L_DAB       3
+#define L_UND       4
+
 
 
 #define EXCEPTION_IRQ      1
@@ -44,6 +50,8 @@ QueueHandle_t LLAPI_KBDQueue;
 void LLAPI_init(TaskHandle_t upSys);
 void LLAPI_Task(void);
 void LLIRQ_task(void *pvParameters);
+
+void LL_Scheduler_(uint32_t exception, uint32_t *SYSContext);
 
 bool LL_timerTick();
 

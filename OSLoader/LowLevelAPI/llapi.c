@@ -19,6 +19,11 @@
 
 #include "tusb.h"
 
+
+#define TASK_STATUS_BLOCK       0
+#define TASK_STATUS_SUSPEND     1
+#define TASK_STATUS_RUN         2
+
 typedef struct LLAPI_TimerInfo_t
 {
     TaskHandle_t forTask;
@@ -26,7 +31,22 @@ typedef struct LLAPI_TimerInfo_t
 }LLAPI_TimerInfo_t;
 
 
+typedef struct LL_TaskInfo_t
+{
+    struct LL_TaskInfo_t *next;
+    uint32_t *taskContext;
+    int64_t blockTimeUs;
+    uint8_t status;
 
+
+}LL_TaskInfo_t;
+
+LL_TaskInfo_t *LL_Task = NULL;
+LL_TaskInfo_t *CurRunningTask;
+
+int totalTask = 1;
+
+bool LL_SchedulerInCritical = false;
 
  uint32_t IRQSavedContext[16];
 static uint32_t SWISavedContext[16];
@@ -36,9 +56,7 @@ static uint32_t LL_IRQVector;
 static uint32_t LL_IRQStack;
 volatile uint32_t LL_ConfigAddr = 0;
 
-uint32_t opIO = 0;
 
-volatile uint32_t LL_timerTickCnt = 0;
 volatile uint32_t LL_SYSTimerPeriod;
 volatile bool LL_TimerEnable = false;
 
@@ -160,6 +178,191 @@ void TrapHasIn()
 
 }
 
+void LL_IDLETask()
+{
+    
+    for(;;)
+    {
+        taskYIELD();
+    }
+}
+
+char *str_e[] = {"SWI", "IRQ", "PAB", "DAB", "UND"};
+
+void LL_Scheduler_(uint32_t exception, uint32_t *SYSContext)
+{
+    static bool reent = false;
+    static int lastExp = 0;
+    static uint32_t tickTimeUs = 0;
+
+    if(reent){
+        INFO("NO REENT! excep:%s, lastExp:%s, [%s]\n", str_e[exception], str_e[lastExp], pcTaskGetName(NULL));
+        while(1);
+    }
+    reent = true;
+
+    lastExp = exception;
+
+    if(LL_Task == NULL){
+        LL_Task = pvPortMalloc(sizeof(LL_TaskInfo_t));
+
+        configASSERT(LL_Task);
+        LL_Task->taskContext = pvPortMalloc(sizeof(uint32_t) * 16);
+        configASSERT(LL_Task->taskContext);
+        LL_Task->taskContext[13] = (uint32_t) pvPortMalloc(4 * 200);
+        configASSERT(LL_Task->taskContext[13]);
+        LL_Task->taskContext[15] = (uint32_t) LL_IDLETask + 4;
+        LL_Task->blockTimeUs = 0;
+        LL_Task->status = TASK_STATUS_RUN;
+
+        LL_Task->next = pvPortMalloc(sizeof(LL_TaskInfo_t));
+        configASSERT(LL_Task);
+
+        LL_Task->next->taskContext = pvPortMalloc(sizeof(uint32_t) * 16);
+        LL_Task->next->blockTimeUs = 0;
+        LL_Task->next->status = TASK_STATUS_RUN;
+        LL_Task->next->next = NULL;
+        CurRunningTask = LL_Task->next;
+    }
+
+    configASSERT(CurRunningTask);
+
+    memcpy(CurRunningTask->taskContext, SYSContext, sizeof(uint32_t) * 16);
+
+    switch (exception)
+    {
+
+        case L_SWI:
+            {
+                uint32_t SWINum = *((uint32_t *)(CurRunningTask->taskContext[15] - 8)) & 0x00FFFFFF;
+                //INFO("SWI NUM:%x\n",SWINum);
+                if((SWINum >= LL_SWI_BASE) && (SWINum < LL_SWI_BASE + LL_SWI_NUM))
+                {
+
+                    switch (SWINum)
+                    {
+                        case LL_SWI_ENTER_CRITICAL:
+                            LL_SchedulerInCritical = true;
+                        break;
+
+                        case LL_SWI_EXIT_CRITICAL:
+                            LL_SchedulerInCritical = false;
+                        break;
+
+                        case LL_SWI_TASK_SLEEP_US:
+                            
+                            {
+                                uint32_t *p = (uint32_t *)&(CurRunningTask->blockTimeUs);
+                                p[0] = CurRunningTask->taskContext[0];
+                                p[1] = CurRunningTask->taskContext[1];
+                                CurRunningTask->status = TASK_STATUS_BLOCK;
+                            }                           
+                            
+                        break;
+                    
+                    default:
+                        {
+                            LLAPI_CallInfo_t LLSWI;
+                            BaseType_t SwitchContext;
+                            LLSWI.para0 = CurRunningTask->taskContext[0];
+                            LLSWI.para1 = CurRunningTask->taskContext[1];
+                            LLSWI.para2 = CurRunningTask->taskContext[2];
+                            LLSWI.para3 = CurRunningTask->taskContext[3];
+                            LLSWI.pRet = (uint32_t *)&CurRunningTask->taskContext[0]; //R0
+                            LLSWI.task = xTaskGetCurrentTaskHandle();
+                            LLSWI.SWINum = SWINum;
+                            if( xQueueSendFromISR(LLAPI_Queue, &LLSWI, &SwitchContext) == pdFALSE)
+                            {
+                                printf("ERROR QUEUE FULL!\n");
+                            }
+                        }
+                        break;
+                    }
+
+                }
+
+
+            }
+        break;
+
+        
+    
+    default:
+        break;
+    }
+    
+    if(tickTimeUs){
+        uint32_t passTimeUs = (portBoardGetTime_us()) - tickTimeUs;
+        LL_TaskInfo_t *chain;
+        chain = LL_Task->next;
+        while(chain){
+
+            if(
+                (chain->status != TASK_STATUS_SUSPEND) && (chain->blockTimeUs > 0LL)
+            )
+                {
+                chain->blockTimeUs -= passTimeUs;
+                if(chain->blockTimeUs <= 0LL){
+                    chain->blockTimeUs = 0LL;
+                    chain->status = TASK_STATUS_RUN;
+                    //INFO("TIMEOUT\n");
+                }
+            }
+            chain = chain -> next;
+        }
+    }
+    tickTimeUs = portBoardGetTime_us();
+
+
+    if((LL_SchedulerInCritical == false) && (
+
+        (exception == L_IRQ) || (exception == L_DAB)
+
+        ))
+    {
+
+search:
+
+        while (CurRunningTask->next)
+        {
+            CurRunningTask = CurRunningTask->next;
+            if(CurRunningTask->status == TASK_STATUS_RUN){
+                goto found;
+            }
+        }
+        
+        CurRunningTask = LL_Task;
+
+        while (CurRunningTask->next)
+        {
+            CurRunningTask = CurRunningTask->next;
+            if(CurRunningTask->status == TASK_STATUS_RUN){
+                goto found;
+            }
+        }
+
+        CurRunningTask = LL_Task;
+
+    }
+    
+found:
+
+        if(CurRunningTask ->status != TASK_STATUS_RUN){
+            goto search;
+        }
+
+    configASSERT(CurRunningTask->status == TASK_STATUS_RUN);
+    configASSERT(CurRunningTask);
+    configASSERT(CurRunningTask->taskContext);
+
+
+    memcpy(SYSContext, CurRunningTask->taskContext, sizeof(uint32_t) * 16);
+
+
+    //INFO("E:%d, con:%08x\n",exception, SYSContext);
+
+    reent = false;
+}
 
 void LLAPI_Task()
 {
@@ -362,6 +565,58 @@ void LLAPI_Task()
                     }
                     vTaskResume(upSystem);
                 break;
+
+
+
+            case LL_SWI_TASK_CREATE:
+                {
+                    LL_TaskInfo_t *chain = LL_Task;
+                    configASSERT(chain);
+
+                    uint32_t *con = pvPortMalloc(16 * sizeof(uint32_t));
+                    if(con == NULL){
+                        *currentCall.pRet = 0;
+                        vTaskResume(upSystem);
+                        break;
+                    }
+                    //memset(con, 0xEF, 16 * sizeof(uint32_t));
+                    uint32_t t = 0x01010101;
+                    for(int i = 0; i < 16; i++)
+                    {
+                        con[i] = t;
+                        t+=0x01010101;
+                    }
+
+                    while (chain->next)
+                    {
+                        chain = chain->next;
+                    }
+
+                    LL_TaskInfo_t *newTask = pvPortMalloc(sizeof(LL_TaskInfo_t));
+                    if(newTask == NULL){
+                        *currentCall.pRet = 0;
+                        vTaskResume(upSystem);
+                        break;
+                    }
+
+                    newTask->taskContext = con;
+                    newTask->next = NULL;
+                    newTask->status = TASK_STATUS_RUN;
+                    newTask->blockTimeUs = 0;
+
+                    con[13] = currentCall.para0;
+
+                    con[15] = currentCall.para1 + 4;
+
+
+                    INFO("Creat Task:%08x, %08x\n", con[13], con[15]);
+                    
+                    *currentCall.pRet = (uint32_t)newTask;
+
+                    chain->next = newTask;
+                    vTaskResume(upSystem);
+                    break;
+                }
 
             default:
                 break;

@@ -418,7 +418,35 @@ void mainWindow(void *par){
 
 void IRQ_ISR();
 
+void testTask1()
+{
+    uint32_t cnt = 0;
+    for(;;)
+    {
+        ll_taskEnterCritical();
 
+        printf("TaskLoopA:%d...\n",cnt++);
+
+        ll_taskExitCritical();
+        
+        ll_taskSleepUs(300000);
+    }
+}
+
+void testTask2()
+{
+    uint32_t cnt = 0;
+    for(;;)
+    {
+        ll_taskEnterCritical();
+
+        printf("TaskLoopB:%d...\n",cnt++);
+
+        ll_taskExitCritical();
+        
+        ll_taskSleepUs(300000);
+    }
+}
 
 void main()
 {
@@ -434,7 +462,8 @@ void main()
 
     printf("Start Test....\n");
 
-
+    ll_taskCreate((uint32_t)malloc(1024), testTask1);
+    ll_taskCreate((uint32_t)malloc(1024), testTask2);
 
     mainWindow(NULL);
 

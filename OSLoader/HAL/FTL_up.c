@@ -193,6 +193,9 @@ int FTL_init()
     dhara_error_t err;
     int ret;
 
+    FTL_Operates_Queue = xQueueCreate(32, sizeof(FTL_Operates));
+    FTLLockEventGroup = xEventGroupCreate();
+
     while(!MTD_isDeviceInited())
     {
         vTaskDelay(pdMS_TO_TICKS(10));
@@ -224,8 +227,7 @@ int FTL_init()
     }
     pFTLStatus = 0;
 
-    FTL_Operates_Queue = xQueueCreate(32, sizeof(FTL_Operates));
-    FTLLockEventGroup = xEventGroupCreate();
+
 
     inited = true;
 

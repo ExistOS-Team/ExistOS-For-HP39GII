@@ -9,9 +9,9 @@
 
 //#define DFLPT_BASE  0x800C0000
 
-#define L1PTE_NUM       (2049)
+#define L1PTE_NUM       (4096)
 
-uint32_t L1PTE[L1PTE_NUM] __attribute__((aligned(8192)));
+uint32_t L1PTE[L1PTE_NUM] __attribute__((aligned(16384)));
 
 uint32_t DFLPT_BASE = (uint32_t)&L1PTE;
 

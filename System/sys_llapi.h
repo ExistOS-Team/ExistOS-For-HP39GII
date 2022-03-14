@@ -40,4 +40,11 @@ void ll_DispPutArea(uint8_t *dat, uint32_t x0, uint32_t y0, uint32_t x1, uint32_
 void ll_DispSetIndicate(uint32_t indicateBit, uint8_t BatInt);
 void ll_DispSendScreen(void);
 
+
+uint32_t ll_taskCreate(uint32_t stack, void *entry);
+void ll_taskEnterCritical(void);
+void ll_taskExitCritical(void);
+void ll_taskSleepUs(int64_t us);
+
+
 #endif
