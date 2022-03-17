@@ -77,12 +77,12 @@
 
 
 //extern volatile unsigned long ulHighFrequencyTimerTicks;
-uint32_t portBoardGetTime_us();
+uint32_t portBoardGetTick();
 void portBoardResetTick();
 
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() portBoardResetTick()
 //( ulHighFrequencyTimerTicks = 0UL )
-#define portGET_RUN_TIME_COUNTER_VALUE() portBoardGetTime_us()
+#define portGET_RUN_TIME_COUNTER_VALUE() portBoardGetTick()
 //portBoardGetTime_us();
 
 #define configAPPLICATION_ALLOCATED_HEAP		1

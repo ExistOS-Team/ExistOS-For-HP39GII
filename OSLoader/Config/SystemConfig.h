@@ -22,7 +22,6 @@
 // DATA   SYS   SWAP
 #define DISK_PARTITION      {80, 15, 5, 0}
 
-#define PAGE_SIZE           4096
 #define SEG_SIZE            1048576
 
 #define NUM_CACHEPAGE       (64 + 4 + 0)
@@ -30,6 +29,7 @@
 
 
 //#define SIZE_SWAPFILE_MB    2
+#define PAGE_SIZE           4096
 
 #define PAGES_SWAPFILE      (SIZE_SWAPFILE_MB * 1048576 / PAGE_SIZE)
 

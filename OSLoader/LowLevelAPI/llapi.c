@@ -316,7 +316,7 @@ void LL_Scheduler_(uint32_t exception, uint32_t *SYSContext)
 
     if((LL_SchedulerInCritical == false) && (
 
-        (exception == L_IRQ) || (exception == L_DAB)
+        (exception == L_IRQ) /*|| (exception == L_DAB)*/
 
         ))
     {
@@ -458,34 +458,89 @@ void LLAPI_Task()
                 {
                     DispFlushInfo_t *info;
                     uint32_t vramPhyAddr;
-                    uint32_t StartVramPhyAddr;
+                    uint32_t vramVirAddr;
                     long bufSize;
-                    int needPage;
+
                     info = (DispFlushInfo_t *)currentCall.para0;
 
-                    //INFO("draw:%d %d %d %d, addr:%08x\n",info->x0, info->y0, info->x1, info->y1, info->vram);
+                //INFO("draw:%d %d %d %d, addr:%08x\n",info->x0, info->y0, info->x1, info->y1, info->vram);
+
                     bufSize = (info->y1 - info->y0) * (info->x1 - info->x0);
                     if((bufSize <= 0) || (bufSize > 32*1024)){
                         vTaskResume(upSystem);
                         break;
                     }
-                    needPage = (bufSize / PAGE_SIZE) + 1;
+                    vramVirAddr = (uint32_t)info->vram;
 
-                    StartVramPhyAddr = vmMgr_getMountPhyAddressAndLock((uint32_t)info->vram, PERM_R);
+                    uint32_t curVirAddr = vramVirAddr;
+                    
 
-                    for(int i = 1; i < needPage; i++)
+                    uint32_t x_len = info->x1 - info->x0 + 1;
+                    uint32_t PageRemainByte ;
+                    uint32_t lastX;
+
+                    if( ((vramVirAddr + bufSize) & ~(PAGE_SIZE - 1)) > (vramVirAddr & ~(PAGE_SIZE - 1)))
                     {
-                        vramPhyAddr = vmMgr_getMountPhyAddressAndLock((uint32_t)info->vram + (PAGE_SIZE * i), PERM_R);
-                        if(vramPhyAddr > 2){
-                            mmu_clean_invalidated_dcache((uint32_t)info->vram + (PAGE_SIZE * i), PAGE_SIZE);
+
+                        uint32_t fx0, fy0, fx1, fy1;
+                        fx0 = info->x0;
+                        fy0 = info->y0;
+                        fx1 = info->x1;
+                        fy1 = info->y1;
+
+                        reflush:
+
+                        vramPhyAddr = vmMgr_getMountPhyAddressAndLock(curVirAddr, PERM_R);
+                        PageRemainByte = (PAGE_SIZE - 1) - (curVirAddr & (PAGE_SIZE - 1));
+
+
+                        if(PageRemainByte >= x_len){
+                            uint32_t line = 0;
+                            while(
+                                (fx1 - fx0 + 1) * ((fy0 + line) - fy0 + 1) <= PageRemainByte
+                            )
+                            {
+                                line++;
+                            }
+
+                            DisplayFlushArea(fx0, fy0, fx1, fy0 + line, (uint8_t *)vramPhyAddr, true);
+                            fy0 += line;
+                            PageRemainByte -= x_len * line;
+                            curVirAddr += x_len * line;
+                            goto reflush;
                         }
-                    }
 
-                    DisplayFlushArea(info->x0, info->y0, info->x1, info->y1, (uint8_t *)StartVramPhyAddr);
 
-                    for(int i = 0; i < needPage; i++)
-                    {
-                        vmMgr_unlockMap(((uint32_t)info->vram) + (i * PAGE_SIZE));
+                        DisplayFlushArea(fx0, fy0, fx0 + PageRemainByte, fy0, (uint8_t *)vramPhyAddr, true);
+                        lastX = fx0 + PageRemainByte;
+
+                        vmMgr_unlockMap(curVirAddr);
+
+                        curVirAddr += PageRemainByte;   //Enter new page;
+
+                        vramPhyAddr = vmMgr_getMountPhyAddressAndLock(curVirAddr, PERM_R);
+
+                        DisplayFlushArea(lastX, fy0, fx1, fy0, (uint8_t *)vramPhyAddr, true);
+                        
+                        vmMgr_unlockMap(curVirAddr);
+
+
+
+                        curVirAddr += (x_len - PageRemainByte);
+
+                        if(curVirAddr < vramVirAddr + bufSize){
+                            goto reflush;
+                        }
+
+                        
+                    }else{
+
+                        vramPhyAddr = vmMgr_getMountPhyAddressAndLock(curVirAddr, PERM_R);
+                        if(vramPhyAddr > 2){
+                            DisplayFlushArea(info->x0, info->y0, info->x1, info->y1, (uint8_t *)vramPhyAddr, false);
+                            vmMgr_unlockMap(curVirAddr);
+                        }
+
                     }
 
                 }

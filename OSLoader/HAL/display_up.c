@@ -62,20 +62,32 @@ void DisplayReadArea(uint32_t x_start, uint32_t y_start, uint32_t x_end, uint32_
     xQueueSend(DisplayOpaQueue, &opa, portMAX_DELAY);
 }
 
-void DisplayFlushArea(uint32_t x_start, uint32_t y_start, uint32_t x_end, uint32_t y_end, uint8_t *buf)
+void DisplayFlushArea(uint32_t x_start, uint32_t y_start, uint32_t x_end, uint32_t y_end, uint8_t *buf, bool block)
 {
     DisplayOpaQueue_t opa;
-    uint32_t *pars = pvPortMalloc(5 * sizeof(uint32_t));
+    uint32_t *pars = pvPortMalloc(6 * sizeof(uint32_t));
     if(!pars)return;
+
+    volatile bool fin = false;
+
     pars[0] = x_start;
     pars[1] = y_start;
     pars[2] = x_end;
     pars[3] = y_end;
     pars[4] = (uint32_t )buf;
+    pars[5] = (uint32_t )&fin;
+
     opa.opa = DISPOPA_FLUSH_AREA;
-    opa.parNum = 5;
+    opa.parNum = 6;
     opa.pars = pars;
     xQueueSend(DisplayOpaQueue, &opa, portMAX_DELAY);
+    if(block)
+    {
+        while(fin == false){
+            //vTaskDelay(10);
+        }
+    }
+    
 }
 
 void DisplayPutChar(uint32_t x, uint32_t y, char c, uint8_t fg, uint8_t bg, uint8_t fontSize)
@@ -230,6 +242,11 @@ void DisplayTask()
                     uint8_t *buf = (uint8_t *)curOpa.pars[4];
                     portDispFlushAreaBuf(x_start, y_start, x_end, y_end, buf);
                     
+                    
+
+                    bool *fin = (bool *)curOpa.pars[5];
+                    *fin = true;
+
                     vPortFree(curOpa.pars);
                 }
 

@@ -433,6 +433,16 @@ void portDispFlushAreaBuf(uint32_t x_start, uint32_t y_start, uint32_t x_end, ui
     {
         return;
     }
+/*
+    if(
+        (x_start > SCREEN_WIDTH+4) ||
+        (x_end > SCREEN_WIDTH+4) ||
+        (y_start > SCREEN_END_Y+8) ||
+        (y_end > SCREEN_END_Y+8)
+    
+    ){
+        return;
+    }*/
     /*
     if(((xstart % 3) == 0) && (((xend + 1) % 3) == 0)){
         LCDIF_CMD8(0x2A);
@@ -469,6 +479,11 @@ void portDispFlushAreaBuf(uint32_t x_start, uint32_t y_start, uint32_t x_end, ui
 }
 
 
+void portDispSetContrast(uint8_t contrast)
+{
+    LCDIF_CMD8(0x25);
+    LCDIF_DAT8(contrast & 0x7F);
+}
 
 void portDispDeviceInit()
 {
@@ -565,7 +580,7 @@ void portDispDeviceInit()
         printf("LCD ID[%d]:%02x\n",i, ID[i]);
     }
 
-
+    portDispSetContrast(51);
 
     portDispClean();
     

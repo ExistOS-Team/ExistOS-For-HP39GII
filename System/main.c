@@ -6,12 +6,14 @@
 #include <string.h>
 #include <stdlib.h>
 
+
 #include "sys_llapi.h"
 #include "llapi_code.h"
 
 #include "console.h"
 #include "SysConf.h"
 #include "keyboard.h"
+
 
 size_t xPortGetFreeHeapSize( void );
 size_t xPortGetTotalHeapSize( void );
@@ -30,6 +32,11 @@ void delayms(uint32_t ms)
     {
         ;
     }
+}
+
+volatile uint32_t local_get_time_us()
+{
+    return *((volatile uint32_t *)0x8001C0C0);
 }
 
 
@@ -138,6 +145,42 @@ void flushKeyIndicate()
     ll_DispSetIndicate(Ind, batInd);
 }
 
+
+
+
+
+void testTask1()
+{
+    uint32_t cnt = 0;
+    for(;;)
+    {
+        ll_taskEnterCritical();
+
+        printf("TaskLoopA:%d...\n",cnt++);
+
+        ll_taskExitCritical();
+        
+        ll_taskSleepUs(300000);
+    }
+}
+
+void testTask2()
+{
+    uint32_t cnt = 0;
+    for(;;)
+    {
+        ll_taskEnterCritical();
+
+        printf("TaskLoopB:%d...\n",cnt++);
+
+        ll_taskExitCritical();
+        
+        ll_taskSleepUs(300000);
+    }
+}
+
+
+
 void mainWindow(void *par){
     int currentSelect = 2;
     char linebuf[128];
@@ -219,6 +262,10 @@ void mainWindow(void *par){
                     ll_DispSendScreen();
                     break;
 
+                case KEY_VIEWS:
+
+                    break;
+
                 case KEY_F4:
                     if(!canCopy){
                         break;
@@ -282,6 +329,12 @@ void mainWindow(void *par){
                                 while(getKey(&dummy[0],&dummy[1]));
                                 currentSelect = 2;
                             }
+                            break;
+
+
+                            case CONSOLE_SHELL:
+
+                                //ll_DispPutArea(gImage_testimg256127, 0,0, 255, 126);
                             break;
                         
                         default:
@@ -418,35 +471,6 @@ void mainWindow(void *par){
 
 void IRQ_ISR();
 
-void testTask1()
-{
-    uint32_t cnt = 0;
-    for(;;)
-    {
-        ll_taskEnterCritical();
-
-        printf("TaskLoopA:%d...\n",cnt++);
-
-        ll_taskExitCritical();
-        
-        ll_taskSleepUs(300000);
-    }
-}
-
-void testTask2()
-{
-    uint32_t cnt = 0;
-    for(;;)
-    {
-        ll_taskEnterCritical();
-
-        printf("TaskLoopB:%d...\n",cnt++);
-
-        ll_taskExitCritical();
-        
-        ll_taskSleepUs(300000);
-    }
-}
 
 void main()
 {
@@ -462,8 +486,8 @@ void main()
 
     printf("Start Test....\n");
 
-    ll_taskCreate((uint32_t)malloc(1024), testTask1);
-    ll_taskCreate((uint32_t)malloc(1024), testTask2);
+    //ll_taskCreate((uint32_t)malloc(1024), testTask1);
+    //ll_taskCreate((uint32_t)malloc(1024), testTask2);
 
     mainWindow(NULL);
 

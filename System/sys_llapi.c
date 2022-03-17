@@ -119,13 +119,6 @@ void ll_enable_irq(bool enable)
 }
 
 
- uint32_t ll_DispFlush(DispFlushInfo_t *s) __attribute__((naked));
- uint32_t ll_DispFlush(DispFlushInfo_t *s)
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_DISPLAY_FLUSH));
-
-    __asm volatile("bx lr");
-}
 
 
 void ll_DispPutArea(uint8_t *dat, uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1)

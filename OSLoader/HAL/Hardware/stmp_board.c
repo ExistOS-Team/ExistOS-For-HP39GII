@@ -21,6 +21,11 @@ uint32_t boardTick = 0;
 
 uint32_t portBoardGetTime_us()
 {
+    return HW_DIGCTL_MICROSECONDS_RD();
+}
+
+uint32_t portBoardGetTick()
+{
     return HW_DIGCTL_MICROSECONDS_RD() - boardTick;
 }
 

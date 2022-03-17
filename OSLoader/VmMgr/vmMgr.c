@@ -258,7 +258,7 @@ static void taskAccessFaultAddr(pageFaultInfo_t *info, char *res)
     for(int i = 0; i < 16; i++){
         VM_ERR("SAVED REGS[%d]:%08x\n",i,regs[i]);
     }    
-    vTaskSuspend(vmBlockTask);
+    //vTaskSuspend(vmBlockTask);
 }
 
 
@@ -400,7 +400,7 @@ uint32_t vmMgr_getMountPhyAddressAndLock(uint32_t vaddr, uint32_t perm)
     for(int i = 0; i < NUM_CACHEPAGE; i++){
         if((CachePageInfo[i].mapToVirtAddr & 0xFFFFF000) == (vaddr & 0xFFFFF000)){
             CachePageInfo[i].lock = true;
-            mmu_invalidate_dcache(CachePageInfo[i].mapToVirtAddr & 0xFFFFF000, PAGE_SIZE);
+            mmu_clean_invalidated_dcache(CachePageInfo[i].mapToVirtAddr & 0xFFFFF000, PAGE_SIZE);
             return (CachePageInfo[i].PageOnPhyAddr + (vaddr & (PAGE_SIZE - 1)));
         }
     }
@@ -449,8 +449,8 @@ void vmMgr_init()
     
     mapListInit();
     mmu_init();
-    xTaskCreate(vVmBlockTask, "VM Swap IO Waiting", 12, NULL, 6, &vmBlockTask);
-    vTaskSuspend(vmBlockTask);
+    //xTaskCreate(vVmBlockTask, "VM Swap IO Waiting", 12, NULL, 6, &vmBlockTask);
+    //vTaskSuspend(vmBlockTask);
 
     for(int i =0 ;i< NUM_CACHEPAGE; i++)
     {
