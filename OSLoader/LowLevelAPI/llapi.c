@@ -195,11 +195,15 @@ void LL_Scheduler_(uint32_t exception, uint32_t *SYSContext)
     static int lastExp = 0;
     static uint32_t tickTimeUs = 0;
 
+    portENTER_CRITICAL();
+
     if(reent){
         INFO("NO REENT! excep:%s, lastExp:%s, [%s]\n", str_e[exception], str_e[lastExp], pcTaskGetName(NULL));
         while(1);
     }
     reent = true;
+    
+    //portDelayus(1000);
 
     lastExp = exception;
 
@@ -357,11 +361,13 @@ found:
 
 
     memcpy(SYSContext, CurRunningTask->taskContext, sizeof(uint32_t) * 16);
-
-
+    //if(exception == L_PAB)
+    //    INFO("i:%d\n",isIRQAllowed());
     //INFO("E:%d, con:%08x\n",exception, SYSContext);
 
     reent = false;
+
+
 }
 
 void LLAPI_Task()
@@ -565,6 +571,7 @@ void LLAPI_Task()
             case LL_SWI_DISPLAY_PUT_BOX:
                 {
                     DispPutBoxInfo_t *info = (DispPutBoxInfo_t *)currentCall.para0;
+                    //INFO("box:%d %d %d %d,fill:%d\n",info->x0, info->y0, info->x1, info->y1, info->fill);
                     if(info->fill){
                         DisplayFillBox(info->x0, info->y0, info->x1, info->y1, info->color);
                     }else{

@@ -204,6 +204,9 @@ void DisplaySetIndicate(uint32_t Indicate, uint32_t batInd)
 
 static void innerDispHLine(uint32_t x0, uint32_t x1, uint32_t y,uint8_t c)
 {
+    if(x1 < x0){
+        return;
+    }
     uint8_t* buf = pvPortMalloc(x1 - x0 + 1);
     memset(buf, c, x1 - x0 + 1);
     portDispFlushAreaBuf(x0, y, x1, y, buf);

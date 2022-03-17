@@ -24,7 +24,7 @@
 
 #define SEG_SIZE            1048576
 
-#define NUM_CACHEPAGE       (64 + 4 + 0)
+#define NUM_CACHEPAGE       (64 + 8 + 0)
 
 
 

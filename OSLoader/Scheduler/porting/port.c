@@ -41,6 +41,7 @@
 
 /* Constants required to setup the initial stack. */
 #define portINITIAL_SPSR				( ( StackType_t ) (0x1F) ) /* SYS mode, ARM mode, interrupts enabled. */
+//#define portINITIAL_SPSR				( ( StackType_t ) (0xDF) ) /* SYS mode, ARM mode, interrupts disable. */
 #define portTHUMB_MODE_BIT				( ( StackType_t ) 0x20 )
 #define portINSTRUCTION_SIZE			( ( StackType_t ) 4 )
 

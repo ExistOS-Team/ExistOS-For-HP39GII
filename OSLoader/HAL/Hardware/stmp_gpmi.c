@@ -58,9 +58,9 @@ typedef struct GPMI_Timing_t {
 
 static struct GPMI_Timing_t defaultTiming =
 {
-        .DataSetup_ns = 15,
-        .DataHold_ns = 12,
-        .AddressSetup_ns = 15,
+        .DataSetup_ns = 30,
+        .DataHold_ns = 25,
+        .AddressSetup_ns = 30,
         .SampleDelay_cyc = 0,
         .tREAD_us = 10,
         .tPROG_us = 250,
@@ -125,7 +125,7 @@ static void GPMI_ResetDMAChannel()
 static void GPMI_SetAccessTiming(GPMI_Timing_t timing)
 {
 
-    DeviceTimeOutCycles = 100;
+    DeviceTimeOutCycles = 800;
 
     BF_CS3(
         GPMI_TIMING0,

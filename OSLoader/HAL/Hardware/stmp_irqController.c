@@ -22,7 +22,7 @@ void portIRQCtrlInit()
 
     HW_ICOLL_CTRL_SET(/*BM_ICOLL_CTRL_FIQ_FINAL_ENABLE |*/
                       BM_ICOLL_CTRL_IRQ_FINAL_ENABLE |
-                      BM_ICOLL_CTRL_ARM_RSE_MODE |
+                      /*BM_ICOLL_CTRL_ARM_RSE_MODE |*/
                       BM_ICOLL_CTRL_NO_NESTING);
 
     BF_CS1(ICOLL_VBASE, TABLE_ADDRESS, 0);

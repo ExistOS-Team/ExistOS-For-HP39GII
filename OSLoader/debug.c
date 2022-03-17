@@ -1,8 +1,15 @@
 #include <stdint.h>
 #include <stdarg.h>
+#include <stdbool.h>
 
 
-
+volatile uint32_t isIRQAllowed()
+{
+    register uint32_t ret;
+    asm volatile("mrs %0, cpsr_all" : "=r"(ret));
+    ret >>= 7;
+    return (~ret) & 1;
+}
 
 void debugPutch(char ch)
 {

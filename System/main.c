@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <math.h>
 
 #include "sys_llapi.h"
 #include "llapi_code.h"
@@ -178,7 +179,6 @@ void testTask2()
         ll_taskSleepUs(300000);
     }
 }
-
 
 
 void mainWindow(void *par){
@@ -486,8 +486,8 @@ void main()
 
     printf("Start Test....\n");
 
-    //ll_taskCreate((uint32_t)malloc(1024), testTask1);
-    //ll_taskCreate((uint32_t)malloc(1024), testTask2);
+    ll_taskCreate((uint32_t)malloc(1024), testTask1);
+    ll_taskCreate((uint32_t)malloc(1024), testTask2);
 
     mainWindow(NULL);
 

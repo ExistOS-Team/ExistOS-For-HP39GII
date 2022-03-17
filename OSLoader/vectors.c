@@ -34,6 +34,8 @@ uint32_t sysIRQcnt = 0;
 
 uint32_t _dump_REGS[16];
 
+
+
 void __dumpRegs() __attribute__((naked));
 void __dumpRegs()
 {
@@ -66,6 +68,15 @@ void volatile arm_vector_swi()
     __asm volatile ( "ADD   LR, LR, #4" );
 
 	__asm volatile("STMDB   SP, {R0-R14}^");
+
+    __asm volatile("MRS		R0, CPSR");
+    __asm volatile("ORR		R0, R0, #0xC0");
+    __asm volatile("MSR		CPSR, R0");
+
+    __asm volatile("MRS		R0, CPSR");
+    __asm volatile("ORR		R0, R0, #0xC0");
+    __asm volatile("MSR		CPSR, R0");
+
 	__asm volatile("LDR     R0, =SWI_REGS_Frame");
 	__asm volatile("ADD		R0, R0, #60");
 	__asm volatile("STMDB   R0, {R1-R14}^");
@@ -119,7 +130,14 @@ void arm_vector_irq()  __attribute__((naked));
 void arm_vector_irq()
 {
     
+    
 	__asm volatile("STMDB   SP, {R0-R14}^");
+
+    __asm volatile("MRS		R0, CPSR");
+    __asm volatile("ORR		R0, R0, #0xC0");
+    __asm volatile("MSR		CPSR, R0");
+
+
     __asm volatile("SUB		SP, SP, #60");
 	__asm volatile("LDR     R0, =IRQ_REGS_Frame");
 	__asm volatile("ADD		R0, R0, #60");
@@ -131,6 +149,10 @@ void arm_vector_irq()
 	__asm volatile("LDR		R1, [SP]");         //Copy R0
 	__asm volatile("STR		R1, [R0, #-60]");
     __asm volatile("ADD		SP, SP, #60");
+
+
+
+    
 
     volatile uint32_t *pRegFram = (uint32_t *)((uint32_t *)pxCurrentTCB)[1];
     pRegFram[0] = ulCriticalNesting;    //Save Interrupt flags
@@ -246,6 +268,11 @@ void arm_vector_dab()
     __asm volatile("SUB   LR, LR, #4" );
 
 	__asm volatile("STMDB   SP, {R0-R14}^");
+
+    __asm volatile("MRS		R0, CPSR");
+    __asm volatile("ORR		R0, R0, #0xC0");
+    __asm volatile("MSR		CPSR, R0");
+
     __asm volatile("SUB		SP, SP, #60");
 	__asm volatile("LDR     R0, =DAB_REGS_Frame");
 	__asm volatile("ADD		R0, R0, #60");
@@ -357,10 +384,10 @@ void arm_vector_pab()
 {
 
 	__asm volatile("STMDB   SP, {R0-R14}^");
-/*
+
     __asm volatile("MRS		R0, CPSR");
     __asm volatile("ORR		R0, R0, #0xC0");
-    __asm volatile("MSR		CPSR, R0");*/
+    __asm volatile("MSR		CPSR, R0");
 
     __asm volatile("SUB		SP, SP, #60");
 	__asm volatile("LDR     R0, =PAB_REGS_Frame");
@@ -413,7 +440,7 @@ void arm_vector_pab()
     if(pxCurrentTCB == upSystem){
         LL_Scheduler_(L_PAB, (uint32_t *)&pRegFram[2]);
     }
-
+    
     insAddress = pRegFram[17];
 
     FAULT_INFO("TASK [%s] PAB. AT %08x, faultAddress:%08x\n", pcTaskGetName(NULL), insAddress, faultAddress);
@@ -456,8 +483,9 @@ void arm_vector_pab()
     //printf("\n");
     //printf("TASK [%s] PAB Sent\n", pcTaskGetName(NULL) );
     //vTaskSuspend(FaultInfo.FaultTask);
+        
+
     xQueueSendFromISR(PageFaultQueue, &FaultInfo, &SwitchContext);
-    
     //if(SwitchContext)
     {
         vTaskSwitchContext();
