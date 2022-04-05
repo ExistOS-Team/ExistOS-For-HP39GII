@@ -1,5 +1,7 @@
 # [ExistOS-For-HP39GII](https://github.com/Repeerc/LibreCalc-For-HP39GII)
 
+[中文自述文件](./README.md)
+
 An open source HP39GII firmware project
 
 ## Project brief
@@ -16,21 +18,21 @@ This firmware project is created by a group of calculator enthusiasts, used some
 - [x] Keyboard driver (GPIO polling)
 - [x] Timer driver
 - [x] CPU frequency setting
-- [x] RTC
+- [ ] RTC
 - [x] USB MSC mode
-- [x] USB CDC(Virtual serial port) mode
-- [x] USB HID keyboard mouse mode
+- [ ] USB CDC(Virtual serial port) mode
+- [ ] USB HID keyboard mouse mode
 - [x] USB dynamic configuration
 - [x] FLASH Driver
 - [x] FATFS
-- [x] Multitasking
+- [ ] Multitasking
 - [x] Virtual memory
-- [x] Process, ELF loading
-- [x] Minimal MicroPython implement
-- [ ] Process switch, terminate, ELF unload
-- [ ] GUI
+- [ ] ~~Process, ELF loading~~
+- [ ] Minimal MicroPython implement
+- [ ] ~~Process switch, terminate, ELF unload~~
+- [x] GUI
 - [ ] Power management
-- [ ] Linux 5.4 half-virtualization dual-kernel implementation
+- [ ] ~~Linux 5.4 half-virtualization dual-kernel implementation~~
 - [ ] Firmware upgrade completely without offical upgrade tools
 
 Current development status: Most of the OS kernel and some necessary hardware drivers have been implemented. But due to the lacking of knowledge about the upgrading method, we still need to use the offical upgrade tool in Windows 7/XP to flash the firmware. And no GUI provided, currently we are focusing on implementing virtual memory management and process loading. The GUI and so on are under discussion. If you have advice, please tell us at Issues.
@@ -60,10 +62,84 @@ Current development status: Most of the OS kernel and some necessary hardware dr
     cd ./build
     cmake ..
     make (or ninja)   # Compile
-    make flash (or ninja flash)   # Flash into RAM (Please completely poweroff the calculator(remove battery), then plug the usb cable while holding the ON/C button to enter flashing mode, before using this command)
     ```
 
+
+## Firmware install
+
 Notice: Please install drivers of HP39GII by yourself.
+
+After compiling, run commands below to flash the OS Loader into calculator RAM. Before flashing, please poweroff your calculator completely (by removing the batteries), and then plug in USB cable while pressing down the `ON/C` key. Then your calculator will enter flashing mode.
+
+```
+    make flash (or ninja flash)
+```
+
+After finishing the flashing progress, the OS Loader will execute automaticly. Now your calculator should display something like the image below. If you had flashed and installed ExistOS before, this interface may not be shown. Just poweroff normally and then press `Clear` key while starting up to enter it.
+
+![Loader1](Image/1.png)
+
+Because this firmware uses different low-level drivers and storage structure from the official firmware, the 'Disk Format Error' will be displayed. So you need to format the flash before installing the firmware. (ATTENTION: All data will be ereased, please BACKUP your data first!)
+
+![loader2](Image/2.png)
+
+Use direction key to enter `Format Flash` menu. The `Erase` option will only erease the whole flash, and will not write any data to it, which is to recovering the official system image.
+To install new firmware, you need to format and partition the flash. So select the `Format` option and press `Enter` key, and the format progress will start. It may takes 1~2 minutes to format.
+
+![Loader3](Image/3.png)
+
+After formating, change the menu to `Mount USB MSC` in order to mount the partitions to your computer via USB cable and copy the system image.
+Select `SYS` and press `Enter` key to mount the system partition.
+
+![Loader4](Image/4.png)
+
+![Loader5](Image/5.png)
+
+After mounting the `SYS` partition, a partition of about 10MB will show on your computer. Then copy the `OSLoader.sb` and `ExistOS.sys` to calculator. Finally, unmount the disk, or set the mount option to `None` on your calculator.
+
+![Loader6](Image/6.png)
+
+(Calculator may freezes for about 1 minute. Don't be worried. In this situation OS Loader is performing the Trim operation in order to boost the IO speed.)
+
+![Loader7](Image/7.png)
+
+Then change the menu to `Install System` and press `ENTER` key. OS Loader will write itself to boot sector in order to finish the installation.
+
+![Loader8](Image/8.png)
+
+If your calculator displays like this, it means the system has been installed successfully. Now you can choose `Boot ExistOS` to boot directly or choose `Reboot` to reboot and enter the system.
+
+![Loader10](Image/10.png)
+
+## Basic HOW-TO-USE of this firmware
+
+After compling and installing, GUI like this will be shown. (Virtual memory is set to 4MB defaultly.)
+
+![Sys1](Image/11.png)
+
+There are two interfaces in this version of ExistOS. Press `F1` to enter shell to execute some commands(not usable yet). Press `F2` to initialize the giac runtime and then switch to CAS mode, which may takes a few seconds.
+
+![Sys2](Image/12.png)
+
+Then you can do some calculations after initialization.
+
+![Sys3](Image/13.png)
+
+![Sys4](Image/14.png)
+
+![Sys5](Image/15.png)
+
+The result will be stored in the history area above the input box. You can use `UP` key and `DOWN` key to select. Press COPY(`F4`) key to copy what you selected to input box, which can be modified for the next calculation.
+
+![Sys6](Image/16.png)
+
+![Sys7](Image/17.png)
+
+Press `ON/C` key to interrupt a calculation.
+
+![Sys8](Image/18.png)
+
+Because the giac CAS is huge to the calculator, which only has about 500KB of RAM, the IO operations are so frequent that will make the calculator run very slowly while solving some complex questions. 
 
 ## Code submit standard
 
