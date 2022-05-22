@@ -13,19 +13,12 @@ jobs:
     - uses: actions/checkout@v2
     - name: arm-none-eabi-gcc
       run: sudo apt-get install gcc-arm-none-eabi -y
-    - name: Download elftosb
+    - name: Build sbtools
       run: |
+        sudo apt-get install libcrypto++6 libcrypto++-dev libusb-1.0-0-dev -y
         cd tools/sbtools
-        wget https://github.com/AliasQli/ExistOS-For-HP39GII/releases/download/0.0.2/elftosb
-        chmod +x elftosb
+        make
         cd ../..
-#     - name: Download elftosb
-#       uses: fabriciobastian/download-release-asset-action@v1.0.6
-#       with:
-#         version: 0.0.2
-#         repository: AliasQli/ExistOS-For-HP39GII
-#         file: elftosb
-#         out: ./tools/sbtools/
     - name: Cmake configure
       run: cmake .
     - name : Cmake build
