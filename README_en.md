@@ -7,6 +7,7 @@ An open source HP39GII firmware project
 ## Project brief
 
 [![GPL Licence](https://badges.frapsoft.com/os/gpl/gpl.png?v=103)](https://opensource.org/licenses/GPL-3.0/)
+[![Build Status](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/actions/workflows/build.yml/badge.svg)](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/actions/workflows/build.yml)
 
 This firmware project is created by a group of calculator enthusiasts, used some libraries such as [FreeRTOS kernel](https://github.com/FreeRTOS/FreeRTOS), [TinyUSB](https://github.com/hathach/tinyusb), [FatFs](http://elm-chan.org/fsw/ff/00index_e.html), [dhara](https://github.com/dlbeer/dhara)and etc. We very welcome some like-minded friends to try and improve the code for this project, and very want to get your valueable advices. Hoping for your participation.
 
