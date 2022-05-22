@@ -33,3 +33,19 @@ jobs:
       with:
         name: ExistOS.sys
         path: ./System/ExistOS.sys
+    - name: Get version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+    - name: Get Time
+        id: get_time
+        run: echo ::set-output name=TIME::$(date +%Y%m%d-%H%M%S)
+    - name: Create GitHub release
+        uses: marvinpinto/action-automatic-releases@latest
+            with:
+                repo_token: "${{ secrets.GITHUB_TOKEN }}"
+                automatic_release_tag:  ${{ steps.get_version.outputs.VERSION }}-${{ steps.get_time.outputs.TIME }}
+                title: Automatically build file.
+                prerelease: false
+                files: |
+                ./System/ExistOS.sys
+                ./OSLoader/OSLoader.sb
