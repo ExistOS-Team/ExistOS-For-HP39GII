@@ -27,8 +27,8 @@ jobs:
       uses: marvinpinto/action-automatic-releases@latest
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag:  build-${{ github.run_attempt }}
-        title: build ${{ github.run_attempt }}
+        automatic_release_tag:  build-${{ github.run_number }}
+        title: build ${{ github.run_number }}
         prerelease: true
         files: |
           ./System/ExistOS.sys
