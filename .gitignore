@@ -60,7 +60,7 @@ dkms.conf
 *.code-workspace
 
 # Cmake files
-Makefile
+# Makefile
 CMakeCache.txt
 cmake_install.cmake
 CMakeFiles/
