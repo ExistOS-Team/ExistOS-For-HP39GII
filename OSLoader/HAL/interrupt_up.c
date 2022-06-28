@@ -4,6 +4,7 @@
 #include "timer_up.h"
 #include "../debug.h"
 
+#include "hw_irq.h"
 
 IRQNumber CurrentIRQNumber;
 
@@ -24,21 +25,20 @@ void portMTD_DMA_ISR();
 
 bool portMTD_ECC_ISR();
 void portDISP_ISR();
-
-
-bool up_isr( void )
+void port_LRADC_IRQ(uint32_t ch);
+void portPowerIRQ(uint32_t nirq);
+void up_isr( void )
 {
-    bool YIELD = false;
-    bool IRQvaild;
     IRQTypes IRQType;
     IRQInfo IRQInfo;
-    IRQvaild = portIRQDecode(&CurrentIRQNumber, &IRQType, &IRQInfo);
 
+
+    portIRQDecode(&CurrentIRQNumber, &IRQType, &IRQInfo);   
 
     switch (IRQType)
     {
     case IRQType_Timer:
-        portAckTimerIRQ(CurrentIRQNumber, IRQInfo);
+        portAckTimerIRQ();
         break;
     case IRQType_USBCtrl:
         usb_dcd_isr();
@@ -50,22 +50,23 @@ bool up_isr( void )
         portMTD_DMA_ISR();
         break;
     case IRQType_MTD_ECC:
-        YIELD = portMTD_ECC_ISR();
+        portMTD_ECC_ISR();
         break;
     case IRQType_DISP:
         portDISP_ISR();
         break;
-
+    case IRQType_LRADC:
+        port_LRADC_IRQ(IRQInfo);
+        break;
+    case IRQType_PWR:
+        portPowerIRQ(IRQInfo);
+        break;
     default:
         PANNIC("Unknown IRQ:%d,%d\n", CurrentIRQNumber, IRQInfo);
         break;
     }
 
-    
-
     portAckIRQ(CurrentIRQNumber);
-
-    return YIELD;
 }
 
 void IRQInit()

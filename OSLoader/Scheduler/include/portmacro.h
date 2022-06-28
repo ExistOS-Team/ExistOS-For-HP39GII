@@ -51,11 +51,13 @@ extern "C" {
 #define portLONG		long
 #define portSHORT		short
 #define portSTACK_TYPE	uint32_t
-#define portBASE_TYPE	long
+#define portBASE_TYPE	uint32_t //long
+
 
 typedef portSTACK_TYPE StackType_t;
 typedef long BaseType_t;
-typedef unsigned long UBaseType_t;
+typedef uint32_t UBaseType_t;
+//typedef unsigned long UBaseType_t;
 
 #if( configUSE_16_BIT_TICKS == 1 )
 	typedef uint16_t TickType_t;
@@ -70,7 +72,7 @@ typedef unsigned long UBaseType_t;
 #define portSTACK_GROWTH			( -1 )
 #define portTICK_PERIOD_MS			( ( TickType_t ) 1000 / configTICK_RATE_HZ )
 #define portBYTE_ALIGNMENT			4
-#define portYIELD()					asm volatile ( "SWI 1" )
+#define portYIELD()					asm volatile ( "SWI 0xECFE" )
 #define portNOP()					asm volatile ( "NOP" )
 #define portYIELD_FROM_ISR(x)        do{if(x)vTaskSwitchContext();}while(0)
 /*-----------------------------------------------------------*/
@@ -82,7 +84,7 @@ typedef unsigned long UBaseType_t;
 
 #define portRESTORE_CONTEXT()\
 {\
-extern volatile void * volatile pxCurrentTCB;\
+extern volatile void *pxCurrentTCB;\
 extern volatile uint32_t ulCriticalNesting;\
 \
 	__asm volatile ("LDR	R0, =pxCurrentTCB");\
@@ -159,7 +161,7 @@ extern volatile uint32_t ulCriticalNesting;					\
 
 #define portSAVE_CONTEXT()												\
 {																		\
-extern volatile void * volatile pxCurrentTCB;							\
+extern volatile void *pxCurrentTCB;							\
 extern volatile uint32_t ulCriticalNesting;					\
 																		\
 	/* Push R0 as we are going to use the register. */					\

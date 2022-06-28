@@ -1,12 +1,11 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <sys/times.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <string.h>
-#include <sys/times.h>
-
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -18,20 +17,20 @@
 
 #undef errno
 extern int errno;
-//extern int  __HEAP_START;
+// extern int  __HEAP_START;
 
 //! non-reentrant sbrk uses is actually reentrant by using current context
 // ... because the current _reent structure is pointed to by global _impure_ptr
 /*
-char * sbrk(unsigned int incr) { 
-	
-	return _sbrk_r(_impure_ptr, incr); 
+char * sbrk(unsigned int incr) {
+
+        return _sbrk_r(_impure_ptr, incr);
 }
 //! _sbrk is a synonym for sbrk.
 
-char * _sbrk(unsigned int incr) { 
-	
-	return sbrk(incr); 
+char * _sbrk(unsigned int incr) {
+
+        return sbrk(incr);
 };
 */
 
@@ -51,22 +50,17 @@ caddr_t _sbrk ( int incr ){
 }
 */
 
-
 extern unsigned int __HEAP_START;
 static void *heap = NULL;
 
+caddr_t _sbrk(int incr) {
+    void *prev_heap;
 
-
-caddr_t _sbrk ( int incr )
-{
-	void *prev_heap;
-
-    
-    if(heap == NULL){
+    if (heap == NULL) {
         heap = &__HEAP_START;
     }
     prev_heap = heap;
-    if(((uint32_t)heap + incr) > HEAP_END){
+    if (((uint32_t)heap + incr) > HEAP_END) {
         printf("heap:%p, incr:%d\n", heap, incr);
         return 0;
     }
@@ -75,10 +69,9 @@ caddr_t _sbrk ( int incr )
     return (caddr_t)prev_heap;
 }
 
-size_t xPortGetFreeHeapSize( void ){
-	return HEAP_END - (uint32_t)heap;
+size_t xPortGetFreeHeapSize(void) {
+    return HEAP_END - (uint32_t)heap;
 }
-
 
 int _close_r(struct _reent *pReent, int fd) {
     pReent->_errno = ENOTSUP;
@@ -150,9 +143,7 @@ _ssize_t _rename_r(struct _reent *pReent, const char *oldname, const char *newna
     return -1;
 }
 
-
-int _stat_r(struct _reent *pReent, const char *__restrict __path, struct stat *__restrict __sbuf )
-{
+int _stat_r(struct _reent *pReent, const char *__restrict __path, struct stat *__restrict __sbuf) {
     pReent->_errno = ENOTSUP;
     return -1;
 }
@@ -172,25 +163,28 @@ int _wait_r(struct _reent *pReent, int *wstat) {
     return -1;
 }
 
+char log_buf[SYS_LOG_BUFSIZE] = {0};
+uint32_t log_i = 0, log_j = 0;
+
+extern uint32_t g_CDC_TransTo;
 _ssize_t _write_r(struct _reent *pReent, int fd, const void *buf, size_t nbytes) {
 
     int i;
 
-	if(fd < 3){
+    if (fd < 3) {
         pReent->_errno = 0;
-        for(i = 0; i < nbytes; i++){
-            uart_putc(((char *)buf)[i]);
-
-            if(tud_cdc_available()){
-                tud_cdc_n_write_char(0, ((char *)buf)[i]);
-                if(((char *)buf)[i] == '\n'){
-                    tud_cdc_write_flush();
-                }
+        int k = 0;
+        while (k < nbytes) {
+            log_buf[log_i++] = ((char *)buf)[k++];
+            if (log_i > SYS_LOG_BUFSIZE) {
+                log_i = 0;
             }
-
+        }
+        
+        for (i = 0; i < nbytes; i++) {
+            uart_putc(((char *)buf)[i]);
         }
         return i;
-
     }
     return -1;
 }
@@ -204,44 +198,11 @@ int _gettimeofday_r(struct _reent *pReent, struct timeval *__tp, void *__tzp) {
  * write "len" of char from "ptr" to file id "fd"
  * Return number of char written.
  *
-* Only work for STDOUT, STDIN, and STDERR
+ * Only work for STDOUT, STDIN, and STDERR
  */
-/*
-char kmsgBuff[4096];
-unsigned int kmsgBuff_ptr = 0;
-
-int _write(int fd, char *ptr, int len) {
-    
-	//asm volatile ("ldr r0,%0" :: "m"(fd));
-	//asm volatile ("ldr r1,%0" :: "m"(ptr));
-	//asm volatile ("ldr r2,%0" :: "m"(len));
-	//asm volatile ("swi #1000");
-	
-
-    int i = 0;
-
-    if (fd > 2) {
-        return -1;
-    }
-
-    while (*ptr && (i < len)) {
-        kmsgBuff[kmsgBuff_ptr++] = *ptr;
-        if (kmsgBuff_ptr > 4096) {
-            kmsgBuff_ptr = 0;
-        }
-        uartdbg_putc(*ptr);
-        //console_puts(*ptr);
-
-        i++;
-        ptr++;
-    }
-
-    return i;
-}
-*/
 
 int fsync(int __fd) {
-    
+
     return 0;
 }
 
@@ -251,7 +212,7 @@ char *getcwd(char *buf, size_t size) {
 }
 
 void abort(void) {
-    //Abort called
+    // Abort called
     while (1)
         ;
 }

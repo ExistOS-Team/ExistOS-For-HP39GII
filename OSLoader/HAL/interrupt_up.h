@@ -18,7 +18,9 @@ typedef enum IRQTypes
     IRQType_MTD_DMA,
     IRQType_MTD_ECC,
     IRQType_MTD,
-    IRQType_DISP
+    IRQType_DISP,
+    IRQType_LRADC,
+    IRQType_PWR
 
 }IRQTypes;
 
@@ -39,7 +41,7 @@ void portEnableIRQ(unsigned int IRQNum, unsigned int enable);
 
 
 void register_ISR(IRQNumber IRQNum, IRQTypes IRQType, IRQCallback cb);
-bool up_isr( void );
+void up_isr( void );
 void IRQInit( void );
 void IRQTimerEnable( void );
 

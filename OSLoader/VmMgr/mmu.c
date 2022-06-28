@@ -1,4 +1,7 @@
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 #include "regsdigctl.h"
 
 #include "SystemConfig.h"
@@ -11,9 +14,8 @@
 
 #define L1PTE_NUM       (4096)
 
-uint32_t L1PTE[L1PTE_NUM] __attribute__((aligned(16384)));
-
-uint32_t DFLPT_BASE = (uint32_t)&L1PTE;
+uint32_t L1PTE[L1PTE_NUM] __attribute__((aligned(16384)));  //Must 16KB aligned
+uint32_t DFLPT_BASE = (uint32_t)L1PTE;
 
 uint32_t L2PTE[TOTAL_VM_SEG * 256]  __attribute__((aligned(1024)));
 
@@ -90,7 +92,7 @@ void mmu_invalidate_tlb()
 
 void mmu_invalidate_icache()
 {
-    register uint32_t value;
+    register uint32_t value asm("r0");
 
     value = 0;
 
@@ -100,7 +102,7 @@ void mmu_invalidate_icache()
 
 void mmu_invalidate_dcache_all()
 {
-    register uint32_t value;
+    register uint32_t value asm("r0");
 
     value = 0;
 
@@ -108,7 +110,7 @@ void mmu_invalidate_dcache_all()
 }
 
 volatile void mmu_set_rs(uint32_t rs) {                
-    register uint32_t c1_r;                  
+    register uint32_t c1_r = 0;                  
     asm volatile("mrc p15, 0, %0, c1, c0, 0" ::"r"(c1_r)); 
     c1_r &= 0xFFFFFCFF;
     c1_r |= (rs & 0x3) << 8;
@@ -186,11 +188,11 @@ static inline void SetL1PTE(uint32_t pte, uint32_t interpret, uint32_t targetAdd
             PTE_LOC[pte] |= (1) << 2;
         break;
     default:
-        INFO("ERROR: Don't Support L1 Interpret:%d\n", interpret);
+        INFO("ERROR: Unexpected L1 Interpret:%lu\n", interpret);
         break;
     }
 
-    INFO("WR PTE:%08x\n",PTE_LOC[pte]);
+    VM_INFO("WR PTE:%08x\n",PTE_LOC[pte]);
 }
 
 void mmu_dumpMapInfo()
@@ -202,19 +204,19 @@ void mmu_dumpMapInfo()
             switch (GetPTEMapType(L1PTE[i]))
             {
             case L1PTE_INTERPRET_SECTION:
-                INFO("L1PTE:  VirtAddr:%08x ~ %08x  MapTo  %08x ~ %08x\n",
+                INFO("L1PTE:  VirtAddr:%08x ~ %08x  MapTo  %08lx ~ %08lx\n",
                     i*SEG_SIZE,(i+1)*SEG_SIZE - 1, 
                     (L1PTE[i] & 0xFFF00000), (L1PTE[i] & 0xFFF00000) | (SEG_SIZE - 1));
                     
                 break;
             case L1PTE_INTERPRET_COARSE:
-                INFO("L1PTE:  Seg %d(%08x) Reference L2 Table:%08x:\n",
+                INFO("L1PTE:  Seg %d(%08x) Reference L2 Table:%08lx:\n",
                     i, i*SEG_SIZE, (L1PTE[i] & ~0x3FF));
 
                     uint32_t *L2PTE = ((uint32_t *)(L1PTE[i] & ~0x3FF));
                     for(int j=0; j<256; j++){
                         if(L2PTE[j] != 0){
-                            INFO("\tL2PTE:  VirtAddr:%08x ~ %08x MapTo %08x ~ %08x, AP:%x, buffer:%d, cache:%d, VAL:%08x\n",
+                            INFO("\tL2PTE:  VirtAddr:%08x ~ %08x MapTo %08lx ~ %08lx, AP:%lx, buffer:%ld, cache:%ld, VAL:%08lx\n",
                                 i*SEG_SIZE + j*PAGE_SIZE, i*SEG_SIZE + (j+1)*PAGE_SIZE - 1,
                                 (L2PTE[j] & 0xFFFFF000), (L2PTE[j] & 0xFFFFF000) | (PAGE_SIZE - 1),
                                 (L2PTE[j] >> 4) & 0xFF,
@@ -235,6 +237,11 @@ void mmu_dumpMapInfo()
 
 void mmu_unmap_page(uint32_t vaddr)
 {
+    if(vaddr >> 20 == 0)
+    {
+        INFO("Can not ummap seg 0!\n");
+        return;
+    }
     uint32_t *L1PTE = (uint32_t *)DFLPT_BASE;
     uint32_t *L2PTE = ((uint32_t *)(L1PTE[  vaddr >> 20 ] & ~0x3FF));
     L2PTE[(vaddr >> 12) & 0xFF] = 0;
@@ -243,7 +250,11 @@ void mmu_unmap_page(uint32_t vaddr)
 void mmu_map_page(uint32_t vaddr, uint32_t paddr,
     uint32_t AP, bool cache, bool buffer)
 {
-    
+    if(vaddr >> 20 == 0)
+    {
+        INFO("Can not remap seg 0!\n");
+        return;
+    }
     uint32_t *L1PTE = (uint32_t *)DFLPT_BASE;
     uint32_t *L2PTE = ((uint32_t *)(L1PTE[  vaddr >> 20 ] & ~0x3FF));
     uint32_t val = 0;
@@ -268,9 +279,9 @@ void mmu_init()
     memset(L2PTE, 0, sizeof(L2PTE));
     memset(L1PTE, 0, sizeof(L1PTE));
 
-    SetMPTELoc(0, 0);
+    //SetMPTELoc(0, 0);
     SetL1PTE(0      , L1PTE_INTERPRET_SECTION, 0         , OSLOADER_MEMORY_DOMAIN, AP_SYSRW_USROR, false, false);
-    SetL1PTE(0x800  , L1PTE_INTERPRET_SECTION, 0x80000000, HARDWARE_MEMORY_DOMAIN, AP_SYSRW_USRRW, false, false);
+    SetL1PTE(0x800  , L1PTE_INTERPRET_SECTION, 0x80000000, HARDWARE_MEMORY_DOMAIN, AP_SYSRW_USRNONE, false, false);
     
     uint32_t j = 0;
     for(int i = 0; i < VM_ROM_NUM_SEG; i++)
@@ -295,12 +306,12 @@ void mmu_init()
 
     mmu_set_rs(2);
 
-    mmu_dumpMapInfo();
+    //mmu_dumpMapInfo();
 
     mmu_enable(DFLPT_BASE);
 
 
     VM_INFO("L2 PTE Size:%d\n",sizeof(L2PTE));
-    mmu_dumpMapInfo();
+    //mmu_dumpMapInfo();
 }
 

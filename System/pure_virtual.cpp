@@ -7,6 +7,6 @@ extern "C" {
  * This is an error case, so we just redirect it to abort. */
 
 extern "C" void __cxa_pure_virtual() {
-  printf("__cxa_pure_virtual\n");
+  printf("Unsupported pure-virtual method.\n");
   while(1);
 }

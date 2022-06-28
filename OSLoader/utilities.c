@@ -43,7 +43,7 @@ uint32_t _rand(void)
     return value;
 }
 
-
+/*
 
 void memTest()
 {
@@ -80,7 +80,7 @@ void memTest()
       //INFO("RD ADDR:%08x\n", &testaddr[p] );
       chkVal = _rand();
       if(testaddr[p] != chkVal){
-        INFO("RAND TestERRORAt:%08x  %08x==%08x\n", &testaddr[p/4], testaddr[p/4],   chkVal  );
+        INFO("RAND TestERRORAt:%08vlx  %08lx==%08vlx\n", &testaddr[p/4], testaddr[p/4],   chkVal  );
       }
 
       if((i % (1 * 1024 / 4)) == 0){ 
@@ -110,7 +110,7 @@ void memTest()
   for(int i = 0; i < (1*1024 * 1024 / 4) ; i+=(4096+1024)){
     chkVal =  _rand();
     if(testaddr[i] != chkVal){
-      INFO("TestERRORAt:%08x  %08x==%08x\n", &testaddr[i], testaddr[i],   chkVal  );
+      INFO("TestERRORAt:%08vlx  %08vlx==%08vlx\n", &testaddr[i], testaddr[i],   chkVal  );
     }
     if((i % (32 * 1024 / 4)) == 0){
       INFO("RB TEST:%d/%d\n", i, (1 * 1024 * 1024 / 4));
@@ -139,7 +139,7 @@ seedx++;
   for(int i = 0; i < (1*4 * 1024 / 4) ; i++){
     chkVal =  _rand();
     if(testaddr[i] != chkVal){
-      INFO("TestERRORAt:%08x  %08x==%08x\n", &testaddr[i], testaddr[i],   chkVal  );
+      INFO("TestERRORAt:%08vlx  %08vlx==%08vlx\n", &testaddr[i], testaddr[i],   chkVal  );
     }
     if((i % (1 * 1024 / 4)) == 0){
       INFO("RB TEST:%d/%d\n", i, (1 * 4 * 1024 / 4));
@@ -176,7 +176,7 @@ void checkFlash()
         sumTime += (endTime - startTime);
       }
 
-      printf("BLOCK %d Write Finish: %u KB/s \n", block, 128 * 1024 * 1000/sumTime);
+      printf("BLOCK %d Write Finish: %lu KB/s \n", block, 128 * 1024 * 1000/sumTime);
 
       printf("READ BACK TEST\n");
       volatile uint32_t RB_DAT;
@@ -188,7 +188,7 @@ void checkFlash()
           volatile uint32_t testVal = _rand();
           MTD_ReadPhyPage(page + block*64, ptr * 4, 4, (uint8_t *)&RB_DAT);
           if(RB_DAT != testVal){
-            printf("   TEST ERROR:[block:%d, page:%d, off:%d][%08x != %08x]\n",block, page, ptr*4, testVal, RB_DAT);
+            printf("   TEST ERROR:[block:%d, page:%d, off:%ld][%08lx != %08lx]\n",block, page, ptr*4, testVal, RB_DAT);
           }
         }
       }
@@ -196,3 +196,4 @@ void checkFlash()
 
     }
 }
+*/

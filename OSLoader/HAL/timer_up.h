@@ -12,13 +12,11 @@ bool portEnableTimerIRQ(int timer, bool enable);
 bool portEnableTimer(int timer, bool enable);
 void portTimerInit(void);
 
-void portAckTimerIRQ(IRQNumber IRQNum, IRQInfo IRQInfo);
-int portGetHighFrequencyTimer(void);
-int portGetLowFrequencyTimer(void);
+void portAckTimerIRQ(void);
+int portGetTimer(void);
 
 bool up_TimerSetup(void);
 void up_TimerIRQ(IRQNumber IRQNum);
-void up_LowFrequencyTimerTick(void);
-void up_HighFrequencyTimerTick(void);
+void up_TimerTick(void);
 
 #endif

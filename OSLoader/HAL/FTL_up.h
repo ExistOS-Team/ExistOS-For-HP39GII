@@ -8,10 +8,18 @@
 #include "semphr.h"
 #include "event_groups.h"
 
+#include "SystemConfig.h"
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "map.h"
 
+#define BAD_BLOCK           (0)
+#define DATA_BLOCK          (0xDADADADA)
+#define GOOD_BLOCK          (0xFFFFFFFF)
+
+#define DATA_START_BLOCK    FLASH_DATA_BLOCK
+#define GC_RATIO        10
 
 typedef enum {
     FTL_SECTOR_READ,
@@ -27,8 +35,9 @@ typedef struct
     uint32_t sector;
     uint32_t num;
     uint8_t *buf;
-    EventBits_t BLock;
-    int32_t *StatusBuf;
+    //EventBits_t BLock;
+    //int32_t *StatusBuf;
+    TaskHandle_t task;
 }FTL_Operates;
 
 typedef struct PartitionInfo_t
@@ -39,7 +48,7 @@ typedef struct PartitionInfo_t
 }PartitionInfo_t;
 
 int FTL_init(void);
-void FTL_MapInit(void);
+int FTL_MapInit(void);
 bool FTL_inited(void);
 void FTL_task(void);
 

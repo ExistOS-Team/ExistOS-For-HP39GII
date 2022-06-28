@@ -27,9 +27,13 @@
 
 void mmu_init(void);
 
-void mmu_map_page(uint32_t vaddr, uint32_t paddr,
-    uint32_t AP, bool cache, bool buffer);
-
+void mmu_map_page(
+    uint32_t vaddr, 
+    uint32_t paddr,
+    uint32_t AP, 
+    bool cache, 
+    bool buffer
+    );
 
 void mmu_unmap_page(uint32_t vaddr);
 

@@ -19,8 +19,11 @@ include_directories(./LowLevelAPI)
 include_directories(./Scheduler/porting)
 include_directories(./Component3rd/tinyusb)
 include_directories(./Component3rd/tinyusb/device)
+include_directories(./Component3rd/tinyusb/class/hid)
+include_directories(./Component3rd/tinyusb/class/net)
+include_directories(./Component3rd/tinyusb/class/vendor)
 include_directories(./Component3rd/dhara)
-include_directories(./Component3rd/FatFs)
+#include_directories(./Component3rd/FatFs)
 
 aux_source_directory(.                                  LOADER_SRCS)
 aux_source_directory(./Scheduler                        LOADER_SRCS)
@@ -36,17 +39,20 @@ aux_source_directory(./Component3rd/tinyusb/device      LOADER_SRCS)
 aux_source_directory(./Component3rd/tinyusb/common      LOADER_SRCS)
 aux_source_directory(./Component3rd/tinyusb/class/cdc   LOADER_SRCS)
 aux_source_directory(./Component3rd/tinyusb/class/msc   LOADER_SRCS)
+aux_source_directory(./Component3rd/tinyusb/class/hid   LOADER_SRCS)
+aux_source_directory(./Component3rd/tinyusb/class/net   LOADER_SRCS)
+aux_source_directory(./Component3rd/tinyusb/class/vendor   LOADER_SRCS)
 aux_source_directory(./Component3rd/dhara               LOADER_SRCS)
-aux_source_directory(./Component3rd/FatFs               LOADER_SRCS)
+#aux_source_directory(./Component3rd/FatFs               LOADER_SRCS)
 
 
 add_executable(rom.elf ${LOADER_SRCS})
 
-target_link_libraries(rom.elf -lm -lc_nano -nostartfiles)
+target_link_libraries(rom.elf PRIVATE -lm -lc_nano -nostartfiles)
 
 target_compile_options(rom.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -marm
--Os -pipe -fdata-sections -ffunction-sections -fcommon)
-
+-Os -pipe -fdata-sections -ffunction-sections -fcommon -finline-functions -Wall)
+ 
 
 add_custom_command(TARGET rom.elf POST_BUILD
     COMMAND arm-none-eabi-size ${CMAKE_CURRENT_BINARY_DIR}/rom.elf 
@@ -65,10 +71,26 @@ add_custom_target(
   DEPENDS rom.bin
   )
 add_custom_target(
-  flash 
+  sb_flash 
   COMMAND ${CMAKE_SOURCE_DIR}/tools/sbtools_win/sb_loader -f ${CMAKE_CURRENT_BINARY_DIR}/OSLoader.sb 
   DEPENDS OSLoader.sb
   )
+
+add_custom_target(
+    edb_flash_loader 
+    COMMAND ${CMAKE_SOURCE_DIR}/tools/edb -r -s -f ${CMAKE_CURRENT_BINARY_DIR}/OSLoader.sb 1408 b
+    DEPENDS OSLoader.sb
+    )
+
+add_custom_target(
+      mscmode 
+      COMMAND ${CMAKE_SOURCE_DIR}/tools/edb -m
+      )
+
+add_custom_target(
+    reboot 
+    COMMAND ${CMAKE_SOURCE_DIR}/tools/edb -r
+    )
 else()
 if(EXISTS ${CMAKE_SOURCE_DIR}/tools/sbtools/  )
 add_custom_target(

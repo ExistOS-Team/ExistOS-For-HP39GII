@@ -777,7 +777,7 @@ void vTaskDelete( TaskHandle_t xTaskToDelete ) PRIVILEGED_FUNCTION;
  * \ingroup TaskCtrl
  */
 void vTaskDelay( const TickType_t xTicksToDelay ) PRIVILEGED_FUNCTION;
-
+void vTaskDelayInSWI(const TickType_t xTicksToDelay) PRIVILEGED_FUNCTION;
 /**
  * task. h
  * <pre>

@@ -17,6 +17,14 @@ void dbg_printf(char *fmt, ...);
 
 
 //#define MTD_INFO(...) do{printf(__VA_ARGS__);}while(0)
+#define MTD_INFO_READ(...)  
+#define MTD_INFO_WRITE(...) 
+#define MTD_INFO_ERASE(...) 
+/*
+#define MTD_INFO_READ(...)  do{printf(__VA_ARGS__);}while(0)
+#define MTD_INFO_WRITE(...) do{printf(__VA_ARGS__);}while(0)
+#define MTD_INFO_ERASE(...) do{printf(__VA_ARGS__);}while(0)
+*/
 #define MTD_INFO(...) 
 #define MTD_WARN(...) do{printf(__VA_ARGS__);}while(0)
 
@@ -29,6 +37,7 @@ void dbg_printf(char *fmt, ...);
 #define VM_INFO(...) 
 #define FAULT_INFO(...) 
 //#define FAULT_INFO(...) do{printf(__VA_ARGS__);}while(0)
+
 #define VM_ERR(...) do{printf(__VA_ARGS__);}while(0)
 
 #define LLAPI_INFO(...)

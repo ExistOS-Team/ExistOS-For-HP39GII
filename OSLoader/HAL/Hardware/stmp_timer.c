@@ -35,26 +35,10 @@ void portTimerInit(void)
 
 
 
-void portAckTimerIRQ(IRQNumber IRQNum, IRQInfo IRQInfo)
+void portAckTimerIRQ(void)
 {
-    
-    switch (IRQNum)
-    {
-    case HW_IRQ_TIMER0:
-        
-        BF_CLRn(TIMROT_TIMCTRLn, 0, IRQ);
-        up_LowFrequencyTimerTick();
-        return;/*
-    case HW_IRQ_TIMER1:
-        
-        BF_CLRn(TIMROT_TIMCTRLn, 1, IRQ);
-
-        return;
-*/
-    default:
-        PANNIC("ERR IRQNum%d\n", IRQNum);
-        return;
-    }
+    BF_CLRn(TIMROT_TIMCTRLn, 0, IRQ);
+    up_TimerTick();
 }
 
 bool portEnableTimerIRQ(int timer, bool enable)
@@ -123,14 +107,10 @@ bool portSetTimerPeriod(int timer, unsigned int us)
 }
 
 int portGetTimerNum(void){
-    return 2;
+    return 1;
 }
 
 
-int portGetLowFrequencyTimer(void){
+int portGetTimer(void){
     return HW_IRQ_TIMER0;
-}
-
-int portGetHighFrequencyTimer(void){
-    return HW_IRQ_TIMER1;
 }

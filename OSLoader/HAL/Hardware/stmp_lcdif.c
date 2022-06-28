@@ -14,6 +14,8 @@
 #include "board_up.h"
 
 //Screen Size (8 + {127) * 256}
+#define DISPLAY_INVERSE     (1)
+
 #define SCREEN_START_Y      (8)     //0 - 126
 #define SCREEN_END_Y        (134)
 
@@ -65,12 +67,12 @@ typedef struct LCDIF_Timing_t {
 
 static struct LCDIF_Timing_t defaultTiming =
 {
-        .DataSetup_ns = 50,
-        .DataHold_ns = 50,
-        .CmdSetup_ns = 55,
-        .CmdHold_ns = 55,
-        .minOpaTime_us = 40,
-        .minReadBackTime_us = 15
+        .DataSetup_ns = 50 + 10,
+        .DataHold_ns = 0 + 0,
+        .CmdSetup_ns = 15 + 10,
+        .CmdHold_ns = 15 + 10,
+        .minOpaTime_us = 10,
+        .minReadBackTime_us = 30
 };
 
 static uint64_t LCDIFFreq;
@@ -78,11 +80,9 @@ static uint64_t LCDIFFreq;
 static LCDIF_DMADesc chains_wr;
 static LCDIF_DMADesc chains_emitIRQ;
 
-static bool opaFinish;
+static volatile bool opaFinish;
 
-static uint32_t lastOpaTime;
-
-static uint8_t lineBuffer[SCREEN_WIDTH];
+static uint8_t lineBuffer[SCREEN_WIDTH + 4] __aligned(4);
 
 void portDispInterfaceInit()
 {
@@ -105,20 +105,24 @@ void portDispInterfaceInit()
         BANK1_PIN17, 0,
         BANK1_PIN16, 0);
 
-    LCDIFFreq = 48000000;
+    //LCDIFFreq = 96000000;
+
+    //LCDIFFreq = 480000000 / 10;
+    //LCDIFFreq = 480000000UL / 5;
+    LCDIFFreq = 24000000;
 
 
 
-
-    BF_CLR(CLKCTRL_FRAC, CLKGATEPIX);
-    BF_CLR(CLKCTRL_CLKSEQ, BYPASS_PIX); //bypass 24MHz XTAL
-    BF_WR(CLKCTRL_FRAC, PIXFRAC, 0x12); //PLL Output (480 * (18/0x12)) MHz
+    //BF_CLR(CLKCTRL_FRAC, CLKGATEPIX);
+    //BF_CLR(CLKCTRL_CLKSEQ, BYPASS_PIX); //bypass 24MHz XTAL
+    //BF_WR(CLKCTRL_FRAC, PIXFRAC, 18); //PLL Output (480 * (18/18)) MHz
 
     BF_CLR(CLKCTRL_PIX, CLKGATE);
-    BF_WR(CLKCTRL_PIX, DIV, 10); //PLL Output / 10 = 48MHz
+    //BF_WR(CLKCTRL_PIX, DIV, 5);
 
     
 }
+
 
 static bool LCDIF_checkSendFinish()
 {
@@ -127,8 +131,17 @@ static bool LCDIF_checkSendFinish()
 
 static bool LCDIF_checkReceiveFinish()
 {
+    
     return BF_RD(LCDIF_STAT, RXFIFO_EMPTY);
 }
+
+static bool LCDIF_checkDMAFin()
+{
+    return !((HW_APBH_CHn_DEBUG2(0).B.AHB_BYTES) && (HW_APBH_CHn_DEBUG2(0).B.APB_BYTES));
+    //return ((HW_APBH_CHn_SEMA(0).B.INCREMENT_SEMA)==0);
+}
+
+
 
 static void LCDIF_EnableDMAChannel(bool enable)
 {
@@ -162,11 +175,12 @@ static void LCDIF_DMAChainsInit()
     memset(&chains_wr, 0, sizeof(chains_wr));
     memset(&chains_emitIRQ, 0, sizeof(chains_emitIRQ));
 
-    chains_wr.pNext = &chains_emitIRQ;
-    chains_wr.DMA_Semaphore = 0;
+    chains_wr.pNext = NULL;
+    //chains_wr.pNext = &chains_emitIRQ;
+    chains_wr.DMA_Semaphore = 1;
     chains_wr.DMA_Command = BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ);
-    chains_wr.DMA_Chain = 1;
-    chains_wr.DMA_IRQOnCompletion = 0;
+    chains_wr.DMA_Chain = 0;
+    chains_wr.DMA_IRQOnCompletion = 1;
     chains_wr.DMA_NANDLock = 0;
     chains_wr.DMA_NANDWaitForReady = 0;
     chains_wr.DMA_PIOWords = 1;
@@ -200,8 +214,20 @@ static void LCDIF_WriteCMD(uint8_t *dat, uint32_t len)
 
     //while((portBoardGetTime_us() - lastOpaTime) < defaultTiming.minOpaTime_us)
     //    ;
-    while(!LCDIF_checkReceiveFinish());
-    while(!LCDIF_checkSendFinish());
+    //while(!LCDIF_checkReceiveFinish());
+/*
+    while(BF_RD(LCDIF_STAT, TXFIFO_EMPTY) == false)
+        ;*/
+
+    //while(!opaFinish);
+
+    driverWaitTrueF(LCDIF_checkSendFinish, 1000);
+    driverWaitTrueF(LCDIF_checkDMAFin, 1000);
+
+    //while ((HW_APBH_CHn_SEMA(0).B.INCREMENT_SEMA))
+    //    ;
+
+    //opaFinish = false;
 
     chains_wr.DMA_Command = BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ);
     chains_wr.PioWord.B.DATA_SELECT = 0; //0:command mode   1:data mode
@@ -210,13 +236,20 @@ static void LCDIF_WriteCMD(uint8_t *dat, uint32_t len)
     chains_wr.DMA_XferBytes = len;
     chains_wr.PioWord.B.COUNT = len;
 
-    while ((HW_APBH_CHn_SEMA(0).B.INCREMENT_SEMA))
-        ;
+
 
     BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t)&chains_wr); 
     BW_APBH_CHn_SEMA_INCREMENT_SEMA(0, 1);
 
-    lastOpaTime = portBoardGetTime_us();
+    
+    driverWaitTrueF(LCDIF_checkDMAFin, 1000);
+    driverWaitTrueF(LCDIF_checkSendFinish, 1000);
+
+    //INFO("wcs\n");
+    //portDelayus(20);
+    //INFO("wce\n");
+
+    //lastOpaTime = portBoardGetTime_us();
     //INFO("LCDIF WR CMD Fin\n");
 }
 
@@ -225,9 +258,16 @@ static void LCDIF_WriteDAT(uint8_t *dat, uint32_t len)
 
     //while((portBoardGetTime_us() - lastOpaTime) < defaultTiming.minOpaTime_us)
     //    ;
-    while(!LCDIF_checkReceiveFinish());
-    while(!LCDIF_checkSendFinish());
-    
+    //while(!LCDIF_checkReceiveFinish());
+
+    //while(BF_RD(LCDIF_STAT, TXFIFO_EMPTY) == false);
+    //while(!opaFinish);
+    driverWaitTrueF(LCDIF_checkSendFinish, 1000);
+    driverWaitTrueF(LCDIF_checkDMAFin, 1000);
+    //while ((HW_APBH_CHn_SEMA(0).B.INCREMENT_SEMA))
+    //   ;
+
+    //opaFinish = false;
     chains_wr.DMA_Command = BV_FLD(APBH_CHn_CMD, COMMAND, DMA_READ);
     chains_wr.PioWord.B.DATA_SELECT = 1; //0:command mode   1:data mode
     chains_wr.PioWord.B.READ_WRITEB = 0; //0:write mode     1:read mode
@@ -235,12 +275,18 @@ static void LCDIF_WriteDAT(uint8_t *dat, uint32_t len)
     chains_wr.DMA_XferBytes = len;
     chains_wr.PioWord.B.COUNT = len;
 
-    while ((HW_APBH_CHn_SEMA(0).B.INCREMENT_SEMA))
-        ;
+
 
     BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t)&chains_wr); 
     BW_APBH_CHn_SEMA_INCREMENT_SEMA(0, 1);
-    lastOpaTime = portBoardGetTime_us();
+
+    driverWaitTrueF(LCDIF_checkDMAFin, 1000);
+    driverWaitTrueF(LCDIF_checkSendFinish, 1000);
+
+    //INFO("wds\n");
+    //portDelayus(20);
+    //INFO("wde\n");
+    //lastOpaTime = portBoardGetTime_us();
     //INFO("LCDIF WR DAT Fin\n");
 
 }
@@ -249,9 +295,19 @@ static void LCDIF_ReadDAT(uint8_t *dat, uint32_t len)
 {
     //while((portBoardGetTime_us() - lastOpaTime) < defaultTiming.minOpaTime_us)
     //    ;
-    while(!LCDIF_checkSendFinish());
-    while(!LCDIF_checkReceiveFinish());
+    //while(!LCDIF_checkSendFinish());
 
+    //while(BF_RD(LCDIF_STAT, RXFIFO_EMPTY) == false);
+
+
+    //while(!opaFinish);
+
+    driverWaitTrueF(LCDIF_checkReceiveFinish, 1000);
+    driverWaitTrueF(LCDIF_checkDMAFin, 1000);
+    //while ((HW_APBH_CHn_SEMA(0).B.INCREMENT_SEMA))
+    //    ;
+
+    //opaFinish = false;
     chains_wr.DMA_Command = BV_FLD(APBH_CHn_CMD, COMMAND, DMA_WRITE);
     chains_wr.PioWord.B.DATA_SELECT = 1; //0:command mode   1:data mode
     chains_wr.PioWord.B.READ_WRITEB = 1; //0:write mode     1:read mode
@@ -259,16 +315,32 @@ static void LCDIF_ReadDAT(uint8_t *dat, uint32_t len)
     chains_wr.DMA_XferBytes = len;
     chains_wr.PioWord.B.COUNT = len;
 
-    while ((HW_APBH_CHn_SEMA(0).B.INCREMENT_SEMA))
-        ;
-
     BF_WRn(APBH_CHn_NXTCMDAR, 0, CMD_ADDR, (reg32_t)&chains_wr); 
     BW_APBH_CHn_SEMA_INCREMENT_SEMA(0, 1);
 
-    lastOpaTime = portBoardGetTime_us();
+    //while ((HW_APBH_CHn_SEMA(0).B.INCREMENT_SEMA))
+    //    ;
 
     //while(!LCDIF_checkReceiveFinish());
-    portDelayus(defaultTiming.minReadBackTime_us);
+
+    driverWaitTrueF(LCDIF_checkReceiveFinish, 10000);
+    driverWaitTrueF(LCDIF_checkDMAFin, 10000);
+    
+
+    //portDelayus(500);
+
+    //while(HW_APBH_CHn_DEBUG2(0).B.AHB_BYTES);
+    //while(HW_APBH_CHn_DEBUG2(0).B.APB_BYTES);
+
+
+    //INFO("rds\n");
+
+    //
+    
+    //INFO("rde\n");
+    //portDelayus(defaultTiming.minReadBackTime_us);
+
+    //lastOpaTime = portBoardGetTime_us();
     //INFO("LCDIF RD DAT Fin\n");
 
 }
@@ -291,8 +363,11 @@ void portDISP_ISR()
         BF_CLR(LCDIF_CTRL1, UNDERFLOW_IRQ);
     }
 
-
+    
+    
     BF_CLR(APBH_CTRL1, CH0_CMDCMPLT_IRQ);
+
+    opaFinish = true;
 }
 
 void portDispClean()
@@ -311,7 +386,7 @@ void portDispClean()
     LCDIF_CMD8(0x2C);
    
     for(int i = 0; i < sizeof(zeros)/sizeof(uint32_t); i++){
-        zeros[i] = 0;
+        zeros[i] = DISPLAY_INVERSE ? 0xFFFFFFFF :  0x00000000;
     }
 
     for(int i = 0; i < (((end_x - start_x + 1)*(end_y - start_y + 1))*3) ; i += sizeof(zeros))
@@ -323,15 +398,34 @@ void portDispClean()
 
 
 
-
-void portDispSetIndicate(uint32_t indicateBit, uint8_t batteryBit)
+int save_bat = 0;
+int save_ind_bit = 0;
+void portDispSetIndicate(int indicateBit, int batteryBit)
 {
     uint32_t sx,sy,ex,ey;
-
+    uint8_t setbit, setBat;
     sx = 0;
     ex = 86;
     sy = 0;
     ey = 24;
+
+
+    if(indicateBit == -1)
+    {
+        setbit = save_ind_bit;
+    }else{
+        setbit = indicateBit;
+        save_ind_bit = indicateBit;
+    }
+
+    if(batteryBit == -1)
+    {
+        setBat = save_bat;
+    }else{
+        save_bat = batteryBit;
+        setBat = batteryBit;
+    }
+
 
     LCDIF_CMD8(0x2A);
     LCDIF_DAT32( BigEnd16( sx ) | BigEnd16( ex ) << 16);
@@ -343,48 +437,48 @@ void portDispSetIndicate(uint32_t indicateBit, uint8_t batteryBit)
 
     for(int y = sy; y < ey; y++){
         for(int x = sx; x < ex; x++){
-
+            
             switch (x)
             {
             case 84:            //Battery Box
-                LCDIF_DAT8(0xFF);
+                LCDIF_DAT8(0);
                 break;
             case 76:            //Battery 1st Indication
-                LCDIF_DAT8((batteryBit >> 0) & 1 ? 0xFF : 0);
+                LCDIF_DAT8((setBat >> 0) & 1 ? 0 : 0xFF);
                 break;
             case 75:            //Battery 3rd Indication
-                LCDIF_DAT8((batteryBit >> 2) & 1 ? 0xFF : 0);
+                LCDIF_DAT8((setBat >> 2) & 1 ? 0 : 0xFF);
                 break;
             case 77:            //Battery 2rd Indication
-                LCDIF_DAT8((batteryBit >> 1) & 1 ? 0xFF : 0);
+                LCDIF_DAT8((setBat >> 1) & 1 ? 0 : 0xFF);
                 break;
             case 78:            //Battery 4th Indication
-                LCDIF_DAT8((batteryBit >> 3) & 1 ? 0xFF : 0);
+                LCDIF_DAT8((setBat >> 3) & 1 ? 0 : 0xFF);
                 break;
             case 10:            //A..Z
-                LCDIF_DAT8((indicateBit >> 2) & 1 ? 0xFF : 0);
+                LCDIF_DAT8((setbit >> 2) & 1 ? 0 : 0xFF);
                 break;
             case 28:            //TX
-                LCDIF_DAT8((indicateBit >> 5) & 1 ? 0xFF : 0);
+                LCDIF_DAT8((setbit >> 5) & 1 ? 0 : 0xFF);
                 break;
             case 37:            //Left
-                LCDIF_DAT8((indicateBit >> 0) & 1 ? 0xFF : 0);
+                LCDIF_DAT8((setbit >> 0) & 1 ? 0 : 0xFF);
                 break;
             case 44:            //a..z
-                LCDIF_DAT8((indicateBit >> 3) & 1 ? 0xFF : 0);
+                LCDIF_DAT8((setbit >> 3) & 1 ? 0 : 0xFF);
                 break;
             case 50:            //RX
-                LCDIF_DAT8((indicateBit >> 6) & 1 ? 0xFF : 0);
+                LCDIF_DAT8((setbit >> 6) & 1 ? 0 : 0xFF);
                 break;
             case 64:            //Right
-                LCDIF_DAT8((indicateBit >> 1) & 1 ? 0xFF : 0);
+                LCDIF_DAT8((setbit >> 1) & 1 ? 0 : 0xFF);
                 break;
             case 82:            //Busy
-                LCDIF_DAT8((indicateBit >> 4) & 1 ? 0xFF : 0);
+                LCDIF_DAT8((setbit >> 4) & 1 ? 0 : 0xFF);
                 break;
 
             default:
-                LCDIF_DAT8(0);
+                LCDIF_DAT8(0xFF);
             }
 
         }
@@ -420,7 +514,7 @@ void portDispReadBackVRAM(uint32_t x_start, uint32_t y_start, uint32_t x_end, ui
 
 
 }
-
+uint32_t dummy;
 void portDispFlushAreaBuf(uint32_t x_start, uint32_t y_start, uint32_t x_end, uint32_t y_end, uint8_t *buf)
 {
 
@@ -433,50 +527,65 @@ void portDispFlushAreaBuf(uint32_t x_start, uint32_t y_start, uint32_t x_end, ui
     {
         return;
     }
-/*
+
     if(
-        (x_start > SCREEN_WIDTH+4) ||
-        (x_end > SCREEN_WIDTH+4) ||
-        (y_start > SCREEN_END_Y+8) ||
-        (y_end > SCREEN_END_Y+8)
+        (x_start > SCREEN_WIDTH+1) ||
+        (x_end > SCREEN_WIDTH+1) ||
+        (y_start > SCREEN_END_Y+0) ||
+        (y_end > SCREEN_END_Y+0)
     
     ){
         return;
-    }*/
-    /*
-    if(((xstart % 3) == 0) && (((xend + 1) % 3) == 0)){
-        LCDIF_CMD8(0x2A);
-        LCDIF_DAT32( BigEnd16(xstart / 3) | BigEnd16(((xend + 1) / 3)) << 16);
-        LCDIF_CMD8(0x2B);
-        LCDIF_DAT32( BigEnd16(ystart) | BigEnd16(yend) << 16);
-        LCDIF_CMD8(0x2C);
-        LCDIF_WriteDAT(buf, (xend - xstart + 1) * (yend - ystart + 1) );
-        return;
     }
-*/
+
+    
+
+    LCDIF_CMD8(0x2A);
+    LCDIF_DAT32( BigEnd16(xstart / 3) | (BigEnd16(xend / 3) << 16));
+
     uint32_t p = 0;
+    lineBuffer[sizeof(lineBuffer) - 1] = 0x5A;
     for(uint32_t line_i = ystart; line_i <= yend; line_i++)
     { 
 
-        LCDIF_CMD8(0x2A);
-        LCDIF_DAT32( BigEnd16(xstart / 3) | (BigEnd16(xend / 3) << 16));
         LCDIF_CMD8(0x2B);
-        LCDIF_DAT32( BigEnd16(line_i) | (BigEnd16(line_i) << 16));
-        LCDIF_CMD8(0x2E);
-        LCDIF_ReadDAT(lineBuffer, ((xend / 3) - (xstart / 3) + 1) * 3 );
-        
+        LCDIF_DAT32( BigEnd16(line_i) | ((BigEnd16(line_i) << 16)));
+
+        if(xstart % 3)
+        {
+            LCDIF_CMD8(0x2E);
+            LCDIF_ReadDAT(lineBuffer, 3);
+        }
         memcpy(&lineBuffer[xstart % 3], &buf[ p ], xend - xstart + 1);
         p += xend - xstart + 1;
 
-        LCDIF_CMD8(0x2A);
-        LCDIF_DAT32( BigEnd16(xstart / 3) | (BigEnd16(xend / 3) << 16));
-        LCDIF_CMD8(0x2B);
-        LCDIF_DAT32( BigEnd16(line_i) | (BigEnd16(line_i) << 16));
         LCDIF_CMD8(0x2C);
-        LCDIF_WriteDAT(lineBuffer, ((xend / 3) - (xstart / 3) + 1) * 3 );
+
+        LCDIF_WriteDAT(lineBuffer, xend - xstart + 1 );
+
     }
+    if(lineBuffer[sizeof(lineBuffer) - 1] != 0x5A)
+    {
+        INFO("LineBuffer Error.\n");
+    }
+    //INFO("ed\n");
 
 }
+
+void DisplayPrepareBatchIn(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1)
+{
+    LCDIF_CMD8(0x2A);
+    LCDIF_DAT32( BigEnd16(x0 / 3) | (BigEnd16(x1 / 3) << 16));
+    LCDIF_CMD8(0x2B);
+    LCDIF_DAT32( BigEnd16(y0) | (BigEnd16(y1) << 16));
+}
+
+void DisplayBatchIn(uint8_t *dat, uint32_t len)
+{
+    LCDIF_CMD8(0x2C);
+    LCDIF_WriteDAT(dat, len);
+}
+
 
 
 void portDispSetContrast(uint8_t contrast)
@@ -505,8 +614,9 @@ void portDispDeviceInit()
 
     BF_SET(LCDIF_CTRL1, BUSY_ENABLE);
 
-    BF_SETV(LCDIF_CTRL1, READ_MODE_NUM_PACKED_SUBWORDS, 4);
-    BF_SETV(LCDIF_CTRL1, FIRST_READ_DUMMY, 1);
+    BF_CS1(LCDIF_CTRL1, BYTE_PACKING_FORMAT, 0xF);
+    BF_CS1(LCDIF_CTRL1, READ_MODE_NUM_PACKED_SUBWORDS, 4);
+    BF_CS1(LCDIF_CTRL1, FIRST_READ_DUMMY, 1);
 
     BF_CLR(LCDIF_CTRL1, RESET);
     portDelayus(20000);
@@ -532,12 +642,13 @@ void portDispDeviceInit()
     portDelayus(500000);
 
     LCDIF_CMD8(0x28); // Display off
+    
     LCDIF_CMD8(0xC0); // Set Vop by initial Module
     LCDIF_DAT8(0x01);
-    LCDIF_DAT8(0x01); // base on Module
+    LCDIF_DAT8(0x01); 
 
-    LCDIF_CMD8(0xF0); // Set Frame Rate
-    LCDIF_DAT32(0x0D0D0D0D);
+    //LCDIF_CMD8(0xF0); // Set Frame Rate
+    //LCDIF_DAT32(0x0D0D0D0D);
 
     LCDIF_CMD8(0xC3); // Bias select
     LCDIF_DAT8(0x02);
@@ -545,24 +656,35 @@ void portDispDeviceInit()
     LCDIF_CMD8(0xC4); // Setting Booster times
     LCDIF_DAT8(0x07);
 
+    LCDIF_CMD8(0xC5); // Booster Efficiency selection
+    LCDIF_DAT8(0x02);
+
     LCDIF_CMD8(0xD0); // Analog circuit setting
     LCDIF_DAT8(0x1D);
 
     LCDIF_CMD8(0xB5); // N-Line
     LCDIF_DAT8(0x8C);
     LCDIF_DAT8(0x00);
+
     LCDIF_CMD8(0x38); // Idle mode off
+
     LCDIF_CMD8(0x3A); // pix format
     LCDIF_DAT8(7);
 
     LCDIF_CMD8(0x36); // Memory Access Control
     LCDIF_DAT8(0x48);
+
     LCDIF_CMD8(0xB0); // Set Duty
     LCDIF_DAT8(0x87);
-    LCDIF_CMD8(0xB4);
-    LCDIF_DAT8(0xA0);
+    
+    LCDIF_CMD8(0xB4); // Partial Saving Power Mode Selection
+    LCDIF_DAT8(0xA0); 
 
     LCDIF_CMD8(0x29); //Display on
+    
+    if(DISPLAY_INVERSE)
+        LCDIF_CMD8(0x21); //Display inversion on
+
 
     uint8_t ID[3];
 
@@ -580,7 +702,8 @@ void portDispDeviceInit()
         printf("LCD ID[%d]:%02x\n",i, ID[i]);
     }
 
-    portDispSetContrast(51);
+
+    portDispSetContrast(57);
 
     portDispClean();
     

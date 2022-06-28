@@ -1,4 +1,6 @@
 
+#include "FreeRTOS.h"
+#include "task.h"
 
 #include "clkctrl_up.h"
 #include "uart_up.h"
@@ -11,14 +13,54 @@
 
 #include "../debug.h"
 
+bool driverWaitTrueF(bool (*f)(), TickType_t timeout)
+{
+    while(((*f)()) == false)
+    {
+        //vTaskDelay(1);
+        portDelayus(1);
+        if(timeout != portMAX_DELAY)
+        {
+            if(timeout >= 1)
+            {
+                timeout -= 1;
+            }else{
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool driverWaitFalseF(bool (*f)(), TickType_t timeout)
+{
+    while(((*f)()) == true)
+    {
+        //vTaskDelay(1);
+        portDelayus(1);
+        if(timeout != portMAX_DELAY)
+        {
+            if(timeout >= 1)
+            {
+                timeout -= 1;
+            }else{
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void boardInit(void)
 {
     INFO("portBoardInit\n");
     
     CLKCtrlInit();
 
-    portBoardInit();
     
+
+    portBoardInit();
+
     uartInit();
     
     IRQInit();
@@ -29,12 +71,10 @@ void boardInit(void)
     
     portKeyboardGPIOInit();
 
-
-}
-
-
-unsigned int boardGetSysTickCount()
-{
     
+
+    
+
 }
 
+ 

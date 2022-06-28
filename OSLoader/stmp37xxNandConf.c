@@ -187,4 +187,18 @@ void RestoreLDLB2()
 }
 
 
+void mkSTMPNandStructure(uint32_t OLStartBlock, uint32_t OLPages)
+{
+	mkNCB(0);
+	mkNCB(4);
+
+	mkDBBT(16);
+	mkDBBT(19);
+
+	mkLDLB(8,  OLStartBlock * 64, OLPages, 16 * 64, 19 * 64);
+	mkLDLB(12, OLStartBlock * 64, OLPages, 16 * 64, 19 * 64);
+
+	RestoreLDLB2();
+	
+}
 

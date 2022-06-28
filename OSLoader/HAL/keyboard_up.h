@@ -99,15 +99,18 @@ void portKeyScan(void);
 bool portIsKeyDown(Keys_t key);
 Keys_t portGetChangedKey(void);
 
+/*
 Keys_t kb_waitAnyKeyPress();
 void kb_waitKeyPress(Keys_t key);
 bool kb_isKeyPress(Keys_t key);
+*/
 
 void key_task();
 void key_svcInit();
+void key_register_notify(TaskHandle_t task);
 
-uint8_t key_getChanged();
-void kb_isAnyKeyPress(Keys_t *key, bool *press);
+//uint8_t key_getChanged();
+//void kb_isAnyKeyPress(Keys_t *key, bool *press);
 
 #endif
 

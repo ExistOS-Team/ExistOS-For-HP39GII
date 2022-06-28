@@ -1355,6 +1355,15 @@ static void prvAddNewTaskToReadyList( TCB_t * pxNewTCB )
 
 #if ( INCLUDE_vTaskDelay == 1 )
 
+    void vTaskDelayInSWI(const TickType_t xTicksToDelay)
+    {
+
+        if( xTicksToDelay > ( TickType_t ) 0U ){
+            prvAddCurrentTaskToDelayedList( xTicksToDelay, pdFALSE );
+        }
+
+    }
+
     void vTaskDelay( const TickType_t xTicksToDelay )
     {
         BaseType_t xAlreadyYielded = pdFALSE;

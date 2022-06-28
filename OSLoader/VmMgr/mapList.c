@@ -17,11 +17,6 @@ void mapListInit()
 }
 
 
-MapList_t *mapList_checkCollision(FIL *file, uint32_t VMemStartAddr, uint32_t FileStartAddr, uint32_t memSize)
-{
-    return NULL;
-}
-
 uint32_t mapList_AddPartitionMap(int part, uint32_t perm, uint32_t VMemStartAddr, uint32_t PartStartSector, uint32_t memSize)
 {
     MapList_t *tmp = pvPortMalloc(sizeof(MapList_t));
@@ -31,8 +26,6 @@ uint32_t mapList_AddPartitionMap(int part, uint32_t perm, uint32_t VMemStartAddr
     }
 
     tmp->next = NULL;
-    tmp->file = NULL;
-    tmp->FileStartAddr = 0;
     tmp->memSize = memSize;
     tmp->part = part;
     tmp->PartStartSector = PartStartSector;
@@ -45,7 +38,7 @@ uint32_t mapList_AddPartitionMap(int part, uint32_t perm, uint32_t VMemStartAddr
     chain->next = tmp;
     return 0;
 }
-
+/*
 uint32_t mapList_AddFileMap(FIL *file, uint32_t perm, uint32_t VMemStartAddr, uint32_t FileStartAddr, uint32_t memSize)
 {
     MapList_t *tmp = pvPortMalloc(sizeof(MapList_t));
@@ -68,7 +61,7 @@ uint32_t mapList_AddFileMap(FIL *file, uint32_t perm, uint32_t VMemStartAddr, ui
     }
     chain->next = tmp;
     return 0;
-}
+}*/
 
 MapList_t *mapList_findVirtAddrInWhichMap(uint32_t Addr)
 {

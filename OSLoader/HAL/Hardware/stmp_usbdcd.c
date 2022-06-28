@@ -350,14 +350,6 @@ void usb_phy_enable_usb_controller(bool enable) {
 void usb_phy_pwr_enable(bool enable) {
     if (enable) {
 
-        BF_CLR(POWER_CTRL, CLKGATE);
-        BF_SET(POWER_DEBUG, VBUSVALIDPIOLOCK);
-        BF_SET(POWER_DEBUG, AVALIDPIOLOCK);
-        BF_SET(POWER_DEBUG, BVALIDPIOLOCK);
-
-        BF_SET(POWER_STS, BVALID);
-        BF_SET(POWER_STS, AVALID);
-        BF_SET(POWER_STS, VBUSVALID);
         
         HW_USBPHY_PWD_CLR(0xffffffff);
         

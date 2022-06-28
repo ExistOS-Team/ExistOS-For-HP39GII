@@ -3,19 +3,37 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "FreeRTOS.h"
 
-uint32_t nsToCycles(uint32_t nstime, uint32_t period, uint32_t min);
+uint32_t nsToCycles(uint64_t nstime, uint64_t period, uint64_t min) ;
 
+bool driverWaitTrueF(bool (*f)(), TickType_t timeout);
+bool driverWaitFalseF(bool (*f)(), TickType_t timeout);
 
 void portBoardInit(void);
 void portDelayus(uint32_t us);
-
+void portDelayms(uint32_t ms);
 
 void boardInit(void);
 
+void portPowerInit();
+uint32_t portGetBatterVoltage_mv();
+uint32_t portLRADCConvCh(uint32_t ch, uint32_t samples);
+uint32_t portGetBatteryMode();
+uint32_t portGetPWRSpeed();
 
 uint32_t portBoardGetTime_us(void);
+uint32_t portBoardGetTime_ms(void);
+uint32_t portBoardGetTime_s(void);
+
 void portBoardPowerOff(void);
 void portBoardReset(void);
+void portLRADCEnable(bool enable ,uint32_t ch);
+void portLRADC_init();
+
+void setCPUDivider(uint32_t div);
+void setCPUFracDivider(uint32_t div);
+void setHCLKDivider(uint32_t div);
+void portGetCoreFreqDIV(uint32_t *CPU_DIV, uint32_t *CPU_Frac, uint32_t *HCLK_DIV);
 
 #endif

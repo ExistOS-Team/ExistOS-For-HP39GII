@@ -81,7 +81,6 @@ void dbg_printint(int data) {
 void dbg_printf(char *fmt, ...) 
 {
     va_list args;
-    int one;
     va_start(args, fmt);
     while (*fmt) {
 

@@ -9,8 +9,10 @@
 #include "regslcdif.h"
 #include "regsclkctrl.h"
 #include "regspower.h"
+#include "regsrtc.h"
+#include "regslradc.h"
 
-uint32_t nsToCycles(uint32_t nstime, uint32_t period, uint32_t min) 
+uint32_t nsToCycles(uint64_t nstime, uint64_t period, uint64_t min) 
 {
     uint32_t k;
     k = (nstime + period - 1) / period;
@@ -24,14 +26,25 @@ uint32_t portBoardGetTime_us()
     return HW_DIGCTL_MICROSECONDS_RD();
 }
 
+uint32_t portBoardGetTime_ms()
+{
+    return HW_RTC_MILLISECONDS_RD();
+}
+
+uint32_t portBoardGetTime_s()
+{
+    return HW_RTC_SECONDS_RD();
+}
+
 uint32_t portBoardGetTick()
 {
-    return HW_DIGCTL_MICROSECONDS_RD() - boardTick;
+    return portBoardGetTime_ms() - boardTick;
 }
 
 void portBoardResetTick()
 {
-    boardTick = HW_DIGCTL_MICROSECONDS_RD();
+    boardTick = portBoardGetTime_ms();
+    //HW_DIGCTL_MICROSECONDS_RD();
     //HW_DIGCTL_MICROSECONDS_CLR(0xFFFFFFFF);
 }
 
@@ -44,6 +57,14 @@ void portDelayus(uint32_t us)
     }
 }
 
+void portDelayms(uint32_t ms)
+{
+    uint32_t start, cur;
+    start = cur = HW_RTC_MILLISECONDS_RD();
+    while (cur < start + ms) {
+        cur = HW_RTC_MILLISECONDS_RD();
+    }
+}
 
 static void AHBH_DMAInit()
 {
@@ -84,6 +105,7 @@ static void GPMI_Init()
     BF_CLR(GPMI_CTRL0, CLKGATE);
 
     BF_SET(GPMI_CTRL0, SFTRST);
+    
     while(BF_RD(GPMI_CTRL0, CLKGATE) == 0){
         ;
     }
@@ -119,6 +141,34 @@ static void GPMI_Init()
         BANK0_PIN17, 0, //A1
         BANK0_PIN16, 0  //A0
     );
+
+    BF_CS8(
+        PINCTRL_DRIVE0,
+        BANK0_PIN07_MA, 2,      //12mA
+        BANK0_PIN06_MA, 2,      //12mA
+        BANK0_PIN05_MA, 2,      //12mA
+        BANK0_PIN04_MA, 2,      //12mA
+        BANK0_PIN03_MA, 2,      //12mA
+        BANK0_PIN02_MA, 2,      //12mA
+        BANK0_PIN01_MA, 2,      //12mA
+        BANK0_PIN00_MA, 2       //12mA
+    );
+
+    BF_CS5(
+        PINCTRL_DRIVE2,
+        BANK0_PIN23_MA, 2,      //12mA
+        BANK0_PIN22_MA, 2,      //12mA
+        BANK0_PIN19_MA, 2,      //12mA
+        BANK0_PIN17_MA, 2,      //12mA
+        BANK0_PIN16_MA, 2       //12mA
+    );
+
+    BF_CS2(
+        PINCTRL_DRIVE3,
+        BANK0_PIN25_MA, 2,      //12mA
+        BANK0_PIN24_MA, 2      //12mA
+    );
+
 }
 
 static void HardECC8_Init()
@@ -173,12 +223,44 @@ static void LCDIF_Init()
     BF_CLR(LCDIF_CTRL, CLKGATE);
 }
 
+static void RTC_Init()
+{
+    BF_CLR(RTC_CTRL, SFTRST);
+    BF_CLR(RTC_CTRL, CLKGATE);
+
+    BF_SET(RTC_CTRL, SFTRST);
+    while(BF_RD(RTC_CTRL, CLKGATE) == 0)
+    {
+        ;
+    }
+
+    BF_CLR(RTC_CTRL, SFTRST);
+    BF_CLR(RTC_CTRL, CLKGATE);
+
+}
+
+static void LRADC_init()
+{
+    BF_CLR(LRADC_CTRL0, SFTRST);
+    BF_CLR(LRADC_CTRL0, CLKGATE);
+
+    BF_SET(LRADC_CTRL0, SFTRST);
+    while(BF_RD(LRADC_CTRL0, CLKGATE) == 0)
+    {
+        ;
+    }
+
+    BF_CLR(LRADC_CTRL0, SFTRST);
+    BF_CLR(LRADC_CTRL0, CLKGATE);
+
+}
+
 void portBoardPowerOff()
 {
-    
+    BF_SET(RTC_PERSISTENT0, DISABLE_PSWITCH);
     BF_WR(POWER_RESET, UNLOCK, 0x3E77);
+    BF_WR(POWER_RESET, PWD_OFF, 1);
     BF_WR(POWER_RESET, PWD, 1);
-
 }
 
 void portBoardReset()
@@ -186,13 +268,42 @@ void portBoardReset()
     BF_WR(CLKCTRL_RESET, CHIP, 1);
 }
 
+uint32_t portGetBatterVoltage_mv()
+{
+    //portLRADCConvCh(7, 1);
+    uint32_t ad_val = BF_RD(POWER_BATTMONITOR, BATT_VAL);
+    return ad_val * 8;
+}
+
+uint32_t portGetBatteryMode()
+{
+    return BF_RD(POWER_STS, MODE);
+}
+
+uint32_t portGetPWRSpeed()
+{
+    uint8_t val = HW_POWER_SPEED.B.STATUS;
+    HW_POWER_SPEED.B.CTRL = 3;
+    return val;
+}
+
 void portBoardInit()
 {
+
+    
+    
+    portPowerInit();
+
     USBPHYInit();
     AHBH_DMAInit();
     AHBX_DMAInit();
     GPMI_Init();
     HardECC8_Init();
     LCDIF_Init();
+    RTC_Init();
+    LRADC_init();
+    portLRADC_init();
+
+    
 
 }

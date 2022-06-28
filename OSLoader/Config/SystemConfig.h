@@ -1,34 +1,44 @@
 
-
 #include "FreeRTOSConfig.h"
 
-#define VERSION     "0.0.2 Beta"
+#define VERSION     "0.2.0"
 
 #define MEMORY_BASE     (0)
 #define MEMORY_SIZE     (512*1024)
 
+#define SYS_LOG_BUFSIZE    (4096)
+#define CDC_PATH_LOADER  0
+#define CDC_PATH_SYS     1
+#define CDC_PATH_EDB     2
 
 
-#define ABT_STACK_ADDR         (MEMORY_SIZE - 0x80)
+#define ABT_STACK_ADDR      (MEMORY_BASE + MEMORY_SIZE - 4)
 #define UND_STACK_ADDR      (ABT_STACK_ADDR - 0x400)
 #define FIQ_STACK_ADDR      (UND_STACK_ADDR - 0x200)
 #define IRQ_STACK_ADDR      (FIQ_STACK_ADDR - 0x200)
-#define SVC_STACK_ADDR      (IRQ_STACK_ADDR - 0x200)
-#define SYS_STACK_ADDR      (SVC_STACK_ADDR - 0x200)
+#define SVC_STACK_ADDR      (IRQ_STACK_ADDR - 0x400)
+#define SYS_STACK_ADDR      (SVC_STACK_ADDR - 0x400)
 
 
 #define HEAP_END        (SYS_STACK_ADDR - 0x200)
 
 // DATA   SYS   SWAP
-#define DISK_PARTITION      {80, 15, 5, 0}
+//#define DISK_PARTITION      {80, 15, 5, 0}
 
 #define SEG_SIZE            1048576
 
-#define NUM_CACHEPAGE       (64 + 8 + 0)
+#define VMRAM_USE_FTL   (1)
+
+#if (VMRAM_USE_FTL == 1)
+    #define NUM_CACHEPAGE             ( 76 )
+#else
+    #define NUM_CACHEPAGE             ( 32 )
+    #define VM_RAM_SIZE_NONE_FTL      ( 168 * 1024 )
+#endif
 
 
 
-//#define SIZE_SWAPFILE_MB    2
+
 #define PAGE_SIZE           4096
 
 #define PAGES_SWAPFILE      (SIZE_SWAPFILE_MB * 1048576 / PAGE_SIZE)
@@ -39,7 +49,7 @@
 #define VM_ROM_NUM_SEG      (VM_ROM_SIZE / SEG_SIZE)
 
 #define VM_RAM_BASE         (0x02000000)
-#define VM_RAM_SIZE         (1048576 * 4)
+#define VM_RAM_SIZE         (1048576 * 8)
 #define VM_RAM_SEG          (VM_ROM_BASE >> 20)
 #define VM_RAM_NUM_SEG      (VM_RAM_SIZE / SEG_SIZE)
 
@@ -50,3 +60,19 @@
 
 
 #define SIZE_SWAPAREA_MB    (VM_RAM_SIZE / 1048576)
+
+
+
+#define FLASH_LOADER_BLOCK      22
+#define FLASH_CONFIG_BLOCK      23
+#define FLASH_SYSTEM_BLOCK      31
+#define FLASH_DATA_BLOCK        160
+
+#define FLASH_FTL_DATA_SECTOR   4096    //8MB Start
+
+#define MSC_CONF_OSLOADER_EDB   0
+#define MSC_CONF_SYS_DATA       1
+
+#define VM_STATUS_SUSPEND           1
+#define VM_STATUS_RUNNING           2
+#define VM_STATUS_UNCONSCIOUS       3

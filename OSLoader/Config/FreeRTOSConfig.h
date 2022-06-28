@@ -48,14 +48,14 @@
 #define configUSE_TICK_HOOK				0
 //#define configCPU_CLOCK_HZ				( ( unsigned long ) 24000000 )
 //#define configCPU_PERIPH_HZ				( ( unsigned long ) 12000000 )
-#define configTICK_RATE_HZ				( ( TickType_t ) 500 )
-#define configMAX_PRIORITIES			( 9 )
-#define configMINIMAL_STACK_SIZE		( ( unsigned short ) 300 )
+#define configTICK_RATE_HZ				( ( TickType_t ) 1000 )
+#define configMAX_PRIORITIES			( 10 )
+#define configMINIMAL_STACK_SIZE		( ( unsigned short ) 260 )
 //#define configTOTAL_HEAP_SIZE			( ( size_t ) 52000 )
-#define configMAX_TASK_NAME_LEN			( 32 )
+#define configMAX_TASK_NAME_LEN			( 16 )
 #define configUSE_TRACE_FACILITY		1
 #define configUSE_16_BIT_TICKS			0
-#define configIDLE_SHOULD_YIELD			0
+#define configIDLE_SHOULD_YIELD			1
 #define configUSE_MUTEXES				1
 
 
@@ -73,16 +73,19 @@
 #define portCRITICAL_NESTING_IN_TCB     1
 
 #define portCONTEXT_REGS_IN_TCB         1
-#define portCONTEXT_FRAME_SIZE          (17 * 4 * 2)
+#define portCONTEXT_FRAME_SIZE          (17 * 4 * 4)
 
 
 //extern volatile unsigned long ulHighFrequencyTimerTicks;
 uint32_t portBoardGetTick();
 void portBoardResetTick();
 
-#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() portBoardResetTick()
+//extern uint32_t g_tick_cnt;
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() (portBoardResetTick())
+//portBoardResetTick()
 //( ulHighFrequencyTimerTicks = 0UL )
-#define portGET_RUN_TIME_COUNTER_VALUE() portBoardGetTick()
+#define portGET_RUN_TIME_COUNTER_VALUE() (portBoardGetTick())
+//portBoardGetTick()
 //portBoardGetTime_us();
 
 #define configAPPLICATION_ALLOCATED_HEAP		1
@@ -104,7 +107,7 @@ void vAssertCalled(char *file, int line);
 /* Set the following definitions to 1 to include the API function, or zero
 to exclude the API function. */
 
-#define INCLUDE_vTaskPrioritySet                0
+#define INCLUDE_vTaskPrioritySet                1
 #define INCLUDE_uxTaskPriorityGet               0
 #define INCLUDE_vTaskDelete                     1
 #define INCLUDE_vTaskSuspend                    1
@@ -114,7 +117,7 @@ to exclude the API function. */
 #define INCLUDE_xTaskGetSchedulerState          0
 #define INCLUDE_xTaskGetCurrentTaskHandle       1
 #define INCLUDE_uxTaskGetStackHighWaterMark     0
-#define INCLUDE_xTaskGetIdleTaskHandle          0
+#define INCLUDE_xTaskGetIdleTaskHandle          1
 #define INCLUDE_eTaskGetState                   0
 #define INCLUDE_xEventGroupSetBitFromISR        1
 #define INCLUDE_xTimerPendFunctionCall          1

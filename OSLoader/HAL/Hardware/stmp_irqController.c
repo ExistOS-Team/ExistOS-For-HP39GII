@@ -20,13 +20,15 @@ void portIRQCtrlInit()
 
     HW_ICOLL_CTRL_CLR(BM_ICOLL_CTRL_BYPASS_FSM | BM_ICOLL_CTRL_NO_NESTING | BM_ICOLL_CTRL_ARM_RSE_MODE);
 
-    HW_ICOLL_CTRL_SET(/*BM_ICOLL_CTRL_FIQ_FINAL_ENABLE |*/
+    HW_ICOLL_CTRL_SET(BM_ICOLL_CTRL_FIQ_FINAL_ENABLE |
                       BM_ICOLL_CTRL_IRQ_FINAL_ENABLE |
                       /*BM_ICOLL_CTRL_ARM_RSE_MODE |*/
                       BM_ICOLL_CTRL_NO_NESTING);
 
     BF_CS1(ICOLL_VBASE, TABLE_ADDRESS, 0);
     BW_ICOLL_CTRL_VECTOR_PITCH(BV_ICOLL_CTRL_VECTOR_PITCH__BY16);
+
+    HW_ICOLL_CTRL.B.RSRVD1 = 0x00;
 }
 
 
@@ -65,6 +67,50 @@ bool portIRQDecode(IRQNumber* IRQNum, IRQTypes *IRQType, IRQInfo *IRQInfo)
         *IRQInfo = HW_IRQ_LCDIF_DMA;
         break;
         
+    case HW_IRQ_LRADC_CH0:
+        *IRQInfo = 0;
+        *IRQType = IRQType_LRADC;
+        break;
+    case HW_IRQ_LRADC_CH1:
+        *IRQInfo = 1;
+        *IRQType = IRQType_LRADC;
+        break;
+    case HW_IRQ_LRADC_CH2:
+        *IRQInfo = 2;
+        *IRQType = IRQType_LRADC;
+        break;
+    case HW_IRQ_LRADC_CH3:
+        *IRQInfo = 3;
+        *IRQType = IRQType_LRADC;
+        break;
+    case HW_IRQ_LRADC_CH4:
+        *IRQInfo = 4;
+        *IRQType = IRQType_LRADC;
+        break;
+    case HW_IRQ_LRADC_CH5:
+        *IRQInfo = 5;
+        *IRQType = IRQType_LRADC;
+        break;
+    case HW_IRQ_LRADC_CH6:
+        *IRQInfo = 6;
+        *IRQType = IRQType_LRADC;
+        break;
+    case HW_IRQ_LRADC_CH7:
+        *IRQInfo = 7;
+        *IRQType = IRQType_LRADC;
+        break;    
+    case HW_IRQ_VDD5V:
+    case HW_IRQ_VDD5V_DROOP:
+    case HW_IRQ_VDD18_BRNOUT:
+    case HW_IRQ_VDDD_BRNOUT:
+    case HW_IRQ_VDDIO_BRNOUT:
+    case HW_IRQ_BATT_BRNOUT:
+    case 63:
+
+        *IRQInfo = *IRQNum;
+        *IRQType = IRQType_PWR;
+    break;
+        
     default:
         PANNIC("ERR IRQNum:%d\n", *IRQNum);
         return false;
@@ -82,8 +128,8 @@ void portAckIRQ(IRQNumber IRQNum)
 
 void portEnableIRQ(unsigned int IRQNum, unsigned int enable) 
 {
-    if (IRQNum > 63)
-        return;
+    //if (IRQNum > 63)
+     //   return;
     volatile unsigned int *baseAddress = (unsigned int *)HW_ICOLL_PRIORITYn_ADDR((IRQNum / 4));
     if (enable){
         baseAddress[1] = (0x4 << ((IRQNum % 4) * 8));

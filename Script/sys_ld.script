@@ -2,12 +2,12 @@
 
 MEMORY
 {
-  vmRAM    (rwx) : ORIGIN = 0x02000000, LENGTH = 4096K
+  vmRAM    (rwx) : ORIGIN = 0x02000000, LENGTH = 8192K
   vmROM    (rx ) : ORIGIN = 0x00100000, LENGTH = 10M
 }
 
 OUTPUT_ARCH(arm)
-ENTRY(___init)
+ENTRY(_init)
 SECTIONS
 {
 
@@ -33,7 +33,6 @@ SECTIONS
 		KEEP (*(SORT(.init_array.*)))
 		KEEP (*(.init_array))
 
-		
 /*
   		KEEP (*(SORT(.ctors.*)))
   		KEEP (*(.ctors))
@@ -61,8 +60,12 @@ SECTIONS
 	.rodata : 
 	{
 		*(.rodata) 
-		rodata_end = .;
 	} >vmROM
+
+	.ARM.extab :
+    {
+        *(.ARM.extab* .gnu.linkonce.armextab.*)
+    } >vmROM
 
 	.ARM.exidx : {
 	    __exidx_start = .;
@@ -70,28 +73,30 @@ SECTIONS
 	    __exidx_end = .;
 	} >vmROM
 
+	__init_data = .;
 	.data : 
 	{
-		data_start = .;
-		*(.data .data.* .gnu.linkonce.d.*)
-		data_end = .;
+		. = ALIGN(4);
+		__data_start = .;
+		*(.data .data.*)
+		*(.gnu.linkonce.d.*)
+		CONSTRUCTORS
+		. = ALIGN(4);
+		__data_end = .;
 	} >vmRAM AT >vmROM
-
-    data_size = SIZEOF(.data);
-    data_load_start = LOADADDR(.data);
 
     .bss : {
 		. = ALIGN(4);
-        _sbss = ABSOLUTE(.);
+        _sbss = .;
         *(.bss .bss.*)
         *(.gnu.linkonce.b.*)
         *(COMMON)
         . = ALIGN(4);
-        _ebss = ABSOLUTE(.);
+        _ebss = .;
     } > vmRAM
- 
+	. = ALIGN(4);
 	.heap : {
-
+		. = ALIGN(4);
 		__HEAP_START = .;
 	} > vmRAM
 	

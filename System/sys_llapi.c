@@ -8,228 +8,61 @@
 #include "llapi_code.h"
 #include "sys_llapi.h"
 
- void ll_delay(uint32_t ms) __attribute__((naked));
- void ll_delay(uint32_t ms) 
-{
-    __asm volatile("push {r0-r3}");
-    __asm volatile("swi %0" :: "i"(LL_SWI_DELAY_MS));
 
-    __asm volatile("pop {r0-r3}");
-    __asm volatile("bx lr");
-    /*
-    register uint32_t r0 asm("r0") = ms;
-    __asm (
-    "svc %[num]" 
-        : "=r"(r0)
-        : [num] "i"(LL_SWI_DELAY_MS), 
-            "r"(r0)
-        : "memory", "r1", "r2", "r3", "r12", "lr"
-    ); 
-*/
-}
+#undef DECDEF_LLSWI
+#define DECDEF_LLSWI(ret, name, pars, SWINum)                              \
+    ret NAKED name pars                                                 \
+    {                                                                   \
+        __asm volatile("swi %0" :: "i"(SWINum));                        \
+        __asm volatile("bx lr");                                        \
+    }
 
- void ll_putStr(char *s) __attribute__((naked));
- void ll_putStr(char *s)
-{
-    /*
-    register uint32_t r0 asm("r0") = (uint32_t)s;
-    __asm volatile (
-    "swi %[num]" 
-        : "=r"(r0)
-        : [num] "i"(LL_SWI_WRITE_STRING1), 
-            "r"(r0)
-        : "memory", "r1", "r2", "r3", "r12", "lr"
-    ); */
-    
-    __asm volatile("push {r0-r12}");
-    __asm volatile("swi %0" :: "i"(LL_SWI_WRITE_STRING1));
-    __asm volatile("pop {r0-r12}");
-    __asm volatile("bx lr");
+#ifdef __cplusplus
+    extern "C" {
+#endif
+//    Return Type       Function Name       Parameters                               LL SWI Number
+DECDEF_LLSWI(void,         ll_put_str,            (char *s)                               ,LL_SWI_WRITE_STRING1           );
+DECDEF_LLSWI(void,         ll_put_str2,           (char *s, uint32_t len)                 ,LL_SWI_WRITE_STRING2           );
+DECDEF_LLSWI(void,         ll_put_ch,             (char c)                                ,LL_SWI_PUT_CH                  );
+DECDEF_LLSWI(uint32_t,     ll_get_time_us,        (void)                                  ,LL_FAST_SWI_GET_TIME_US        );
+DECDEF_LLSWI(uint32_t,     ll_get_time_ms,        (void)                                  ,LL_FAST_SWI_GET_TIME_MS        );
+DECDEF_LLSWI(void,         ll_vm_sleep_ms,        (uint32_t ms)                           ,LL_FAST_SWI_VM_SLEEP_MS        );
+DECDEF_LLSWI(uint32_t,     ll_vm_check_key,       (void)                                  ,LL_FAST_SWI_CHECK_KEY          );
+DECDEF_LLSWI(void,         ll_set_keyboard,       (bool enable_report)                    ,LL_SWI_SET_KEY_REPORT          );
+DECDEF_LLSWI(void,         ll_set_serial,         (bool enable)                           ,LL_SWI_SET_SERIALPORT          );
+DECDEF_LLSWI(void,         ll_set_timer,          (bool enbale, uint32_t period_ms)       ,LL_SWI_ENABLE_TIMER            );
+DECDEF_LLSWI(void,         ll_set_irq_vector,     (uint32_t addr)                         ,LL_SWI_SET_IRQ_VECTOR          );
+DECDEF_LLSWI(void,         ll_set_irq_stack,      (uint32_t addr)                         ,LL_SWI_SET_IRQ_STACK           );
+DECDEF_LLSWI(void,         ll_set_svc_vector,     (uint32_t addr)                         ,LL_SWI_SET_SVC_VECTOR          );
+DECDEF_LLSWI(void,         ll_set_svc_stack,      (uint32_t addr)                         ,LL_SWI_SET_SVC_STACK           );
+DECDEF_LLSWI(void,         ll_set_context,        (uint32_t addr, bool en_IRQ)            ,LL_SWI_SET_CONTEXT             );
+DECDEF_LLSWI(void,         ll_restore_context,    (uint32_t addr, bool en_IRQ)            ,LL_SWI_RESTORE_CONTEXT         );
+DECDEF_LLSWI(void,         ll_get_context,        (uint32_t addr)                         ,LL_SWI_GET_CONTEXT             );
+DECDEF_LLSWI(void,         ll_enable_irq,         (bool enable)                           ,LL_SWI_ENABLE_IRQ              );
+DECDEF_LLSWI(void,         ll_disp_put_area,      (uint8_t *vbuffer,
+                                                   uint32_t x0, uint32_t y0,
+                                                   uint32_t x1, uint32_t y1)              ,LL_SWI_DISPLAY_FLUSH           );
 
-}
+DECDEF_LLSWI(void,         ll_disp_set_indicator, (int indicateBit, int BatInt)           ,LL_SWI_DISPLAY_SET_INDICATION  );
 
- void ll_putStr2(char *s, uint32_t len) __attribute__((naked));
- void ll_putStr2(char *s, uint32_t len)
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_WRITE_STRING2));
-    __asm volatile("bx lr");
+DECDEF_LLSWI(uint32_t,     ll_serial_getch,       (void)                                  ,LL_SWI_SERIAL_GETCH             );
+DECDEF_LLSWI(uint32_t,     ll_serial_rx_count,    (void)                                  ,LL_SWI_SERIAL_RX_COUNT          );
+DECDEF_LLSWI(uint32_t,     ll_get_tmp_storage_val,(uint32_t index)                        ,LL_FAST_SWI_GET_STVAL          );
+DECDEF_LLSWI(void,         ll_set_tmp_storage_val,(uint32_t index, uint32_t val)          ,LL_FAST_SWI_SET_STVAL          );
 
-}
+DECDEF_LLSWI(void,         ll_set_clkctrl_div,    (uint32_t cpu_div, uint32_t cpu_frac,
+                                                             uint32_t hclk_frac)          ,LL_SWI_CLKCTL_SET_DIV          );
+DECDEF_LLSWI(void,         ll_get_clkctrl_div,    (uint32_t *save)                        ,LL_SWI_CLKCTL_GET_DIV          );
+DECDEF_LLSWI(int,          ll_flash_page_read,    (uint32_t start_page, uint32_t pages,
+                                                   uint8_t *buffer)                       ,LL_SWI_FLASH_PAGE_READ          );
+DECDEF_LLSWI(int,          ll_flash_page_write,   (uint32_t start_page, uint32_t pages,
+                                                   uint8_t *buffer)                       ,LL_SWI_FLASH_PAGE_WRITE         );
+DECDEF_LLSWI(void,         ll_flash_page_trim,    (uint32_t page)                         ,LL_SWI_FLASH_PAGE_TRIM          );
+DECDEF_LLSWI(void,         ll_flash_sync,         (void)                                  ,LL_SWI_FLASH_SYNC               );
+DECDEF_LLSWI(uint32_t,     ll_flash_get_pages,    (void)                                  ,LL_SWI_FLASH_PAGE_NUM           );
+DECDEF_LLSWI(uint32_t,     ll_flash_get_page_size,(void)                                  ,LL_SWI_FLASH_PAGE_SIZE_B        );
 
- void ll_putChr(char c) __attribute__((naked));
- void ll_putChr(char c)
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_PUT_CH));
-    __asm volatile("bx lr");
+#ifdef __cplusplus          
+    }          
+#endif
 
-    
-}
-
- uint32_t ll_gettime_us()  __attribute__((naked));
- uint32_t ll_gettime_us()
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_GET_TIME_US));
-    __asm volatile("bx lr");
-}
-
-
-
-void ll_setTimer(bool enbale, uint32_t period_ms) __attribute__((naked));
-void ll_setTimer(bool enbale, uint32_t period_ms)
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_ENABLE_TIMER));
-    __asm volatile("bx lr");
-}
-
-void ll_set_configAddr(uint32_t addr) __attribute__((naked));
-void ll_set_configAddr(uint32_t addr)
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_SET_CONFIG_ADDR));
-    __asm volatile("bx lr");
-}
-
-void ll_set_irq_vector(uint32_t addr) __attribute__((naked));
-void ll_set_irq_vector(uint32_t addr)
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_SET_IRQ_VECTOR));
-    __asm volatile("bx lr");
-}
-
-
-void ll_set_irq_stack(uint32_t addr) __attribute__((naked));
-void ll_set_irq_stack(uint32_t addr)
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_SET_IRQ_STACK));
-    __asm volatile("bx lr");
-}
-
-void ll_load_context(uint32_t addr) __attribute__((naked));
-void ll_load_context(uint32_t addr)
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_LOAD_CONTEXT));
-    //__asm volatile("bx lr");
-}
-
-
-
-//void ll_enable_irq(bool enable) __attribute__((naked));
-void ll_enable_irq(bool enable)
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_ENABLE_IRQ));
-}
-
-
-
-
-void ll_DispPutArea(uint8_t *dat, uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1)
-{
-    register DispFlushInfo_t *info;
-    info = malloc(sizeof(DispFlushInfo_t));
-    info->vram = dat;
-    info->x0 = x0;
-    info->x1 = x1;
-    info->y0 = y0;
-    info->y1 = y1;
-    
-    __asm volatile (
-    "swi %[num]" 
-        : "=r"(info)
-        : [num] "i"(LL_SWI_DISPLAY_FLUSH), 
-            "r"(info)
-        : "memory", "r1", "r2", "r3", "r12", "lr"
-    );
-
-    free(info);
-}
-
-void ll_DispPutStr(char *s, uint32_t x0, uint32_t y0, uint8_t fg, uint8_t bg, uint8_t fontsize)
-{
-
-    register DispPutStrInfo_t *info;
-
-    info = malloc(sizeof(DispPutStrInfo_t));
-    info->string = s;
-    info->x0 = x0;
-    info->y0 = y0;
-    info->fg = fg;
-    info->bg = bg;
-    info->fontsize = fontsize;
-    
-    __asm volatile (
-    "swi %[num]" 
-        : "=r"(info)
-        : [num] "i"(LL_SWI_DISPLAY_PUTSTR), 
-            "r"(info)
-        : "memory", "r1", "r2", "r3", "r12", "lr"
-    );
-
-    free(info);
-}
-
-
-void ll_DispPutBox(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, bool fill, uint8_t color)
-{
-
-    register DispPutBoxInfo_t *info;
-
-    info = malloc(sizeof(DispPutBoxInfo_t));
-    info->color = color;
-    info->x0 = x0;
-    info->x1 = x1;
-    info->y0 = y0;
-    info->y1 = y1;
-    info->fill = fill;
-    
-    __asm volatile (
-    "swi %[num]" 
-        : "=r"(info)
-        : [num] "i"(LL_SWI_DISPLAY_PUT_BOX), 
-            "r"(info)
-        : "memory", "r1", "r2", "r3", "r12", "lr"
-    );
-
-    free(info);
-}
-
-void ll_DispHLine(uint32_t y, uint32_t x0, uint8_t x1, uint8_t color)
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_DISPLAY_HLINE));
-}
-
-void ll_DispVLine(uint32_t x, uint32_t y0, uint8_t y1, uint8_t color)
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_DISPLAY_VLINE));
-}
-
-
-void ll_DispSetIndicate(uint32_t indicateBit, uint8_t BatInt)
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_DISPLAY_SETINDICATE));
-}
-
-void ll_DispSendScreen()
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_DISPLAY_SEND_SCREEN));
-}
-
-
-uint32_t ll_taskCreate(uint32_t stack, void *entry)
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_TASK_CREATE));
-}
-
-
-void ll_taskEnterCritical()
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_ENTER_CRITICAL));
-}
-
-void ll_taskExitCritical()
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_EXIT_CRITICAL));
-}
-
-void ll_taskSleepUs(int64_t us)
-{
-    __asm volatile("swi %0" :: "i"(LL_SWI_TASK_SLEEP_US));
-}

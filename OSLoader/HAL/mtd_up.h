@@ -42,9 +42,9 @@ typedef struct
     uint8_t *buf;
     uint8_t *metaDat;
     uint32_t len;
-    EventBits_t BLock;
-    int32_t *StatusBuf ;
     bool needToMoveData;
+    TaskHandle_t task;
+    
 }MTD_Operates;
 
 

@@ -28,6 +28,7 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
+#include "sys_llapi.h"
 /*-----------------------------------------------------------
  * Application specific definitions.
  *
@@ -47,11 +48,11 @@
 #define configUSE_TICK_HOOK				0
 //#define configCPU_CLOCK_HZ				( ( unsigned long ) 24000000 )
 //#define configCPU_PERIPH_HZ				( ( unsigned long ) 12000000 )
-#define configTICK_RATE_HZ				( ( TickType_t ) 20 )
+#define configTICK_RATE_HZ				( ( TickType_t ) 100 )
 #define configMAX_PRIORITIES			( 5 )
-#define configMINIMAL_STACK_SIZE		( ( unsigned short ) 400 )
+#define configMINIMAL_STACK_SIZE		( ( unsigned short ) 1000 )
 //#define configTOTAL_HEAP_SIZE			( ( size_t ) 52000 )
-#define configMAX_TASK_NAME_LEN			( 32 )
+#define configMAX_TASK_NAME_LEN			( 16 )
 #define configUSE_TRACE_FACILITY		1
 #define configUSE_16_BIT_TICKS			0
 #define configIDLE_SHOULD_YIELD			1
@@ -59,22 +60,22 @@
 
 
 
-#define configUSE_TIMERS				1
+#define configUSE_TIMERS				0
 #define configTIMER_TASK_PRIORITY       (configMAX_PRIORITIES - 1)
 #define configTIMER_QUEUE_LENGTH        16
 #define configTIMER_TASK_STACK_DEPTH    configMINIMAL_STACK_SIZE
 
 #define configCHECK_FOR_STACK_OVERFLOW  0
 
-#define configUSE_NEWLIB_REENTRANT	    0
-#define configGENERATE_RUN_TIME_STATS 	0
+#define configUSE_NEWLIB_REENTRANT	    1
+#define configGENERATE_RUN_TIME_STATS 	1
 
 #define portCRITICAL_NESTING_IN_TCB     1
 
-
+extern uint32_t Timer_Count;
 //extern volatile unsigned long ulHighFrequencyTimerTicks; 
-//#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() ( ulHighFrequencyTimerTicks = 0UL )
-//#define portGET_RUN_TIME_COUNTER_VALUE()	ulHighFrequencyTimerTicks
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() ( Timer_Count = 0 )
+#define portGET_RUN_TIME_COUNTER_VALUE()	( Timer_Count )
 
 #define configAPPLICATION_ALLOCATED_HEAP		1
 #define configSUPPORT_STATIC_ALLOCATION         1

@@ -25,7 +25,7 @@ El Dorado Hills, CA, 95762
 */
 
 
-#define ITERATIONS	(4096+2048)
+#define ITERATIONS	(4096+2048+8192+4096)
 
 #ifndef TOTAL_DATA_SIZE 
 #define TOTAL_DATA_SIZE 2*1000

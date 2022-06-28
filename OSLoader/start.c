@@ -7,50 +7,66 @@
 #include "queue.h"
 #include "task.h"
 
-#include "ff.h"
 #include "tusb.h"
 #include "usbd.h"
 
-#include "board_up.h"
-#include "mtd_up.h"
 #include "FTL_up.h"
+#include "board_up.h"
 #include "display_up.h"
 #include "keyboard_up.h"
+#include "llapi.h"
+#include "llapi_code.h"
+#include "mtd_up.h"
+#include "vmMgr.h"
 
 #include "../debug.h"
 
-#include "stmp_NandControlBlock.h"
 #include "stmp37xxNandConf.h"
+#include "stmp_NandControlBlock.h"
 
-#include "OSloaderMenu.h"
-#include "vmMgr.h"
+#include "regs.h"
+#include "regspower.h"
 
-#include "llapi.h"
-#include "llapi_code.h"
+void vTaskTinyUSB(void *pvParameters);
+void vMTDSvc(void *pvParameters);
+void vFTLSvc(void *pvParameters);
+void vKeysSvc(void *pvParameters);
+void vVMMgrSvc(void *pvParameters);
+void vLLAPISvc(void *pvParameters);
+void vDispSvc(void *pvParameters);
 
-#include "tusb.h"
+TaskHandle_t pDispTask = NULL;
+TaskHandle_t pSysTask = NULL;
+TaskHandle_t pLLAPITask = NULL;
+TaskHandle_t pLLIRQTask = NULL;
+TaskHandle_t pLLIOTask = NULL;
+TaskHandle_t pBattmon = NULL;
 
-
-PARTITION VolToPart[FF_VOLUMES] = {
-    {0, 1},     /* "0:" ==> 1st partition on the pd#0 */
-    {0, 2}      /* "1:" ==> 2nd partition on the pd#0 */
-};
-
-
-
-
-TaskHandle_t pSysTask;
-TaskHandle_t pLLAPITask;
+extern uint32_t g_mtd_write_cnt;
+extern uint32_t g_mtd_read_cnt;
+extern uint32_t g_mtd_erase_cnt;
 
 uint32_t CurMount = 0;
-uint32_t FTL_status = 0;
+uint32_t g_FTL_status = 10;
+bool g_sysfault_auto_reboot = true;
+uint32_t g_MSC_Configuration = MSC_CONF_OSLOADER_EDB;
+extern uint32_t g_latest_key_status;
+volatile uint32_t g_vm_status = VM_STATUS_SUSPEND;
+bool vm_needto_reset = false;
 
-static bool fileSystemOK = false;
-static bool diskInit = false;
+char pcWriteBuffer[4096 + 1024];
+uint32_t HCLK_Freq;
 
-uint32_t runningTick;
+extern uint32_t g_page_vram_fault_cnt;
+extern uint32_t g_page_vrom_fault_cnt;
 
-char pcWriteBuffer[6123];
+uint32_t check_frequency() {
+    volatile uint32_t s0, s1;
+    s0 = *((volatile uint32_t *)0x8001C020);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    s1 = *((volatile uint32_t *)0x8001C020);
+    return (s1 - s0) / 1;
+}
 void printTaskList() {
     vTaskList((char *)&pcWriteBuffer);
     printf("=============================================\r\n");
@@ -61,927 +77,787 @@ void printTaskList() {
     printf("%s\n", pcWriteBuffer);
     printf("任务状态:  X-运行  R-就绪  B-阻塞  S-挂起  D-删除\n");
     printf("内存剩余:   %d Bytes\n", (unsigned int)xPortGetFreeHeapSize());
+    printf("VRAM PageFault:   %ld \n", g_page_vram_fault_cnt);
+    printf("VROM PageFault:   %ld \n", g_page_vrom_fault_cnt);
+    printf("HCLK Freq:%ld MHz\n", HCLK_Freq / 1000000);
+    printf("CPU Freq:%ld MHz\n", (HCLK_Freq / 1000000) * (*((uint32_t *)0x80040030) & 0x1F));
+    printf("Flash IO_Writes:%lu\n", g_mtd_write_cnt);
+    printf("Flash IO_Reads:%lu\n", g_mtd_read_cnt);
+    printf("Flash IO_Erases:%lu\n", g_mtd_erase_cnt);
 }
 
 void vTask1(void *pvParameters) {
-    //printf("Start vTask1\n");
+    // printf("Start vTask1\n");
+    int c = 0;
     for (;;) {
-		    
-		vTaskDelay(pdMS_TO_TICKS(20000));
-		printTaskList();
+        HCLK_Freq = check_frequency();
+        c++;
+        if (c == 10) {
+            printTaskList();
+            c = 0;
+        }
+    }
+}
 
-/*
-    uint32_t *r;
-    vTaskSuspend(pSysTask);
-    portYIELD();
+extern bool g_vm_inited;
+uint32_t *bootAddr;
+void System(void *par) {
     
-    r = (uint32_t *)(((uint32_t *)pSysTask)[1]) - 16;
-    INFO("SYS REGS:\n");
-    for(int i = 0; i<16; i++)
-    {
-        INFO("REG[%d]: %08X\n", i, r[i]);
-    }
-    INFO("\n");
-    vTaskResume(pSysTask);*/
+    bootAddr = (uint32_t *)VM_ROM_BASE;
 
-    }
-}
-
-
-
-
-
-void EraseWithDisp(uint32_t startBlock)
-{
-    DisplayFillBox(40, 30, 180, 80, 0);
-    DisplayBox(40, 30, 180, 80, 0xFF);
-    DisplayPutStr(40 + 6*6,31 + 12 * 0,"Erasing...",255,0, 12);
-    int ret = 0;
-
-    for(int i = startBlock; i < 1024; i++){
-      DisplayVLine(31 + 12 * 1, 31 + 12 * 2, 45 + (i/((1024 - startBlock)/120)) ,0xFF );
-      ret = MTD_ErasePhyBlock(i);
-      if(ret){
-        break;
-      }
-    }
-
-    DisplayFillBox(40, 30, 180, 80, 0);
-    DisplayBox(40, 30, 180, 80, 0xFF);
-    if(!ret)
-      DisplayPutStr(40 + 6*4,31 + 12 * 1,"Erase Finish.",255,0, 12);
-    else
-      DisplayPutStr(40 + 6*4,31 + 12 * 1,"Erase ERROR!",255,0, 12);
-
-}
-
-
-void GetPartitionInfo(uint32_t p, uint32_t *start, uint32_t *sectors)
-{
-  PartitionInfo_t *PartitionInfo = FTL_GetPartitionInfo();
-  *start = PartitionInfo->SectorStart[p];
-  *sectors = PartitionInfo->Sectors[p];
-}
-
-uint32_t MSCpartStartSector;
-uint32_t MSCpartSectors;
-void setMountPartition(uint32_t p)
-{
-  if(p == 2){
-    MSCpartStartSector = 0;
-    MSCpartSectors = FTL_GetSectorCount();
-    return;
-  }
-  GetPartitionInfo(p, &MSCpartStartSector, &MSCpartSectors);
-}
-
-
-uint32_t *bootAddr = (uint32_t *)VM_ROM_BASE;
-void System(void *par)
-{
-  __asm volatile("mrs r1,cpsr_all");
-  __asm volatile("bic r1,r1,#0x1f");
-  __asm volatile("orr r1,r1,#0x10");
-  __asm volatile("msr cpsr_all,r1");
-
-  __asm volatile("ldr r0,=bootAddr");
-  __asm volatile("ldr r0,[r0]");
-  __asm volatile("mov pc,r0");
-  
-  while(1);
-}
-
-bool bootSystem()
-{
-
-    FRESULT ret;
-    FILINFO sysFinfo;
-    FATFS *fs = pvPortMalloc(sizeof(FATFS));
-    f_mount(fs, "/SYS/", 1);
-    ret = f_stat("/SYS/ExistOS.sys", &sysFinfo);
-    INFO("fsize:%lu \n",sysFinfo.fsize);
-    INFO("f_stat:%d\n",ret);
-    if(ret != FR_OK){
-        f_unmount("/SYS/");
-        vPortFree(fs);
-        return false;
-    }
-
-    FIL *sysFile = pvPortMalloc(sizeof(FIL));
-    ret = f_open(sysFile, "/SYS/ExistOS.sys" ,FA_READ);
-    INFO("f_open:%d\n",ret);
-    if(ret != FR_OK){
-        f_unmount("/SYS/");
-        vPortFree(fs);
-        vPortFree(sysFile);
-        return false;
-    }
-
-    while(!vmMgrInited()){
-      vTaskDelay(pdMS_TO_TICKS(10));
-    }
-
-
-    vmMgr_mapSwap();
-    //vmMgr_createSwapfile();
-    vmMgr_mapFile(sysFile, PERM_R, VM_ROM_BASE, 0, (sysFinfo.fsize + PAGE_SIZE) & 0xFFFFF000);
-
-
-    vTaskResume(pLLAPITask);
-    vTaskResume(pSysTask);
-    
+    INFO("Booting...\n");
     DisplayClean();
-    
+    DisplayPutStr(0, 16 * 0, "System Booting...", 0, 255, 16);
+    DisplayPutStr(0, 16 * 1, "Waiting for Flash GC...", 0, 255, 16);
 
-    return true;
+    if ((*bootAddr != 0xEF5AE0EF) && *(bootAddr + 1) != 0xFECDAFDE) {
+        DisplayClean();
+        DisplayPutStr(0, 0, "Could not find the System!", 0, 255, 16);
+        g_vm_status = VM_STATUS_SUSPEND;
+        vTaskSuspend(NULL);
+    }
 
+    vTaskPrioritySet(pDispTask ,configMAX_PRIORITIES - 5);
+
+    //vTaskSuspend(NULL);
+    bootAddr += 2;
+    g_vm_status = VM_STATUS_RUNNING;
+
+    __asm volatile("mrs r1,cpsr_all");
+    __asm volatile("bic r1,r1,#0x1f");
+    __asm volatile("orr r1,r1,#0x10");
+    __asm volatile("msr cpsr_all,r1");
+
+    __asm volatile("mov r13,#0x02300000");
+    __asm volatile("add r13,#0x000FA000");
+
+    __asm volatile("ldr r0,=bootAddr");
+    __asm volatile("ldr r0,[r0]");
+    __asm volatile("mov pc,r0");
+
+    while (1)
+        ;
 }
 
-
-void vMainThread(void *pvParameters) 
-{
-    Keys_t key;
-    int selectItem = 0;
-    int AbortRes = 0;
-    int inSubLevel = 0;
-
-    bool inSubMenu = false;
-    bool keyEnter = false;
-    bool needClean = false;
-
-
-    mtdInfo_t *nand_info;    
-
-    
-
-    if(kb_isKeyPress(KEY_BACKSPACE) == true){
-      AbortRes = 1;
-      diskInit = false;
-      if(!FTL_status){
-        FTL_ScanPartition();
-        diskInit = true;
-      }
-
-      goto Configuration;
+bool VMsavedIrq;
+void VMSuspend() {
+    if (g_vm_status == VM_STATUS_SUSPEND) {
+        return;
     }
+    if (pSysTask && pLLAPITask && pLLIRQTask) {
 
-    if(FTL_status){
-      diskInit = false;
-      AbortRes = 2;
-      goto Configuration;
+        vTaskSuspend(pLLIRQTask);
+        vTaskSuspend(pLLAPITask);
+        vTaskSuspend(pSysTask);
+        VMsavedIrq = LLIRQ_enable(false);
+        LLIRQ_ClearIRQs();
+
+        g_vm_status = VM_STATUS_SUSPEND;
     }
+}
 
-    if(!FTL_ScanPartition()){
-      diskInit = false;
-      AbortRes = 2;
-      goto Configuration;
+void VMResume() {
+    if (g_vm_status == VM_STATUS_RUNNING) {
+        return;
     }
+    if (pSysTask && pLLAPITask && pLLIRQTask) {
+        LLIRQ_ClearIRQs();
+        LLIRQ_enable(VMsavedIrq);
+        vTaskResume(pLLIRQTask);
+        vTaskResume(pLLAPITask);
+        vTaskResume(pSysTask);
 
+        g_vm_status = VM_STATUS_RUNNING;
+    }
+}
+
+void VMCheckStatus() {
+
+    uint32_t *pRegFram = (uint32_t *)(((uint32_t *)pSysTask)[1]);
+    pRegFram -= 16;
+
+    INFO("VM CPSR:%08lx\n", pRegFram[-1]);
+    for (int i = 0; i < 16; i++) {
+        INFO("VM REG[%d]:%08lx\n", i, pRegFram[i]);
+    }
+}
+
+uint32_t sys_intStack;
+
+extern bool g_llapi_fin;
+void VMReset() {
+    static bool in = false;
+
+    if (pSysTask && pLLAPITask && pLLIRQTask && (in == false)) {
+        in = true;
+
+        while (eTaskStateGet(pSysTask) != eReady) {
+            vTaskDelay(10);
+        }
+
+        vTaskSuspend(pSysTask);
+        LLIRQ_enable(false);
+        vTaskDelay(pdMS_TO_TICKS(100));
+
+        vmMgr_ReleaseAllPage();
+
+        taskENTER_CRITICAL();
+
+        uint32_t *pRegFram = (uint32_t *)(((uint32_t *)pSysTask)[1]);
+        pRegFram -= 16;
+
+        pRegFram[-1] = 0x1F;
+        pRegFram[13] = sys_intStack;
+        pRegFram[15] = ((uint32_t)System) + 4;
+
+        taskEXIT_CRITICAL();
+        LLIRQ_ClearIRQs();
+        vTaskDelay(pdMS_TO_TICKS(100));
+
+        vTaskResume(pSysTask);
+        vTaskResume(pLLIRQTask);
+        vTaskResume(pLLAPITask);
+        in = false;
+    }
+}
+
+void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
+    char buf[64];
+
+    // if ((task == pSysTask) && g_sysfault_auto_reboot)
     {
-      diskInit = true;
-      FRESULT fres;
-      FATFS *fs = pvPortMalloc(sizeof(FATFS));
-      fres = f_mount(fs, "/SYS/", 1);
-      INFO("Test Mount 1:%d\n", fres);
-      if(fres != FR_OK){
-        AbortRes = 2;
-        vPortFree(fs);
-        goto Configuration;
-      }
-      f_unmount("/SYS/");
-/*
-      fres = f_mount(fs, "/DATA/", 1);
-      INFO("Test Mount 2:%d\n", fres);
-      if(fres != FR_OK){
-        AbortRes = 2;
-        vPortFree(fs);
-        goto Configuration;
-      }
-      f_unmount("/DATA/");
+
+        vTaskSuspend(pLLIRQTask);
+        vTaskSuspend(pLLAPITask);
+        LLIRQ_enable(false);
+
+        uint32_t *pRegFram = (uint32_t *)(((uint32_t *)pSysTask)[1]);
+        pRegFram -= 16;
+
+        DisplayClean();
+
+        DisplayPutStr(0, 16 * 0, "System Crash!", 0, 255, 16);
+        if (res != NULL) {
+            DisplayPutStr(14 * 8, 16 * 0, res, 0, 255, 16);
+        }
+        // DisplayPutStr(0, 16 * 1, "Press [ON]+[F5] Soft-reboot.", 0, 255, 16);
+
+        memset(buf, 0, sizeof(buf));
+
+        DisplayPutStr(0, 16 * 1, "[ON]>[F6] Reboot", 0, 255, 16);
+        DisplayPutStr(0, 16 * 2, "[ON]>[0 ]>[F5] Clear ALL Data", 0, 255, 16);
+
+        memset(buf, 0, sizeof(buf));
+        sprintf(buf, "R12:%08lx R0:%08lx", pRegFram[12], pRegFram[0]);
+        DisplayPutStr(0, 16 * 3, buf, 0, 255, 16);
+
+        memset(buf, 0, sizeof(buf));
+        sprintf(buf, "R13:%08lx  R1:%08lx", pRegFram[13], pRegFram[1]);
+        DisplayPutStr(0, 16 * 4, buf, 0, 255, 16);
+
+        memset(buf, 0, sizeof(buf));
+        sprintf(buf, "R14:%08lx  R2:%08lx", pRegFram[14], pRegFram[2]);
+        DisplayPutStr(0, 16 * 5, buf, 0, 255, 16);
+
+        memset(buf, 0, sizeof(buf));
+        sprintf(buf, "R15:%08lx  R3:%08lx", pRegFram[15], pRegFram[3]);
+        DisplayPutStr(0, 16 * 6, buf, 0, 255, 16);
+
+        memset(buf, 0, sizeof(buf));
+        sprintf(buf, "CPSR:%08lx [FAR:%08lx]", pRegFram[-1], address);
+        DisplayPutStr(0, 16 * 7, buf, 0, 255, 16);
+
+        g_vm_status = VM_STATUS_UNCONSCIOUS;
+
+        // portBoardReset();
+    }
+}
+
+unsigned char blockChksum(char *block, unsigned int blockSize) {
+    unsigned char sum = 0x5A;
+    for (int i = 0; i < blockSize; i++) {
+        sum += block[i];
+    }
+    return sum;
+}
+
+#define CDC_BINMODE_BUFSIZE 32768
+bool transBinMode = false;
+char *binBuf = NULL;
+uint32_t cdcBlockCnt;
+void MscSetCmd(char *cmd);
+void mkSTMPNandStructure(uint32_t OLStartBlock, uint32_t OLPages);
+void parseCDCCommand(char *cmd) {
+    if (strcmp(cmd, "PING") == 0) {
+
+        printf("CDC PING\n");
+        MscSetCmd("PONG\n");
+
+        tud_cdc_write_str("PONG\n");
+        tud_cdc_write_flush();
+        return;
+    }
+
+    if (strcmp(cmd, "RESETDBUF") == 0) {
+        if (binBuf == NULL) {
+            binBuf = (char *)VMMGR_GetCacheAddress();
+        }
+        printf("REC DATA BUF.\n");
+        memset(binBuf, 0xFF, CDC_BINMODE_BUFSIZE);
+        MscSetCmd("READY\n");
+        tud_cdc_write_str("READY\n");
+        tud_cdc_write_flush();
+        return;
+    }
+
+    if (strcmp(cmd, "BUFCHK") == 0) {
+        uint8_t chk;
+        if (binBuf == NULL) {
+            binBuf = (char *)VMMGR_GetCacheAddress();
+        }
+        char res[16];
+
+        chk = blockChksum(binBuf, CDC_BINMODE_BUFSIZE);
+        // printf("CHKSUM:%02x\n", chk);
+        sprintf(res, "CHKSUM:%02x\n", chk);
+        MscSetCmd(res);
+        tud_cdc_write_str(res);
+        tud_cdc_write_flush();
+        return;
+    }
+
+    if (memcmp(cmd, "ERASEB", 6) == 0) {
+        uint32_t erase_blk = 30;
+        sscanf(cmd, "ERASEB:%ld", &erase_blk);
+        printf("ERASEB:%ld\n", erase_blk);
+
+        MTD_ErasePhyBlock(erase_blk);
+
+        MscSetCmd("EROK\n");
+        tud_cdc_write_str("EROK\n");
+        tud_cdc_write_flush();
+        return;
+    }
+
+    if (memcmp(cmd, "PROGP", 5) == 0) {
+        uint32_t prog_page = 1111;
+        uint32_t wrMeta;
+        uint8_t *mtbuff = NULL;
+        sscanf(cmd, "PROGP:%ld,%ld", &prog_page, &wrMeta);
+        printf("PROGP:%ld,%ld\n", prog_page, wrMeta);
+
+        if (wrMeta) {
+            mtbuff = pvPortMalloc(19);
+            memset(mtbuff, 0xFF, 19);
+            mtbuff[1] = 0x00;
+            mtbuff[2] = 0x53; // S
+            mtbuff[3] = 0x54; // T
+            mtbuff[4] = 0x4D; // M
+            mtbuff[5] = 0x50; // P
+        }
+
+        for (int i = 0; i < CDC_BINMODE_BUFSIZE / 2048; i++) {
+            if (wrMeta) {
+                MTD_WritePhyPageWithMeta(prog_page + i, 6, (uint8_t *)&binBuf[i * 2048], mtbuff);
+            } else {
+                MTD_WritePhyPage(prog_page + i, (uint8_t *)&binBuf[i * 2048]);
+            }
+        }
+
+        if (wrMeta) {
+            vPortFree(mtbuff);
+        }
+
+        MscSetCmd("PGOK\n");
+        tud_cdc_write_str("PGOK\n");
+        tud_cdc_write_flush();
+        return;
+    }
+
+    if (memcmp(cmd, "MKNCB", 5) == 0) {
+        uint32_t stblock, pages;
+        sscanf(cmd, "MKNCB:%ld,%ld", &stblock, &pages);
+        printf("MKNCB:%ld,%ld\n", stblock, pages);
+        mkSTMPNandStructure(stblock, pages);
+        MscSetCmd("MKOK\n");
+        tud_cdc_write_str("MKOK\n");
+        tud_cdc_write_flush();
+        return;
+    }
+
+    if (strcmp(cmd, "FINOPA") == 0) {
+
+        return;
+    }
+
+    if (strcmp(cmd, "VMSUSPEND") == 0) {
+        vTaskSuspend(pBattmon);
+        VMSuspend();
+        vTaskDelay(pdMS_TO_TICKS(30));
+        return;
+    }
+
+    if (strcmp(cmd, "VMRESUME") == 0) {
+        vTaskResume(pBattmon);
+        VMResume();
+        vTaskDelay(pdMS_TO_TICKS(30));
+        return;
+    }
+
+    if (strcmp(cmd, "VMRESET") == 0) {
+        vm_needto_reset = true;
+        // vTaskDelay(pdMS_TO_TICKS(30));
+        VMReset();
+        vTaskDelay(pdMS_TO_TICKS(30));
+        return;
+    }
+
+    if (strcmp(cmd, "VMCHKS") == 0) {
+        VMCheckStatus();
+        return;
+    }
+
+    if (strcmp(cmd, "REBOOT") == 0) {
+        portBoardReset();
+        return;
+    }
+
+    if (strcmp(cmd, "ERASEALL") == 0) {
+        MTD_EraseAllBLock();
+        return;
+    }
+
+    if (strcmp(cmd, "MSCDATA") == 0) {
+        tud_disconnect();
+        DisplayClean();
+        DisplayPutStr(0, 0, "USB MSC Mode.", 0, 255, 16);
+        vTaskDelay(pdMS_TO_TICKS(200));
+        g_MSC_Configuration = MSC_CONF_SYS_DATA;
+        vTaskDelay(pdMS_TO_TICKS(10));
+        tud_connect();
+        return;
+    }
+}
+
+uint32_t g_CDC_TransTo = 100;
+// Invoked when cdc when line state changed e.g connected/disconnected
+void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
+    (void)itf;
+    (void)rts;
+    cdc_line_coding_t c;
+
+    // connected
+    if (dtr) {
+        // print initial message when connected
+        // tud_cdc_write_str("\r\nTinyUSB CDC MSC device example\r\n");
+        printf("CDC RESET\n");
+        // tud_cdc_write_flush();
+    }
+    tud_cdc_get_line_coding(&c);
+
+    switch (c.bit_rate) {
+    case 14400:
+
+        printf("CDC LOADER PATH\n");
+        g_CDC_TransTo = CDC_PATH_LOADER;
+        // if(tud_cdc_write_available())
+        {
+            tud_cdc_write_str("USB CDC-ACM OPEN.\n");
+            // tud_cdc_write_flush();
+        }
+        break;
+    case 115200:
+        printf("CDC EDB PATH\n");
+        g_CDC_TransTo = CDC_PATH_EDB;
+        tud_cdc_write_flush();
+        break;
+    case 9600:
+        printf("CDC SYS PATH\n");
+        g_CDC_TransTo = CDC_PATH_SYS;
+        break;
+    default:
+        break;
+    }
+
+    tud_cdc_read_flush();
+    transBinMode = rts;
+    if (transBinMode) {
+        cdcBlockCnt = 0;
+        printf("CDC BIN MODE\n");
+    } else {
+        printf("CDC TEXT MODE\n");
+    }
+}
+
+char cdc_path_loader_buffer[64];
+// Invoked when CDC interface received data from host
+void tud_cdc_rx_cb(uint8_t itf) {
+    (void)itf;
+    int32_t c = 0;
+    int32_t nRead;
+
+    if (g_CDC_TransTo == CDC_PATH_SYS) {
+        nRead = tud_cdc_available();
+        if (nRead) {
+            LLIO_NotifySerialRxAvailable();
+        }
+    }
+
+    if (g_CDC_TransTo == CDC_PATH_LOADER) {
+        nRead = tud_cdc_available();
+        if (nRead < sizeof(cdc_path_loader_buffer)) {
+            tud_cdc_read(cdc_path_loader_buffer, sizeof(cdc_path_loader_buffer));
+            cdc_path_loader_buffer[nRead] = 0;
+            printf("cmd:%s\n", cdc_path_loader_buffer);
+
+            if (strcmp(cdc_path_loader_buffer, "getstatus") == 0) {
+                printTaskList();
+                goto fin;
+            }
+
+            if (strcmp(cdc_path_loader_buffer, "poweroff") == 0) {
+                portBoardPowerOff();
+                goto fin;
+            }
+
+            if (strcmp(cdc_path_loader_buffer, "clearall") == 0) {
+                FTL_ClearAllSector();
+                printf("clear all sector.\n");
+                goto fin;
+            }
+
+            
+
+
+        }
+
+        fin:
+        tud_cdc_read_flush();
+    }
+
+    if (g_CDC_TransTo == CDC_PATH_EDB) {
+        if (transBinMode && binBuf) {
+            if (cdcBlockCnt < CDC_BINMODE_BUFSIZE) {
+                nRead = tud_cdc_available();
+                // printf("nread:%d\n",nRead);
+                tud_cdc_read(&binBuf[cdcBlockCnt], CDC_BINMODE_BUFSIZE);
+                cdcBlockCnt += nRead;
+
+            } else {
+                tud_cdc_read_flush();
+            }
+        } else {
+            char bufline[32];
+            int bufcnt = 0;
+            memset(bufline, 0, 32);
+            nRead = tud_cdc_available();
+            while (nRead--) {
+                c = tud_cdc_read_char();
+                if (c != -1) {
+                    switch (c) {
+                    case '\n':
+                        bufline[bufcnt] = 0;
+                        printf("CMD:%s\n", bufline);
+                        parseCDCCommand(bufline);
+
+                        bufcnt = 0;
+                        break;
+
+                    default:
+                        if (bufcnt < 32) {
+                            bufline[bufcnt++] = c;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        tud_cdc_read_flush();
+    }
+}
+
+static void getKey(uint32_t *key, uint32_t *press) {
+    *key = g_latest_key_status & 0xFFFF;
+    *press = g_latest_key_status >> 16;
+}
+
+void vMainThread(void *pvParameters) {
+
+    // vTaskDelay(pdMS_TO_TICKS(100));
+    setHCLKDivider(2);
+    setCPUDivider(1);
+
+    // portLRADCEnable(1, 7);
+    //  MTD_EraseAllBLock();
+    //  while (g_FTL_status == 10) {
+    //     vTaskDelay(pdMS_TO_TICKS(1000));
+    // }
+
+    printf("FTL Code:%ld\n", g_FTL_status);
+
+    portLRADCConvCh(7, 1);
+
+    g_CDC_TransTo = CDC_PATH_LOADER;
+    // vTaskDelay(pdMS_TO_TICKS(1000));
+    /*
+    printf("Batt. voltage:%d mv, adc:%d\n", portGetBatterVoltage_mv(), portLRADCConvCh(7, 5));
+    printf("VDDIO: %d mV\n", (int)(portLRADCConvCh(6, 5) * 0.9));
+    printf("VDD5V: %d mV\n", (int)(portLRADCConvCh(5, 5) * 0.45 * 4));
+    printf("Core Temp: %d ℃\n", (int)((portLRADCConvCh(4, 5) - portLRADCConvCh(3, 5)) * 1.012 / 4 - 273.15));
 */
-      vPortFree(fs);
-    }
-
-    /* Normal Boot */
-    fileSystemOK = true;  
-
-    if(bootSystem() == false){
-        AbortRes = 0;
-        goto Configuration;
-    }
-    
-    vTaskDelete(xTaskGetCurrentTaskHandle());
-
-
-    while(1)
-    {
-      vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-
-
-
-    Configuration:
-
-    RenderMainW(selectItem);
-    xTaskCreate(vTaskIndicate, "RenderInd", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
-
-
-    
-    
-    nand_info = MTD_getDeviceInfo();
+    uint32_t key, key_press;
 
     for (;;) {
-      flushInd = false;
-      vTaskDelay(pdMS_TO_TICKS(40));
-      switch (selectItem)
-      {
-      case 0:
-        inSubLevel = 0;
-        RenderFaultReason(AbortRes);
-        break;
-      case 1: //Boot ExistOS
-        inSubLevel = 0;
-        DisplayFillBox(103, 17, 254, 124, 0);
-        DisplayPutStr(104,18 + 12 * 0,"Press ENTER to",255,0, 12);
-        DisplayPutStr(104,18 + 12 * 1,"Boot /SYS/ExistOS.sys",255,0, 12);
+        getKey(&key, &key_press);
+        vTaskDelay(pdMS_TO_TICKS(10));
+        if ((key == KEY_ON) && key_press) {
 
-        if(keyEnter)
-        {
-          if(bootSystem() == false){
-            DisplayFillBox(40, 30, 220, 80, 0);
-            DisplayBox(40, 30, 220, 80, 0xFF);
-            DisplayPutStr(40 + 1*4,31 + 12 * 1,"Boot failed.",255,0, 12);
-          }else{
-            vTaskDelete(xTaskGetCurrentTaskHandle());
-          }
-        }
-
-        break;
-      
-      case 2: //Mount USB MSC
-        DisplayFillBox(103, 17, 254, 124, 0);
-        if(diskInit)
-        {
-          if( inSubLevel > 4){
-            inSubLevel = 1;
-          }
-          DisplayPutStr(104,18 + 12 * 0,"Select which Partition",255,0, 12);
-          DisplayPutStr(104,18 + 12 * 1,"to mount on USB MSC.",255,0, 12);
-
-          DisplayPutStr(104 + 10         ,18 + 12 * 3,"NONE",(inSubLevel == 1) ? 0 : 255,(inSubLevel == 1) ? 255 : 0, 12);
-          DisplayPutStr(104 + 10 + (6*6) ,18 + 12 * 3,"DATA",(inSubLevel == 2) ? 0 : 255,(inSubLevel == 2) ? 255 : 0, 12);
-          DisplayPutStr(104 + 10 + (12*6),18 + 12 * 3,"SYS ",(inSubLevel == 3) ? 0 : 255,(inSubLevel == 3) ? 255 : 0, 12);
-          DisplayPutStr(104 + 10 + (17*6),18 + 12 * 3,"ALL ",(inSubLevel == 4) ? 0 : 255,(inSubLevel == 4) ? 255 : 0, 12);
-
-          if(keyEnter && (inSubLevel > 0)){
-            CurMount = inSubLevel - 1;
-            switch (CurMount)
-            {
-            case 0:
-              tud_disconnect();
-              FTL_Sync();
-              vTaskDelay(pdMS_TO_TICKS(500));
-              tud_connect();
-              break;
-            case 1:
-              {
-                tud_disconnect();
-                setMountPartition(0);
-                vTaskDelay(pdMS_TO_TICKS(500));
-                tud_connect();
-              }
-
-              break;
-            case 2:
-              {
-                tud_disconnect();
-                setMountPartition(1);
-                vTaskDelay(pdMS_TO_TICKS(500));
-                tud_connect();
-              }
-              break;
-            
-            case 3:
-              {
-                tud_disconnect();
-                setMountPartition(2);
-                vTaskDelay(pdMS_TO_TICKS(500));
-                tud_connect();
-              }
-              break;
-
-
-            default:
-              break;
-            }
-          }
-
-            switch (CurMount)
-            {
-            case 0:
-              DisplayPutStr(104 + 10          ,18 + 12 * 4,"^^^^",255,0, 12);
-              break;
-            case 1:
-              DisplayPutStr(104 + 10 + (6*6)  ,18 + 12 * 4,"^^^^",255,0, 12);
-              break;
-            case 2:
-              DisplayPutStr(104 + 10 + (12*6) ,18 + 12 * 4,"^^^^",255,0, 12);
-              break;
-            case 3:
-              DisplayPutStr(104 + 10 + (17*6) ,18 + 12 * 4,"^^^^",255,0, 12);
-              break;  
-            default:
-              break;
+        key_on_loop:
+            vTaskDelay(pdMS_TO_TICKS(20));
+            getKey(&key, &key_press);
+            if ((key == KEY_F6) && key_press) {
+                portBoardReset();
             }
 
-        }else{
-          
-          DisplayPutStr(104,18 + 12 * 0,"Flash not Formatted, ",255,0, 12);
-          DisplayPutStr(104,18 + 12 * 1,"please format before",255,0, 12);
-          DisplayPutStr(104,18 + 12 * 2,"mount DATA or SYS",255,0, 12);
-          DisplayPutStr(104,18 + 12 * 3,"partition.",255,0, 12);
-          if( inSubLevel > 2){
-            inSubLevel = 1;
-          }
-          DisplayPutStr(104 + 10          ,18 + 12 * 5,"NONE",(inSubLevel == 1) ? 0 : 255,(inSubLevel == 1) ? 255 : 0, 12);
-          DisplayPutStr(104 + 10 + (14*6) ,18 + 12 * 5,"ALL ",(inSubLevel == 2) ? 0 : 255,(inSubLevel == 2) ? 255 : 0, 12);
-
-          if(keyEnter && (inSubLevel > 0)){
-            CurMount = inSubLevel - 1;
-            switch (CurMount)
-            {
-            case 0:
-              tud_disconnect();
-              vTaskDelay(pdMS_TO_TICKS(500));
-              tud_connect();
-              break;
-            case 1:
-              {
-                tud_disconnect();
-                setMountPartition(2);
-                vTaskDelay(pdMS_TO_TICKS(500));
-                tud_connect();
-              }
-
-              break;
-            default:
-              break;
+            if ((key == KEY_0) && key_press) {
+            key_zero_loop:
+                vTaskDelay(pdMS_TO_TICKS(20));
+                getKey(&key, &key_press);
+                if ((key == KEY_F5) && key_press) {
+                    VMSuspend();
+                    DisplayClean();
+                    DisplayPutStr(0, 0, "Erase All Data ...", 0, 255, 16);
+                    vTaskDelay(pdMS_TO_TICKS(2000));
+                    for (int i = FLASH_DATA_BLOCK; i < 1024; i++) {
+                        MTD_ErasePhyBlock(i);
+                    }
+                    portBoardReset();
+                } else {
+                    goto key_zero_loop_exit;
+                }
+                goto key_zero_loop;
+            key_zero_loop_exit:
+                ((void)key);
             }
 
-          }
-            switch (CurMount)
-            {
-            case 0:
-              DisplayPutStr(104 + 10          ,18 + 12 * 6,"^^^^",255,0, 12);
-              break;
-            case 1:
-              DisplayPutStr(104 + 10 + (14*6)  ,18 + 12 * 6,"^^^^",255,0, 12);
-              break;
-            default:
-              break;
+            extern uint32_t g_lcd_contrast;
+            if ((key == KEY_SUBTRACTION) && key_press) {
+                g_lcd_contrast--;
+                portDispSetContrast(g_lcd_contrast);
+                vTaskDelay(pdMS_TO_TICKS(40));
             }
 
-
-
-        }
-        break;
-      
-      case 3:   //Install System
-        inSubLevel = 0;
-        DisplayFillBox(103, 17, 254, 124, 0);
-        DisplayPutStr(104,18 + 12 * 0,"Please copy system",255,0, 12);
-        DisplayPutStr(104,18 + 12 * 1,"file to /SYS/  ",255,0, 12);
-        DisplayPutStr(104,18 + 12 * 3,"press ENTER to write",255,0, 12);
-        DisplayPutStr(104,18 + 12 * 4,"boot sector.",255,0, 12);
-
-
-        if(keyEnter)
-        {
-          FRESULT ret;
-          FILINFO finfo;
-          FATFS *fs = pvPortMalloc(sizeof(FATFS));
-          f_mount(fs, "/SYS/", 1);
-
-          ret = f_stat("/SYS/OSLoader.sb", &finfo);
-          uint32_t fsize;
-          fsize = finfo.fsize;
-          INFO("fsize:%lu \n",fsize);
-
-          INFO("f_stat:%d\n",ret);
-          if(ret != FR_OK){
-              DisplayFillBox(40, 30, 220, 80, 0);
-              DisplayBox(40, 30, 220, 80, 0xFF);
-              DisplayPutStr(40 + 1*4,31 + 12 * 1,"/SYS/OSLoader.sb is not",255,0, 12);
-              DisplayPutStr(40 + 1*4,31 + 12 * 2,"existed!",255,0, 12);
-              needClean = true;
-              f_unmount("/SYS/");
-              vPortFree(fs);
-            break;
-          }
-          
-          uint32_t  fwSectors = (fsize + nand_info->PageSize_B - 1) / (nand_info->PageSize_B);
-          uint32_t  fwBlocks = (fwSectors + nand_info->PagesPerBlock - 1) / (nand_info->PagesPerBlock);
-
-          INFO("fsize:%u, fwSectors:%u, fwBlocks:%u \n",fsize, fwSectors, fwBlocks  );
-          
-          DisplayFillBox(40, 30, 220, 80, 0);
-          DisplayBox(40, 30, 220, 80, 0xFF);
-          DisplayPutStr(40 + 1*4,31 + 12 * 1,"Flashing...",255,0, 12);
-
-          FIL *f = pvPortMalloc(sizeof(FIL));
-          ret = f_open(f, "/SYS/OSLoader.sb" ,FA_READ);
-          INFO("f_open:%d\n",ret);
-          if(ret != FR_OK){
-              DisplayFillBox(40, 30, 220, 80, 0);
-              DisplayBox(40, 30, 220, 80, 0xFF);
-              DisplayPutStr(40 + 1*4,31 + 12 * 1,"Reading /SYS/OSLoader.sb",255,0, 12);
-              DisplayPutStr(40 + 1*4,31 + 12 * 2,"Failed!",255,0, 12);
-              needClean = true;
-              f_unmount("/SYS/");
-              vPortFree(fs);
-              vPortFree(f);
-            break;
-          }
-
-          uint8_t *pgbuff = pvPortMalloc(nand_info->PageSize_B);
-          uint8_t *mtbuff = pvPortMalloc(nand_info->MetaSize_B);
-
-          memset(mtbuff, 0xFF, nand_info->MetaSize_B);
-          mtbuff[1] = 0x00; 
-          mtbuff[2] = 0x53; //S
-          mtbuff[3] = 0x54; //T
-          mtbuff[4] = 0x4D; //M
-          mtbuff[5] = 0x50; //P
-
-          for(int i = 22; i < 22 + fwBlocks; i++){
-              MTD_ErasePhyBlock(i);
-          }
-
-          UINT br;
-          for(int i = 0; i < fwSectors; i++)
-          {
-            memset(pgbuff, 0xFF, nand_info->PageSize_B);
-            ret = f_read(f, pgbuff, nand_info->PageSize_B, &br);
-            MTD_WritePhyPageWithMeta(22 * nand_info->PagesPerBlock + i, nand_info->MetaSize_B, pgbuff, mtbuff);
-          }
-          
-          mkNCB(0);
-          mkNCB(4);
-
-          mkDBBT(16);
-          mkDBBT(19);
-          
-          mkLDLB(8,  22 * 64, fwSectors, 16 * 64, 19 * 64);
-          mkLDLB(12, 22 * 64, fwSectors, 16 * 64, 19 * 64);
-
-
-          f_close(f);
-
-          f_unmount("/SYS/");
-          vPortFree(fs);
-          vPortFree(f);
-          vPortFree(pgbuff);
-          vPortFree(mtbuff);
-
-
-          DisplayFillBox(40, 30, 220, 80, 0);
-          DisplayBox(40, 30, 220, 80, 0xFF);
-          DisplayPutStr(40 + 1*4,31 + 12 * 1,"Install Completed.",255,0, 12);
-
-        }
-
-        break;
-
-
-      case 4:   //Format Flash
-        if( inSubLevel > 2){
-            inSubLevel = 2;
-          }
-        DisplayFillBox(103, 17, 254, 124, 0);
-        DisplayPutStr(104,18 + 12 * 0,"Select only Erase ",255,0, 12);
-        DisplayPutStr(104,18 + 12 * 1,"or format flash.",255,0, 12);
-
-        DisplayPutStr(104 + 10         , 18 + 12 * 3,"Erase ",(inSubLevel == 1) ? 0 : 255,(inSubLevel == 1) ? 255 : 0, 12);
-        DisplayPutStr(104 + 10 + (12*6) ,18 + 12 * 3,"Format",(inSubLevel == 2) ? 0 : 255,(inSubLevel == 2) ? 255 : 0, 12);
-        if(keyEnter)
-        {
-          switch (inSubLevel)
-          {
-          case 1:
-            needClean = true;
-            EraseWithDisp(0);
-            diskInit = false;
-
-            inSubLevel = 0;
-            break;
-          
-          case 2:
-            needClean = true;
-            EraseWithDisp(0);
-            FTL_ClearAllSector();
-            {
-
-              LBA_t plist[] = DISK_PARTITION;
-              MKFS_PARM opt;
-              FRESULT ret;
-              ret = f_fdisk(0, plist, NULL);
-              opt.fmt = FM_FAT;
-              opt.au_size = 2048;
-
-              DisplayPutStr(40 + 1*4,31 + 12 * 1,"Formatting... /DATA",255,0, 12);
-              ret = f_mkfs("/DATA/", &opt, NULL, FF_MAX_SS);
-
-              if(ret != FR_OK)
-                DisplayPutStr(40 + 6*4,31 + 12 * 1,"Format ERROR!",255,0, 12);
-
-              DisplayPutStr(40 + 1*4,31 + 12 * 1,"Formatting... /SYS ",255,0, 12);
-              ret = f_mkfs("/SYS/", &opt, NULL, FF_MAX_SS);
-
-              DisplayFillBox(40, 30, 180, 80, 0);
-              DisplayBox(40, 30, 180, 80, 0xFF);
-
-              if(ret != FR_OK)
-              {
-                DisplayPutStr(40 + 6*4,31 + 12 * 1,"Format ERROR!",255,0, 12);
-                diskInit = false;
-              }else{
-
-                FTL_Sync();
-                FTL_MapInit();
-
-                DisplayPutStr(40 + 6*4,31 + 12 * 1,"Format Finish.",255,0, 12);
-                diskInit = true;
-              }
-              
+            if ((key == KEY_PLUS) && key_press) {
+                g_lcd_contrast++;
+                portDispSetContrast(g_lcd_contrast);
+                vTaskDelay(pdMS_TO_TICKS(40));
             }
 
-            inSubLevel = 0;
-            break;
-
-          default:
-            break;
-          }
-          FTL_ScanPartition();
-        }
-
-        break;
-      case 5:   //Restore IMG
-        inSubLevel = 0;
-        DisplayFillBox(103, 17, 254, 124, 0);
-        DisplayPutStr(104,18 + 12 * 0,"Press ENTER to flash",255,0, 12);
-        DisplayPutStr(104,18 + 12 * 1,"/DATA/firmware.sb",255,0, 12);
-        DisplayPutStr(104,18 + 12 * 2,"to NAND Flash.",255,0, 12);
-
-
-        if(keyEnter)
-        {
-          FRESULT ret;
-          FILINFO finfo;
-          FATFS *fs = pvPortMalloc(sizeof(FATFS));
-          f_mount(fs, "/DATA/", 1);
-
-          ret = f_stat("/DATA/firmware.sb", &finfo);
-          uint32_t fsize;
-          fsize = finfo.fsize;
-          INFO("fsize:%lu \n",fsize);
-
-          INFO("f_stat:%d\n",ret);
-          if(ret != FR_OK){
-              DisplayFillBox(40, 30, 220, 80, 0);
-              DisplayBox(40, 30, 220, 80, 0xFF);
-              DisplayPutStr(40 + 1*4,31 + 12 * 1,"/DATA/firmware.sb is",255,0, 12);
-              DisplayPutStr(40 + 1*4,31 + 12 * 2,"not existed!",255,0, 12);
-              needClean = true;
-              f_unmount("/DATA/");
-              vPortFree(fs);
-            break;
-          }
-          
-          uint32_t  fwSectors = (fsize + nand_info->PageSize_B - 1) / (nand_info->PageSize_B);
-          uint32_t  fwBlocks = (fwSectors + nand_info->PagesPerBlock - 1) / (nand_info->PagesPerBlock);
-          INFO("fsize:%u, fwSectors:%u, fwBlocks:%u \n",fsize, fwSectors, fwBlocks  );
-          
-          DisplayFillBox(40, 30, 220, 80, 0);
-          DisplayBox(40, 30, 220, 80, 0xFF);
-          DisplayPutStr(40 + 1*4,31 + 12 * 1,"Flashing...",255,0, 12);
-
-          FIL *f = pvPortMalloc(sizeof(FIL));
-          ret = f_open(f, "/DATA/firmware.sb" ,FA_READ);
-          INFO("f_open:%d\n",ret);
-          if(ret != FR_OK){
-              DisplayFillBox(40, 30, 220, 80, 0);
-              DisplayBox(40, 30, 220, 80, 0xFF);
-              DisplayPutStr(40 + 1*4,31 + 12 * 1,"Reading /DATA/firmware.sb",255,0, 12);
-              DisplayPutStr(40 + 1*4,31 + 12 * 2,"Failed!",255,0, 12);
-              needClean = true;
-              f_unmount("/DATA/");
-              vPortFree(fs);
-              vPortFree(f);
-            break;
-          }
-
-
-
-
-          uint8_t *pgbuff = pvPortMalloc(nand_info->PageSize_B);
-          uint8_t *mtbuff = pvPortMalloc(nand_info->MetaSize_B);
-
-          memset(mtbuff, 0xFF, nand_info->MetaSize_B);
-          mtbuff[1] = 0x00; 
-          mtbuff[2] = 0x53; //S
-          mtbuff[3] = 0x54; //T
-          mtbuff[4] = 0x4D; //M
-          mtbuff[5] = 0x50; //P
-
-          for(int i = 22; i < 22 + fwBlocks; i++){
-              MTD_ErasePhyBlock(i);
-          }
-
-          UINT br;
-          for(int i = 0; i < fwSectors; i++)
-          {
-            memset(pgbuff, 0xFF, nand_info->PageSize_B);
-
-            ret = f_read(f, pgbuff, nand_info->PageSize_B, &br);
-            if((i % 64) == 0){
-              mtbuff[1]++;
+            if ((key == KEY_ON) && !key_press) {
+                goto key_on_release;
             }
-            MTD_WritePhyPageWithMeta(22 * nand_info->PagesPerBlock + i, nand_info->MetaSize_B, pgbuff, mtbuff);
-          }
-          
-          mkNCB(0);
-          mkNCB(4);
-
-          mkDBBT(16);
-          mkDBBT(19);
-          
-          mkLDLB(8,  22 * 64, fwSectors, 16 * 64, 19 * 64);
-          mkLDLB(12, 22 * 64, fwSectors, 16 * 64, 19 * 64);
-
-          RestoreLDLB2();
-
-          f_close(f);
-          f_unmount("/DATA/");
-          vPortFree(fs);
-          vPortFree(f);
-          vPortFree(pgbuff);
-          vPortFree(mtbuff);
-
-          EraseWithDisp(80);
-
-
-          DisplayFillBox(40, 30, 220, 80, 0);
-          DisplayBox(40, 30, 220, 80, 0xFF);
-          DisplayPutStr(40 + 1*4,31 + 12 * 1,"Restore Completed?",255,0, 12);
-
+            goto key_on_loop;
         }
+    key_on_release:
 
-
-
-        break;
-      case 6:   //Shutdown
-        inSubLevel = 0;
-        DisplayFillBox(103, 17, 254, 124, 0);
-        DisplayPutStr(104,18 + 12 * 0,"Power off the device.",255,0, 12);
-        if(keyEnter){
-          portBoardPowerOff();
-        }
-        break;
-
-      case 7:   //Reboot
-        inSubLevel = 0;
-        DisplayFillBox(103, 17, 254, 124, 0);
-        DisplayPutStr(104,18 + 12 * 0,"Reboot the device.",255,0, 12);
-        if(keyEnter){
-          portBoardReset();
-        }
-        break;
-
-      default:
-        break;
-      }
-
-      flushInd = true;
-      keyEnter = false;
-      key = kb_waitAnyKeyPress();
-      if(needClean)
-      {
-        DisplayClean();
-        DisplaySetIndicate(0, 0xF);
-        RenderMainW(selectItem);
-        needClean = false;
-      }
-      
-      switch (key)
-      {
-      case KEY_DOWN:
-        if(!inSubMenu && (inSubLevel == 0)){
-          selectItem++;
-          if(selectItem > getMenuItemNum() - 1)
-            selectItem = 0;
-          RenderMainW(selectItem);
-        }
-
-        break;
-      case KEY_UP:
-        if(!inSubMenu && (inSubLevel == 0)){
-          selectItem--;
-          if(selectItem < 0)
-            selectItem = getMenuItemNum() - 1;
-          RenderMainW(selectItem);
-        }
-        break;
-
-      case KEY_LEFT:
-        if(inSubLevel > 0)
-          inSubLevel--;
-        break;
-      case KEY_RIGHT:
-        inSubLevel++;
-        break;
-
-      case KEY_ENTER:
-        keyEnter = true;
-        break;
-
-      case KEY_PLOT:
-      { 
-          uint8_t *buf = pvPortMalloc(4096);
-          bool fin = false;
-          if(buf == NULL){
-            break;
-          }
-          for(int i = 0; i < 128; i+=16){
-              DisplayReadArea(0, i, 255, (i + 15), buf, &fin);
-              while(!fin);
-
-            if(tud_cdc_available()){
-              for(int i = 0; i < 4096; i++){
-                tud_cdc_n_write_char(0, ((char *)buf)[i]);    
-              }
-              tud_cdc_write_flush();
+        if ((key == KEY_SHIFT) && key_press) {
+            vTaskDelay(pdMS_TO_TICKS(20));
+            getKey(&key, &key_press);
+            if ((key == KEY_BACKSPACE) && key_press) {
+                portBoardPowerOff();
             }
+        }
 
-          }
-          vPortFree(buf);
-          
-      }
-        break;
-
-      default:
-        break;
-      }
-
-
-      
+        if (vm_needto_reset) {
+            vm_needto_reset = false;
+            VMReset();
+        }
     }
 }
 
+void get_cpu_info() {
+    register uint32_t val;
+    __asm volatile("mrc p15,0,%0,c0,c0,0"
+                   : "=r"(val));
+    printf("CPU ID:%08lx\n", val);
 
-void vTaskTinyUSB(void *pvParameters)
-{
-  tusb_init();
-  for(;;)
-    tud_task();
+    __asm volatile("mrc p15,0,%0,c0,c0,1"
+                   : "=r"(val));
+
+    printf("ICache Size[%08lx]:%d KB\n", val, 1 << ((((val >> 0) >> 6) & 0xF) - 1));
+    printf("DCache Size[%08lx]:%d KB\n", val, 1 << ((((val >> 12) >> 6) & 0xF) - 1));
+
+    __asm volatile("mrc p15,0,%0,c0,c0,2"
+                   : "=r"(val));
+    printf("DTCM:%ld, ITCM:%ld\n", (val >> 16) & 1, val & 1);
+
+    __asm volatile("mrc p15,0,%0,c9,c0,1"
+                   : "=r"(val));
+    printf("Cache LOCK:%08lx\n", val);
 }
 
-void vMTDSvc(void *pvParameters)
-{
-  MTD_DeviceInit();
-  for(;;)
-    MTD_Task();
-}
+void vBatteryMon(void *__n) {
 
-void vFTLSvc(void *pvParameters)
-{
-  FTL_status = FTL_init();
-  for(;;)
-    FTL_task();
-}
+    uint32_t vatt_adc = 0;
+    uint32_t batt_voltage = 0;
+    uint32_t vdd5v_voltage = 0;
+    int coreTemp = 0;
+    long t = 0;
+    int n = 0;
 
-void vKeysSvc(void *pvParameters)
-{
-  key_svcInit();
-  for(;;)
-  {
-    key_task();
-  }
-  
-}
+    uint32_t show_bat_val;
 
+    for (;;) {
 
+        vatt_adc = portLRADCConvCh(7, 5);
+        batt_voltage = portGetBatterVoltage_mv();
+        vdd5v_voltage = (int)(portLRADCConvCh(5, 5) * 0.45 * 4);
+        coreTemp = (int)((portLRADCConvCh(4, 5) - portLRADCConvCh(3, 5)) * 1.012 / 4 - 273.15);
 
+        if (t % 10 == 0) {
 
-void vVMMgrSvc(void *pvParameters)
-{
+            if (portGetBatteryMode() == 0) {
+                printf("Battery = Li-ion\n");
+            } else {
+                printf("Battery = Single AA or AAA\n");
+            }
+            printf("Batt. voltage:%ld mv, adc:%ld\n", batt_voltage, vatt_adc);
+            printf("VDDIO: %d mV\n", (int)(portLRADCConvCh(6, 5) * 0.9));
+            printf("VDD5V: %ld mV\n", vdd5v_voltage);
+            printf("VBG: %d mV\n", (int)(portLRADCConvCh(2, 5) * 0.45));
+            printf("Core Temp: %d ℃\n", coreTemp);
+            printf("Power Speed:%02lx\n", portGetPWRSpeed());
+        }
+        t++;
 
-  vmMgr_init();
-
-  for(;;){
-    vmMgr_task();
-  }
-}
-
-
-
-void vLLKkbd(void *pvParameters)
-{
-    //uint8_t curKey;
-    //bool press;
-    LLAPI_KBD_t key;
-
-    for(;;){
-      kb_isAnyKeyPress(&key.key, (bool *)&key.press);
-      if(key.key != 255){
-
-
-        xQueueSend(LLAPI_KBDQueue, &key, portMAX_DELAY);
-      }
-      vTaskDelay(30);
+        if (vdd5v_voltage > 3500) {
+        }
+        show_bat_val = batt_voltage;
+        if (show_bat_val > 1500) {
+            show_bat_val = 1500;
+        }
+        if (show_bat_val < 800) {
+            show_bat_val = 800;
+        }
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        n = 0;
+        if (((show_bat_val - 800) * 100 / (1500 - 800)) >= ((100 / 4) * 1))
+            n |= (1 << 0);
+        if (((show_bat_val - 800) * 100 / (1500 - 800)) >= ((100 / 4) * 2))
+            n |= (1 << 1);
+        if (((show_bat_val - 800) * 100 / (1500 - 800)) >= ((100 / 4) * 3))
+            n |= (1 << 2);
+        if (((show_bat_val - 800) * 100 / (1500 - 800)) >= ((100 / 4) * 4))
+            n |= (1 << 3);
+        DisplaySetIndicate(-1, n);
     }
 }
 
-void vLLAPISvc(void *pvParameters)
-{
+extern uint32_t log_i;
+extern uint32_t log_j;
+extern char log_buf[SYS_LOG_BUFSIZE];
 
-  LLAPI_init(pSysTask);
-  
-  xTaskCreate(vLLKkbd, "LLKbd Svc", configMINIMAL_STACK_SIZE, NULL, 2, NULL );
+void TaskUSBLog(void *_) {
 
-  for(;;){
-    LLAPI_Task();
-  }
-}
+    vTaskDelay(pdMS_TO_TICKS(2000));
+    for (;;) {
 
+        int ava;
+        if (g_CDC_TransTo == CDC_PATH_LOADER) {
+            ava = tud_cdc_write_available();
+            if (ava > 0) {
+            retest:
+                if (log_j < log_i) {
+                    if (log_i - log_j <= ava) {
+                        tud_cdc_write(&log_buf[log_j], log_i - log_j);
+                        tud_cdc_write_flush();
+                        log_j = log_i;
+                    } else {
+                        tud_cdc_write(&log_buf[log_j], ava);
+                        tud_cdc_write_flush();
+                        log_j += ava;
+                    }
 
+                } else if (log_j > log_i) {
+                    if (SYS_LOG_BUFSIZE - log_j <= ava) {
+                        tud_cdc_write(&log_buf[log_j], SYS_LOG_BUFSIZE - log_j + 1);
+                        tud_cdc_write_flush();
+                        log_j = 0;
+                    } else {
+                        tud_cdc_write(&log_buf[log_j], ava);
+                        tud_cdc_write_flush();
+                        log_j += ava;
+                    }
 
-void vDispSvc(void *pvParameters)
-{
+                    vTaskDelay(pdMS_TO_TICKS(100));
+                    goto retest;
+                }
+            }
+        }
 
-  DisplayInit();
-  for(;;){
-    DisplayTask();
-  }
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
 }
 
 extern int bootTimes;
-void _startup(){
+void _startup() {
 
-  printf("Starting.(rebootTimes: %d)\n",bootTimes);
+    printf("Starting.(rebootTimes: %d)\n", bootTimes);
 
-  boardInit();
+    get_cpu_info();
 
-	xTaskCreate( vMTDSvc, "MTD Svc", configMINIMAL_STACK_SIZE, NULL, 8, NULL );
-	xTaskCreate( vFTLSvc, "FTL Svc", configMINIMAL_STACK_SIZE, NULL, 7, NULL );
+    boardInit();
+    printf("booting .....\n");
+    xTaskCreate(vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
 
-  xTaskCreate( vVMMgrSvc, "VM Svc", configMINIMAL_STACK_SIZE, NULL, 6, NULL );
-	xTaskCreate( vTaskTinyUSB, "TinyUSB", configMINIMAL_STACK_SIZE, NULL, 6, NULL );
-	xTaskCreate( vKeysSvc, "Keys Svc", configMINIMAL_STACK_SIZE, NULL, 6, NULL );
-	xTaskCreate( vDispSvc, "Display Svc", configMINIMAL_STACK_SIZE, NULL, 6, NULL );
+    xTaskCreate(vMTDSvc, "MTD Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, NULL);
+    xTaskCreate(vFTLSvc, "FTL Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 3, NULL);
+    xTaskCreate(vDispSvc, "Display Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pDispTask);
+    xTaskCreate(TaskUSBLog, "USB Log", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 3, NULL);
+    xTaskCreate(vTaskTinyUSB, "TinyUSB", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 4, NULL);
+    xTaskCreate(vVMMgrSvc, "VM Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 4, NULL);
+    
+    xTaskCreate(vKeysSvc, "Keys Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
 
-  xTaskCreate( vLLAPISvc, "LLAPI Svc", configMINIMAL_STACK_SIZE * 2, NULL, 5, &pLLAPITask );
-  
-  
-	xTaskCreate( vMainThread, "Main Thread", configMINIMAL_STACK_SIZE, NULL, 3, NULL );
-  xTaskCreate( System, "System", configMINIMAL_STACK_SIZE, NULL, 1, &pSysTask);
-  //pSysTask = xTaskCreateStatic( (TaskFunction_t)0x00100000, "System", VM_RAM_SIZE, NULL, 1, VM_RAM_BASE, pvPortMalloc(sizeof(StaticTask_t)));
+    xTaskCreate(vLLAPISvc, "LLAPI Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 5, &pLLAPITask);
+    xTaskCreate(LLIRQ_task, "LLIRQ Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 6, &pLLIRQTask);
+    xTaskCreate(LLIO_ScanTask, "LLIO Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 6, &pLLIOTask);
 
+    xTaskCreate(System, "System", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 7, &pSysTask);
 
-	xTaskCreate( vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, 5, NULL );
+    xTaskCreate(vBatteryMon, "Battery Mon", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pBattmon);
+    xTaskCreate(vMainThread, "Main Thread", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
 
-  vTaskSuspend(pSysTask);
-  vTaskSuspend(pLLAPITask);
+    sys_intStack = (uint32_t)(((uint32_t *)pSysTask)[0]);
+    // pSysTask = xTaskCreateStatic( (TaskFunction_t)0x00100000, "System", VM_RAM_SIZE, NULL, 1, VM_RAM_BASE, pvPortMalloc(sizeof(StaticTask_t)));
 
-	vTaskStartScheduler();
-	printf("booting fail.\n");
+    // vTaskSuspend(pSysTask);
+    // vTaskSuspend(pLLAPITask);
 
-	while(1);
+    vTaskStartScheduler();
+    printf("booting fail.\n");
+
+    while (1)
+        ;
 }
 
-
-void vApplicationStackOverflowHook( TaskHandle_t xTask,char * pcTaskName )
-{
-  PANNIC("StackOverflowHook:%s\n", pcTaskName); 
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
+    PANNIC("StackOverflowHook:%s\n", pcTaskName);
 }
 
-void vAssertCalled(char *file, int line)
-{
-  PANNIC("ASSERT %s:%d\n",file,line);
+void vAssertCalled(char *file, int line) {
+    PANNIC("ASSERT %s:%d\n", file, line);
 }
 
-void vApplicationGetTimerTaskMemory( StaticTask_t ** ppxTimerTaskTCBBuffer,
-                                     StackType_t ** ppxTimerTaskStackBuffer,
-                                     uint32_t * pulTimerTaskStackSize 
-)
-{
-  *ppxTimerTaskTCBBuffer =  (StaticTask_t * )pvPortMalloc(sizeof(StaticTask_t));
-  *ppxTimerTaskStackBuffer = (StackType_t * )pvPortMalloc(configMINIMAL_STACK_SIZE * 4);
-  *pulTimerTaskStackSize = configMINIMAL_STACK_SIZE;
+void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
+                                    StackType_t **ppxTimerTaskStackBuffer,
+                                    uint32_t *pulTimerTaskStackSize) {
+    *ppxTimerTaskTCBBuffer = (StaticTask_t *)pvPortMalloc(sizeof(StaticTask_t));
+    *ppxTimerTaskStackBuffer = (StackType_t *)pvPortMalloc(configMINIMAL_STACK_SIZE * 4);
+    *pulTimerTaskStackSize = configMINIMAL_STACK_SIZE;
 }
 
-
-void vApplicationMallocFailedHook()
-{
-  PANNIC("ASSERT: Out of Memory.\n");
-
+void vApplicationMallocFailedHook() {
+    PANNIC("ASSERT: Out of Memory.\n");
 }

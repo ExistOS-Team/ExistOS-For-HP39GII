@@ -11,12 +11,10 @@
 #include "task.h"
 #include "queue.h"
 
-#include "ff.h"
 
 #include "mmu.h"
 #include "SystemConfig.h"
 
-#define    SWAP_PART    (2)
 
 #define    PERM_None    (0)
 #define    PERM_R       (1)     
@@ -35,19 +33,24 @@ typedef struct pageFaultInfo_t
     uint32_t FSR;
 }pageFaultInfo_t;
 
-QueueHandle_t PageFaultQueue;
+extern QueueHandle_t PageFaultQueue;
 
 void vmMgr_init(void);
 void vmMgr_task(void);
 bool vmMgrInited(void);
 void vmMgr_mapSwap(void);
-void vmMgr_createSwapfile(void);
-int vmMgr_unlockMap(uint32_t vaddr);
 
-uint32_t vmMgr_getMountPhyAddressAndLock(uint32_t vaddr, uint32_t perm);
+uint32_t vmMgr_LoadPageGetPAddr(uint32_t vaddr);
+//int vmMgr_unlockMap(uint32_t vaddr);
+uint8_t *VMMGR_GetCacheAddress(void);
+bool vmMgr_checkAddressValid(uint32_t address, uint32_t perm);
+void vmMgr_ReleaseAllPage();
 
 
-uint32_t vmMgr_mapFile(FIL *file, uint32_t perm, uint32_t MemAddrStart, uint32_t FileAddrStart, uint32_t memSize);
+//uint32_t vmMgr_getMountPhyAddressAndLock(uint32_t vaddr, uint32_t perm);
+
+
+//uint32_t vmMgr_mapFile(FIL *file, uint32_t perm, uint32_t MemAddrStart, uint32_t FileAddrStart, uint32_t memSize);
 
 
 #endif

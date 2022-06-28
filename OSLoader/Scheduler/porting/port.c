@@ -67,7 +67,7 @@ void prvSetupTimerInterrupt( void );
 
 StackType_t *pxPortInitialiseStack(StackType_t * pxREGSFrameStack, StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters )
 {
-	StackType_t *pxOriginal = pxREGSFrameStack;
+	
 	
 	*pxREGSFrameStack = ( StackType_t ) portNO_CRITICAL_NESTING;
 	pxREGSFrameStack++;

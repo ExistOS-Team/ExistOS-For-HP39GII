@@ -1,0 +1,4 @@
+freeze(
+    ".",
+    "frozentest.py",
+)

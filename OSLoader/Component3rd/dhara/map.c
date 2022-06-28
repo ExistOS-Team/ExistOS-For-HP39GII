@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdio.h>
+
 #include <string.h>
 #include "bytes.h"
 #include "map.h"
@@ -201,6 +203,7 @@ int dhara_map_read(struct dhara_map *m, dhara_sector_t s,
 		dhara_set_error(err, my_err);
 		return -1;
 	}
+
 	return dhara_nand_read(n, p, 0, 1 << n->log2_page_size, data, err);
 }
 
@@ -311,10 +314,12 @@ static int auto_gc(struct dhara_map *m, dhara_error_t *err)
 	if (dhara_journal_size(&m->journal) < dhara_map_capacity(m))
 		return 0;
 
-	for (i = 0; i < m->gc_ratio; i++)
+	//printf("FTL: Start GC\n");
+	for (i = 0; i <= m->gc_ratio; i++)
 		if (dhara_map_gc(m, err) < 0)
 			return -1;
-
+	
+	//printf("FTL: GC Finish\n");
 	return 0;
 }
 

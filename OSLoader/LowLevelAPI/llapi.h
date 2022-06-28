@@ -26,6 +26,7 @@ typedef struct LLAPI_CallInfo_t
     uint32_t para2;
     uint32_t para3;
     uint32_t *pRet;
+    uint32_t sp; 
 }LLAPI_CallInfo_t;
 
 
@@ -44,16 +45,25 @@ typedef struct LLAPI_KBD_t
     uint8_t press;
 }LLAPI_KBD_t;
 
-QueueHandle_t LLAPI_Queue;
-QueueHandle_t LLAPI_KBDQueue;
+extern QueueHandle_t LLAPI_Queue;
+extern QueueHandle_t LLIRQ_Queue;
+extern QueueHandle_t LLAPI_KBDQueue;
 
 void LLAPI_init(TaskHandle_t upSys);
 void LLAPI_Task(void);
 void LLIRQ_task(void *pvParameters);
+void LLIO_ScanTask(void *pvParameters);
 
+void LLIO_NotifySerialRxAvailable();
+void LLIO_NotifySerialTxAvailable();
+
+void LLIRQ_ClearIRQs(void);
+void LLAPI_ClearAPIs();
+bool LLIRQ_enable(bool enable);
 void LL_Scheduler_(uint32_t exception, uint32_t *SYSContext);
 
-bool LL_timerTick();
+void LL_CheckIRQAndTrap();
+
 
 void LLIRQ_PostIRQ(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t par3);
 

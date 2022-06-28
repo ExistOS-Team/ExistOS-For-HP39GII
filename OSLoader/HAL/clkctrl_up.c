@@ -6,11 +6,7 @@ void setCoreFreq(uint32_t freqHz)
 {
 
 }
-
-uint32_t getCoreFreq()
-{
-    
-}
+ 
 
 void CLKCtrlInit(void)
 {
