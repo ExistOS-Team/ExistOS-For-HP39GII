@@ -19,6 +19,9 @@ jobs:
         cd tools/sbtools
         make
         cd ../..
+        cd Libs/src/micropython-master/ports/eoslib
+        make
+        cd ../../../../..
     - name: Cmake configure
       run: cmake .
     - name : Cmake build
