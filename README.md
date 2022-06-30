@@ -57,11 +57,11 @@
 - 对于其它系统，或者没有提供相应包的 Linux 发行版
   - 从[这里](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads)下载源代码编译安装
 
-#### Windows 的额外准备
+#### Windows
 
 请下载 [Ninja](https://github.com/ninja-build/ninja/releases)，解压到任意目录下，然后将该目录添加到 PATH 中。
 
-#### Linux 的额外准备
+#### Linux
 
 ##### 添加 udev 规则
 
