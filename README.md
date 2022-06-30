@@ -40,43 +40,125 @@
 
 ## 固件编译
 
-### CMake
+### 准备
 
-1. 安装 gcc-arm-none-eabi. Linux系统可以用包管理器安装，Windows系统可以从[这里](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads)下载. 对于Windows系统,请将安装目录下的./bin路径添加至PATH环境变量.
-
-2. 对于Linux系统, 请将99-hp39gii.rules复制到/etc/udev/rules.d/  
-    之后执行
+需要安装 `gcc-arm-none-eabi`：  
+- 对于 Windows 系统，请从[这里](https://developer.arm.com/downloads/-/gnu-rm)下载和安装。
+  - 注意：需要将安装目录下的 `bin` 路径添加到 PATH 中
+- 对于 Linux 系统，不同的发行版可能略有差异
+  - Debian/Ubuntu 等使用 apt 包管理器的发行版请安装
     ```bash
-    sudo service udev restart
-    # 或者
-    sudo udevadm control --reload-rules
-    sudo udevadm trigger
+    sudo apt-get install gcc-arm-none-eabi -y
     ```
-
-3. 对于非Windows系统, 请先编译 /tools/sbtools (无需安装)
-
-4. 对于Windows系统, 下载[Ninja](https://github.com/ninja-build/ninja/releases)并将exe文件添加至PATH变量. 也可以使用GNU Make, 但是编译速度会慢一点并且安装会麻烦一点。
-
-5. 在此文件夹中, 执行
+  - Arch 等使用 pacman 包管理器的发行版请安装
     ```bash
-    mkdir ./build
-    cd ./build
-    cmake .. (或cmake .. -G Ninja)
-    make (或ninja)   #编译固件
+    sudo pacman -Syu arm-none-eabi-gcc
     ```
+- 对于其它系统，或者没有提供相应包的 Linux 发行版
+  - 从[这里](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads)下载源代码编译安装
 
+#### Windows
+
+请下载 [Ninja](https://github.com/ninja-build/ninja/releases)，解压到任意目录下，然后将该目录添加到 PATH 中。
+
+#### Linux
+
+##### 添加 udev 规则
+
+对于 Linux 系统，为了让 udev 识别 HP39GII，需要将本项目根目录下的 `99-hp39gii.rules` 复制到 `/etc/udev/rules.d/`：  
+```bash
+sudo cp 99-hp39gii.rules /etc/udev/rules.d/
+```
+
+然后重启 `udev` 以载入规则：  
+```bash
+sudo service udev restart
+```
+如果上面的命令不起作用：  
+```bash
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+##### 编译 sbtool
+
+本项目为 Windows 预先编译好了相应文件，但是 Linux 下需要手动编译。
+
+进入项目目录 `tools/sbtools` 并 `make` 编译（无需安装），可能需要安装以下库：  
+- libusb（1.0）
+- libcrypto++
+  - 安装教程见于 [Crypto++ Wiki](https://cryptopp.com/wiki/Linux#Distribution_Package)
+
+- Ubuntu 发行版请参考本项目的 Action 文件安装相应库
+  ```bash
+  sudo apt-get install libcrypto++6 libcrypto++-dev libusb-1.0-0-dev -y
+  ```
+- Arch 请安装以下库
+  ```bash
+  sudo pacman -Syu libusb crypto++
+  ````
+
+若 `pkg-config` 提示找不到 libcrypto++ 或其它库，请检查是否安装了相应库，确认 `/usr/lib/pkgconfig/` 下是否有对于库的的 `.pc` 文件，这是使 pkg-config 识别它所需要的。  
+若有，请手动修改 Makefile。
+若无，可能需要重新安装相应库，或手动修改 Makefile 中的 pkg-config 命令。
+
+然后进入 `Libs/src/micropython-master/ports/eoslib` 目录并 `make`：  
+```bash
+cd Libs/src/micropython-master/ports/eoslib
+make
+```
+
+### 编译
+
+新建一个文件夹用于存放编译的二进制文件和缓存：  
+```bash
+mkdir build
+cd build
+```
+
+准备编译：  
+```bash
+cmake ..
+```
+Windows 请用以下命令指定用 Ninja 作为编译器：  
+```bash
+cmake .. -G Ninja
+```
+
+编译：  
+```bash
+make
+```
+Windows 请用 Ninja：  
+```bash
+ninja
+```
 
 ## 固件安装
 
+### 刷入 Bootloader
+
 注意：HP39GII的相关驱动程序请自行安装。
 
-代码编译完成后，执行以下命令将引导程序刷入计算器的RAM中 (刷入前请将计算器完全断电(抠电池), 之后在按住ON/C按键的同时插入USB线，即可进入刷写模式)
+Bootloader 是引导程序，用于加载 ExistOS 并提供底层 API 和虚拟内存相关功能，使用下面的命令刷入 BL（需要计算器处在恢复模式）。
 
+要进入恢复模式，需要先将计算器完全断电（卸下所有电池），按住 `ON/C` 键并同时插入 USB 数据线。
+
+```bash
+make flash
 ```
-    make flash  (或ninja flash)
+Windows 请用 Ninja：  
+```bash
+ninja flash
 ```
 
-等待命令提示符窗口中进度条走完之后，引导程序会开始执行，此时计算器应显示如下界面，若之前已经刷写并安装过Exist OS系统，则可能不会出现该配置界面，只需要正常开机并按住`Clear`(退格)键即可进入该配置界面。
+如无法使用上述命令刷入 BL，尝试安装 HP39GII 官方工具然后使用其 Firmware Updater 刷入 BL（用编译的 `bootloader.sb` 替换官方固件 `firmware.sb`，确保文件名相同）。
+
+也可使用 [ExistOS Updater](https://github.com/ExistOS-Team/ExistOS-Updater/releases)（可在 Windows 10 上使用）刷入 BL。
+
+### 安装 Exist OS
+
+BL 刷入后，引导程序会开始执行，此时计算器应显示如下界面，若之前已经刷写并安装过Exist OS系统，则可能不会出现该配置界面，只需要正常开机并按住`Clear`(退格)键即可进入该配置界面。
 
 ![Loader1](Image/1.png)
 
@@ -241,12 +323,12 @@
 
     7.6 应多用switch，少用else if。switch语句中，每一个case中都最好有一个break/return语句，多个case共用完全相同的一段代码时除外。使用switch穿越时应分外小心并最好加注注释。
 
-
+对于 VSCode 用户，可以使用 clang-format 扩展方便的格式化代码。
 
 ## 贡献者
 
 
 
-## 协议
+## 许可协议
 
 [GPL-3.0](https://github.com/Repeerc/LibreCalc-For-HP39GII/blob/master/LICENSE)

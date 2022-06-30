@@ -11,11 +11,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: arm-none-eabi-gcc
+    - name: Install package arm-none-eabi-gcc
       run: sudo apt-get install gcc-arm-none-eabi -y
+    - name: Install packages build sbtools required
+      run: sudo apt-get install libcrypto++6 libcrypto++-dev libusb-1.0-0-dev -y
     - name: Build sbtools
       run: |
-        sudo apt-get install libcrypto++6 libcrypto++-dev libusb-1.0-0-dev -y
         cd tools/sbtools
         make
         cd ../..
