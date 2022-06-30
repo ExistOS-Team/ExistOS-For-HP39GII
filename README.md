@@ -98,7 +98,9 @@ sudo udevadm trigger
   sudo pacman -Syu libusb crypto++
   ````
 
-若 `pkg-config` 提示找不到 libcrypto++ 或其它库，请检查是否正确安装了相应库，若确实正确安装了，尝试重启或手动修改 Makefile 中 pkg-config 相关命令。
+若 `pkg-config` 提示找不到 libcrypto++ 或其它库，请检查是否安装了相应库，确认 `/usr/lib/pkgconfig/` 下是否有对于库的的 `.pc` 文件，这是使 pkg-config 识别它所需要的。  
+若有，请手动修改 Makefile。
+若无，可能需要重新安装相应库，或手动修改 Makefile 中的 pkg-config 命令。
 
 ### 编译
 
