@@ -136,13 +136,13 @@ ninja
 
 ## 固件安装
 
-### 刷入 Bootloader
+### 刷入 OS Loader
 
 注意：HP39GII的相关驱动程序请自行安装。
 
-Bootloader 是引导程序，用于加载 ExistOS 并提供底层 API 和虚拟内存相关功能，使用下面的命令刷入 BL（需要计算器处在恢复模式）。
+OS Loader 是引导程序，用于加载 ExistOS 并提供底层 API 和虚拟内存相关功能，使用下面的命令刷入 OL（需要计算器处在刷写模式）。
 
-要进入恢复模式，需要先将计算器完全断电（卸下所有电池），按住 `ON/C` 键并同时插入 USB 数据线。
+要刷写OS Loader，需要先将计算器完全断电（卸下所有电池），按住 `ON/C` 键并同时插入 USB 数据线。
 
 ```bash
 make flash
@@ -152,13 +152,13 @@ Windows 请用 Ninja：
 ninja flash
 ```
 
-如无法使用上述命令刷入 BL，尝试安装 HP39GII 官方工具然后使用其 Firmware Updater 刷入 BL（用编译的 `bootloader.sb` 替换官方固件 `firmware.sb`，确保文件名相同）。
+如无法使用上述命令刷入 OL，尝试安装 HP39GII 官方工具然后使用其 Firmware Updater 刷入 OL（用编译的 `firmware.sb` 替换官方固件 `firmware.sb`，确保文件名相同）。
 
-也可使用 [ExistOS Updater](https://github.com/ExistOS-Team/ExistOS-Updater/releases)（可在 Windows 10 上使用）刷入 BL。
+也可使用 [ExistOS Updater](https://github.com/ExistOS-Team/ExistOS-Updater/releases)（可在 Windows 10 或更新的版本上使用）刷入 OL。
 
 ### 安装 Exist OS
 
-BL 刷入后，引导程序会开始执行，此时计算器应显示如下界面，若之前已经刷写并安装过Exist OS系统，则可能不会出现该配置界面，只需要正常开机并按住`Clear`(退格)键即可进入该配置界面。
+OL 刷入后，引导程序会开始执行，此时计算器应显示如下界面，若之前已经刷写并安装过Exist OS系统，则可能不会出现该配置界面，只需要正常开机并按住`Clear`(退格)键即可进入该配置界面。
 
 ![Loader1](Image/1.png)
 
@@ -186,7 +186,7 @@ BL 刷入后，引导程序会开始执行，此时计算器应显示如下界�
 
 ![Loader7](Image/7.png)
 
-接下来将菜单移动至`Install System`选项，并按下`ENTER`键，引导程序会将自己本体给写入计算器的引导扇区中完成最后的安装。
+接下来将菜单移动至`Install System`选项，并按下`ENTER`键，引导程序会将自己写入到计算器的引导扇区中以完成最后的安装。
 
 ![Loader8](Image/8.png)
 

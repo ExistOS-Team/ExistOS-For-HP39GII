@@ -38,43 +38,131 @@ This firmware project is created by a group of calculator enthusiasts, used some
 
 Current development status: Most of the OS kernel and some necessary hardware drivers have been implemented. But due to the lacking of knowledge about the upgrading method, we still need to use the offical upgrade tool in Windows 7/XP to flash the firmware. And no GUI provided, currently we are focusing on implementing virtual memory management and process loading. The GUI and so on are under discussion. If you have advice, please tell us at Issues.
 
-## Compile/Flash
+## Compile
 
-### CMake
+### Preperation
 
-1. Install arm-none-eabi-gcc. For linux, use the package manager; for Windows, download from [here](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads). For Windows,please add the ./bin in the install path to the PATH environment variable.
-
-2. For Linux, please copy 99-hp39gii.rules to /etc/udev/rules.d/  
-    and type
+You need to install `gcc-arm-none-eabi` first.
+- For Windows, please download from [here](https://developer.arm.com/downloads/-/gnu-rm).
+  - Notice: You need to add 'bin' path to environment variable 'Path'.
+- For Linux, there are some differences between distributions.
+  - Debian/Ubuntu
     ```bash
-    sudo service udev restart
-    # or
-    sudo udevadm control --reload-rules
-    sudo udevadm trigger
+    sudo apt-get install gcc-arm-none-eabi -y
     ```
-
-3. For non-Windows system, please compile /tools/sbtools first (no need to install)
-
-4. For Windows, download [Ninja](https://github.com/ninja-build/ninja/releases) and add the .exe file to PATH. GNU Make is also supported but it is slower and harder to install.
-
-5.  execute these commands in the terminal in this directory.
+  - Arch
     ```bash
-    mkdir ./build
-    cd ./build
+    sudo pacman -Syu arm-none-eabi-gcc
+    ```
+  - Others
+
+    Download from [here](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads)
+
+#### Windows
+
+Please download [Ninja](https://github.com/ninja-build/ninja/releases) and unzip it. Then add its path to environment variable 'Path'.
+
+#### Linux
+
+###### Add udev Rules
+
+For Linux, to make HP39GII detected by udev, you need to copy `99-hp39gii.rules` to  `/etc/udev/rules.d/`.
+```bash
+sudo cp 99-hp39gii.rules /etc/udev/rules.d/
+```
+
+And then restart `udev`.
+```bash
+sudo service udev restart
+```
+
+If it doesn't work
+```bash
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+##### Compile the sbtool
+
+This tool for Windows has been compiled in advance. But you need to compile it if you use Linux.
+
+Enter `tools/sbtools` and execute command `make`. You may need to install the libraries below.
+- libusb(1.0)
+- libcrypto++
+  - [Crypto++ Wiki](https://cryptopp.com/wiki/Linux#Distribution_Package)
+
+- Ubuntu
+  ```bash
+  sudo apt-get install libcrypto++6 libcrypto++-dev libusb-1.0-0-dev -y
+  ```
+- Arch
+  ```bash
+  sudo pacman -Syu libusb crypto++
+  ````
+
+If you are prompted by `pkg-config` that it couldn't find libcrypto++ or other libraries, please ensure that there exists `.pc` files of this library under `/usr/lib/pkgconfig/`, which is necessary to make it detected by `pkg-config`.
+
+If there exists the file, please modify Makefile.
+
+In other conditions, you may need to reinstall the library or modify the pkg-config command in Makefile.
+
+Then enter `Libs/src/micropython-master/ports/eoslib` and execute command `make`.
+```bash
+cd Libs/src/micropython-master/ports/eoslib
+make
+```
+
+### Compile
+
+Create a new directory for the bin files and caches
+```bash
+mkdir build
+cd build
+```
+
+Get ready to compile
+  - Linux
+    ```bash
     cmake ..
-    make (or ninja)   # Compile
+    ```
+  - Windows
+    ```bash
+    cmake .. -G Ninja
     ```
 
+Compile
+  - Linux
+    ```bash
+    make
+    ```
+  - Windows
+    ```bash
+    ninja
+    ```
 
 ## Firmware install
 
-Notice: Please install drivers of HP39GII by yourself.
+## Install OS Loader
 
-After compiling, run commands below to flash the OS Loader into calculator RAM. Before flashing, please poweroff your calculator completely (by removing the batteries), and then plug in USB cable while pressing down the `ON/C` key. Then your calculator will enter flashing mode.
+Notice: Please install drivers for HP39GII by yourself.
 
-```
-    make flash (or ninja flash)
-```
+OS Loader provides low-level API and virtual memory function, and can boot ExistOS. Run commands below to flash the OS Loader into calculator RAM. Before flashing, please poweroff your calculator completely (by removing the batteries), and then plug in USB cable while pressing down the `ON/C` key. Then your calculator will enter flashing mode.
+
+Then execute commands below.
+- Linux
+  ```bash
+  make flash
+  ```
+- Windows
+  ```bash
+  ninja flash
+  ```
+
+If you couldn't flash OS Loader by these ways, you can try using the official tool. (By replacing `firmware.sb` by `OSLoader.sb`)
+
+You can also use [ExistOS Updater](https://github.com/ExistOS-Team/ExistOS-Updater/releases) to do this. (Windows10 or newer version only)
+
+### Install Exist OS
 
 After finishing the flashing progress, the OS Loader will execute automaticly. Now your calculator should display something like the image below. If you had flashed and installed ExistOS before, this interface may not be shown. Just poweroff normally and then press `Clear` key while starting up to enter it.
 
