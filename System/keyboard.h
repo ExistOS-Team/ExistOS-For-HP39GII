@@ -1,8 +1,6 @@
 #ifndef __KEYBOARD_H__
 #define __KEYBOARD_H__
 
-
-
 // ┌─────┬───────┬───────┬────────┬──────────┬────────┐
 // |     | 0     | 1     | 2      | 3        | 4      |
 // ├─────┼───────┼───────┼────────┼──────────┼────────┤
@@ -83,17 +81,15 @@ typedef enum Keys_t {
     KEY_ON = (10 << 3)
 } Keys_t;
 
-
-
 typedef enum Key_state_t {
     KEY_PRESS = 0,
     KEY_RELEASE = 1
-}Key_state_t;
+} Key_state_t;
 
 typedef enum key_string_mode_t {
     KEY_STRING_PYTHON = 0,
     KEY_STRING_CAS = 1
-}key_string_mode_t;
+} key_string_mode_t;
 
 typedef enum sym_table_t {
     SYM_XTPHIN = 0,
@@ -115,7 +111,7 @@ typedef enum sym_table_t {
     SYM_DOT,
 
     SYM_NUM
-}sym_table_t;
+} sym_table_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -123,20 +119,16 @@ extern "C" {
 
 int getKey(char *key, char *press);
 char keyTo_ALPHA(Keys_t k);
-char* keyTo_alpha(Keys_t k);
-char* keyTo_Sym_string(Keys_t k, key_string_mode_t keyStringMode);
+char *keyTo_alpha(Keys_t k);
+char *keyTo_Sym_string(Keys_t k, key_string_mode_t keyStringMode);
 char keyToNum(char key);
-
 
 char toUpperCase(char ch);
 
-
 char toLowerCase(char ch);
-
 
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif

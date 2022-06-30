@@ -102,6 +102,12 @@ sudo udevadm trigger
 若有，请手动修改 Makefile。
 若无，可能需要重新安装相应库，或手动修改 Makefile 中的 pkg-config 命令。
 
+然后进入 `Libs/src/micropython-master/ports/eoslib` 目录并 `make`：  
+```bash
+cd Libs/src/micropython-master/ports/eoslib
+make
+```
+
 ### 编译
 
 新建一个文件夹用于存放编译的二进制文件和缓存：  
@@ -317,12 +323,12 @@ BL 刷入后，引导程序会开始执行，此时计算器应显示如下界�
 
     7.6 应多用switch，少用else if。switch语句中，每一个case中都最好有一个break/return语句，多个case共用完全相同的一段代码时除外。使用switch穿越时应分外小心并最好加注注释。
 
-
+对于 VSCode 用户，可以使用 clang-format 扩展方便的格式化代码。
 
 ## 贡献者
 
 
 
-## 协议
+## 许可协议
 
 [GPL-3.0](https://github.com/Repeerc/LibreCalc-For-HP39GII/blob/master/LICENSE)
