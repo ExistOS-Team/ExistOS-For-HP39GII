@@ -633,6 +633,16 @@ void vMainThread(void *pvParameters) {
                         MTD_ErasePhyBlock(i);
                     }
                     portBoardReset();
+                }else if((key == KEY_F2) && key_press){
+                    VMSuspend();
+                    DisplayClean();
+                    DisplayPutStr(0, 0, "Erase All Flash ...", 0, 255, 16);
+                    vTaskDelay(pdMS_TO_TICKS(2000));
+                    for (int i = 0; i < 1024; i++) {
+                        MTD_ErasePhyBlock(i);
+                    }
+                    portBoardReset();
+
                 } else {
                     goto key_zero_loop_exit;
                 }
