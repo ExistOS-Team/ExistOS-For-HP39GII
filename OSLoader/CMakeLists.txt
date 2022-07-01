@@ -105,6 +105,6 @@ add_custom_target(
   )
 else(EXISTS ${CMAKE_SOURCE_DIR}/tools/sbtools/elftosb)
 message(FATAL_ERROR "Please build tools/sbtools first")
-endif(EXISTS ${CMAKE_SOURCE_DIR}/tools/sbtools/elftosb)
+endif()
 endif()
 
