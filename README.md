@@ -1,4 +1,12 @@
-# [ExistOS-For-HP39GII](https://github.com/Repeerc/LibreCalc-For-HP39GII)
+```
+===== =   = =====  ==== =====  ===   ===  f h
+=      = =    =   =       =   =   = =   = o p
+                              =   = =     r 3
+====   ===    =    ===    =                 9
+                              =   =     =   g
+=      = =    =       =   =   =   = =   =   i
+===== =   = ===== ====    =    ===   ===    i
+```
 
 [English readme](./README_en.md)
 
