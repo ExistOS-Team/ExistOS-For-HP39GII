@@ -27,6 +27,8 @@
 #include "regs.h"
 #include "regspower.h"
 
+#include "regsdigctl.h"
+
 void vTaskTinyUSB(void *pvParameters);
 void vMTDSvc(void *pvParameters);
 void vFTLSvc(void *pvParameters);
@@ -50,7 +52,7 @@ uint32_t CurMount = 0;
 uint32_t g_FTL_status = 10;
 bool g_sysfault_auto_reboot = true;
 uint32_t g_MSC_Configuration = MSC_CONF_OSLOADER_EDB;
-extern uint32_t g_latest_key_status;
+extern uint32_t volatile g_latest_key_status;
 volatile uint32_t g_vm_status = VM_STATUS_SUSPEND;
 bool vm_needto_reset = false;
 
@@ -59,6 +61,8 @@ uint32_t HCLK_Freq;
 
 extern uint32_t g_page_vram_fault_cnt;
 extern uint32_t g_page_vrom_fault_cnt;
+
+uint32_t g_core_temp, g_batt_volt;
 
 uint32_t check_frequency() {
     volatile uint32_t s0, s1;
@@ -99,28 +103,83 @@ void vTask1(void *pvParameters) {
     }
 }
 
+static void getKey(uint32_t *key, uint32_t *press) {
+    {
+        *key = g_latest_key_status & 0xFFFF;
+        *press = g_latest_key_status >> 16;
+    }
+}
+
+static uint32_t waitAnyKey() {
+    uint32_t key;
+    uint32_t lkey;
+
+    key = g_latest_key_status & 0xFFFF;
+    lkey = key;
+    do {
+        vTaskDelay(pdMS_TO_TICKS(10));
+        key = g_latest_key_status & 0xFFFF;
+    } while (key == lkey);
+    return key;
+}
+
 extern bool g_vm_inited;
 uint32_t *bootAddr;
+uint32_t *atagsAddr;
 void System(void *par) {
-    
     bootAddr = (uint32_t *)VM_ROM_BASE;
 
+    // vTaskDelay(pdMS_TO_TICKS(5000));
     INFO("Booting...\n");
     DisplayClean();
+
     DisplayPutStr(0, 16 * 0, "System Booting...", 0, 255, 16);
     DisplayPutStr(0, 16 * 1, "Waiting for Flash GC...", 0, 255, 16);
 
     if ((*bootAddr != 0xEF5AE0EF) && *(bootAddr + 1) != 0xFECDAFDE) {
         DisplayClean();
-        DisplayPutStr(0, 0, "Could not find the System!", 0, 255, 16);
+        DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
+        DisplayPutStr(0, 16 * 1, "Could not find the System!", 0, 255, 16);
         g_vm_status = VM_STATUS_SUSPEND;
         vTaskSuspend(NULL);
     }
 
-    vTaskPrioritySet(pDispTask ,configMAX_PRIORITIES - 5);
+    vTaskPrioritySet(pDispTask, configMAX_PRIORITIES - 5);
 
-    //vTaskSuspend(NULL);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    uint32_t k, kp;
+    getKey(&k, &kp);
+    if ((k == KEY_F2) && kp) {
+        tud_disconnect();
+        DisplayClean();
+        DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
+        DisplayPutStr(0, 16 * 1, "USB MSC Mode.", 0, 255, 16);
+        DisplayPutStr(0, 16 * 2, "[Views] Continue Boot.", 0, 255, 16);
+        vTaskDelay(pdMS_TO_TICKS(200));
+        g_MSC_Configuration = MSC_CONF_SYS_DATA;
+        vTaskDelay(pdMS_TO_TICKS(10));
+        tud_connect();
+
+        while (1) {
+            vTaskDelay(pdMS_TO_TICKS(50));
+            getKey(&k, &kp);
+            if ((k == KEY_VIEWS) && kp) {
+                FTL_Sync();
+
+                tud_disconnect();
+                DisplayClean();
+                g_MSC_Configuration = MSC_CONF_OSLOADER_EDB;
+                vTaskDelay(pdMS_TO_TICKS(10));
+                tud_connect();
+                break;
+            }
+        }
+    }
+
+    // vTaskSuspend(NULL);
     bootAddr += 2;
+    atagsAddr = (uint32_t *)(VM_ROM_BASE + (4234 - 1984) * 2048);
+
     g_vm_status = VM_STATUS_RUNNING;
 
     __asm volatile("mrs r1,cpsr_all");
@@ -131,9 +190,17 @@ void System(void *par) {
     __asm volatile("mov r13,#0x02300000");
     __asm volatile("add r13,#0x000FA000");
 
-    __asm volatile("ldr r0,=bootAddr");
-    __asm volatile("ldr r0,[r0]");
-    __asm volatile("mov pc,r0");
+    __asm volatile("mov r0,#0");
+
+    __asm volatile("mov r1,#0x02300000"); // machine type id
+    __asm volatile("add r1,#0x00023000");
+
+    __asm volatile("ldr r2,=atagsAddr"); // atags/dtb pointer
+    __asm volatile("ldr r2,[r2]");
+
+    __asm volatile("ldr r4,=bootAddr");
+    __asm volatile("ldr r4,[r4]");
+    __asm volatile("mov pc,r4");
 
     while (1)
         ;
@@ -245,7 +312,7 @@ void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
         memset(buf, 0, sizeof(buf));
 
         DisplayPutStr(0, 16 * 1, "[ON]>[F6] Reboot", 0, 255, 16);
-        DisplayPutStr(0, 16 * 2, "[ON]>[0 ]>[F5] Clear ALL Data", 0, 255, 16);
+        DisplayPutStr(0, 16 * 2, "[ON]>[F5] Clear ALL Data", 0, 255, 16);
 
         memset(buf, 0, sizeof(buf));
         sprintf(buf, "R12:%08lx R0:%08lx", pRegFram[12], pRegFram[0]);
@@ -270,7 +337,7 @@ void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
         g_vm_status = VM_STATUS_UNCONSCIOUS;
 
         // portBoardReset();
-    }
+    } 
 }
 
 unsigned char blockChksum(char *block, unsigned int blockSize) {
@@ -475,6 +542,10 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
         printf("CDC SYS PATH\n");
         g_CDC_TransTo = CDC_PATH_SYS;
         break;
+    case 38400:
+        printf("CDC SCRCAP PATH\n");
+        g_CDC_TransTo = CDC_PATH_SCRCAP;
+        break;
     default:
         break;
     }
@@ -525,13 +596,9 @@ void tud_cdc_rx_cb(uint8_t itf) {
                 printf("clear all sector.\n");
                 goto fin;
             }
-
-            
-
-
         }
 
-        fin:
+    fin:
         tud_cdc_read_flush();
     }
 
@@ -577,10 +644,8 @@ void tud_cdc_rx_cb(uint8_t itf) {
     }
 }
 
-static void getKey(uint32_t *key, uint32_t *press) {
-    *key = g_latest_key_status & 0xFFFF;
-    *press = g_latest_key_status >> 16;
-}
+static bool eraseDataMenu = false;
+static bool transScr = false;
 
 void vMainThread(void *pvParameters) {
 
@@ -606,84 +671,144 @@ void vMainThread(void *pvParameters) {
     printf("VDD5V: %d mV\n", (int)(portLRADCConvCh(5, 5) * 0.45 * 4));
     printf("Core Temp: %d ℃\n", (int)((portLRADCConvCh(4, 5) - portLRADCConvCh(3, 5)) * 1.012 / 4 - 273.15));
 */
-    uint32_t key, key_press;
-
     for (;;) {
-        getKey(&key, &key_press);
-        vTaskDelay(pdMS_TO_TICKS(10));
-        if ((key == KEY_ON) && key_press) {
 
-        key_on_loop:
-            vTaskDelay(pdMS_TO_TICKS(20));
-            getKey(&key, &key_press);
-            if ((key == KEY_F6) && key_press) {
-                portBoardReset();
-            }
+        vTaskDelay(pdMS_TO_TICKS(100));
 
-            if ((key == KEY_0) && key_press) {
-            key_zero_loop:
-                vTaskDelay(pdMS_TO_TICKS(20));
-                getKey(&key, &key_press);
-                if ((key == KEY_F5) && key_press) {
-                    VMSuspend();
-                    DisplayClean();
-                    DisplayPutStr(0, 0, "Erase All Data ...", 0, 255, 16);
-                    vTaskDelay(pdMS_TO_TICKS(2000));
-                    for (int i = FLASH_DATA_BLOCK; i < 1024; i++) {
-                        MTD_ErasePhyBlock(i);
-                    }
-                    portBoardReset();
-                }else if((key == KEY_F2) && key_press){
-                    VMSuspend();
-                    DisplayClean();
-                    DisplayPutStr(0, 0, "Erase All Flash ...", 0, 255, 16);
-                    vTaskDelay(pdMS_TO_TICKS(2000));
-                    for (int i = 0; i < 1024; i++) {
-                        MTD_ErasePhyBlock(i);
-                    }
-                    portBoardReset();
 
-                } else {
-                    goto key_zero_loop_exit;
-                }
-                goto key_zero_loop;
-            key_zero_loop_exit:
-                ((void)key);
-            }
-
-            extern uint32_t g_lcd_contrast;
-            if ((key == KEY_SUBTRACTION) && key_press) {
-                g_lcd_contrast--;
-                portDispSetContrast(g_lcd_contrast);
-                vTaskDelay(pdMS_TO_TICKS(40));
-            }
-
-            if ((key == KEY_PLUS) && key_press) {
-                g_lcd_contrast++;
-                portDispSetContrast(g_lcd_contrast);
-                vTaskDelay(pdMS_TO_TICKS(40));
-            }
-
-            if ((key == KEY_ON) && !key_press) {
-                goto key_on_release;
-            }
-            goto key_on_loop;
-        }
-    key_on_release:
-
-        if ((key == KEY_SHIFT) && key_press) {
-            vTaskDelay(pdMS_TO_TICKS(20));
-            getKey(&key, &key_press);
-            if ((key == KEY_BACKSPACE) && key_press) {
-                portBoardPowerOff();
-            }
-        }
 
         if (vm_needto_reset) {
             vm_needto_reset = false;
             VMReset();
         }
+
+        if (eraseDataMenu) {
+
+            VMSuspend();
+            DisplayClean();
+
+            DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
+            DisplayPutStr(0, 16 * 1, "Clean All Data ??", 0, 255, 16);
+            DisplayPutStr(0, 16 * 2, "[F1]: YES", 0, 255, 16);
+            DisplayPutStr(0, 16 * 3, "[F6]: NO", 0, 255, 16);
+            DisplayPutStr(0, 16 * 5, "[Symb]: ERASE ALL FLASH", 0, 255, 16);
+
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            int key;
+            key = waitAnyKey();
+            if (key == KEY_F1) {
+                DisplayClean();
+                DisplayPutStr(0, 0, "Erase All Data ...", 0, 255, 16);
+                vTaskDelay(pdMS_TO_TICKS(2000));
+                for (int i = FLASH_DATA_BLOCK; i < 1024; i++) {
+                    MTD_ErasePhyBlock(i);
+                }
+
+            } else if (key == KEY_SYMB) {
+                
+                DisplayClean();
+                
+                DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
+                DisplayPutStr(0, 16 * 1, "ERASE ALL FLASH?", 0, 255, 16);
+                DisplayPutStr(0, 16 * 2, "You need to re-install system", 255, 0, 16);
+                DisplayPutStr(0, 16 * 3, "after low-level format.", 255, 0, 16);
+                DisplayPutStr(0, 16 * 4, "[F1]: YES", 0, 255, 16);
+                DisplayPutStr(0, 16 * 5, "[F6]: NO", 0, 255, 16);
+                vTaskDelay(pdMS_TO_TICKS(100));
+                key = waitAnyKey();
+                if (key == KEY_F1) {
+                    DisplayClean();
+                    DisplayPutStr(0, 0, "Erase All Flash..........", 255, 0, 16);
+                    vTaskDelay(pdMS_TO_TICKS(2000));
+                    for (int i = 0; i < 1024; i++) {
+                        MTD_ErasePhyBlock(i);
+                    }
+                    DisplayClean();
+                    DisplayPutStr(0, 16 * 1, "ALL FLASH HAS BEEN ERASED!", 255, 0, 16);
+                    vTaskDelay(pdMS_TO_TICKS(1000));
+                }
+            }
+
+            DisplayClean();
+            DisplayPutStr(0, 16 * 0, "Operation Finish.", 255, 0, 16);
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            portBoardReset();
+        }
+
+        uint8_t *vramBuf;
+        if(transScr)
+        {
+            vTaskDelay(pdMS_TO_TICKS(1000));
+
+            vramBuf = pvPortMalloc(256 * 3);
+            if(!vramBuf)
+            {
+                goto fin;
+            }
+
+            for(int y = 0; y < 128; y += 2)
+            {
+                portDispReadBackVRAM(0, y, 255, y + 2, vramBuf);
+
+                tud_cdc_write(vramBuf, 256 * 3);
+                tud_cdc_write_flush();
+                vTaskDelay(pdMS_TO_TICKS(15));
+            }
+            
+
+
+            vPortFree(vramBuf);
+            
+
+            fin:
+            vTaskDelay(pdMS_TO_TICKS(100));
+            transScr = false;
+        }
+
     }
+}
+
+extern uint32_t g_lcd_contrast;
+int capt_ON_Key(int ck, int cp) {
+
+    if ((ck == KEY_PLUS) && (cp)) {
+        g_lcd_contrast++;
+        portDispSetContrast(g_lcd_contrast);
+        return 1;
+    }
+    if ((ck == KEY_SUBTRACTION) && (cp)) {
+        g_lcd_contrast--;
+        portDispSetContrast(g_lcd_contrast);
+        return 1;
+    }
+
+    if ((ck == KEY_F6) && cp) { // [ON] + [F6]
+        FTL_Sync();
+        portBoardReset();
+        return 0;
+    }
+
+    if ((ck == KEY_F5) && cp) { // [ON] + [F5]
+        eraseDataMenu = true;
+    }
+
+    if((ck == KEY_F2) && cp)
+    {
+        if(g_CDC_TransTo == CDC_PATH_SCRCAP)
+        {
+            //tud_cdc_write_clear();
+            //tud_cdc_write_flush();
+            if(!transScr)
+            {
+                transScr = true;
+            }
+            return 0;
+        }
+
+    }
+
+
+    return -1;
 }
 
 void get_cpu_info() {
@@ -726,6 +851,9 @@ void vBatteryMon(void *__n) {
         coreTemp = (int)((portLRADCConvCh(4, 5) - portLRADCConvCh(3, 5)) * 1.012 / 4 - 273.15);
 
         if (t % 10 == 0) {
+            
+            g_core_temp = coreTemp;
+            g_batt_volt = batt_voltage;
 
             if (portGetBatteryMode() == 0) {
                 printf("Battery = Li-ion\n");
@@ -738,6 +866,8 @@ void vBatteryMon(void *__n) {
             printf("VBG: %d mV\n", (int)(portLRADCConvCh(2, 5) * 0.45));
             printf("Core Temp: %d ℃\n", coreTemp);
             printf("Power Speed:%02lx\n", portGetPWRSpeed());
+
+
         }
         t++;
 
@@ -827,7 +957,7 @@ void _startup() {
     xTaskCreate(TaskUSBLog, "USB Log", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 3, NULL);
     xTaskCreate(vTaskTinyUSB, "TinyUSB", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 4, NULL);
     xTaskCreate(vVMMgrSvc, "VM Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 4, NULL);
-    
+
     xTaskCreate(vKeysSvc, "Keys Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
 
     xTaskCreate(vLLAPISvc, "LLAPI Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 5, &pLLAPITask);

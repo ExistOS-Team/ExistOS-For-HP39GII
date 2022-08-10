@@ -7,7 +7,7 @@
 
 unsigned int frames;
 
-#include "keyboard.h"
+#include "keyboard_gii39.h"
 
 
 static int button_start, button_select;

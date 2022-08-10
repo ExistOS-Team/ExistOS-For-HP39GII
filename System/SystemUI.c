@@ -6,7 +6,7 @@
 #include "SystemUI.h"
 
 #include "debug.h"
-#include "keyboard.h"
+#include "keyboard_gii39.h"
 
 #define isKeyRelease(k) (last_key == k) && (last_press == 1) && (key == k) && (kpress == 0)
 #define ALPHA_SELECT(k, a, b, c) \
@@ -63,7 +63,7 @@ static uint8_t indicator = 0;
 #define VBUFFER_LINE 32
 
 uint8_t g_ShiftStatus = 0;
-uint8_t g_AlphaStatus = 2; // normal  A..Z  a..Z
+uint8_t g_AlphaStatus = 0; //2; // 0:normal  1:A..Z  2:a..Z
 
 static TaskHandle_t lvgl_svc_task;
 static TaskHandle_t lvgl_tick_task;

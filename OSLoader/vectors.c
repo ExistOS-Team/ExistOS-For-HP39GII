@@ -74,6 +74,7 @@ void printRegs() {
 uint32_t vm_temp_storage[16];
 
 extern uint32_t g_latest_key_status;
+extern uint32_t g_core_temp, g_batt_volt;
 extern bool vm_in_exception;
 void volatile arm_vector_swi() __attribute__((naked));
 void volatile arm_vector_swi() {
@@ -115,6 +116,13 @@ void volatile arm_vector_swi() {
             pRegFram[0 + 2] = g_latest_key_status;
             break;
 
+        case LL_FAST_SWI_PWR_VOLTAGE:
+            pRegFram[0 + 2] = g_batt_volt;
+            break;
+        case LL_FAST_SWI_CORE_TEMP:
+            pRegFram[0 + 2] = g_core_temp;
+            break;
+            
         default:
             break;
         }

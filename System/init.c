@@ -30,9 +30,6 @@ void volatile _init() {
     __asm volatile(".word 0xFECDAFDE");
 
     set_r13(NORMAL_STACK_ADDR);
-/*
-    __asm volatile("mov r13,#0x02700000");
-    __asm volatile("add r13,#0x000FA000");*/
 
     for (char *i = (char *)&_sbss; i < (char *)&_ebss; i++) {
         *i = 0; // clear bss

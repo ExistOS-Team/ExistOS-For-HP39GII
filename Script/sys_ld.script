@@ -40,25 +40,28 @@ SECTIONS
 		PROVIDE(__ctors_end__ = .);	
 		  
   	} >vmROM
-
+/*
   	.dtors          :
   	{
     	KEEP (*(SORT(.dtors.*)))
     	KEEP (*(.dtors))
   	} >vmROM
-
+*/
 	.init.data :
 	{
 		*(.init.data)
 	} >vmROM
 	
+	. = ALIGN(4);
 	.text :	
 	{
 		*(.text)
 	} >vmROM
 
+	. = ALIGN(8);
 	.rodata : 
 	{
+		. = ALIGN(4);
 		*(.rodata) 
 	} >vmROM
 
@@ -84,19 +87,19 @@ SECTIONS
 		. = ALIGN(4);
 		__data_end = .;
 	} >vmRAM AT >vmROM
-
+	. = ALIGN(8);
     .bss : {
-		. = ALIGN(4);
+		. = ALIGN(8);
         _sbss = .;
         *(.bss .bss.*)
         *(.gnu.linkonce.b.*)
         *(COMMON)
-        . = ALIGN(4);
+        . = ALIGN(8);
         _ebss = .;
     } > vmRAM
 	. = ALIGN(4);
 	.heap : {
-		. = ALIGN(4);
+		. = ALIGN(16);
 		__HEAP_START = .;
 	} > vmRAM
 	

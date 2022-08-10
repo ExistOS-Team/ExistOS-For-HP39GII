@@ -67,11 +67,15 @@ extern void vPortISRStartFirstTask( void );
  *
  * See header file for description. 
  */
+
+#include <stdio.h>
+
 StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters )
 {
 StackType_t *pxOriginalTOS;
 
 	pxOriginalTOS = pxTopOfStack;
+	printf("Start Stack:%08x, %d\n", pxOriginalTOS, pxOriginalTOS);
 	
 	/* To ensure asserts in tasks.c don't fail, although in this case the assert
 	is not really required. */
@@ -139,6 +143,8 @@ StackType_t *pxOriginalTOS;
 	*pxTopOfStack = portNO_CRITICAL_SECTION_NESTING;
 
 	//pxTopOfStack--;
+
+	//printf("StackAddr:%08x,%%8=%d\n",pxTopOfStack, (uint32_t)pxTopOfStack % 8 );
 
 	return pxTopOfStack;
 }

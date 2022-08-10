@@ -62,6 +62,10 @@ DECDEF_LLSWI(void,         ll_flash_sync,         (void)                        
 DECDEF_LLSWI(uint32_t,     ll_flash_get_pages,    (void)                                  ,LL_SWI_FLASH_PAGE_NUM           );
 DECDEF_LLSWI(uint32_t,     ll_flash_get_page_size,(void)                                  ,LL_SWI_FLASH_PAGE_SIZE_B        );
 
+DECDEF_LLSWI(uint32_t,     ll_power_off,          (void)                                  ,LL_SWI_PWR_POWEROFF             );
+DECDEF_LLSWI(uint32_t,     ll_get_bat_voltage,    (void)                                  ,LL_FAST_SWI_PWR_VOLTAGE             );
+DECDEF_LLSWI(uint32_t,     ll_get_core_temp,    (void)                                  ,LL_FAST_SWI_CORE_TEMP             );
+
 #ifdef __cplusplus          
     }          
 #endif

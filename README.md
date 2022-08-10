@@ -20,22 +20,21 @@
 - [x] CPU频率设定
 - [ ] RTC时钟
 - [x] USB大容量存储模式
-- [ ] USB串口控制台
-- [ ] USB模拟键盘鼠标
+- [x] USB串口控制台
+- [x] USB模拟键盘鼠标
 - [x] USB功能动态配置
 - [x] FLASH驱动
 - [x] FATFS文件系统
-- [ ] 多任务
+- [x] 多任务
 - [x] 虚拟内存
-- [ ] ~~进程、ELF加载~~
-- [ ] 最小化MicroPython实现
-- [ ] ~~进程切换、进程结束、ELF卸载~~
+- [ ] APP加载
+- [x] 最小化MicroPython实现
 - [x] 用户界面GUI
-- [ ] 电源管理
-- [ ] ~~Linux 5.4 半虚拟化双内核实现~~
-- [ ] 完全脱离官方刷机工具的固件升级
+- [x] 基本电源管理
+- [ ] 完全电源管理
+- [x] 完全脱离官方刷机工具的固件升级
 
-目前工作进展：已经完成了操作系统大部分内核和一些必要的硬件驱动。但由于未弄清STMP3770固件刷入机制，因此需要在Win7\WinXP环境下用计算器官方的固件升级软件刷入本固件。同时还没有用户界面，现在的工作重心是实现虚拟内存管理和进程加载。关于用户界面GUI等还在讨论中，如有宝贵意见可于Issues提出。
+目前工作进展：如上。关于用户界面GUI等还在讨论中，如有宝贵意见可于Issues提出。
 
 
 ## 固件编译
@@ -108,7 +107,7 @@ cd Libs/src/micropython-master/ports/eoslib
 make
 ```
 
-### 编译
+### 编译系统
 
 新建一个文件夹用于存放编译的二进制文件和缓存：  
 ```bash
@@ -134,7 +133,7 @@ Windows 请用 Ninja：
 ninja
 ```
 
-## 固件安装
+## 固件安装 （目前仅支持Windows下刷入）
 
 ### 刷入 OS Loader
 
@@ -142,87 +141,217 @@ ninja
 
 OS Loader 是引导程序，用于加载 ExistOS 并提供底层 API 和虚拟内存相关功能，使用下面的命令刷入 OL（需要计算器处在刷写模式）。
 
-要刷写OS Loader，需要先将计算器完全断电（卸下所有电池），按住 `ON/C` 键并同时插入 USB 数据线。
+要刷写OS Loader，需要先将计算器完全断电（卸下所有电池），按住 `ON/C` 键不放，之后插入 USB 数据线。
 
+Windows系统下可以查看设备管理器是否出现一个名为“USB输入设备”且ID为066F:3770的USB HID设备
+
+![USBID](Image/new2/0.png)
+
+
+#### 手动刷入
+
+先使用sbtool工具将OS Loader载入RAM并运行
 ```bash
-make flash
+ninja sb_flash
 ```
-Windows 请用 Ninja：  
+当OS Loader运行后，计算器会显示如下界面提示“找不到系统”：
+
+![OSL Boot](Image/new2/1.png)
+
+此时OSL仅在内存中运行，接着执行以下将OS Loader刷入计算器的Flash引导区
 ```bash
-ninja flash
+ninja edb_flash_loader
 ```
+刷入OS Loader后计算器会自动重启，但仍找不到系统，最后需要执行以下将系统刷入计算器的Flash
+```bash
+ninja edb_flash_sys
+```
+刷入完成后系统将会重启并正常运行，若长时间无反应请尝试从头开始刷入。
+#### 自动工具刷入
 
 如无法使用上述命令刷入 OL，尝试安装 HP39GII 官方工具然后使用其 Firmware Updater 刷入 OL（用编译的 `firmware.sb` 替换官方固件 `firmware.sb`，确保文件名相同）。
 
-也可使用 [ExistOS Updater](https://github.com/ExistOS-Team/ExistOS-Updater/releases)（可在 Windows 10 或更新的版本上使用）刷入 OL。
+也可使用 [ExistOS Updater](https://github.com/ExistOS-Team/ExistOS-Updater/releases)（可在 Windows 10 或更新的版本上使用）刷入 OSL和SYS。
 
-### 安装 Exist OS
-
-OL 刷入后，引导程序会开始执行，此时计算器应显示如下界面，若之前已经刷写并安装过Exist OS系统，则可能不会出现该配置界面，只需要正常开机并按住`Clear`(退格)键即可进入该配置界面。
-
-![Loader1](Image/1.png)
-
-由于本固件的底层驱动以及闪存的存储结构与原始固件不同，因此在这里会提示磁盘格式错误，因此需要对闪存进行低级格式化之后才可继续安装固件。（注意，接下来的操作将会抹除掉计算器上的所有数据，请先备份好相关文件）
-
-![loader2](Image/2.png)
-
-使用方向键将进入`Format Flash`菜单，该菜单下有两个选项，`Erase`选项仅会将Flash全片擦除，之后不会写入任何数据，该选项主要用于恢复官方的系统镜像。
-为了安装新固件，需要进行分区并格式化，故此处选中`Format`选项之后，按下`Enter`键，将开始执行格式化操作，该过程需要1~2分钟。
-
-![Loader3](Image/3.png)
-
-闪存格式化完成之后，将菜单切换至`Mount USB MSC`界面，通过这个界面可以将计算器刚刚分区并格式化完成后的分区挂载到USB上，以便用电脑直接操作内部Flash并拷贝系统。
-在这里选中`SYS`并按下`Enter`键挂载计算器的系统分区。
-
-![Loader4](Image/4.png)
-
-![Loader5](Image/5.png)
-
-挂载`SYS`分区之后，电脑上会多出一个10MB左右的U盘，接着将刚刚编译出的`OSLoader.sb`引导文件和`ExistOS.sys`系统文件拷贝至计算器中。拷贝完成后安全弹出U盘，或者在计算器上将挂载选项设置为`None`
-
-![Loader6](Image/6.png)
-
-（弹出磁盘或卸载磁盘之后的某些情况下计算器界面可能会卡住1分钟左右，不用担心，请坐和放宽，此时引导程序正在对磁盘执行Trim操作进行垃圾回收，以加快往后系统运行时的IO速度）
-
-![Loader7](Image/7.png)
-
-接下来将菜单移动至`Install System`选项，并按下`ENTER`键，引导程序会将自己写入到计算器的引导扇区中以完成最后的安装。
-
-![Loader8](Image/8.png)
-
-出现以上界面时表示系统已经安装完成，此时可以选中`Boot ExistOS`直接引导或`Reboot`重启进入系统。
-
-![Loader10](Image/10.png)
 
 ## 固件基本使用
 
-系统编译和安装完成后，开机将会见到如下系统界面（默认开启4MB虚拟内存）。
+### 初次使用
 
-![Sys1](Image/11.png)
+系统编译和安装完成后，第一次开机将会见到如下系统界面，提示将Flash的数据区格式化为FAT16格式的文件系统，[ENTER]点击OK开始格式化，大约耗时半分钟。
 
-目前的版本中设置了两个输入界面，按下`F1`进入系统自带的Shell，可以执行系统控制相关的命令（目前暂无）。按下`F2`将切换至CAS计算模式，进入CAS模式之前系统会对giac运行环境进行初始化，需要几秒钟的时间。
+![Sys1](Image/new2/2.png)
 
-![Sys2](Image/12.png)
+出现以下界面后表示Flash数据区已经格式化完毕，点击OK进入系统主界面。
+
+![Sys1](Image/new2/3.png)
+
+目前系统仅预装了一个KhiCAS应用，[←][→][↑][↓]键选择，[ENTER]键确定/切换
+
+![Sys1](Image/new2/4.png)
+
+Status选项卡目前仅用于显示当前系统状态。
+
+注：当前系统还未完成能耗管理，系统将设定CPU运行在360MHz的高主频上且无降频节能动作，建议使用外接电源。
+
+![Sys1](Image/new2/5.png)
+
+【ON】+【F6】 强制重启
+【ON】+【F5】 进入格式化界面
+
+### 内部存储的访问
+
+在系统开机前（或按下ON/C开机之后立即）按住【F2】键不放，会出现如下界面：
+
+![Sys1](Image/new2/38.png)
+
+此时电脑上会出现一个约80MB的U盘，即为计算器内部Flash数据区的空间，System为系统资源（字体、图片之类，目前暂不使用），xcas文件夹存放KhiCAS的用户脚本、会话(历史记录)等资料。
+
+![Sys1](Image/new2/39.png)
+
+![Sys1](Image/new2/40.png)
+
+### KhiCAS的基本使用
+
+主界面Application选项卡中按下[↓]键选中KhiCAS应用，按下[Enter]键启动应用。第一次启动时会弹出提示选择使用Xcas语法模式[F1]还是Python语法模式[F6]。
+
+![Sys1](Image/new2/6.png)
+
+设定完成后下边当前状态会显示在下边的状态栏，其中第一项为当前时间，第二项为语法模式(Xcas或Python)，第三项弧度或角度制，第四项为当前会话文件名。
+
+注：目前RTC函数接口还未适配，故时间显示可能是混乱的。
+
+![Sys1](Image/new2/7.png)
 
 初始化完成后便可以进行一些相关的计算。
 
-![Sys3](Image/13.png)
+长按[ON/C]清除历史记录。
 
-![Sys4](Image/14.png)
+[SHIFT]+长按[ON/C]保存会话并关机。
 
-![Sys5](Image/15.png)
+#### 基本计算
+在KhiCAS中可以输入一般的表达式进行计算，支持大整数计算，但对于小数仅支持单精度浮点。
 
-计算的结果会保存在上方的历史记录框内，可以通过上下光标键进行选择，选择需要的表达式按下COPY(`F4`)键可将该表达式复制到输入框中，并可对其进行修改作为下一次计算的输入。
+![Sys1](Image/new2/8.png)
 
-![Sys6](Image/16.png)
+对于输入的表达式（或[↑][↓]键选择的历史记录）可以按下view键[F3]后将其转化为自然输入模式进行编辑。
 
-![Sys7](Image/17.png)
+![Sys1](Image/new2/9.png)
 
-计算过程中可按下`ON`键中断正在计算的表达式。
+![Sys1](Image/new2/10.png)
 
-![Sys8](Image/18.png)
+使用[F1]和[F2]键可以调出可能常用的指令菜单。
 
-由于使用的giac代数运算系统体积相对来说较为庞大(约6MB)，而该计算器仅有500KB左右的运行内存，因此在进行计算时需要频繁的IO操作，从而导致其在某些复杂问题求解时会出现计算十分缓慢的问题。
+![Sys1](Image/new2/11.png)
+
+![Sys1](Image/new2/12.png)
+
+cmds菜单[F4]里用二级目录的方式列出了KhiCAS中的全部命令（包括代数、复数、多项式、概率、绘图等命令），可以在其中搜寻需要的指令，选中对应的指令后input键输入到主界面，或按下help查看指令帮助，ex1、ex2键输入自带的示例。
+
+![Sys1](Image/new2/13.png)
+
+![Sys1](Image/new2/14.png)
+
+#### 示例1: 绘图
+使用plot命令可以对基本函数进行绘图，绘图界面[↑][↓][←][→]键移动画布，[+][-]键缩放，[*]键自动缩放铺满屏幕，[/]键自动缩放让xy坐标刻度等距。
+
+```
+  plot(表达式, x)
+  plot(表达式, x=[起点...终点], xstep=步进)
+```
+
+![Sys1](Image/new2/15.png)
+![Sys1](Image/new2/16.png)
+
+plotpolar命令则在极坐标系下绘图
+
+![Sys1](Image/new2/17.png)
+
+![Sys1](Image/new2/18.png)
+
+plotfield绘制矢量场
+
+![Sys1](Image/new2/19.png)
+
+![Sys1](Image/new2/22.png)
+
+![Sys1](Image/new2/20.png)
+
+![Sys1](Image/new2/21.png)
+
+#### 示例2: 不定积分
+
+![Sys1](Image/new2/23.png)
+
+![Sys1](Image/new2/24.png)
+
+![Sys1](Image/new2/25.png)
+
+![Sys1](Image/new2/26.png)
+
+#### 示例3: 定积分
+
+![Sys1](Image/new2/36.png)
+
+![Sys1](Image/new2/37.png)
+
+#### 示例4: 编程绘制Logistic方程映射Feigenbaum分岔图
+
+在KhiCAS中有两种语法工作模式Xcas和Python，并提供了脚本执行功能，因此可以通过编程的方式定义新函数，这里使用Python语法来实现绘制如下的分岔图。
+
+![Sys1](Image/new2/27.png)
+
+在主界面中按下File键(F6)，选择第六项打开脚本编辑器。
+
+![Sys1](Image/new2/28.png)
+
+脚本编辑器中，左上角显示当前时间，语法模式，文件名，当前编辑行号/总行数。
+F1~F3中存储了一些如符号判断、循环体、函数定义等的快捷命令
+
+![Sys1](Image/new2/29.png)
+
+这里使用的脚本如下，首先先定义了两个全局向量r和p，函数f迭代的结果会存储在这两个向量中，最后在外部能够调用KhiCAS的point(r,p)命令进行绘图。
+
+```python
+r = []
+p = []
+def f():
+  for u in range(0, 40):
+    x = 0.132456
+    for n in range(1,50):
+      x1 = (u/10)*x*(1-x)
+      x = x1
+      if n > 25:
+        r.append(u/100)
+        p.append(x)
+  return
+```
+
+编辑完成后使用File菜单里的Check syntax选项可以对脚本进行检查和编译，结果会输出到主控制台上。
+
+![Sys1](Image/new2/30.png)
+
+如下图为脚本有符号错误时编译的结果，会具体提示所在行号（或者是在Xcas模式下编译Python脚本也会出现错误）
+
+![Sys1](Image/new2/31.png)
+
+编译成功的结果如下图。
+
+![Sys1](Image/new2/32.png)
+
+随后调用脚本中的函数名执行上面所写的函数，执行完后再调用point指令将迭代输出的散点绘制到画布上。
+
+![Sys1](Image/new2/33.png)
+
+最终输出：
+
+![Sys1](Image/new2/34.png)
+
+![Sys1](Image/new2/35.png)
+
+### 注意:
+
+由于使用的giac代数运算系统体积相对来说较为庞大(约3MB)，而该计算器仅有300KB左右的物理内存，这里使用了Flash上的虚拟内存来填补其不足，计算过程中300KB的物理内存要承载代码的中间结果，因此在进行计算时需要频繁的IO操作进行内存交换，从而导致其在某些复杂问题求解时会出现计算十分缓慢的问题，例如在绘制如上的分岔图时，Python脚本内部迭代了约2000次，最终结果占用内存约90KB，但最终耗时长达340秒，一共触发了44万次的内存交换，并产生了约3次的全盘Flash擦写。
 
 ## 代码提交规范
 
