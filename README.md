@@ -39,10 +39,12 @@
 
 ## 固件编译
 
+- 如果您只想快捷地安装本系统而非自行编译，请自行下载[Release](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/releases)中的固件并直接跳至 `固件安装` 章节的 [自动工具刷入](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/edit/master/README.md#%E8%87%AA%E5%8A%A8%E5%B7%A5%E5%85%B7%E5%88%B7%E5%85%A5) 部分。
+
 ### 准备
 
 需要安装 `gcc-arm-none-eabi`：  
-- 对于 Windows 系统，请从[这里](https://developer.arm.com/downloads/-/gnu-rm)下载和安装。
+- 对于 Windows 系统，请从[这里](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)下载和安装。
   - 注意：需要将安装目录下的 `bin` 路径添加到 PATH 中
 - 对于 Linux 系统，不同的发行版可能略有差异
   - Debian/Ubuntu 等使用 apt 包管理器的发行版请安装
@@ -172,11 +174,11 @@ ninja edb_flash_sys
 
 可使用 [ExistOS Updater](https://github.com/ExistOS-Team/ExistOS_Updater_v2/releases)（可在 Windows 10 或更新的版本上使用）刷入 OSLoader和System。
 
-在没有刷入过OSLoader的设备(如安装了官方固件的设备)上，请将计算器完全关机，按住[ON/C]键将计算器连接至电脑。单击软件中的[Refresh]按钮后，如Status栏显示"Device Connected [HostLink Mode]"，便可以选择OSLoader和System镜像，并单击[Update OSLoader & System]按钮开始刷写。
+在没有刷入过OSLoader的设备(如安装了官方固件的设备)上，请将计算器完全关机，按住 `ON/C` 键将计算器连接至电脑。单击软件中的 `Refresh` 按钮后，如Status栏显示 `Device Connected [HostLink Mode]` ，便可以选择OSLoader和System镜像，并单击 `Update OSLoader & System` 按钮开始刷写。
 
-在已经刷入了OSLoader的设备上，只需将设备正常开机并连接电脑，单击软件中的[Refresh]按钮，在Status栏显示"Device Connected [Bin Mode EDB]"后便可进行刷写。
+在已经刷入了OSLoader的设备上，只需将设备正常开机并连接电脑，单击软件中的 `Refresh` 按钮，在Status栏显示 `Device Connected [Bin Mode EDB]` 后便可进行刷写。
 
-或尝试安装 HP39GII 官方工具然后使用其 Firmware Updater 刷入 OSLoader（将编译的 `OSLoader.sb` 重命名为 `firmware.sb` 并替换官方固件 `firmware.sb`，确保文件名相同）。
+或尝试安装 HP39GII 官方工具然后使用其 Firmware Updater 刷入 OSLoader(将编译的 `OSLoader.sb` 重命名为 `firmware.sb` 并替换官方固件 `firmware.sb`，确保文件名相同)。
 
 ## 固件基本使用
 
