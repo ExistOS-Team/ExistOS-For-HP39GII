@@ -28,8 +28,8 @@ void setHCLKDivider(uint32_t div)
 
 void setCPUDivider(uint32_t div) 
 {
-    uint32_t val = BF_RD(CLKCTRL_CPU, DIV_CPU);
-    INFO("CPU old Div:%lu\n", val);
+    //uint32_t val = BF_RD(CLKCTRL_CPU, DIV_CPU);
+    //INFO("CPU old Div:%lu\n", val);
     if (!div) {
         return;
     }
@@ -38,7 +38,7 @@ void setCPUDivider(uint32_t div)
     //while (BF_RD(CLKCTRL_CPU, BUSY_REF_CPU));
     BF_CLRV(CLKCTRL_CPU, DIV_CPU, BF_RD(CLKCTRL_CPU, DIV_CPU) ^ div);
 
-    INFO("CPU new Div:%d\n", BF_RD(CLKCTRL_CPU, DIV_CPU));
+    //INFO("CPU new Div:%d\n", BF_RD(CLKCTRL_CPU, DIV_CPU));
 }
 
 void setCPUFracDivider(uint32_t div) {
@@ -87,7 +87,7 @@ void portCLKCtrlInit(void) {
     setCPU_HFreqDomain(true);
 
     setHCLKDivider(2);
-    setCPUFracDivider(24);
+    setCPUFracDivider(27);
     
     enableUSBClock(true);
 }

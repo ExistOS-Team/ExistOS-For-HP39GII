@@ -357,6 +357,9 @@ int vGL_Initialize() {
     return 0;
 }
 
+extern volatile bool interrupted ;
+extern volatile bool ctrl_c ;
+
 bool vGL_chkEsc()
 {
     uint32_t keys, key, kpress;
@@ -365,6 +368,8 @@ bool vGL_chkEsc()
     kpress = keys >> 16;
     if((key == KEY_ON) && kpress)
     {
+        ctrl_c = true;
+        interrupted = true;
         return true;
     }
     return false;
@@ -381,6 +386,8 @@ bool vGL_getkey(int *keyid)
         keys = ll_vm_check_key();
         key = keys & 0xFFFF;
         kpress = keys >> 16;
+
+        
 
 
     }while((last_key == key) && (last_press == kpress));

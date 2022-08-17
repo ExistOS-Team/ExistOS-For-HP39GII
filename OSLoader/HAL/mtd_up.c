@@ -1,6 +1,8 @@
 #include "SystemConfig.h"
 #include "FreeRTOS.h"
 
+#include "board_up.h"
+
 #include "mtd_up.h"
 #include "nand.h"
 #include "../debug.h"
@@ -65,6 +67,8 @@ void MTD_Task()
         
         if(xQueueReceive(MTD_Operates_Queue, &curOpa, portMAX_DELAY) == pdTRUE)
         {
+            setCPUDivider(12);
+
             retry_cnt = 5;
             retry:
 
@@ -242,7 +246,7 @@ void MTD_Task()
             }
 
             //xEventGroupSetBits(MTDLockEventGroup , (1 << curOpa.BLock));
-            
+            setCPUDivider(2);
         }
 
     }

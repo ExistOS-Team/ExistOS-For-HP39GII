@@ -650,8 +650,8 @@ static bool transScr = false;
 void vMainThread(void *pvParameters) {
 
     // vTaskDelay(pdMS_TO_TICKS(100));
-    setHCLKDivider(2);
-    setCPUDivider(1);
+    setCPUDivider(2);
+    setHCLKDivider(1);
 
     // portLRADCEnable(1, 7);
     //  MTD_EraseAllBLock();
