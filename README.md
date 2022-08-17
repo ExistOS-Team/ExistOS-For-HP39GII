@@ -39,7 +39,7 @@
 
 ## 固件编译
 
-- 如果您只想快捷地安装本系统而非自行编译，请自行下载[Release](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/releases)中的固件并直接跳至 `固件安装` 章节的 [自动工具刷入](https://github.com/ExistOS-Team/ExistOS-For-HP39GII#%E8%87%AA%E5%8A%A8%E5%B7%A5%E5%85%B7%E5%88%B7%E5%85%A5) 部分。
+- 如果您只想快捷地安装本系统而非自行编译，请自行下载[Release](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/releases)中的固件并直接跳至 `固件安装` 章节的 [自动工具刷入](#自动工具刷入) 部分。
 
 ### 准备
 
