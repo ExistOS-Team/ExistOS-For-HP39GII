@@ -39,6 +39,8 @@
 
 ## 固件编译
 
+- 如果您只想快捷地安装本系统而非自行编译，请自行下载[Release](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/releases)中的固件并直接跳至 `固件安装` 章节的 [自动工具刷入](#自动工具刷入) 部分。
+
 ### 准备
 
 需要安装 `gcc-arm-none-eabi`：  
@@ -139,7 +141,7 @@ ninja
 
 注意：HP39GII的相关驱动程序请自行安装。
 
-OS Loader 是引导程序，用于加载 ExistOS 并提供底层 API 和虚拟内存相关功能，使用下面的命令刷入 OL（需要计算器处在刷写模式）。
+OS Loader 是引导程序，用于加载 ExistOS 并提供底层 API 和虚拟内存相关功能，使用下面的命令刷入 OS Loader（需要计算器处在刷写模式）。
 
 要刷写OS Loader，需要先将计算器完全断电（卸下所有电池），按住 `ON/C` 键不放，之后插入 USB 数据线。
 
@@ -167,12 +169,16 @@ ninja edb_flash_loader
 ninja edb_flash_sys
 ```
 刷入完成后系统将会重启并正常运行，若长时间无反应请尝试从头开始刷入。
+
 #### 自动工具刷入
 
-如无法使用上述命令刷入 OL，尝试安装 HP39GII 官方工具然后使用其 Firmware Updater 刷入 OL（用编译的 `firmware.sb` 替换官方固件 `firmware.sb`，确保文件名相同）。
+可使用 [ExistOS Updater](https://github.com/ExistOS-Team/ExistOS_Updater_v2/releases)（可在 Windows 10 或更新的版本上使用）刷入 OSLoader和System。
 
-也可使用 [ExistOS Updater](https://github.com/ExistOS-Team/ExistOS-Updater/releases)（可在 Windows 10 或更新的版本上使用）刷入 OSL和SYS。
+在没有刷入过OSLoader的设备(如安装了官方固件的设备)上，请将计算器完全关机，按住 `ON/C` 键将计算器连接至电脑。单击软件中的 `Refresh` 按钮后，如Status栏显示 `Device Connected [HostLink Mode]` ，便可以选择OSLoader和System镜像，并单击 `Update OSLoader & System` 按钮开始刷写。
 
+在已经刷入了OSLoader的设备上，只需将设备正常开机并连接电脑，单击软件中的 `Refresh` 按钮，在Status栏显示 `Device Connected [Bin Mode EDB]` 后便可进行刷写。
+
+或尝试安装 HP39GII 官方工具然后使用其 Firmware Updater 刷入 OSLoader(将编译的 `OSLoader.sb` 重命名为 `firmware.sb` 并替换官方固件 `firmware.sb`，确保文件名相同)。
 
 ## 固件基本使用
 
