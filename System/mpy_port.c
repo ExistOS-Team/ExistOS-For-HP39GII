@@ -24,7 +24,7 @@
 
 #include "debug.h"
 
-#include "keyboard.h"
+#include "keyboard_gii39.h"
 
 static lv_obj_t *textarea;
 static lv_style_t style;

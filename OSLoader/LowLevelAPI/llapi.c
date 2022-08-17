@@ -569,6 +569,16 @@ void LLAPI_Task() {
                 *currentCall.pRet = FTL_GetSectorSize();
             } break;
 
+            case LL_SWI_FLASH_SYNC: {
+                FTL_Sync();
+            }break;
+
+            case LL_SWI_PWR_POWEROFF:
+            {
+                
+                portBoardPowerOff();
+            }break;
+
             default: {
 
                 // while (vm_in_exception) {

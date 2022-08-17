@@ -10,6 +10,7 @@
 #define CDC_PATH_LOADER  0
 #define CDC_PATH_SYS     1
 #define CDC_PATH_EDB     2
+#define CDC_PATH_SCRCAP  3
 
 
 #define ABT_STACK_ADDR      (MEMORY_BASE + MEMORY_SIZE - 4)

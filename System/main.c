@@ -16,7 +16,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "ff.h"
+//#include "ff.h"
 
 #include "lv_conf.h"
 #define LV_CONF_INCLUDE_SIMPLE
@@ -24,14 +24,17 @@
 
 #include "debug.h"
 
-#include "SystemFs.h"
 #include "SystemUI.h"
+#include "SystemFs.h"
 
 #include "lv_demo_keypad_encoder.h"
 
 #include "mpy_port.h"
 
 volatile unsigned long ulHighFrequencyTimerTicks;
+
+
+
 
 char pcWriteBuffer[4096];
 void printTaskList() {
@@ -53,106 +56,398 @@ void vTask1(void *par1) {
     }
 }
 
-void softDelayMs(uint32_t ms) {
+void softDelayMs(uint32_t ms)
+{
     uint32_t cur = ll_get_time_ms();
-    while ((ll_get_time_ms() - cur) < ms) {
+    while( (ll_get_time_ms() - cur) < ms )
+    {
         ;
     }
 }
 
+
+
 void vTask2(void *par1) {
 
-    uint32_t ticks = 0;
-    while (1) {
-        /*
-                static double f1 = 0.1;
-                static double f2 = 0.2;
-                f1 += 0.01;
-                f1 /= 1.001;
-                f2 = f2 + f1;
-                printf("test:%d,%d\n", (int)(f1 * 10), (int)(f2 * 10));
+    //__asm volatile("sub R13,R13,#4");
 
-        */
+    uint32_t ticks = 0;
+
+    
+
+    while (1) {
+/*
+        static float f1 = 0.1;
+        static float f2 = 0.2;
+        f1 += 0.01;
+        f1 /= 1.001;
+        f2 = f2 + f1;
+        printf("test:%f,%f\n", (f1 * 10), (f2 * 10));
+        printf("R13:%08x\n", get_stack());*/
+
         printf("SYS Run Time: %d s\n", ticks);
         ticks++;
 
         vTaskDelay(pdMS_TO_TICKS(1000));
+        
     }
 }
 
+
+
+void khicasBtn(lv_event_t *e);
+static bool suspend = false;
+
 void main_thread() {
+
+
+    //printf("R13:%08x\n", get_stack());
 
     SystemUIInit();
     SystemFSInit();
 
+    
+    
     // lv_demo_benchmark();
     //  lv_demo_stress();
     //  lv_demo_music();
     //  lv_demo_widgets();
 
-    // SystemUIMsgBox("测试?", "Unicode测试", SYSTEMUI_MSGBOX_BUTTON_CANCAL);
-    // SystemUIMsgBox("测试?", "Unicode测试", SYSTEMUI_MSGBOX_BUTTON_CANCAL);
 
-    lv_obj_t *obj;
+    //SystemUIMsgBox("测试?", "Unicode测试", SYSTEMUI_MSGBOX_BUTTON_CANCAL);
+    //SystemUIMsgBox("测试?", "Unicode测试", SYSTEMUI_MSGBOX_BUTTON_CANCAL);
+    
+    lv_obj_t *screen;
+
     lv_obj_t *win;
-    // win = lv_win_create(lv_scr_act(), 20);
-    // lv_win_add_title(win, "测试窗口");
-    // lv_obj_t * cont = lv_win_get_content(win);
 
-    /*
-        obj = lv_textarea_create(lv_scr_act());
-        lv_textarea_add_text(obj, "字体：思源黑体 Light\n 字号：11\n");
-        lv_textarea_add_text(obj, te);
-        lv_textarea_set_align(obj, LV_TEXT_ALIGN_LEFT);
-        lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLL_WITH_ARROW);
+    screen = lv_obj_create(lv_scr_act());
+
+    lv_obj_set_scrollbar_mode(lv_scr_act(), LV_SCROLLBAR_MODE_OFF);
+
+	static lv_style_t style_screen_main_main_default;
+	if (style_screen_main_main_default.prop_cnt > 1)
+		lv_style_reset(&style_screen_main_main_default);
+	else
+		lv_style_init(&style_screen_main_main_default);
+	lv_style_set_bg_color(&style_screen_main_main_default, lv_color_black());
+	lv_style_set_bg_opa(&style_screen_main_main_default, LV_OPA_40);
+	lv_obj_add_style(screen, &style_screen_main_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
+
+    lv_obj_set_x(screen, 0);
+    lv_obj_set_y(screen, 0);
+    lv_obj_set_size(screen, 256, 128);
+
+    win = lv_win_create(lv_scr_act(), 13);
+	lv_win_add_title(win, "Exist OS");
+	lv_obj_set_pos(win, 2, 2);
+	lv_obj_set_size(win, 252, 125);
+
+	static lv_style_t style_screen_win_1_main_main_default;
+	if (style_screen_win_1_main_main_default.prop_cnt > 1)
+		lv_style_reset(&style_screen_win_1_main_main_default);
+	else
+		lv_style_init(&style_screen_win_1_main_main_default);
+	lv_style_set_bg_color(&style_screen_win_1_main_main_default, lv_color_make(0xee, 0xee, 0xf6));
+	lv_style_set_bg_grad_color(&style_screen_win_1_main_main_default, lv_color_make(0xee, 0xee, 0xf6));
+	lv_style_set_bg_grad_dir(&style_screen_win_1_main_main_default, LV_GRAD_DIR_NONE);
+	lv_style_set_bg_opa(&style_screen_win_1_main_main_default, 255);
+	lv_style_set_outline_color(&style_screen_win_1_main_main_default, lv_color_make(0x08, 0x1A, 0x0F));
+	lv_style_set_outline_width(&style_screen_win_1_main_main_default, 1);
+	lv_style_set_outline_opa(&style_screen_win_1_main_main_default, 255);
+	lv_obj_add_style(win, &style_screen_win_1_main_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
+
+
+	//Write style state: LV_STATE_DEFAULT for style_screen_win_1_extra_content_main_default
+	static lv_style_t style_screen_win_1_extra_content_main_default;
+	if (style_screen_win_1_extra_content_main_default.prop_cnt > 1)
+		lv_style_reset(&style_screen_win_1_extra_content_main_default);
+	else
+		lv_style_init(&style_screen_win_1_extra_content_main_default);
+	lv_style_set_bg_color(&style_screen_win_1_extra_content_main_default, lv_color_make(0xee, 0xee, 0xf6));
+	lv_style_set_bg_grad_color(&style_screen_win_1_extra_content_main_default, lv_color_make(0xee, 0xee, 0xf6));
+	lv_style_set_bg_grad_dir(&style_screen_win_1_extra_content_main_default, LV_GRAD_DIR_NONE);
+	lv_style_set_bg_opa(&style_screen_win_1_extra_content_main_default, 255);
+	lv_style_set_text_color(&style_screen_win_1_extra_content_main_default, lv_color_make(0x39, 0x3c, 0x41));
+	lv_style_set_text_font(&style_screen_win_1_extra_content_main_default, &lv_font_montserrat_12);
+	lv_style_set_text_letter_space(&style_screen_win_1_extra_content_main_default, 0);
+	lv_style_set_text_line_space(&style_screen_win_1_extra_content_main_default, 2);
+	lv_obj_add_style(lv_win_get_content(win), &style_screen_win_1_extra_content_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
+
+	//Write style state: LV_STATE_DEFAULT for style_screen_win_1_extra_header_main_default
+	static lv_style_t style_screen_win_1_extra_header_main_default;
+	if (style_screen_win_1_extra_header_main_default.prop_cnt > 1)
+		lv_style_reset(&style_screen_win_1_extra_header_main_default);
+	else
+		lv_style_init(&style_screen_win_1_extra_header_main_default);
+
+	lv_style_set_bg_color(&style_screen_win_1_extra_header_main_default, lv_color_make(0x00, 0x00, 0x00));
+	lv_style_set_bg_grad_color(&style_screen_win_1_extra_header_main_default, lv_color_make(0xff, 0xff, 0xff));
+
+    lv_style_set_bg_main_stop( &style_screen_win_1_extra_header_main_default, 0 );
+    lv_style_set_bg_grad_stop( &style_screen_win_1_extra_header_main_default, 255 );
+
+	lv_style_set_bg_grad_dir(&style_screen_win_1_extra_header_main_default, LV_GRAD_DIR_HOR);
+	lv_style_set_bg_opa(&style_screen_win_1_extra_header_main_default, 255);
+	lv_style_set_text_color(&style_screen_win_1_extra_header_main_default, lv_color_make(0xff, 0xff, 0xff));
+	lv_style_set_text_font(&style_screen_win_1_extra_header_main_default, &lv_font_montserrat_12);
+	lv_style_set_text_letter_space(&style_screen_win_1_extra_header_main_default, 0);
+	lv_style_set_text_line_space(&style_screen_win_1_extra_header_main_default, 2);
+	lv_obj_add_style(lv_win_get_header(win), &style_screen_win_1_extra_header_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
+
+	//Write style state: LV_STATE_DEFAULT for style_screen_win_1_extra_btns_main_default
+	static lv_style_t style_screen_win_1_extra_btns_main_default;
+	if (style_screen_win_1_extra_btns_main_default.prop_cnt > 1)
+		lv_style_reset(&style_screen_win_1_extra_btns_main_default);
+	else
+		lv_style_init(&style_screen_win_1_extra_btns_main_default);
+	lv_style_set_radius(&style_screen_win_1_extra_btns_main_default, 8);
+	lv_style_set_bg_color(&style_screen_win_1_extra_btns_main_default, lv_color_make(0x21, 0x95, 0xf6));
+	lv_style_set_bg_grad_color(&style_screen_win_1_extra_btns_main_default, lv_color_make(0x21, 0x95, 0xf6));
+	lv_style_set_bg_grad_dir(&style_screen_win_1_extra_btns_main_default, LV_GRAD_DIR_NONE);
+	lv_style_set_bg_opa(&style_screen_win_1_extra_btns_main_default, 255);
+	lv_obj_t *screen_win_1_btn;
+	lv_obj_t *screen_win_1_label = lv_label_create(lv_win_get_content(win));
+	lv_label_set_text(screen_win_1_label, "");
+
+/*
+    obj = lv_textarea_create(lv_scr_act());
+    lv_textarea_add_text(obj, "字体：思源黑体 Light\n 字号：11\n");
+    lv_textarea_add_text(obj, te);
+    lv_textarea_set_align(obj, LV_TEXT_ALIGN_LEFT);
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLL_WITH_ARROW);
+*/ 
+
+    //char* argv[] = {"gb", "test.gb", NULL};
+    //int argc = sizeof(argv) / sizeof(argv[0]) - 1;
+    //extern int gb_main(int argc, char *argv[]);
+    //gb_main(argc, argv);
+    
+    //SystemTest(); 
+ 
+    //lv_scr_act();
+
+    //void mpy_main();
+      
+    //mpy_main();
+
+    lv_obj_t *title, *tv, *t1, *t2, *imgbtn;
+    
+    lv_obj_t * cont = lv_scr_act();
+
+    //title = lv_label_create(cont);
+    //lv_label_set_text(title, "Exist OS");
+
+    static lv_style_t style;
+    lv_style_init(&style);
+
+    tv = lv_tabview_create(cont, LV_DIR_TOP, LV_DPI_DEF / 4);
+	lv_obj_set_pos(tv, 4, 15);
+	lv_obj_set_size(tv, 248, 109);
+
+
+    t1 = lv_tabview_add_tab(tv, "Application");
+    t2 = lv_tabview_add_tab(tv, "Status");
+
+
+
+    LV_IMG_DECLARE(xcaslogo_s);
+    imgbtn = lv_imgbtn_create(t1);
+
+	lv_obj_set_scrollbar_mode(imgbtn, LV_SCROLLBAR_MODE_OFF);
+
+    lv_obj_set_size(imgbtn, 48, 48);
+    lv_obj_set_pos(imgbtn, 12, 2);
+
+	static lv_style_t style_screen_imgbtn_1_main_main_default;
+	if (style_screen_imgbtn_1_main_main_default.prop_cnt > 1)
+		lv_style_reset(&style_screen_imgbtn_1_main_main_default);
+	else
+		lv_style_init(&style_screen_imgbtn_1_main_main_default);
+	lv_style_set_shadow_width(&style_screen_imgbtn_1_main_main_default, 2);
+	lv_style_set_shadow_color(&style_screen_imgbtn_1_main_main_default, lv_color_make(0x00, 0x00, 0x00));
+	lv_style_set_shadow_opa(&style_screen_imgbtn_1_main_main_default, 128);
+	lv_style_set_shadow_spread(&style_screen_imgbtn_1_main_main_default, 2);
+	lv_style_set_shadow_ofs_x(&style_screen_imgbtn_1_main_main_default, 0);
+	lv_style_set_shadow_ofs_y(&style_screen_imgbtn_1_main_main_default, 0);
+	lv_style_set_text_color(&style_screen_imgbtn_1_main_main_default, lv_color_make(0x00, 0x00, 0x00));
+	lv_style_set_text_align(&style_screen_imgbtn_1_main_main_default, LV_TEXT_ALIGN_CENTER);
+	lv_style_set_img_recolor(&style_screen_imgbtn_1_main_main_default, lv_color_make(0xff, 0xff, 0xff));
+	lv_style_set_img_recolor_opa(&style_screen_imgbtn_1_main_main_default, 0);
+	lv_style_set_img_opa(&style_screen_imgbtn_1_main_main_default, 255);
+	lv_obj_add_style(imgbtn, &style_screen_imgbtn_1_main_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
+
+	//Write style state: LV_STATE_PRESSED for style_screen_imgbtn_1_main_main_pressed
+	static lv_style_t style_screen_imgbtn_1_main_main_pressed;
+	if (style_screen_imgbtn_1_main_main_pressed.prop_cnt > 1)
+		lv_style_reset(&style_screen_imgbtn_1_main_main_pressed);
+	else
+		lv_style_init(&style_screen_imgbtn_1_main_main_pressed);
+	lv_style_set_text_color(&style_screen_imgbtn_1_main_main_pressed, lv_color_make(0xFF, 0x33, 0xFF));
+	lv_style_set_text_align(&style_screen_imgbtn_1_main_main_pressed, LV_TEXT_ALIGN_CENTER);
+	lv_style_set_img_recolor(&style_screen_imgbtn_1_main_main_pressed, lv_color_make(0x00, 0x00, 0x00));
+	lv_style_set_img_recolor_opa(&style_screen_imgbtn_1_main_main_pressed, 0);
+	lv_style_set_img_opa(&style_screen_imgbtn_1_main_main_pressed, 255);
+	lv_obj_add_style(imgbtn, &style_screen_imgbtn_1_main_main_pressed, LV_PART_MAIN|LV_STATE_PRESSED);
+
+	//Write style state: LV_STATE_CHECKED for style_screen_imgbtn_1_main_main_checked
+	static lv_style_t style_screen_imgbtn_1_main_main_checked;
+	if (style_screen_imgbtn_1_main_main_checked.prop_cnt > 1)
+		lv_style_reset(&style_screen_imgbtn_1_main_main_checked);
+	else
+		lv_style_init(&style_screen_imgbtn_1_main_main_checked);
+	lv_style_set_text_color(&style_screen_imgbtn_1_main_main_checked, lv_color_make(0xFF, 0x33, 0xFF));
+	lv_style_set_text_align(&style_screen_imgbtn_1_main_main_checked, LV_TEXT_ALIGN_CENTER);
+	lv_style_set_img_recolor(&style_screen_imgbtn_1_main_main_checked, lv_color_make(0x00, 0x00, 0x00));
+	lv_style_set_img_recolor_opa(&style_screen_imgbtn_1_main_main_checked, 0);
+	lv_style_set_img_opa(&style_screen_imgbtn_1_main_main_checked, 255);
+
+	lv_obj_add_style(imgbtn, &style_screen_imgbtn_1_main_main_checked, LV_PART_MAIN|LV_STATE_CHECKED);
+	lv_imgbtn_set_src(imgbtn, LV_IMGBTN_STATE_RELEASED, NULL, &xcaslogo_s, NULL);
+	lv_obj_add_flag(imgbtn, LV_OBJ_FLAG_CHECKABLE);
+
+
+    lv_obj_t *btn1;
+    btn1 = lv_btn_create(t1);
+    lv_obj_set_size(btn1, 48, 13);
+    lv_obj_set_pos(btn1, 12, 52);
+    lv_obj_t * label = lv_label_create(btn1);
+
+
+    lv_obj_add_event_cb(btn1, khicasBtn, LV_EVENT_ALL, NULL);
+
+
+	static lv_style_t style_screen_btn_1_main_main_default;
+	if (style_screen_btn_1_main_main_default.prop_cnt > 1)
+		lv_style_reset(&style_screen_btn_1_main_main_default);
+	else
+		lv_style_init(&style_screen_btn_1_main_main_default);
+	lv_style_set_radius(&style_screen_btn_1_main_main_default, 2);
+	lv_style_set_bg_color(&style_screen_btn_1_main_main_default, lv_color_make(0xff, 0xff, 0xff));
+	lv_style_set_bg_grad_color(&style_screen_btn_1_main_main_default, lv_color_make(0x21, 0x95, 0xf6));
+	lv_style_set_bg_grad_dir(&style_screen_btn_1_main_main_default, LV_GRAD_DIR_NONE);
+	lv_style_set_bg_opa(&style_screen_btn_1_main_main_default, 255);
+	lv_style_set_border_color(&style_screen_btn_1_main_main_default, lv_color_make(0x00, 0x00, 0x00));
+	lv_style_set_border_width(&style_screen_btn_1_main_main_default, 1);
+	lv_style_set_border_opa(&style_screen_btn_1_main_main_default, 100);
+	lv_style_set_text_color(&style_screen_btn_1_main_main_default, lv_color_make(0x00, 0x00, 0x00));
+	lv_style_set_text_font(&style_screen_btn_1_main_main_default, &lv_font_montserrat_12);
+	lv_style_set_text_align(&style_screen_btn_1_main_main_default, LV_TEXT_ALIGN_CENTER);
+	lv_obj_add_style(btn1, &style_screen_btn_1_main_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
+	
+
+	lv_label_set_text(label, "KhiCAS");
+	lv_obj_set_style_pad_all(btn1, 0, LV_STATE_DEFAULT);
+	lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+
+    //lv_obj_clear_flag(btn1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    
+
+
+//===============================================================
+//tv2
+    //lv_obj_set_scrollbar_mode(t2, LV_SCROLLBAR_MODE_ON);
+
+
+    lv_obj_set_flex_flow(t2, LV_FLEX_FLOW_COLUMN_WRAP);
+    //
+
+    lv_obj_t *lab_cpu_freq;
+    lv_obj_t *lab_cpu_temp;
+    lv_obj_t *lab_free_mem;
+    lv_obj_t *lab_voltage;
+    lv_obj_t *lab_runtime;
+
+    lab_cpu_freq = lv_label_create(t2); lv_obj_set_flex_grow(lab_cpu_freq, 0);
+    lab_cpu_temp = lv_label_create(t2); lv_obj_set_flex_grow(lab_cpu_temp, 0);
+    lab_free_mem = lv_label_create(t2); lv_obj_set_flex_grow(lab_free_mem, 0);
+    lab_voltage = lv_label_create(t2);  lv_obj_set_flex_grow(lab_voltage,  0);
+    lab_runtime = lv_label_create(t2);  lv_obj_set_flex_grow(lab_runtime,  0);
+
+
+
+    //lv_obj_add_style(imgbtn, )
+
+/*
+    SystemUISuspend();
+    void testcpp();
+    testcpp(); 
     */
 
-    // char* argv[] = {"gb", "test.gb", NULL};
-    // int argc = sizeof(argv) / sizeof(argv[0]) - 1;
-    // extern int gb_main(int argc, char *argv[]);
-    // gb_main(argc, argv);
 
-    // SystemTest();
-
-    // lv_scr_act();
-
-    void mpy_main();
-
-    mpy_main();
-
-    // lv_demo_keypad_encoder();
-
+    //lv_demo_keypad_encoder(); 
+    int cur_cpu_div = 1;
+    int cur_cpu_frac = 25;
+    int cur_hclk_div = 2;
+    int runTime = 0;
     for (;;) {
+        
+
+        runTime ++;
+
+        if(!suspend){
+            uint32_t tmp[3];
+            ll_get_clkctrl_div(tmp);
+            cur_cpu_div = tmp[0];
+            cur_cpu_frac = tmp[1];
+            cur_hclk_div = tmp[2];
+
+            lv_label_set_text_fmt(lab_cpu_freq, "CPU:%d MHz", 480 * 18 / cur_cpu_div / cur_cpu_frac);
+            lv_label_set_text_fmt(lab_runtime, "RunTime:%d s", runTime);
+            lv_label_set_text_fmt(lab_free_mem, "Free:%d KB", xPortGetFreeHeapSize() / 1024);
+            lv_label_set_text_fmt(lab_voltage, "Batt:%d mV", ll_get_bat_voltage());
+            lv_label_set_text_fmt(lab_cpu_temp, "Core: %d °C" , ll_get_core_temp());
+        }
+
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
-void main() {
+void khicasTask(void *arg)
+{
+    SystemUISuspend();
+    void testcpp();
+    testcpp(); 
+
+    SystemUIResume();
+    vTaskDelete(NULL);
+}
+
+void khicasBtn(lv_event_t *e) {
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if (code == LV_EVENT_CLICKED) {
+        xTaskCreate(khicasTask, "KhiCAS", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
+
+    }
+}
+ 
+void main() { 
 
     // SYS STACK      0x023FA000
     // IRQ STACK      0x023FFFF0
     void IRQ_ISR();
     void SWI_ISR();
     ll_set_irq_stack(IRQ_STACK_ADDR);
-    ll_set_irq_vector(((uint32_t)IRQ_ISR) + 4);
+    ll_set_irq_vector(((uint32_t)IRQ_ISR) + 4); 
     ll_set_svc_stack(SWI_STACK_ADDR);
     ll_set_svc_vector(((uint32_t)SWI_ISR) + 4);
     ll_enable_irq(false);
-    // ll_set_keyboard(true);
-
+    // ll_set_keyboard(true);  
+  
     printf("System Booting...\n");
 
     xTaskCreate(vTask1, "Task1", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
     xTaskCreate(vTask2, "Task2", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
 
-    xTaskCreate(main_thread, "System", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
+    xTaskCreate(main_thread, "System", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 3, NULL);
 
     vTaskStartScheduler();
 
     for (;;) {
-        *((uint32_t *)0x45678901) = 114514 + 1919810;
+        *((double *) 0x45678901) = 114514.1919810f;
     }
-}
+} 
 
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
     PANNIC("StackOverflowHook:%s\n", pcTaskName);

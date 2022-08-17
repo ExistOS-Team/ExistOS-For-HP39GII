@@ -1,0 +1,267 @@
+/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/gcc-4.2 -I./ -I/Developer/Platforms/iPhoneOS.platform/Developer/DKs/iPhoneOS4.3.sdk/usr/include  -Wall -W -Wshadow -Wsign-compare -arch armv6 -O3 -funroll-loops -fomit-frame-pointer   -c -o bncore.o bncore.c
+In file included from /usr/include/sys/_types.h:33,
+                 from /usr/include/_types.h:27,
+                 from /usr/include/stdio.h:64,
+                 from ./tommath.h:18,
+                 from bncore.c:1:
+/usr/include/machine/_types.h:36:24: error: arm/_types.h: No such file or directory
+In file included from /usr/include/_types.h:27,
+                 from /usr/include/stdio.h:64,
+                 from ./tommath.h:18,
+                 from bncore.c:1:
+/usr/include/sys/_types.h:94: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_blkcnt_t’
+/usr/include/sys/_types.h:95: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_blksize_t’
+/usr/include/sys/_types.h:96: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_dev_t’
+/usr/include/sys/_types.h:99: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_gid_t’
+/usr/include/sys/_types.h:100: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_id_t’
+/usr/include/sys/_types.h:101: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_ino64_t’
+/usr/include/sys/_types.h:103: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_ino_t’
+/usr/include/sys/_types.h:107: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_mach_port_name_t’
+/usr/include/sys/_types.h:108: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_mach_port_t’
+/usr/include/sys/_types.h:109: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_mode_t’
+/usr/include/sys/_types.h:110: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_off_t’
+/usr/include/sys/_types.h:111: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_pid_t’
+/usr/include/sys/_types.h:131: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_sigset_t’
+/usr/include/sys/_types.h:132: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_suseconds_t’
+/usr/include/sys/_types.h:133: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_uid_t’
+/usr/include/sys/_types.h:134: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__darwin_useconds_t’
+In file included from ./tommath.h:18,
+                 from bncore.c:1:
+/usr/include/stdio.h:70: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘va_list’
+/usr/include/stdio.h:75: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘off_t’
+/usr/include/stdio.h:80: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘size_t’
+/usr/include/stdio.h:87: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘fpos_t’
+/usr/include/stdio.h:145: error: expected specifier-qualifier-list before ‘fpos_t’
+/usr/include/stdio.h:255: error: expected declaration specifiers or ‘...’ before ‘fpos_t’
+/usr/include/stdio.h:265: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘fread’
+/usr/include/stdio.h:270: error: expected ‘;’, ‘,’ or ‘)’ before ‘*’ token
+/usr/include/stdio.h:272: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘fwrite’
+/usr/include/stdio.h:290: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdio.h:296: error: expected declaration specifiers or ‘...’ before ‘va_list’
+/usr/include/stdio.h:297: error: expected declaration specifiers or ‘...’ before ‘va_list’
+/usr/include/stdio.h:298: error: expected declaration specifiers or ‘...’ before ‘va_list’
+/usr/include/stdio.h:301: error: expected declaration specifiers or ‘...’ before ‘va_list’
+/usr/include/stdio.h:322: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdio.h:331: error: expected declaration specifiers or ‘...’ before ‘off_t’
+/usr/include/stdio.h:332: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘ftello’
+/usr/include/stdio.h:353: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdio.h:355: error: expected declaration specifiers or ‘...’ before ‘va_list’
+/usr/include/stdio.h:356: error: expected declaration specifiers or ‘...’ before ‘va_list’
+/usr/include/stdio.h:357: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdio.h:357: error: expected declaration specifiers or ‘...’ before ‘va_list’
+/usr/include/stdio.h:358: error: expected declaration specifiers or ‘...’ before ‘va_list’
+/usr/include/stdio.h:372: error: expected declaration specifiers or ‘...’ before ‘fpos_t’
+/usr/include/stdio.h:385: error: expected declaration specifiers or ‘...’ before ‘va_list’
+In file included from /usr/include/stdio.h:443,
+                 from ./tommath.h:18,
+                 from bncore.c:1:
+/usr/include/secure/_stdio.h:42: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/secure/_stdio.h:49: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/secure/_stdio.h:49: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/secure/_stdio.h:56: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/secure/_stdio.h:57: error: expected declaration specifiers or ‘...’ before ‘va_list’
+/usr/include/secure/_stdio.h:63: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/secure/_stdio.h:63: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/secure/_stdio.h:64: error: expected declaration specifiers or ‘...’ before ‘va_list’
+In file included from ./tommath.h:19,
+                 from bncore.c:1:
+/usr/include/string.h:70: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘ssize_t’
+/usr/include/string.h:81: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:82: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:83: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:84: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:85: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:95: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘strcspn’
+/usr/include/string.h:97: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:98: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘strlen’
+/usr/include/string.h:99: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:100: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:101: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:103: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:107: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘strspn’
+/usr/include/string.h:110: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘strxfrm’
+/usr/include/string.h:114: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:118: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:119: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:120: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:126: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:127: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:128: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:131: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘strlcat’
+/usr/include/string.h:132: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘strlcpy’
+/usr/include/string.h:134: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/string.h:137: error: expected declaration specifiers or ‘...’ before ‘ssize_t’
+In file included from /usr/include/string.h:148,
+                 from ./tommath.h:19,
+                 from bncore.c:1:
+/usr/include/secure/_string.h:56: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/secure/_string.h: In function ‘__inline_memcpy_chk’:
+/usr/include/secure/_string.h:58: error: ‘__len’ undeclared (first use in this function)
+/usr/include/secure/_string.h:58: error: (Each undeclared identifier is reported only once
+/usr/include/secure/_string.h:58: error: for each function it appears in.)
+/usr/include/secure/_string.h: At top level:
+/usr/include/secure/_string.h:67: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/secure/_string.h: In function ‘__inline_memmove_chk’:
+/usr/include/secure/_string.h:69: error: ‘__len’ undeclared (first use in this function)
+/usr/include/secure/_string.h: At top level:
+/usr/include/secure/_string.h:78: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/secure/_string.h: In function ‘__inline_memset_chk’:
+/usr/include/secure/_string.h:80: error: ‘__len’ undeclared (first use in this function)
+/usr/include/secure/_string.h: At top level:
+/usr/include/secure/_string.h:114: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/secure/_string.h: In function ‘__inline_strncpy_chk’:
+/usr/include/secure/_string.h:116: error: ‘__len’ undeclared (first use in this function)
+/usr/include/secure/_string.h: At top level:
+/usr/include/secure/_string.h:137: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/secure/_string.h: In function ‘__inline_strncat_chk’:
+/usr/include/secure/_string.h:139: error: ‘__len’ undeclared (first use in this function)
+In file included from /usr/include/stdlib.h:65,
+                 from ./tommath.h:20,
+                 from bncore.c:1:
+/usr/include/sys/wait.h: At top level:
+/usr/include/sys/wait.h:90: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘pid_t’
+/usr/include/sys/wait.h:95: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘id_t’
+In file included from /usr/include/sys/signal.h:81,
+                 from /usr/include/sys/wait.h:116,
+                 from /usr/include/stdlib.h:65,
+                 from ./tommath.h:20,
+                 from bncore.c:1:
+/usr/include/machine/signal.h:36:24: error: arm/signal.h: No such file or directory
+In file included from /usr/include/sys/_structs.h:57,
+                 from /usr/include/sys/signal.h:154,
+                 from /usr/include/sys/wait.h:116,
+                 from /usr/include/stdlib.h:65,
+                 from ./tommath.h:20,
+                 from bncore.c:1:
+/usr/include/machine/_structs.h:33:26: error: arm/_structs.h: No such file or directory
+In file included from /usr/include/sys/signal.h:154,
+                 from /usr/include/sys/wait.h:116,
+                 from /usr/include/stdlib.h:65,
+                 from ./tommath.h:20,
+                 from bncore.c:1:
+/usr/include/sys/_structs.h:78: error: expected specifier-qualifier-list before ‘__darwin_size_t’
+/usr/include/sys/_structs.h:131: error: expected specifier-qualifier-list before ‘__darwin_sigset_t’
+In file included from /usr/include/sys/wait.h:116,
+                 from /usr/include/stdlib.h:65,
+                 from ./tommath.h:20,
+                 from bncore.c:1:
+/usr/include/sys/signal.h:168: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘sigset_t’
+/usr/include/sys/signal.h:178: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘uid_t’
+/usr/include/sys/signal.h:204: error: expected specifier-qualifier-list before ‘pid_t’
+/usr/include/sys/signal.h:302: error: expected specifier-qualifier-list before ‘sigset_t’
+/usr/include/sys/signal.h:311: error: expected specifier-qualifier-list before ‘sigset_t’
+In file included from /usr/include/sys/resource.h:76,
+                 from /usr/include/sys/wait.h:117,
+                 from /usr/include/stdlib.h:65,
+                 from ./tommath.h:20,
+                 from bncore.c:1:
+/usr/include/sys/_structs.h:102: error: expected specifier-qualifier-list before ‘__darwin_time_t’
+In file included from /usr/include/sys/wait.h:117,
+                 from /usr/include/stdlib.h:65,
+                 from ./tommath.h:20,
+                 from bncore.c:1:
+/usr/include/sys/resource.h:88: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘rlim_t’
+/usr/include/sys/resource.h:216: error: expected specifier-qualifier-list before ‘rlim_t’
+/usr/include/sys/resource.h:238: error: expected declaration specifiers or ‘...’ before ‘id_t’
+/usr/include/sys/resource.h:244: error: expected declaration specifiers or ‘...’ before ‘id_t’
+In file included from /usr/include/sys/wait.h:193,
+                 from /usr/include/stdlib.h:65,
+                 from ./tommath.h:20,
+                 from bncore.c:1:
+/usr/include/machine/endian.h:39:24: error: arm/endian.h: No such file or directory
+In file included from /usr/include/stdlib.h:65,
+                 from ./tommath.h:20,
+                 from bncore.c:1:
+/usr/include/sys/wait.h:214: error: duplicate member ‘w_Filler’
+/usr/include/sys/wait.h:215: error: duplicate member ‘w_Retcode’
+/usr/include/sys/wait.h:215: error: duplicate member ‘({anonymous})’
+/usr/include/sys/wait.h:216: error: duplicate member ‘w_Coredump’
+/usr/include/sys/wait.h:216: error: duplicate member ‘({anonymous})’
+/usr/include/sys/wait.h:216: error: duplicate member ‘({anonymous})’
+/usr/include/sys/wait.h:217: error: duplicate member ‘w_Termsig’
+/usr/include/sys/wait.h:217: error: duplicate member ‘({anonymous})’
+/usr/include/sys/wait.h:217: error: duplicate member ‘({anonymous})’
+/usr/include/sys/wait.h:217: error: duplicate member ‘({anonymous})’
+/usr/include/sys/wait.h:232: error: duplicate member ‘w_Filler’
+/usr/include/sys/wait.h:233: error: duplicate member ‘w_Stopsig’
+/usr/include/sys/wait.h:233: error: duplicate member ‘({anonymous})’
+/usr/include/sys/wait.h:234: error: duplicate member ‘w_Stopval’
+/usr/include/sys/wait.h:234: error: duplicate member ‘({anonymous})’
+/usr/include/sys/wait.h:234: error: duplicate member ‘({anonymous})’
+/usr/include/sys/wait.h:255: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘wait’
+/usr/include/sys/wait.h:256: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘waitpid’
+/usr/include/sys/wait.h:258: error: expected declaration specifiers or ‘...’ before ‘id_t’
+/usr/include/sys/wait.h:261: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘wait3’
+/usr/include/sys/wait.h:262: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘wait4’
+In file included from ./tommath.h:20,
+                 from bncore.c:1:
+/usr/include/stdlib.h:81: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘ct_rune_t’
+/usr/include/stdlib.h:86: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘rune_t’
+/usr/include/stdlib.h:93: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘wchar_t’
+/usr/include/stdlib.h:155: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:156: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:170: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:171: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘mbstowcs’
+/usr/include/stdlib.h:172: error: expected ‘)’ before ‘*’ token
+/usr/include/stdlib.h:173: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:173: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:174: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:174: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:177: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:195: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘wcstombs’
+/usr/include/stdlib.h:196: error: expected declaration specifiers or ‘...’ before ‘wchar_t’
+/usr/include/stdlib.h:209: error: expected declaration specifiers or ‘...’ before ‘size_t’
+In file included from /usr/include/stdlib.h:255,
+                 from ./tommath.h:20,
+                 from bncore.c:1:
+/usr/include/machine/types.h:39:23: error: arm/types.h: No such file or directory
+In file included from ./tommath.h:20,
+                 from bncore.c:1:
+/usr/include/stdlib.h:258: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘dev_t’
+/usr/include/stdlib.h:263: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘mode_t’
+/usr/include/stdlib.h:268: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘arc4random’
+/usr/include/stdlib.h:273: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:274: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:291: error: expected ‘)’ before ‘char’
+/usr/include/stdlib.h:297: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:297: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:300: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:300: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:303: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:303: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:306: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:306: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:309: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:309: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:312: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:312: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:315: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:315: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:318: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:318: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:321: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:321: error: expected declaration specifiers or ‘...’ before ‘size_t’
+/usr/include/stdlib.h:330: error: expected declaration specifiers or ‘...’ before ‘size_t’
+In file included from /usr/include/ctype.h:69,
+                 from ./tommath.h:21,
+                 from bncore.c:1:
+/usr/include/runetype.h:70: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘wint_t’
+/usr/include/runetype.h:82: error: expected specifier-qualifier-list before ‘__darwin_rune_t’
+/usr/include/runetype.h:95: error: expected specifier-qualifier-list before ‘__uint32_t’
+/usr/include/runetype.h:102: error: expected specifier-qualifier-list before ‘__darwin_rune_t’
+In file included from ./tommath.h:21,
+                 from bncore.c:1:
+/usr/include/ctype.h:147: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘___tolower’
+/usr/include/ctype.h:148: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘___toupper’
+/usr/include/ctype.h:165: error: expected ‘)’ before ‘unsigned’
+/usr/include/ctype.h:170: error: expected ‘)’ before ‘_c’
+/usr/include/ctype.h:181: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__isctype’
+/usr/include/ctype.h:205: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__toupper’
+/usr/include/ctype.h:206: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘__tolower’
+/usr/include/ctype.h:211: error: expected ‘)’ before ‘_c’
+In file included from /usr/include/limits.h:64,
+                 from /Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/../lib/gcc/arm-apple-darwin10/4.2.1/include/limits.h:10,
+                 from ./tommath.h:22,
+                 from bncore.c:1:
+/usr/include/machine/limits.h:10:24: error: arm/limits.h: No such file or directory
+make: *** [bncore.o] Error 1

@@ -67,7 +67,7 @@ void vPortISRStartFirstTask(void) {
 	((uint32_t *)pxCurrentTCB)[0] += 18 * 4;
     ulCriticalNesting = *cur_task_sp;
     ll_set_tmp_storage_val(0, ulCriticalNesting);
-    cur_task_sp++;
+    cur_task_sp++; 
 	
 	ll_set_timer(true, (1 * 1000) / configTICK_RATE_HZ);
 	ll_set_context((uint32_t)cur_task_sp, true);

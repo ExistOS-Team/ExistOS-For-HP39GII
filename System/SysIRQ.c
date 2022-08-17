@@ -30,7 +30,7 @@ volatile void IRQ_ISR(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t pa
     ll_get_context((uint32_t)irq_saved_context);
 
     volatile uint32_t *cur_task_sp = (uint32_t *)irq_saved_context[1 + 13];
-    cur_task_sp -= 21;
+    cur_task_sp -= 22;
     memcpy((uint32_t *)cur_task_sp, irq_saved_context, 17 * 4);
     cur_task_sp--;
     *cur_task_sp = ll_get_tmp_storage_val(0);
@@ -56,9 +56,10 @@ volatile void IRQ_ISR(uint32_t IRQNum, uint32_t par1, uint32_t par2, uint32_t pa
     }
 
     cur_task_sp = (uint32_t *)(((uint32_t *)pxCurrentTCB)[0]);
-	((uint32_t *)pxCurrentTCB)[0] += 21 * 4;
+	((uint32_t *)pxCurrentTCB)[0] += 22 * 4;
     ulCriticalNesting = *cur_task_sp;
     cur_task_sp++;
+    
     ll_set_tmp_storage_val(0, ulCriticalNesting);
     ll_restore_context((uint32_t)cur_task_sp, ulCriticalNesting == 0);
 

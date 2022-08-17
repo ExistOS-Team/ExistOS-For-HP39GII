@@ -43,6 +43,8 @@
 #define LL_SWI_PWR_POWEROFF            (LL_SWI_BASE + 40)
 #define LL_SWI_PWR_RESET               (LL_SWI_BASE + 41)
 #define LL_SWI_PWR_HIBERNATE           (LL_SWI_BASE + 42)
+#define LL_FAST_SWI_PWR_VOLTAGE        (LL_FAST_SWI_BASE + 43)
+#define LL_FAST_SWI_CORE_TEMP          (LL_FAST_SWI_BASE + 44)
 
 #define LL_SWI_SET_SERIALPORT          (LL_SWI_BASE + 50)
 #define LL_SWI_SERIAL_GETCH            (LL_SWI_BASE + 51)

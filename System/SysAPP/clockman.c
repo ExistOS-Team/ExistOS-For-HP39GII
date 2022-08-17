@@ -91,7 +91,7 @@ void update_btn_cb(lv_event_t *e) {
 void SystemTest() {
 
     static lv_coord_t column_dsc[] = {32, 32, 64, 64, 32, 16, 16, LV_GRID_TEMPLATE_LAST};
-    static lv_coord_t row_dsc[] = {12, 12, 12, 12, 12, 12, 20, 10, LV_GRID_TEMPLATE_LAST};
+    static lv_coord_t row_dsc[] =    {12, 12, 12, 12, 12, 12, 20, 10, LV_GRID_TEMPLATE_LAST};
 
     tv = lv_tabview_create(lv_scr_act(), LV_DIR_TOP, LV_DPI_DEF / 4);
 
