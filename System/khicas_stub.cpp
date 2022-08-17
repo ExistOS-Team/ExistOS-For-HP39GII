@@ -78,7 +78,7 @@ void dConsoleRedraw()
 void dConsolePutChar(const char ch)
 {
 
-}
+} 
 */
 
 char Setup_GetEntry(unsigned int index) {
