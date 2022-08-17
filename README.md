@@ -44,7 +44,7 @@
 ### 准备
 
 需要安装 `gcc-arm-none-eabi`：  
-- 对于 Windows 系统，请从[这里](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)下载和安装。
+- 对于 Windows 系统，请从[这里](https://developer.arm.com/downloads/-/gnu-rm)下载和安装。
   - 注意：需要将安装目录下的 `bin` 路径添加到 PATH 中
 - 对于 Linux 系统，不同的发行版可能略有差异
   - Debian/Ubuntu 等使用 apt 包管理器的发行版请安装
