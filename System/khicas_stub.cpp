@@ -250,6 +250,12 @@ int GetKey(int *key) {
             if(keyStatus & 1){
                 if(XcasExitCb)
                 {
+                    
+                    
+                    vGL_clearArea(0, 0, 255, 126);
+                    vGL_putString(0, 0, (char *)"Power OFF: ", COLOR_BLACK , COLOR_WHITE, 16);
+                    vGL_putString(0, 16, (char *)"Waiting session save...", COLOR_BLACK , COLOR_WHITE, 16);
+
                     XcasExitCb();
                     
                     

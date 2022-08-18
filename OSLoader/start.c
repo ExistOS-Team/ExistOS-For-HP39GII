@@ -47,6 +47,8 @@ TaskHandle_t pBattmon = NULL;
 extern uint32_t g_mtd_write_cnt;
 extern uint32_t g_mtd_read_cnt;
 extern uint32_t g_mtd_erase_cnt;
+extern uint32_t g_mtd_ecc_cnt;
+extern uint32_t g_mtd_ecc_fatal_cnt;
 
 uint32_t CurMount = 0;
 uint32_t g_FTL_status = 10;
@@ -63,6 +65,7 @@ extern uint32_t g_page_vram_fault_cnt;
 extern uint32_t g_page_vrom_fault_cnt;
 
 uint32_t g_core_temp, g_batt_volt;
+uint32_t g_core_cur_freq_mhz = 1;
 
 uint32_t check_frequency() {
     volatile uint32_t s0, s1;
@@ -73,21 +76,27 @@ uint32_t check_frequency() {
 }
 void printTaskList() {
     vTaskList((char *)&pcWriteBuffer);
-    printf("=============================================\r\n");
-    printf("任务名                 任务状态   优先级   剩余栈   任务序号\n");
+    printf("=================OS Loader TASK==================\r\n");
+    printf("Task Name         Task Status   Priority   Stack   ID\n");
     printf("%s\n", pcWriteBuffer);
-    printf("任务名                运行计数           CPU使用率\n");
+    printf("Task Name                Running Count           CPU %%\n");
     vTaskGetRunTimeStats((char *)&pcWriteBuffer);
     printf("%s\n", pcWriteBuffer);
-    printf("任务状态:  X-运行  R-就绪  B-阻塞  S-挂起  D-删除\n");
-    printf("内存剩余:   %d Bytes\n", (unsigned int)xPortGetFreeHeapSize());
+    printf("Status:  X-Running  R-Ready  B-Block  S-Suspend  D-Delete\n");
+    printf("Free PhyMem:   %d Bytes\n", (unsigned int)xPortGetFreeHeapSize());
     printf("VRAM PageFault:   %ld \n", g_page_vram_fault_cnt);
     printf("VROM PageFault:   %ld \n", g_page_vrom_fault_cnt);
     printf("HCLK Freq:%ld MHz\n", HCLK_Freq / 1000000);
-    printf("CPU Freq:%ld MHz\n", (HCLK_Freq / 1000000) * (*((uint32_t *)0x80040030) & 0x1F));
+    printf("CPU Freq:%ld MHz\n", g_core_cur_freq_mhz );
     printf("Flash IO_Writes:%lu\n", g_mtd_write_cnt);
     printf("Flash IO_Reads:%lu\n", g_mtd_read_cnt);
     printf("Flash IO_Erases:%lu\n", g_mtd_erase_cnt);
+    printf("Flash ECC Count:%lu\n", g_mtd_ecc_cnt);
+    printf("Flash ECC FATAL:%lu\n", g_mtd_ecc_fatal_cnt);
+    printf("Batt Charge:%d\n", HW_POWER_STS.B.CHRGSTS);
+    printf("PWD_BATTCHRG:%d\n", HW_POWER_CHARGE.B.PWD_BATTCHRG);
+
+    printf("=============================================\r\n\n");
 }
 
 void vTask1(void *pvParameters) {
@@ -95,6 +104,7 @@ void vTask1(void *pvParameters) {
     int c = 0;
     for (;;) {
         HCLK_Freq = check_frequency();
+        g_core_cur_freq_mhz = (HCLK_Freq / 1000000) * (*((uint32_t *)0x80040030) & 0x1F);
         c++;
         if (c == 10) {
             printTaskList();
@@ -117,7 +127,7 @@ static uint32_t waitAnyKey() {
     key = g_latest_key_status & 0xFFFF;
     lkey = key;
     do {
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(30));
         key = g_latest_key_status & 0xFFFF;
     } while (key == lkey);
     return key;
@@ -303,7 +313,7 @@ void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
 
         DisplayClean();
 
-        DisplayPutStr(0, 16 * 0, "System Crash!", 0, 255, 16);
+        DisplayPutStr(0, 16 * 0, "System Panic!", 0, 255, 16);
         if (res != NULL) {
             DisplayPutStr(14 * 8, 16 * 0, res, 0, 255, 16);
         }
@@ -646,11 +656,11 @@ void tud_cdc_rx_cb(uint8_t itf) {
 
 static bool eraseDataMenu = false;
 static bool transScr = false;
-
+static int contrast_adj = 0;
 void vMainThread(void *pvParameters) {
 
     // vTaskDelay(pdMS_TO_TICKS(100));
-    setCPUDivider(2);
+    setCPUDivider(CPU_DIVIDE_NORMAL);
     setHCLKDivider(1);
 
     // portLRADCEnable(1, 7);
@@ -671,11 +681,28 @@ void vMainThread(void *pvParameters) {
     printf("VDD5V: %d mV\n", (int)(portLRADCConvCh(5, 5) * 0.45 * 4));
     printf("Core Temp: %d ℃\n", (int)((portLRADCConvCh(4, 5) - portLRADCConvCh(3, 5)) * 1.012 / 4 - 273.15));
 */
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    HW_POWER_5VCTRL.B.ENABLE_DCDC = 1;
+
+    HW_POWER_CHARGE.B.CHRG_STS_OFF = 0;
+
+    HW_POWER_CHARGE.B.BATTCHRG_I  = 1 << 5;
+    HW_POWER_CHARGE.B.STOP_ILIMIT = 0;
+
+    HW_POWER_CHARGE.B.PWD_BATTCHRG = 1;
+    HW_POWER_VDDDCTRL.B.DISABLE_FET = 1;
     for (;;) {
 
         vTaskDelay(pdMS_TO_TICKS(100));
 
-
+        if(contrast_adj)
+        {
+            extern uint32_t g_lcd_contrast;
+            g_lcd_contrast += contrast_adj;
+            portDispSetContrast(g_lcd_contrast);
+        }
 
         if (vm_needto_reset) {
             vm_needto_reset = false;
@@ -768,28 +795,47 @@ void vMainThread(void *pvParameters) {
     }
 }
 
-extern uint32_t g_lcd_contrast;
-int capt_ON_Key(int ck, int cp) {
 
-    if ((ck == KEY_PLUS) && (cp)) {
-        g_lcd_contrast++;
-        portDispSetContrast(g_lcd_contrast);
+int capt_ON_Key(int ck, int cp) 
+{
+
+    if(ck == KEY_F3 && cp)
+    {
+        portBoardPowerOff();
+
+    }
+
+    if ((ck == KEY_PLUS)) {
+        if(cp)
+        {
+            contrast_adj = 1;
+        }else{
+            contrast_adj = 0;
+        }
+        
         return 1;
     }
-    if ((ck == KEY_SUBTRACTION) && (cp)) {
-        g_lcd_contrast--;
-        portDispSetContrast(g_lcd_contrast);
+    if ((ck == KEY_SUBTRACTION)) {
+        if(cp)
+        {
+            contrast_adj = -1;
+        }else{
+            contrast_adj = 0;
+        }
         return 1;
     }
 
     if ((ck == KEY_F6) && cp) { // [ON] + [F6]
-        FTL_Sync();
+        //DisplayClean();
+
+        //FTL_Sync();
         portBoardReset();
-        return 0;
+        return 1;
     }
 
     if ((ck == KEY_F5) && cp) { // [ON] + [F5]
         eraseDataMenu = true;
+        return 1;
     }
 
     if((ck == KEY_F2) && cp)
@@ -802,13 +848,14 @@ int capt_ON_Key(int ck, int cp) {
             {
                 transScr = true;
             }
-            return 0;
         }
+
+        return 1;
 
     }
 
 
-    return -1;
+    return 0;
 }
 
 void get_cpu_info() {
@@ -865,7 +912,7 @@ void vBatteryMon(void *__n) {
             printf("VDD5V: %ld mV\n", vdd5v_voltage);
             printf("VBG: %d mV\n", (int)(portLRADCConvCh(2, 5) * 0.45));
             printf("Core Temp: %d ℃\n", coreTemp);
-            printf("Power Speed:%02lx\n", portGetPWRSpeed());
+            printf("Power Speed:%lu\n", portGetPWRSpeed());
 
 
         }
@@ -938,6 +985,30 @@ void TaskUSBLog(void *_) {
 
         vTaskDelay(pdMS_TO_TICKS(100));
     }
+}
+
+#include "regsclkctrl.h"
+void waitIRQ(int r)
+{
+    
+    //uint32_t uclkctrl = HW_CLKCTRL_CPU_RD();
+    //uclkctrl |= BM_CLKCTRL_CPU_INTERRUPT_WAIT;
+    //HW_CLKCTRL_CPU_WR(uclkctrl);
+
+    HW_CLKCTRL_CPU.B.INTERRUPT_WAIT = 1;
+    
+    asm volatile("mov r0, #0");             // Rd SBZ (should be 0)
+    asm volatile("mcr p15,0,r0,c7,c0,4");   // Drain write buffers, idle CPU clock & processor, and stop processor at this instruction
+    asm volatile("nop");
+
+}
+
+void vApplicationIdleHook( void )
+{
+    setCPUDivider(CPU_DIVIDE_IDLE);
+    waitIRQ(0);
+    setCPUDivider(CPU_DIVIDE_NORMAL);
+
 }
 
 extern int bootTimes;

@@ -31,7 +31,7 @@
 #define VMRAM_USE_FTL   (1)
 
 #if (VMRAM_USE_FTL == 1)
-    #define NUM_CACHEPAGE             ( 76 )
+    #define NUM_CACHEPAGE             ( 75 )
 #else
     #define NUM_CACHEPAGE             ( 32 )
     #define VM_RAM_SIZE_NONE_FTL      ( 168 * 1024 )
@@ -62,7 +62,8 @@
 
 #define SIZE_SWAPAREA_MB    (VM_RAM_SIZE / 1048576)
 
-
+#define CPU_DIVIDE_NORMAL       2
+#define CPU_DIVIDE_IDLE         10
 
 #define FLASH_LOADER_BLOCK      22
 #define FLASH_CONFIG_BLOCK      23

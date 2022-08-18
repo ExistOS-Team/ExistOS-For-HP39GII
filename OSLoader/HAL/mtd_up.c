@@ -28,6 +28,8 @@ static volatile bool mtd_opa_done = false;
 uint32_t g_mtd_write_cnt = 0;
 uint32_t g_mtd_read_cnt = 0;
 uint32_t g_mtd_erase_cnt = 0;
+uint32_t g_mtd_ecc_cnt = 0;
+uint32_t g_mtd_ecc_fatal_cnt = 0;
 
 uint32_t last_read_page = 0xFFFFFFFF;
 
@@ -67,7 +69,8 @@ void MTD_Task()
         
         if(xQueueReceive(MTD_Operates_Queue, &curOpa, portMAX_DELAY) == pdTRUE)
         {
-            setCPUDivider(12);
+            setCPUDivider(CPU_DIVIDE_IDLE);
+
 
             retry_cnt = 5;
             retry:
@@ -200,10 +203,12 @@ void MTD_Task()
                     //*curOpa.StatusBuf = 0;
                 }
 
-                if((ECCResult > 0) && (ECCResult < 0x0F0F0F0F))
+                if((ECCResult > 1) && (ECCResult < 0x0F0F0F0F)){
                 //if((ECCResult != 0))
-                    printf("READ ECC:%08lX\n",ECCResult);
+                    //printf("ECC Err found:%08lX, PhySector:%ld\n",ECCResult, curOpa.page);
+                    g_mtd_ecc_cnt++;
                 
+                }
                 last_read_page = curOpa.page;
 
                 break;
@@ -228,6 +233,7 @@ void MTD_Task()
                         (((ECCResult >> 16) & 0xF) == 0xE) || 
                         (((ECCResult >> 24) & 0xF) == 0xE) 
                     ){
+                        g_mtd_ecc_fatal_cnt++;
                         MTD_WARN("BAD BLOCK:%ld\n", curOpa.page);
                         //*curOpa.StatusBuf =  -1;
                         xTaskNotify(curOpa.task, -1, eSetValueWithOverwrite);
@@ -246,7 +252,8 @@ void MTD_Task()
             }
 
             //xEventGroupSetBits(MTDLockEventGroup , (1 << curOpa.BLock));
-            setCPUDivider(2);
+            setCPUDivider(CPU_DIVIDE_NORMAL);
+;
         }
 
     }

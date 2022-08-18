@@ -573,6 +573,11 @@ void LLAPI_Task() {
                 FTL_Sync();
             }break;
 
+            case LL_SWI_CHARGE_ENABLE: 
+            {
+                portChargeEnable(currentCall.para0);
+            }break;
+
             case LL_SWI_PWR_POWEROFF:
             {
                 

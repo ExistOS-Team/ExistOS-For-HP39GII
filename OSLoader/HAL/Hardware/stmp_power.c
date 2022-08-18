@@ -3,8 +3,24 @@
 #include "regslradc.h"
 #include "interrupt_up.h"
 #include "hw_irq.h"
+#include "regsrtc.h"
 
 #include "../debug.h"
+
+bool g_chargeEnable = false;
+
+void portChargeEnable(bool enable)
+{
+    g_chargeEnable = enable;
+    if(g_chargeEnable)
+    {
+        HW_POWER_CHARGE.B.PWD_BATTCHRG = 0;
+        HW_POWER_VDDDCTRL.B.DISABLE_FET = 0;
+    }else{
+        HW_POWER_CHARGE.B.PWD_BATTCHRG = 1;
+        HW_POWER_VDDDCTRL.B.DISABLE_FET = 1;
+    }
+}
 
 void portPowerIRQ(uint32_t nirq)
 {
@@ -45,6 +61,17 @@ void portPowerIRQ(uint32_t nirq)
 }
 
 
+void portBoardPowerOff()
+{
+
+    BF_SET(RTC_PERSISTENT0, DISABLE_PSWITCH);
+    //BF_CLR(RTC_PERSISTENT0, DISABLE_PSWITCH);
+    BF_WR(POWER_RESET, UNLOCK, 0x3E77);
+    BF_WR(POWER_RESET, PWD_OFF, 1);
+    BF_WR(POWER_RESET, PWD, 1);
+
+
+}
 
 
 void portPowerInit()
@@ -53,7 +80,7 @@ void portPowerInit()
     INFO("PWR Init.\n");
 
     BF_CLR(POWER_CTRL, CLKGATE);
-
+/*
     BF_SET(POWER_DEBUG, VBUSVALIDPIOLOCK);
     BF_SET(POWER_DEBUG, AVALIDPIOLOCK);
     BF_SET(POWER_DEBUG, BVALIDPIOLOCK);
@@ -61,8 +88,8 @@ void portPowerInit()
     BF_SET(POWER_STS, BVALID);
     BF_SET(POWER_STS, AVALID);
     BF_SET(POWER_STS, VBUSVALID);
-
-    goto fin;
+*/
+    //
 
     portEnableIRQ(HW_IRQ_VDD5V, true);
     portEnableIRQ(HW_IRQ_VDD18_BRNOUT, true);
@@ -71,12 +98,18 @@ void portPowerInit()
     portEnableIRQ(HW_IRQ_BATT_BRNOUT, true);
     portEnableIRQ(63, true);
 
-    double DCDC_VDDD =  1.6L;
-    double DCDC_VDDA = 2L;
-    double DCDC_VDDIO = 3.6L;
 
 
 
+    double DCDC_VDDD =  1.2L;    //360MHz  1.6
+    double DCDC_VDDA = 1.75L;    //360MHz  2.0
+    double DCDC_VDDIO = 3.1L; //360MHz  3.6
+
+/*
+    double DCDC_VDDD =  1.4L;    //360MHz  1.6
+    double DCDC_VDDA = 1.85L;    //360MHz  2.0
+    double DCDC_VDDIO = 3.3L; //360MHz  3.6
+*/
     HW_POWER_CTRL.B.ENIRQ_DC_OK = 1;
     HW_POWER_CTRL.B.ENIRQ_LINREG_OK = 1;
     HW_POWER_CTRL.B.ENIRQ_VBUS_VALID = 1;
@@ -90,6 +123,7 @@ void portPowerInit()
     
     portGetBatterVoltage_mv();
 
+    //goto fin;
 /*
     BF_SET(POWER_DEBUG, VBUSVALIDPIOLOCK);
     BF_SET(POWER_DEBUG, AVALIDPIOLOCK);
@@ -134,39 +168,44 @@ void portPowerInit()
 
     
     
-    HW_POWER_SPEED.B.CTRL = 3;
+    //HW_POWER_SPEED.B.CTRL = 3;
 
 
     HW_POWER_DCFUNCV.B.VDDD =  (uint16_t)((DCDC_VDDD * DCDC_VDDA)/((DCDC_VDDA - DCDC_VDDD)*6.25e-3));
     HW_POWER_DCFUNCV.B.VDDIO = (uint16_t)((DCDC_VDDIO * DCDC_VDDA)/((DCDC_VDDIO - DCDC_VDDD)*6.25e-3));
     INFO("VDDD VAL:0x%03x, VDDIO VAL:0x%03x\n",HW_POWER_DCFUNCV.B.VDDD, HW_POWER_DCFUNCV.B.VDDIO);
 
+    HW_POWER_5VCTRL.B.EN_BATT_PULLDN = 1;
 
     HW_POWER_5VCTRL.B.DCDC_XFER = 1;
     HW_POWER_5VCTRL.B.ENABLE_ILIMIT = 0; 
     //HW_POWER_LOOPCTRL.B.EN_RCSCALE = 2; 
-    HW_POWER_5VCTRL.B.OTG_PWRUP_CMPS = 1;
+
+    HW_POWER_5VCTRL.B.OTG_PWRUP_CMPS = 1; //VBUSVALID comparators are enabled
     HW_POWER_5VCTRL.B.VBUSVALID_5VDETECT = 1;
     HW_POWER_5VCTRL.B.ILIMIT_EQ_ZERO = 0;   //short
-    HW_POWER_5VCTRL.B.PWDN_5VBRNOUT = 1;
-    HW_POWER_5VCTRL.B.ENABLE_DCDC = 1;
+    
+    HW_POWER_5VCTRL.B.PWDN_5VBRNOUT = 0;
+    
+    HW_POWER_5VCTRL.B.ENABLE_DCDC = 0;
 
     portDelayus(100);
 
     HW_POWER_BATTMONITOR.B.BRWNOUT_LVL = 0; // 0.79 V
     HW_POWER_BATTMONITOR.B.BRWNOUT_PWD = 1;
     HW_POWER_BATTMONITOR.B.EN_BATADJ = 1;
-    HW_POWER_BATTMONITOR.B.PWDN_BATTBRNOUT = 1;
+    HW_POWER_BATTMONITOR.B.PWDN_BATTBRNOUT = 0;
 
-/*
+
     HW_POWER_CHARGE.B.ENABLE_FAULT_DETECT = 1;
-    HW_POWER_CHARGE.B.BATTCHRG_I = 1 << 5;
+    //HW_POWER_CHARGE.B.BATTCHRG_I  = 1 << 5;
     //HW_POWER_CHARGE.B.STOP_ILIMIT = 1 << 3;
     HW_POWER_CHARGE.B.USE_EXTERN_R = 1;
 
-    HW_POWER_CHARGE.B.CHRG_STS_OFF = 0;
-    HW_POWER_CHARGE.B.PWD_BATTCHRG = 0;
-*/
+    //HW_POWER_CHARGE.B.CHRG_STS_OFF = 1;
+    HW_POWER_CHARGE.B.PWD_BATTCHRG = 1;
+
+
     portDelayus(100);
 
 /*
@@ -183,14 +222,14 @@ void portPowerInit()
     HW_POWER_VDDACTRL.B.ENABLE_LINREG = 1;
         
 
-    HW_POWER_VDDDCTRL.B.DISABLE_FET = 0;
+    HW_POWER_VDDDCTRL.B.DISABLE_FET = 1;
     HW_POWER_VDDDCTRL.B.LINREG_OFFSET = 0; 
     HW_POWER_VDDDCTRL.B.ALKALINE_CHARGE = 0;
 
     
 
 
-fin:
+//fin:
    
    
     //HW_POWER_5VCTRL.B.EN_BATT_PULLDN = 1;

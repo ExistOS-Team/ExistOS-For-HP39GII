@@ -24,35 +24,93 @@ uint8_t key_getChanged()
 }
 */
 
-int takeOn_(int key) {
-    if (key == KEY_F1) {
-        printf("F1\n");
-        return 0;
-    }
+QueueHandle_t keyQueue;
 
-    if (key == KEY_PLUS) {
-        printf("+\n");
-        return 1;
-    }
+uint32_t ck = 0, cp = 0;
+uint32_t key_notify = 0;
+int capt_ON_Key(int ck, int cp);
+void key_task_capt()
+{
+    int state = 0;
+    uint32_t kval;
+    int capt_ck = 0;
 
-    return -1;
+    for(;;)
+    {
+        xQueueReceive(keyQueue, &kval, portMAX_DELAY);
+        ck = kval & 0xFFFF;
+        cp = (kval >> 16) & 1;
+
+        switch (state)
+        {
+        case 0:
+            if(ck == KEY_ON && cp)
+            {
+                state = 1;
+            }else{
+                g_latest_key_status = kval;
+            }
+            break;
+        
+        case 1:
+            if((ck == KEY_ON) && !cp)
+            {
+                state = 0;
+                capt_ck = 0;
+                g_latest_key_status = (1 << 16) | KEY_ON;
+            }else if(ck != KEY_ON && cp){
+                state = 2;
+                capt_ck = ck;
+                capt_ON_Key(capt_ck, 1);
+            }
+            break;
+        case 2:
+            if(cp == 0)
+            {
+                capt_ON_Key(capt_ck, 0);
+                capt_ck = 0;
+                state = 0;
+                
+            }
+            break;
+        default:
+            break;
+        }
+
+/*
+        if(ck == KEY_ON && cp)
+        {
+            vTaskDelay(pdMS_TO_TICKS(100));
+            if(ck == KEY_F5 && cp){
+                printf("KF5\n");
+            }
+        }
+*/
+
+        //vTaskDelay(pdMS_TO_TICKS(100));
+    }
 }
 
-static uint8_t cnt = 0;
 
 void key_task() {
     Keys_t k;
     uint8_t press = 0;
-    uint32_t key_notify = 0;
-
-    uint32_t ck = 0, cp = 0;
+    
+/*
     uint32_t lcp = 0;
+    uint32_t capt_ck = 0;*/
 
-    int capt_ON_Key(int ck, int cp);
+    
+
+    keyQueue = xQueueCreate(32, sizeof(int));
+
+    xTaskCreate(key_task_capt, "keyCapt", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, NULL);
 
     for (;;) {
 
         {
+
+            /*
             if ((ck == KEY_ON)
                 && (lcp == 0) && (cp == 1)) {
                 cnt = 10;
@@ -81,9 +139,9 @@ void key_task() {
                 (void)cnt;
             }else{
                 g_latest_key_status = key_notify;
-            }
+            }*/
 
-            lcp = cp;
+            //lcp = cp;
         }
 
         vTaskDelay(pdMS_TO_TICKS(20));
@@ -95,8 +153,10 @@ void key_task() {
             press = portIsKeyDown(k);
             key_notify = (press << 16) | (k & 0xFFFF);
 
-            ck = k;
-            cp = press;
+            //ck = k;
+            //cp = press;
+
+            xQueueSend(keyQueue, &key_notify, portMAX_DELAY);
             /*
             if(xQueueReceive(KeyCheckList, &task, 0) == pdTRUE)
             {

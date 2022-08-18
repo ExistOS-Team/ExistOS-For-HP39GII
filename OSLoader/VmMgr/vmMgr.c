@@ -371,6 +371,7 @@ void vmMgr_init() {
         FTL_TrimSector(i);
     }
     
+    
     mapList_AddPartitionMap(MAP_PART_RAWFLASH, PERM_R, VM_ROM_BASE, FLASH_SYSTEM_BLOCK * 64, VM_ROM_SIZE);
 
     #if (VMRAM_USE_FTL == 1)

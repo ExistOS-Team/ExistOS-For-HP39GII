@@ -94,32 +94,22 @@ void vTask2(void *par1) {
 }
 
 
+void vApplicationIdleHook( void )
+{
+    ll_system_idle();
+
+}
+
 
 void khicasBtn(lv_event_t *e);
 static bool suspend = false;
-
-void main_thread() {
-
-
-    //printf("R13:%08x\n", get_stack());
-
-    SystemUIInit();
-    SystemFSInit();
-
-    
-    
-    // lv_demo_benchmark();
-    //  lv_demo_stress();
-    //  lv_demo_music();
-    //  lv_demo_widgets();
+static lv_obj_t *screen;
+static lv_obj_t *win;
+void draw_main_win()
+{
 
 
-    //SystemUIMsgBox("测试?", "Unicode测试", SYSTEMUI_MSGBOX_BUTTON_CANCAL);
-    //SystemUIMsgBox("测试?", "Unicode测试", SYSTEMUI_MSGBOX_BUTTON_CANCAL);
-    
-    lv_obj_t *screen;
 
-    lv_obj_t *win;
 
     screen = lv_obj_create(lv_scr_act());
 
@@ -231,14 +221,97 @@ void main_thread() {
       
     //mpy_main();
 
-    lv_obj_t *title, *tv, *t1, *t2, *imgbtn;
+
+}
+
+static lv_group_t *g;
+static lv_obj_t *charge_chb;
+
+static void charge_msgbox_event_cb(lv_event_t *e) 
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *msgbox = lv_event_get_current_target(e);
     
+
+    if (code == LV_EVENT_VALUE_CHANGED) {
+        uint16_t select_btn = lv_msgbox_get_active_btn(msgbox); // 0 or 1
+
+        if(select_btn == 0){
+            ll_charge_enable(true);
+
+        }else{
+            ll_charge_enable(false);
+            lv_obj_clear_state(charge_chb, LV_STATE_CHECKED);
+        }
+
+        
+        lv_msgbox_close(msgbox);
+        lv_group_focus_freeze(g, false);
+    }
+
+}
+
+static void charge_chb_handler(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
+
+    static char *msgbox_button[] = {"OK", "Cancel", ""};
+
+    if(code == LV_EVENT_VALUE_CHANGED) {
+        const char * txt = lv_checkbox_get_text(obj);
+
+        if(lv_obj_get_state(obj) & LV_STATE_CHECKED)
+        {
+
+            lv_obj_t *mbox = lv_msgbox_create( lv_scr_act(), "!!! Warning !!!", "[Experimental Features] PLEASE make sure use \n1.2 V Rechargeable Battery, i.e. NiCd, NiMH, etc.", (const char **)msgbox_button, false);
+
+            lv_obj_add_event_cb(mbox, charge_msgbox_event_cb, LV_EVENT_ALL, NULL);
+            lv_obj_align(mbox, LV_ALIGN_CENTER, 0, 0);
+            lv_obj_center(mbox);
+            
+            lv_group_focus_next(g);
+            lv_group_focus_freeze(g, true);
+        }else{
+            ll_charge_enable(false);
+        }
+
+        //const char * state = lv_obj_get_state(obj) & LV_STATE_CHECKED ? "Checked" : "Unchecked";
+        //LV_LOG_USER("%s: %s", txt, state);
+    }
+}
+
+void main_thread() {
+
+
+    //printf("R13:%08x\n", get_stack());
+
+    SystemUIInit();
+    SystemFSInit();
+
+    //vTaskDelay(pdMS_TO_TICKS(1000));
+    
+    
+    // lv_demo_benchmark();
+    //  lv_demo_stress();
+    //  lv_demo_music();
+    //  lv_demo_widgets();
+
+
+    //SystemUIMsgBox("测试?", "Unicode测试", SYSTEMUI_MSGBOX_BUTTON_CANCAL);
+    //SystemUIMsgBox("测试?", "Unicode测试", SYSTEMUI_MSGBOX_BUTTON_CANCAL);
+
+    draw_main_win();
+
+
+    lv_obj_t *title, *tv, *t1, *t2, *imgbtn;
     lv_obj_t * cont = lv_scr_act();
 
     //title = lv_label_create(cont);
     //lv_label_set_text(title, "Exist OS");
 
     static lv_style_t style;
+    {
     lv_style_init(&style);
 
     tv = lv_tabview_create(cont, LV_DIR_TOP, LV_DPI_DEF / 4);
@@ -248,8 +321,6 @@ void main_thread() {
 
     t1 = lv_tabview_add_tab(tv, "Application");
     t2 = lv_tabview_add_tab(tv, "Status");
-
-
 
     LV_IMG_DECLARE(xcaslogo_s);
     imgbtn = lv_imgbtn_create(t1);
@@ -340,6 +411,8 @@ void main_thread() {
 	lv_obj_set_style_pad_all(btn1, 0, LV_STATE_DEFAULT);
 	lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 
+    }
+
     //lv_obj_clear_flag(btn1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
     
 
@@ -349,31 +422,28 @@ void main_thread() {
     //lv_obj_set_scrollbar_mode(t2, LV_SCROLLBAR_MODE_ON);
 
 
-    lv_obj_set_flex_flow(t2, LV_FLEX_FLOW_COLUMN_WRAP);
+    lv_obj_set_flex_flow(t2, LV_FLEX_FLOW_COLUMN);
     //
 
-    lv_obj_t *lab_cpu_freq;
-    lv_obj_t *lab_cpu_temp;
-    lv_obj_t *lab_free_mem;
-    lv_obj_t *lab_voltage;
-    lv_obj_t *lab_runtime;
+    
+    g = lv_group_get_default();
 
-    lab_cpu_freq = lv_label_create(t2); lv_obj_set_flex_grow(lab_cpu_freq, 0);
-    lab_cpu_temp = lv_label_create(t2); lv_obj_set_flex_grow(lab_cpu_temp, 0);
-    lab_free_mem = lv_label_create(t2); lv_obj_set_flex_grow(lab_free_mem, 0);
-    lab_voltage = lv_label_create(t2);  lv_obj_set_flex_grow(lab_voltage,  0);
-    lab_runtime = lv_label_create(t2);  lv_obj_set_flex_grow(lab_runtime,  0);
+    #define DEF_INFO_LABEL(label_name) lv_obj_t* label_name; label_name = lv_label_create(t2); \
+    lv_obj_set_flex_grow(label_name, 0); \
+    lv_group_add_obj(g, label_name); \
+    lv_obj_add_flag(label_name, LV_OBJ_FLAG_SCROLL_ON_FOCUS); 
+
+    #define SET_LABEL_TEXT(label, ...) lv_label_set_text_fmt(label, __VA_ARGS__)
 
 
+    DEF_INFO_LABEL(info_line1);
+    DEF_INFO_LABEL(info_line2);
+    DEF_INFO_LABEL(info_line3);
 
-    //lv_obj_add_style(imgbtn, )
-
-/*
-    SystemUISuspend();
-    void testcpp();
-    testcpp(); 
-    */
-
+    charge_chb = lv_checkbox_create(t2);
+    lv_checkbox_set_text(charge_chb, "Enable Charge");
+    lv_obj_set_flex_grow(charge_chb, 0);
+    lv_obj_add_event_cb(charge_chb, charge_chb_handler, LV_EVENT_ALL, NULL);
 
     //lv_demo_keypad_encoder(); 
     int cur_cpu_div = 1;
@@ -386,17 +456,27 @@ void main_thread() {
         runTime ++;
 
         if(!suspend){
+
+            
+
             uint32_t tmp[3];
             ll_get_clkctrl_div(tmp);
             cur_cpu_div = tmp[0];
             cur_cpu_frac = tmp[1];
             cur_hclk_div = tmp[2];
 
-            lv_label_set_text_fmt(lab_cpu_freq, "CPU:%d MHz", 480 * 18 / cur_cpu_div / cur_cpu_frac);
+
+            SET_LABEL_TEXT(info_line1, "CPU Freq:%d / %d MHz,  Temp:%d °C", ll_get_cur_freq() , 480 * 18 / cur_cpu_div / cur_cpu_frac, ll_get_core_temp() );
+            SET_LABEL_TEXT(info_line2, "Mem: %d / %d KB,  Ticks:%d s", xPortGetFreeHeapSize() / 1024, 8192, runTime );
+            SET_LABEL_TEXT(info_line3, "Batt: %d mv,  Charging: %s", ll_get_bat_voltage(), ll_get_charge_status() ? "ON" : "OFF" );
+
+
+/*
+            SET_LABEL_TEXT(lab_cpu_freq, "CPU Freq:%d/%d MHz", ll_get_cur_freq() , 480 * 18 / cur_cpu_div / cur_cpu_frac);
             lv_label_set_text_fmt(lab_runtime, "RunTime:%d s", runTime);
             lv_label_set_text_fmt(lab_free_mem, "Free:%d KB", xPortGetFreeHeapSize() / 1024);
             lv_label_set_text_fmt(lab_voltage, "Batt:%d mV", ll_get_bat_voltage());
-            lv_label_set_text_fmt(lab_cpu_temp, "Core: %d °C" , ll_get_core_temp());
+            lv_label_set_text_fmt(lab_cpu_temp, "Core: %d °C" , ll_get_core_temp());*/
         }
 
         vTaskDelay(pdMS_TO_TICKS(1000));
@@ -405,6 +485,15 @@ void main_thread() {
 
 void khicasTask(void *arg)
 {
+    lv_obj_t *win = lv_win_create(lv_scr_act(), 0);
+    lv_obj_t *cont = lv_win_get_content(win);
+
+    lv_obj_t *text = lv_label_create(cont);
+
+    lv_label_set_text(text, "Loading...");
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+
     SystemUISuspend();
     void testcpp();
     testcpp(); 

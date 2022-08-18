@@ -72,10 +72,10 @@ void printRegs() {
 }
 
 uint32_t vm_temp_storage[16];
-
+void waitIRQ(int r);
 extern uint32_t g_latest_key_status;
-extern uint32_t g_core_temp, g_batt_volt;
-extern bool vm_in_exception;
+extern uint32_t g_core_temp, g_batt_volt, g_core_cur_freq_mhz;
+extern bool vm_in_exception, g_chargeEnable;
 void volatile arm_vector_swi() __attribute__((naked));
 void volatile arm_vector_swi() {
     __asm volatile("ADD   LR, LR, #4");
@@ -123,6 +123,20 @@ void volatile arm_vector_swi() {
             pRegFram[0 + 2] = g_core_temp;
             break;
             
+        case LL_FAST_SWI_SYSTEM_IDLE:
+            setCPUDivider(CPU_DIVIDE_IDLE);
+            waitIRQ(0);
+            setCPUDivider(CPU_DIVIDE_NORMAL);
+            break;
+
+        case LL_FAST_SWI_CORE_CUR_FREQ:
+            pRegFram[0 + 2] = g_core_cur_freq_mhz;
+            break;
+
+        case LL_FAST_SWI_GET_CHARGE_STATUS:
+            pRegFram[0 + 2] = g_chargeEnable;
+            break;
+
         default:
             break;
         }

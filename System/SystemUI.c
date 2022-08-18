@@ -268,7 +268,15 @@ static void keypad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data) {
             SHIFT_ALPHA_SELECT(data->key, '+', KEY_PLUS | 0xE100, KEY_PLUS | 0xE200, ' ', ' ');
             break;
         case KEY_ON:
-            SHIFT_ALPHA_SELECT(data->key, KEY_ON | 0xE000, KEY_ON | 0xE100, KEY_ON | 0xE200, KEY_ON | 0xE300, KEY_ON | 0xE400);
+        {
+            if(g_ShiftStatus == 1)
+            {
+                ll_power_off();
+            }else{
+                SHIFT_ALPHA_SELECT(data->key, KEY_ON | 0xE000, KEY_ON | 0xE100, KEY_ON | 0xE200, KEY_ON | 0xE300, KEY_ON | 0xE400);
+            }
+        }
+            
             break;
         case KEY_0:
             SHIFT_ALPHA_SELECT(data->key, '0', KEY_0 | 0xE100, KEY_0 | 0xE200, '"', '"');
@@ -291,16 +299,16 @@ static void keypad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data) {
 
 void lvgl_tick() {
     for (;;) {
-        vTaskDelay(pdMS_TO_TICKS(20));
-        lv_tick_inc(20);
+        //lv_tick_inc(50);
+        vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
 
 void lvgl_svc() {
 
     for (;;) {
-        vTaskDelay(pdMS_TO_TICKS(20));
         lv_timer_handler();
+        vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
 
@@ -323,8 +331,10 @@ void SystemUIInit() {
     indev_keypad = lv_indev_drv_register(&indev_drv);
 
     xTaskCreate(lvgl_svc, "lvgl svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, &lvgl_svc_task);
-    xTaskCreate(lvgl_tick, "lvgl tick", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, &lvgl_tick_task);
+    //xTaskCreate(lvgl_tick, "lvgl tick", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, &lvgl_tick_task);
 
+    vTaskDelay(pdMS_TO_TICKS(100));
+    
     group = lv_group_create();
     lv_group_set_default(group);
 
@@ -381,7 +391,7 @@ static void systemui_msgbox_event_cb(lv_event_t *e) {
     }
 }
 
-uint32_t SystemUIMsgBox(char *msg, char *title, uint32_t button) {
+uint32_t SystemUIMsgBox(lv_obj_t *parent,char *msg, char *title, uint32_t button) {
     char *btns[sizeof(msgbox_button) / sizeof(void *)];
     volatile uint32_t retval = 0;
     uint32_t ind = 0;
@@ -393,7 +403,7 @@ uint32_t SystemUIMsgBox(char *msg, char *title, uint32_t button) {
 
     btns[ind] = "";
 
-    lv_obj_t *mbox = lv_msgbox_create(NULL, title, msg, (const char **)btns, false);
+    lv_obj_t *mbox = lv_msgbox_create( parent, title, msg, (const char **)btns, false);
     lv_obj_add_event_cb(mbox, systemui_msgbox_event_cb, LV_EVENT_ALL, (uint32_t *)&retval);
     lv_obj_align(mbox, LV_ALIGN_CENTER, 0, 0);
     lv_obj_center(mbox);
@@ -408,10 +418,10 @@ uint32_t SystemUIMsgBox(char *msg, char *title, uint32_t button) {
 
 void SystemUISuspend() {
     vTaskSuspend(lvgl_svc_task);
-    vTaskSuspend(lvgl_tick_task);
+    //vTaskSuspend(lvgl_tick_task);
 }
 
 void SystemUIResume() {
     vTaskResume(lvgl_svc_task);
-    vTaskResume(lvgl_tick_task);
+    //vTaskResume(lvgl_tick_task);
 }

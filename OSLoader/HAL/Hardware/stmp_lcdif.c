@@ -600,7 +600,8 @@ void portDispDeviceInit()
     LCDIF_EnableDMAChannel(true);
     LCDIF_ResetDMAChannel();
     LCDIF_SetTiming();
-
+    
+    
 
     portEnableIRQ(HW_IRQ_LCDIF_DMA, true);
     portEnableIRQ(HW_IRQ_LCDIF_ERROR, true);
@@ -619,7 +620,7 @@ void portDispDeviceInit()
     BF_CS1(LCDIF_CTRL1, FIRST_READ_DUMMY, 1);
 
     BF_CLR(LCDIF_CTRL1, RESET);
-    portDelayus(20000);
+    portDelayus(120000);
     BF_SET(LCDIF_CTRL1, RESET);
 
     opaFinish = true;

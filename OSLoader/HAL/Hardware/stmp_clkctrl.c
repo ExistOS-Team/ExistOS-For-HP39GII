@@ -81,7 +81,7 @@ void portCLKCtrlInit(void) {
     BF_CLR(CLKCTRL_FRAC, CLKGATECPU);
     
 
-    setCPUDivider(4);
+    setCPUDivider(5);
     setHCLKDivider(4);
     
     setCPU_HFreqDomain(true);
