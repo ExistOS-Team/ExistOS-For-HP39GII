@@ -45,6 +45,7 @@
 #define LL_SWI_PWR_HIBERNATE           (LL_SWI_BASE + 42)
 #define LL_FAST_SWI_PWR_VOLTAGE        (LL_FAST_SWI_BASE + 43)
 #define LL_FAST_SWI_CORE_TEMP          (LL_FAST_SWI_BASE + 44)
+#define LL_SWI_PWR_SPEED               (LL_SWI_BASE + 45)
 
 #define LL_SWI_SET_SERIALPORT          (LL_SWI_BASE + 50)
 #define LL_SWI_SERIAL_GETCH            (LL_SWI_BASE + 51)
@@ -67,7 +68,8 @@
 
 #define LL_FAST_SWI_GET_CHARGE_STATUS     (LL_FAST_SWI_BASE + 82)
 #define LL_SWI_CHARGE_ENABLE              (LL_SWI_BASE + 83)
-
+#define LL_SWI_SLOW_DOWN_ENABLE              (LL_SWI_BASE + 84)
+#define LL_SWI_SLOW_DOWN_MINFRAC              (LL_SWI_BASE + 85)
 
 #define LL_IRQ_SERIAL                  (0)
 #define LL_IRQ_KEYBOARD                (1)

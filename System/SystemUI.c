@@ -81,9 +81,12 @@ static lv_group_t *group;
 
 static void disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p) {
     // printf("vaddr:%08x\n", color_p);
+
     ll_disp_put_area((uint8_t *)color_p, area->x1, area->y1, area->x2, area->y2);
     ll_disp_set_indicator(indicator, -1);
+    
     lv_disp_flush_ready(disp_drv);
+    
 }
 
 static void keypad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data) {
@@ -308,7 +311,7 @@ void lvgl_svc() {
 
     for (;;) {
         lv_timer_handler();
-        vTaskDelay(pdMS_TO_TICKS(50));
+        vTaskDelay(pdMS_TO_TICKS(LV_DISP_DEF_REFR_PERIOD));
     }
 }
 

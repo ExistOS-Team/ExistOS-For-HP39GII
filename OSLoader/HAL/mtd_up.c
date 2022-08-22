@@ -69,7 +69,7 @@ void MTD_Task()
         
         if(xQueueReceive(MTD_Operates_Queue, &curOpa, portMAX_DELAY) == pdTRUE)
         {
-            setCPUDivider(CPU_DIVIDE_IDLE);
+            enterSlowDown();
 
 
             retry_cnt = 5;
@@ -252,8 +252,8 @@ void MTD_Task()
             }
 
             //xEventGroupSetBits(MTDLockEventGroup , (1 << curOpa.BLock));
-            setCPUDivider(CPU_DIVIDE_NORMAL);
-;
+            exitSlowDown();
+            
         }
 
     }

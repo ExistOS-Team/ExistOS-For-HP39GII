@@ -275,18 +275,19 @@ uint32_t portGetBatteryMode()
 
 uint32_t portGetPWRSpeed()
 {
-    uint8_t val;//
+    uint8_t val;
+    static uint8_t last_val;
 
     vTaskEnterCritical();
     HW_POWER_SPEED.B.CTRL = 0;
-    portDelayus(5);
+    portDelayus(1);
     HW_POWER_SPEED.B.CTRL = 1;
-    portDelayus(5);
+    portDelayus(1);
     HW_POWER_SPEED.B.CTRL = 3;
     val = HW_POWER_SPEED.B.STATUS;
     vTaskExitCritical();
-
-    return val;
+    last_val = val;
+    return (val + last_val) / 2;
 }
 
 void portBoardInit()

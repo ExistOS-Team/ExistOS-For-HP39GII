@@ -578,6 +578,21 @@ void LLAPI_Task() {
                 portChargeEnable(currentCall.para0);
             }break;
 
+            case LL_SWI_SLOW_DOWN_ENABLE:
+            {
+                slowDownEnable(currentCall.para0);
+            }break;
+
+            case LL_SWI_PWR_SPEED:
+            {
+                *currentCall.pRet = portGetPWRSpeed();
+            }break;
+
+            case LL_SWI_SLOW_DOWN_MINFRAC:
+            {
+                setSlowDownMinCpuFrac(currentCall.para0);
+            }break;
+
             case LL_SWI_PWR_POWEROFF:
             {
                 

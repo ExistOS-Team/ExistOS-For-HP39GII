@@ -370,7 +370,7 @@ void vmMgr_init() {
     for (int i = 0; i < FLASH_FTL_DATA_SECTOR  ; i++) {
         FTL_TrimSector(i);
     }
-    
+    memset(CachePage, 0xFF, sizeof(CachePage));
     
     mapList_AddPartitionMap(MAP_PART_RAWFLASH, PERM_R, VM_ROM_BASE, FLASH_SYSTEM_BLOCK * 64, VM_ROM_SIZE);
 

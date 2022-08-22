@@ -29,7 +29,7 @@
 
 #include "lv_demo_keypad_encoder.h"
 
-#include "mpy_port.h"
+//#include "mpy_port.h"
 
 volatile unsigned long ulHighFrequencyTimerTicks;
 
@@ -225,7 +225,7 @@ void draw_main_win()
 }
 
 static lv_group_t *g;
-static lv_obj_t *charge_chb;
+static lv_obj_t *charge_chb, *slow_down_chb;
 
 static void charge_msgbox_event_cb(lv_event_t *e) 
 {
@@ -251,6 +251,23 @@ static void charge_msgbox_event_cb(lv_event_t *e)
 
 }
 
+static void slowdown_chb_handler(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
+    if(code == LV_EVENT_VALUE_CHANGED) {
+        //const char * txt = lv_checkbox_get_text(obj);
+
+        if(lv_obj_get_state(obj) & LV_STATE_CHECKED)
+        {
+            ll_cpu_slowdown_enable(true);
+        }else{
+            ll_cpu_slowdown_enable(false);
+        }
+    }
+
+}
+
 static void charge_chb_handler(lv_event_t * e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -259,7 +276,7 @@ static void charge_chb_handler(lv_event_t * e)
     static char *msgbox_button[] = {"OK", "Cancel", ""};
 
     if(code == LV_EVENT_VALUE_CHANGED) {
-        const char * txt = lv_checkbox_get_text(obj);
+        //const char * txt = lv_checkbox_get_text(obj);
 
         if(lv_obj_get_state(obj) & LV_STATE_CHECKED)
         {
@@ -281,6 +298,20 @@ static void charge_chb_handler(lv_event_t * e)
     }
 }
 
+lv_obj_t* label_cpuminirac;
+
+void slider_cpu_minimum_frac_event_cb(lv_event_t *e) {
+    lv_obj_t *slider = lv_event_get_target(e);
+    char buf[32];
+    int val = (int)lv_slider_get_value(slider);
+    lv_snprintf(buf, sizeof(buf), "CPU Freq Minimum Frac: %d", val);
+    lv_label_set_text(label_cpuminirac, buf);
+
+    ll_cpu_slowdown_min_frac(val);
+}
+
+
+
 void main_thread() {
 
 
@@ -289,6 +320,18 @@ void main_thread() {
     SystemUIInit();
     SystemFSInit();
 
+
+/*
+    SystemUISuspend();
+    ll_cpu_slowdown_enable(false);
+    uarmLinuxMain();
+*/
+
+/*
+    for(;;)
+    {
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }*/
     //vTaskDelay(pdMS_TO_TICKS(1000));
     
     
@@ -428,22 +471,43 @@ void main_thread() {
     
     g = lv_group_get_default();
 
-    #define DEF_INFO_LABEL(label_name) lv_obj_t* label_name; label_name = lv_label_create(t2); \
+    #define DEF_INFO_LABEL(label_name, fcous_able) lv_obj_t* label_name; label_name = lv_label_create(t2); \
     lv_obj_set_flex_grow(label_name, 0); \
-    lv_group_add_obj(g, label_name); \
-    lv_obj_add_flag(label_name, LV_OBJ_FLAG_SCROLL_ON_FOCUS); 
-
+    if(fcous_able){lv_group_add_obj(g, label_name); \
+    lv_obj_add_flag(label_name, LV_OBJ_FLAG_SCROLL_ON_FOCUS);}
     #define SET_LABEL_TEXT(label, ...) lv_label_set_text_fmt(label, __VA_ARGS__)
 
 
-    DEF_INFO_LABEL(info_line1);
-    DEF_INFO_LABEL(info_line2);
-    DEF_INFO_LABEL(info_line3);
+    DEF_INFO_LABEL(info_line1, true);
+    DEF_INFO_LABEL(info_line2, false);
+    DEF_INFO_LABEL(info_line3, false);
+    DEF_INFO_LABEL(info_line4, false);
+
+
+    
+    label_cpuminirac = lv_label_create(t2);
+    SET_LABEL_TEXT(label_cpuminirac, "CPU Freq Minimum Frac: 12");
+    lv_obj_set_flex_grow(label_cpuminirac, 0);
+
+    lv_obj_t *cpu_minpwr_slider = lv_slider_create(t2);
+    lv_obj_set_flex_grow(cpu_minpwr_slider, 0);
+    lv_slider_set_range(cpu_minpwr_slider, 2, 14);
+    lv_obj_add_flag(cpu_minpwr_slider, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_slider_set_value(cpu_minpwr_slider, 12, false);
+    lv_obj_add_event_cb(cpu_minpwr_slider, slider_cpu_minimum_frac_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    slow_down_chb = lv_checkbox_create(t2);
+    lv_checkbox_set_text(slow_down_chb, "CPU Auto Slow-Down");
+    lv_obj_set_flex_grow(slow_down_chb, 0); 
+    lv_obj_add_event_cb(slow_down_chb, slowdown_chb_handler, LV_EVENT_ALL, NULL);
+    lv_obj_add_state(slow_down_chb, LV_STATE_CHECKED);
 
     charge_chb = lv_checkbox_create(t2);
     lv_checkbox_set_text(charge_chb, "Enable Charge");
     lv_obj_set_flex_grow(charge_chb, 0);
     lv_obj_add_event_cb(charge_chb, charge_chb_handler, LV_EVENT_ALL, NULL);
+
+
 
     //lv_demo_keypad_encoder(); 
     int cur_cpu_div = 1;
@@ -468,7 +532,8 @@ void main_thread() {
 
             SET_LABEL_TEXT(info_line1, "CPU Freq:%d / %d MHz,  Temp:%d °C", ll_get_cur_freq() , 480 * 18 / cur_cpu_div / cur_cpu_frac, ll_get_core_temp() );
             SET_LABEL_TEXT(info_line2, "Mem: %d / %d KB,  Ticks:%d s", xPortGetFreeHeapSize() / 1024, 8192, runTime );
-            SET_LABEL_TEXT(info_line3, "Batt: %d mv,  Charging: %s", ll_get_bat_voltage(), ll_get_charge_status() ? "ON" : "OFF" );
+            SET_LABEL_TEXT(info_line3, "Batt: %d mv,  Charging: %s", ll_get_bat_voltage(), ll_get_charge_status() ? "Yes" : "NO" );
+            SET_LABEL_TEXT(info_line4, "Pwr Speed: %d Ticks", ll_get_pwrspeed() );
 
 
 /*
@@ -511,6 +576,8 @@ void khicasBtn(lv_event_t *e) {
     }
 }
  
+extern int __HEAP_START[384*1024 / 4];
+
 void main() { 
 
     // SYS STACK      0x023FA000
@@ -523,6 +590,9 @@ void main() {
     ll_set_svc_vector(((uint32_t)SWI_ISR) + 4);
     ll_enable_irq(false);
     // ll_set_keyboard(true);  
+    ll_cpu_slowdown_enable(false);
+
+    memset(&__HEAP_START[0], 0xFF, 384 * 1024);
   
     printf("System Booting...\n");
 
@@ -530,6 +600,8 @@ void main() {
     xTaskCreate(vTask2, "Task2", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
 
     xTaskCreate(main_thread, "System", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 3, NULL);
+
+    ll_cpu_slowdown_enable(true);
 
     vTaskStartScheduler();
 

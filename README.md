@@ -10,6 +10,40 @@
 [![Build Status](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/actions/workflows/build.yml/badge.svg)](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/actions/workflows/build.yml)
 
 本固件项目由一群计算器爱好者始创，使用了[FreeRTOS kernel](https://github.com/FreeRTOS/FreeRTOS)、[TinyUSB](https://github.com/hathach/tinyusb)、[FatFs](http://elm-chan.org/fsw/ff/00index_e.html)、[dhara](https://github.com/dlbeer/dhara)、[giac](http://www-fourier.ujf-grenoble.fr/~parisse/giac.html)等库。我们非常欢迎同好试用和改善本项目的代码，也非常乐意听取您的宝贵意见。期待您的参与！
+
+## 目录
+
+- [ExistOS-For-HP39GII](#existos-for-hp39gii)
+  - [简介](#简介)
+  - [目录](#目录)
+  - [目前工作进展](#目前工作进展)
+  - [固件编译](#固件编译)
+    - [准备](#准备)
+      - [Windows](#windows)
+      - [Linux](#linux)
+        - [添加 udev 规则](#添加-udev-规则)
+        - [编译 sbtool](#编译-sbtool)
+    - [编译系统](#编译系统)
+  - [固件安装 （目前仅支持Windows下刷入）](#固件安装-目前仅支持windows下刷入)
+    - [刷入 OS Loader](#刷入-os-loader)
+      - [手动刷入](#手动刷入)
+      - [自动工具刷入](#自动工具刷入)
+  - [固件基本使用](#固件基本使用)
+    - [初次使用](#初次使用)
+    - [内部存储的访问](#内部存储的访问)
+    - [KhiCAS的基本使用](#khicas的基本使用)
+      - [基本计算](#基本计算)
+      - [示例1: 绘图](#示例1-绘图)
+      - [示例2: 不定积分](#示例2-不定积分)
+      - [示例3: 定积分](#示例3-定积分)
+      - [示例4: 编程绘制Logistic方程映射Feigenbaum分岔图](#示例4-编程绘制logistic方程映射feigenbaum分岔图)
+  - [系统卸载并刷回原生系统](#系统卸载并刷回原生系统)
+  - [代码提交规范](#代码提交规范)
+  - [贡献者](#贡献者)
+  - [许可协议](#许可协议)
+
+
+
 ## 目前工作进展
 - [x] Boot
 - [x] 调试串口
@@ -198,8 +232,6 @@ ninja edb_flash_sys
 
 Status选项卡目前仅用于显示当前系统状态。
 
-注：当前系统还未完成能耗管理，系统将设定CPU运行在360MHz的高主频上且无降频节能动作，建议使用外接电源。
-
 ![Sys1](Image/new2/5.png)
 
 【ON】+【F6】 强制重启
@@ -355,9 +387,15 @@ def f():
 
 ![Sys1](Image/new2/35.png)
 
-### 注意:
+注意:
 
 由于使用的giac代数运算系统体积相对来说较为庞大(约3MB)，而该计算器仅有300KB左右的物理内存，这里使用了Flash上的虚拟内存来填补其不足，计算过程中300KB的物理内存要承载代码的中间结果，因此在进行计算时需要频繁的IO操作进行内存交换，从而导致其在某些复杂问题求解时会出现计算十分缓慢的问题，例如在绘制如上的分岔图时，Python脚本内部迭代了约2000次，最终结果占用内存约90KB，但最终耗时长达340秒，一共触发了44万次的内存交换，并产生了约3次的全盘Flash擦写。
+
+## 系统卸载并刷回原生系统
+
+刷入原生系统前需要将全片Flash擦除，否则使用原生刷机工具时会卡在格式化环节。
+
+Flash全盘擦除方法：在刷入OS Loader后或Exist OS系统运行时，按下`ON`+`F5`界面进入数据清空界面，随后按下`SYMB`键进入全盘格式化界面，再按下`F1`键后会开始全盘数据擦除操作，当显示“Operation Finish.”后操作完成，Flash数据将全部清楚且不可恢复，此时重新上电计算器并在Win7/XP环境下使用原生刷机工具即可刷入。
 
 ## 代码提交规范
 

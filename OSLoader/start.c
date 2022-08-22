@@ -147,6 +147,7 @@ void System(void *par) {
     DisplayPutStr(0, 16 * 1, "Waiting for Flash GC...", 0, 255, 16);
 
     if ((*bootAddr != 0xEF5AE0EF) && *(bootAddr + 1) != 0xFECDAFDE) {
+        slowDownEnable(false);
         DisplayClean();
         DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
         DisplayPutStr(0, 16 * 1, "Could not find the System!", 0, 255, 16);
@@ -160,18 +161,20 @@ void System(void *par) {
     uint32_t k, kp;
     getKey(&k, &kp);
     if ((k == KEY_F2) && kp) {
+        slowDownEnable(false);
         tud_disconnect();
         DisplayClean();
         DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
         DisplayPutStr(0, 16 * 1, "USB MSC Mode.", 0, 255, 16);
         DisplayPutStr(0, 16 * 2, "[Views] Continue Boot.", 0, 255, 16);
+        
         vTaskDelay(pdMS_TO_TICKS(200));
         g_MSC_Configuration = MSC_CONF_SYS_DATA;
         vTaskDelay(pdMS_TO_TICKS(10));
         tud_connect();
 
         while (1) {
-            vTaskDelay(pdMS_TO_TICKS(50));
+            vTaskDelay(pdMS_TO_TICKS(200));
             getKey(&k, &kp);
             if ((k == KEY_VIEWS) && kp) {
                 FTL_Sync();
@@ -185,7 +188,8 @@ void System(void *par) {
             }
         }
     }
-
+    
+    setCPUDivider(CPU_DIVIDE_NORMAL);
     // vTaskSuspend(NULL);
     bootAddr += 2;
     atagsAddr = (uint32_t *)(VM_ROM_BASE + (4234 - 1984) * 2048);
@@ -366,7 +370,7 @@ void MscSetCmd(char *cmd);
 void mkSTMPNandStructure(uint32_t OLStartBlock, uint32_t OLPages);
 void parseCDCCommand(char *cmd) {
     if (strcmp(cmd, "PING") == 0) {
-
+        slowDownEnable(false);
         printf("CDC PING\n");
         MscSetCmd("PONG\n");
 
@@ -376,6 +380,9 @@ void parseCDCCommand(char *cmd) {
     }
 
     if (strcmp(cmd, "RESETDBUF") == 0) {
+        slowDownEnable(false);
+        VMSuspend();
+        
         if (binBuf == NULL) {
             binBuf = (char *)VMMGR_GetCacheAddress();
         }
@@ -660,8 +667,8 @@ static int contrast_adj = 0;
 void vMainThread(void *pvParameters) {
 
     // vTaskDelay(pdMS_TO_TICKS(100));
-    setCPUDivider(CPU_DIVIDE_NORMAL);
-    setHCLKDivider(1);
+    setHCLKDivider(2);
+    setCPUDivider(4);
 
     // portLRADCEnable(1, 7);
     //  MTD_EraseAllBLock();
@@ -692,7 +699,14 @@ void vMainThread(void *pvParameters) {
     HW_POWER_CHARGE.B.STOP_ILIMIT = 0;
 
     HW_POWER_CHARGE.B.PWD_BATTCHRG = 1;
+
+
     HW_POWER_VDDDCTRL.B.DISABLE_FET = 1;
+
+
+    //HW_POWER_VDDACTRL.B.DISABLE_FET = 1;
+    //HW_POWER_VDDIOCTRL.B.DISABLE_FET = 1;
+    
     for (;;) {
 
         vTaskDelay(pdMS_TO_TICKS(100));
@@ -775,7 +789,12 @@ void vMainThread(void *pvParameters) {
 
             for(int y = 0; y < 128; y += 2)
             {
-                portDispReadBackVRAM(0, y, 255, y + 2, vramBuf);
+                bool fin;
+                DisplayReadArea(0, y, 255, y + 2, vramBuf, &fin);
+                while(!fin)
+                {
+                    vTaskDelay(pdMS_TO_TICKS(30));    
+                }
 
                 tud_cdc_write(vramBuf, 256 * 3);
                 tud_cdc_write_flush();
@@ -986,28 +1005,28 @@ void TaskUSBLog(void *_) {
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
-
+extern bool g_slowdown_enable;
 #include "regsclkctrl.h"
 void waitIRQ(int r)
 {
     
-    //uint32_t uclkctrl = HW_CLKCTRL_CPU_RD();
-    //uclkctrl |= BM_CLKCTRL_CPU_INTERRUPT_WAIT;
-    //HW_CLKCTRL_CPU_WR(uclkctrl);
-
+    enterSlowDown();
+    if(g_slowdown_enable){
     HW_CLKCTRL_CPU.B.INTERRUPT_WAIT = 1;
     
     asm volatile("mov r0, #0");             // Rd SBZ (should be 0)
     asm volatile("mcr p15,0,r0,c7,c0,4");   // Drain write buffers, idle CPU clock & processor, and stop processor at this instruction
     asm volatile("nop");
+    }
+
+    
+    exitSlowDown();
 
 }
 
 void vApplicationIdleHook( void )
 {
-    setCPUDivider(CPU_DIVIDE_IDLE);
     waitIRQ(0);
-    setCPUDivider(CPU_DIVIDE_NORMAL);
 
 }
 

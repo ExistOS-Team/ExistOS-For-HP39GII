@@ -55,6 +55,8 @@ sector    item
 168-231   cluster 4
 ...
 */
+
+
 uint8_t MSCRBuffer[2048] __aligned(4);
 uint8_t MSCWRBuf[2048] __aligned(4);
 

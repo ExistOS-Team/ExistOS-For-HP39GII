@@ -62,8 +62,8 @@
 
 #define SIZE_SWAPAREA_MB    (VM_RAM_SIZE / 1048576)
 
-#define CPU_DIVIDE_NORMAL       2
-#define CPU_DIVIDE_IDLE         10
+#define CPU_DIVIDE_NORMAL       1
+#define CPU_DIVIDE_IDLE_INTIAL  12
 
 #define FLASH_LOADER_BLOCK      22
 #define FLASH_CONFIG_BLOCK      23

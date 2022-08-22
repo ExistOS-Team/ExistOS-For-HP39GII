@@ -124,9 +124,7 @@ void volatile arm_vector_swi() {
             break;
             
         case LL_FAST_SWI_SYSTEM_IDLE:
-            setCPUDivider(CPU_DIVIDE_IDLE);
             waitIRQ(0);
-            setCPUDivider(CPU_DIVIDE_NORMAL);
             break;
 
         case LL_FAST_SWI_CORE_CUR_FREQ:

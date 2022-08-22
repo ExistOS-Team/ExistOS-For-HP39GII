@@ -50,7 +50,7 @@
 #define LV_MEM_CUSTOM 1
 #if LV_MEM_CUSTOM == 0
     /*Size of the memory available for `lv_mem_alloc()` in bytes (>= 2kB)*/
-    #define LV_MEM_SIZE (64 * 1024U)          /*[bytes]*/
+    #define LV_MEM_SIZE (256 * 1024U)          /*[bytes]*/
 
     /*Set an address for the memory pool instead of allocating it as a normal array. Can be in external SRAM too.*/
     #define LV_MEM_ADR 0     /*0: unused*/
@@ -75,7 +75,7 @@
 #define LV_MEM_BUF_MAX_NUM 16
 
 /*Use the standard `memcpy` and `memset` instead of LVGL's own functions. (Might or might not be faster).*/
-#define LV_MEMCPY_MEMSET_STD 1
+#define LV_MEMCPY_MEMSET_STD 0
 
 /*====================
    HAL SETTINGS
