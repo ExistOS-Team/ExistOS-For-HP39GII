@@ -13,7 +13,7 @@
 ## 简介
 
 [![GPL Licence](https://badges.frapsoft.com/os/gpl/gpl.png?v=103)](https://opensource.org/licenses/GPL-3.0/)
-[![Build Status](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/actions/workflows/build.yml/badge.svg)](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/actions/workflows/build.yml)
+[![Build Status](../../actions/workflows/build.yml/badge.svg)](../../actions/workflows/build.yml)
 
 本固件项目由一群计算器爱好者始创，使用了[FreeRTOS kernel](https://github.com/FreeRTOS/FreeRTOS)、[TinyUSB](https://github.com/hathach/tinyusb)、[FatFs](http://elm-chan.org/fsw/ff/00index_e.html)、[dhara](https://github.com/dlbeer/dhara)、[giac](http://www-fourier.ujf-grenoble.fr/~parisse/giac.html)等库。我们非常欢迎同好试用和改善本项目的代码，也非常乐意听取您的宝贵意见。期待您的参与！
 
@@ -81,7 +81,7 @@
 
 ## 固件编译
 
-- 如果您只想快捷地安装本系统而非自行编译，请自行下载[Release](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/releases)中的固件并直接跳至 `固件安装` 章节的 [自动工具刷入](#自动工具刷入) 部分。
+- 如果您只想快捷地安装本系统而非自行编译，请自行下载[Release](../../releases)中的固件并直接跳至 `固件安装` 章节的 [自动工具刷入](#自动工具刷入) 部分。
   - 请注意发行版前的 `pre-release` 标志，它表示该版本可能不稳定或有问题，如果您刷入 `pre-release` 版本的固件无法启动，请更换其它版本。
 
 ### 准备
@@ -488,4 +488,4 @@ Flash全盘擦除方法：在刷入OS Loader后或Exist OS系统运行时，按�
 
 ## 许可协议
 
-[GPL-3.0](https://github.com/Repeerc/LibreCalc-For-HP39GII/blob/master/LICENSE)
+[GPL-3.0](./LICENSE)
