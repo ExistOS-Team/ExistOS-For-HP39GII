@@ -1,11 +1,9 @@
 ```
-===== =   = =====  ==== =====  ===   ===  f h
-=      = =    =   =       =   =   = =   = o p
-                              =   = =     r 3
-====   ===    =    ===    =                 9
-                              =   =     =   g
-=      = =    =       =   =   =   = =   =   i
-===== =   = ===== ====    =    ===   ===    i
+=== \ / === /== === for
+|   \ /  |  |    |  HP39gii
+|--  -   |  \-\  |  /=\ /==
+|   / \  |    |  |  | | \-\
+=== / \ === ==/  |  \=/ ==/
 ```
 
 [English readme](./README_en.md)
@@ -27,10 +25,6 @@
   - [目前工作进展](#目前工作进展)
   - [固件编译](#固件编译)
     - [准备](#准备)
-      - [Windows](#windows)
-      - [Linux](#linux)
-        - [添加 udev 规则](#添加-udev-规则)
-        - [编译 sbtool](#编译-sbtool)
     - [编译系统](#编译系统)
   - [固件安装 （目前仅支持Windows下刷入）](#固件安装-目前仅支持windows下刷入)
     - [刷入 OS Loader](#刷入-os-loader)
@@ -88,74 +82,56 @@
 ## 固件编译
 
 - 如果您只想快捷地安装本系统而非自行编译，请自行下载[Release](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/releases)中的固件并直接跳至 `固件安装` 章节的 [自动工具刷入](#自动工具刷入) 部分。
+  - 请注意发行版前的 `pre-release` 标志，它表示该版本可能不稳定或有问题，如果您刷入 `pre-release` 版本的固件无法启动，请更换其它版本。
 
 ### 准备
 
-需要安装 `gcc-arm-none-eabi`：  
-- 对于 Windows 系统，请从[这里](https://developer.arm.com/downloads/-/gnu-rm)下载和安装。
-  - 注意：需要将安装目录下的 `bin` 路径添加到 PATH 中
-- 对于 Linux 系统，不同的发行版可能略有差异
-  - Debian/Ubuntu 等使用 apt 包管理器的发行版请安装
-    ```bash
-    sudo apt-get install gcc-arm-none-eabi -y
-    ```
-  - Arch 等使用 pacman 包管理器的发行版请安装
-    ```bash
-    sudo pacman -Syu arm-none-eabi-gcc
-    ```
-- 对于其它系统，或者没有提供相应包的 Linux 发行版
-  - 从[这里](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads)下载源代码编译安装
+首先，安装 `gcc-arm-none-eabi`：
+|系统|安装|
+|----|----|
+|Windows|从[这里](https://developer.arm.com/downloads/-/gnu-rm)下载安装 `gcc-arm-none-eabi`|
+|Debian|`apt-get install gcc-arm-none-eabi`|
+|Ubuntu|`apt-get install gcc-arm-none-eabi`|
+|Arch Linux|`pacman -Syu arm-none-eabi-gcc`|
+|其它|查阅是否有提供二进制包，或者从[源码](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads)编译|
 
-#### Windows
+添加udev规则：
+|系统|安装|
+|----|----|
+|Windows|不需要执行此步骤|
+|Linux（大多数发行版）|`sudo cp 99-hp39gii.rules /etc/udev/rules.d/`|
+||然后重启 `udev` 以载入规则：|
+||`sudo service udev restart`|
+||如果上面的命令不起作用：|
+||`sudo udevadm control --reload-rules`|
+||`sudo udevadm trigger`|
+|其它使用udev的系统|拷贝项目下的 `99-hp39gii.rules` 到 udev 规则目录，随后重启udev|
 
-请下载 [Ninja](https://github.com/ninja-build/ninja/releases)，解压到任意目录下，然后将该目录添加到 PATH 中。
+安装编译器：
+|系统|安装|
+|----|----|
+|Windows|下载 [Ninja](https://github.com/ninja-build/ninja/releases)，解压，然后将解压目录添加到 PATH 中|
+|Debian|`apt-get install cmake make`|
+|Ubuntu|`apt-get install cmake make`|
+|Arch Linux|`pacman -Syu cmake make`|
 
-#### Linux
+安装依赖库：
+|系统|安装|
+|----|----|
+|Windows|已经预先编译好，无需安装|
+|Debian|`apt-get install libcrypto++-dev libusb-1.0-0-dev`|
+|Ubuntu|`apt-get install libcrypto++6 libcrypto++-dev libusb-1.0.0-dev`|
+|Arch Linux|`pacman -Syu libusb crypto++`|
+|其它|安装 libusb 1.0，[libcrypto++](https://cryptopp.com/wiki/Linux#Distribution_Package)，随后用 `pkg-config` 检查是否已经正确应用|
 
-##### 添加 udev 规则
+*Tips：`pkg-config` 会根据 `/usr/lib/pkgconfig/` 中存放的 `*.pc` 文件定位库位置，如果您手动添加依赖库，请修改 `CMakeLists.txt` 更正依赖库路径。*
 
-对于 Linux 系统，为了让 udev 识别 HP39GII，需要将本项目根目录下的 `99-hp39gii.rules` 复制到 `/etc/udev/rules.d/`：  
-```bash
-sudo cp 99-hp39gii.rules /etc/udev/rules.d/
-```
-
-然后重启 `udev` 以载入规则：  
-```bash
-sudo service udev restart
-```
-如果上面的命令不起作用：  
-```bash
-sudo udevadm control --reload-rules
-sudo udevadm trigger
-```
-
-##### 编译 sbtool
-
-本项目为 Windows 预先编译好了相应文件，但是 Linux 下需要手动编译。
-
-进入项目目录 `tools/sbtools` 并 `make` 编译（无需安装），可能需要安装以下库：  
-- libusb（1.0）
-- libcrypto++
-  - 安装教程见于 [Crypto++ Wiki](https://cryptopp.com/wiki/Linux#Distribution_Package)
-
-- Ubuntu 发行版请参考本项目的 Action 文件安装相应库
-  ```bash
-  sudo apt-get install libcrypto++6 libcrypto++-dev libusb-1.0-0-dev -y
-  ```
-- Arch 请安装以下库
-  ```bash
-  sudo pacman -Syu libusb crypto++
-  ````
-
-若 `pkg-config` 提示找不到 libcrypto++ 或其它库，请检查是否安装了相应库，确认 `/usr/lib/pkgconfig/` 下是否有对于库的的 `.pc` 文件，这是使 pkg-config 识别它所需要的。  
-若有，请手动修改 Makefile。
-若无，可能需要重新安装相应库，或手动修改 Makefile 中的 pkg-config 命令。
-
-然后进入 `Libs/src/micropython-master/ports/eoslib` 目录并 `make`：  
-```bash
-cd Libs/src/micropython-master/ports/eoslib
-make
-```
+编译 sbtool：
+|系统|安装|
+|----|----|
+|Windows|已经预先编译好，在 `tools` 目录下|
+|Linux|`cd tools/sbtools && make`|
+||`cd ../../Libs/src/micropython-master/ports/eoslib && make`|
 
 ### 编译系统
 
@@ -166,22 +142,16 @@ cd build
 ```
 
 准备编译：  
-```bash
-cmake ..
-```
-Windows 请用以下命令指定用 Ninja 作为编译器：  
-```bash
-cmake .. -G Ninja
-```
+|系统|安装|备注|
+|----|----|----|
+|Windows|`cmake .. -G Ninja`|指定了Ninja作为编译器|
+|Linux|`cmake ..`||
 
 编译：  
-```bash
-make
-```
-Windows 请用 Ninja：  
-```bash
-ninja
-```
+|系统|安装|
+|----|----|
+|Windows|`ninja`|
+|Linux|`make`|
 
 ## 固件安装 （目前仅支持Windows下刷入）
 
