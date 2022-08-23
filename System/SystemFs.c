@@ -116,7 +116,7 @@ mount_flash:
     printf("f_mount res:%d\n", fres);
     if (fres != FR_OK) {
         sprintf(textbuf, "Mount Fatfs Failed:-%d, would you like to format the flash?", fres);
-        sel = SystemUIMsgBox(textbuf, "Mount " FS_FLASH_PATH " Failed", SYSTEMUI_MSGBOX_BUTTON_CANCAL | SYSTEMUI_MSGBOX_BUTTON_OK);
+        sel = SystemUIMsgBox(NULL, textbuf, "Mount " FS_FLASH_PATH " Failed", SYSTEMUI_MSGBOX_BUTTON_CANCAL | SYSTEMUI_MSGBOX_BUTTON_OK);
         if (sel == 0) {
 
             lv_obj_t *spinner = lv_spinner_create(lv_scr_act(), 1000, 60);
@@ -132,9 +132,9 @@ mount_flash:
             vPortFree(work);
 
             if (fres == FR_OK) {
-                SystemUIMsgBox("Format " FS_FLASH_PATH " Succeeded.", "Format", 0);
+                SystemUIMsgBox(NULL,"Format " FS_FLASH_PATH " Succeeded.", "Format", 0);
             } else {
-                SystemUIMsgBox("Format " FS_FLASH_PATH " Failed.", "Format", 0);
+                SystemUIMsgBox(NULL,"Format " FS_FLASH_PATH " Failed.", "Format", 0);
             }
         }
         goto mount_flash;

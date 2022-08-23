@@ -255,13 +255,6 @@ static void LRADC_init()
 
 }
 
-void portBoardPowerOff()
-{
-    BF_SET(RTC_PERSISTENT0, DISABLE_PSWITCH);
-    BF_WR(POWER_RESET, UNLOCK, 0x3E77);
-    BF_WR(POWER_RESET, PWD_OFF, 1);
-    BF_WR(POWER_RESET, PWD, 1);
-}
 
 void portBoardReset()
 {
@@ -282,9 +275,19 @@ uint32_t portGetBatteryMode()
 
 uint32_t portGetPWRSpeed()
 {
-    uint8_t val = HW_POWER_SPEED.B.STATUS;
+    uint8_t val;
+    static uint8_t last_val;
+
+    vTaskEnterCritical();
+    HW_POWER_SPEED.B.CTRL = 0;
+    portDelayus(1);
+    HW_POWER_SPEED.B.CTRL = 1;
+    portDelayus(1);
     HW_POWER_SPEED.B.CTRL = 3;
-    return val;
+    val = HW_POWER_SPEED.B.STATUS;
+    vTaskExitCritical();
+    last_val = val;
+    return (val + last_val) / 2;
 }
 
 void portBoardInit()

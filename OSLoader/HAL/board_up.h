@@ -21,6 +21,8 @@ uint32_t portGetBatterVoltage_mv();
 uint32_t portLRADCConvCh(uint32_t ch, uint32_t samples);
 uint32_t portGetBatteryMode();
 uint32_t portGetPWRSpeed();
+void portChargeEnable(bool enable);
+
 
 uint32_t portBoardGetTime_us(void);
 uint32_t portBoardGetTime_ms(void);
@@ -35,5 +37,11 @@ void setCPUDivider(uint32_t div);
 void setCPUFracDivider(uint32_t div);
 void setHCLKDivider(uint32_t div);
 void portGetCoreFreqDIV(uint32_t *CPU_DIV, uint32_t *CPU_Frac, uint32_t *HCLK_DIV);
+
+
+void enterSlowDown();
+void exitSlowDown();
+void slowDownEnable(bool enable);
+void setSlowDownMinCpuFrac(uint8_t frac);
 
 #endif

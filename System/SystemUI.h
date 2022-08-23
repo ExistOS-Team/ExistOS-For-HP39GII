@@ -1,5 +1,5 @@
 #pragma once
-
+#include "lvgl.h"
 #define INDICATE_LEFT      (1 << 0)
 #define INDICATE_RIGHT     (1 << 1)
 #define INDICATE_A__Z      (1 << 2)
@@ -11,9 +11,11 @@
 #define SYSTEMUI_MSGBOX_BUTTON_OK       (0)
 #define SYSTEMUI_MSGBOX_BUTTON_CANCAL   (1 << 1)
 
+
+
 void SystemUIInit();
 
-uint32_t SystemUIMsgBox(char *msg, char *title, uint32_t button);
+uint32_t SystemUIMsgBox(lv_obj_t *parent,char *msg, char *title, uint32_t button);
 
 
 void SystemUISuspend();

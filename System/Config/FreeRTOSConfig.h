@@ -44,7 +44,7 @@
 #define configUSE_TIME_SLICING          1
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION		1
 #define configUSE_PREEMPTION			1
-#define configUSE_IDLE_HOOK				0
+#define configUSE_IDLE_HOOK				1
 #define configUSE_TICK_HOOK				0
 //#define configCPU_CLOCK_HZ				( ( unsigned long ) 24000000 )
 //#define configCPU_PERIPH_HZ				( ( unsigned long ) 12000000 )

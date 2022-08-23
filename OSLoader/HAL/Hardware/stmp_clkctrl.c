@@ -7,7 +7,12 @@
 
 #include "../debug.h"
 
+#include "SystemConfig.h"
+
 #define PLL_FREQ_HZ (480000000UL)
+
+bool g_slowdown_enable = true;
+static uint8_t min_cpu_frac_sd = CPU_DIVIDE_IDLE_INTIAL;
 
 static void PLLEnable(bool enable) {
     BF_SETV(CLKCTRL_PLLCTRL0, POWER, enable);
@@ -26,10 +31,48 @@ void setHCLKDivider(uint32_t div)
 
 }
 
+void setSlowDownMinCpuFrac(uint8_t frac)
+{
+    if(frac > 14 || frac < 2)
+    {
+        return;
+    }
+    min_cpu_frac_sd = frac;
+}
+
+void enterSlowDown()
+{
+    if(g_slowdown_enable)
+    {
+        setCPUDivider(min_cpu_frac_sd);
+    }
+}
+
+void exitSlowDown()
+{
+    if(g_slowdown_enable)
+    {
+        setCPUDivider(CPU_DIVIDE_NORMAL);
+    }
+    
+}
+
+
+void slowDownEnable(bool enable)
+{
+    g_slowdown_enable = enable;
+    if(!g_slowdown_enable)
+    {
+        setCPUDivider(CPU_DIVIDE_NORMAL);
+    }
+}
+
+
+
 void setCPUDivider(uint32_t div) 
 {
-    uint32_t val = BF_RD(CLKCTRL_CPU, DIV_CPU);
-    INFO("CPU old Div:%lu\n", val);
+    //uint32_t val = BF_RD(CLKCTRL_CPU, DIV_CPU);
+    //INFO("CPU old Div:%lu\n", val);
     if (!div) {
         return;
     }
@@ -38,7 +81,7 @@ void setCPUDivider(uint32_t div)
     //while (BF_RD(CLKCTRL_CPU, BUSY_REF_CPU));
     BF_CLRV(CLKCTRL_CPU, DIV_CPU, BF_RD(CLKCTRL_CPU, DIV_CPU) ^ div);
 
-    INFO("CPU new Div:%d\n", BF_RD(CLKCTRL_CPU, DIV_CPU));
+    //INFO("CPU new Div:%d\n", BF_RD(CLKCTRL_CPU, DIV_CPU));
 }
 
 void setCPUFracDivider(uint32_t div) {
@@ -81,7 +124,7 @@ void portCLKCtrlInit(void) {
     BF_CLR(CLKCTRL_FRAC, CLKGATECPU);
     
 
-    setCPUDivider(4);
+    setCPUDivider(5);
     setHCLKDivider(4);
     
     setCPU_HFreqDomain(true);

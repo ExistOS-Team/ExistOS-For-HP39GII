@@ -14,8 +14,8 @@ include_directories(./Fs/littlefs)
 include_directories(./Config)
 include_directories(./CoremarkTest)
 
-include_directories(./KLib/lvgl-8.2.0)
-include_directories(./KLib/lvgl-8.2.0/demos/keypad_encoder)
+include_directories(./KLib/lvgl)
+include_directories(./KLib/lvgl/demos/keypad_encoder)
 
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/micropython-master/)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/micropython-master/ports/eoslib)
@@ -26,7 +26,7 @@ include_directories(${CMAKE_SOURCE_DIR}/Libs/src/micropython-master/ports/eoslib
 #include_directories(${CMAKE_SOURCE_DIR}/Libs/src/gmp/include)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/libtommath-0.39/)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/khicas/)
-
+ 
 aux_source_directory(.                                         SYS_SRCS)
 aux_source_directory(./Core                                    SYS_SRCS)
 aux_source_directory(./Core/porting                            SYS_SRCS)
@@ -45,12 +45,12 @@ ${CMAKE_SOURCE_DIR}/Script/sys_ld.script
 )
 set(LINKER_FLAGS "SHELL:-T${LINKER_SCRIPT} -Wl,--gc-sections -Wl,--wrap=malloc -Wl,--wrap=free")
 target_link_options(sys.elf PRIVATE ${LINKER_FLAGS})
-
+ 
 
 
 target_compile_options(gb PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm -O3)
 target_compile_options(lvgl PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft  -mthumb -Os)
-
+#-mthumb
 target_compile_options(sys.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft 
 -Os -pipe -ffunction-sections -fno-strict-aliasing -fomit-frame-pointer
 #-fcommon -fno-strict-aliasing -fomit-frame-pointer

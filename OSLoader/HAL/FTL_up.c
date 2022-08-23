@@ -381,7 +381,7 @@ int FTL_TrimSector(uint32_t sector) {
 }
 
 int FTL_Sync() {
-    FTL_Operates newOpa;
+    //FTL_Operates newOpa;
     dhara_error_t err;
     int ret;
 
