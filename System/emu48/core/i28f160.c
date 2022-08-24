@@ -7,7 +7,7 @@
  *
  */
 #include "pch.h"
-#include "Emu48.h"
+#include "emu48.h"
 #include "i28f160.h"
 
 #define ARRAYSIZEOF(a)	(sizeof(a) / sizeof(a[0]))

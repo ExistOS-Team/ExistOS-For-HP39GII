@@ -8,7 +8,7 @@
  */
 #include "pch.h"
 #include "resource.h"
-#include "Emu48.h"
+#include "emu48.h"
 #include "kml.h"
 
 static VOID      FatalError(VOID);

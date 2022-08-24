@@ -7,8 +7,8 @@
  *
  */
 #include "pch.h"
-#include "Emu48.h"
-#include "Opcodes.h"
+#include "emu48.h"
+#include "opcodes.h"
 #include "io.h"
 #include "debugger.h"
 
@@ -73,7 +73,7 @@ static DWORD dwOldCyc;						// cpu cycles at last event
 static DWORD dwSpeedRef;					// timer value at last event
 static DWORD dwTickRef;						// sample timer ticks
 
-#include "Ops.h"
+#include "ops.h"
 
 // save last instruction in circular instruction buffer
 static __inline VOID SaveInstrAddr(DWORD dwAddr)

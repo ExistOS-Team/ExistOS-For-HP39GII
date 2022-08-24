@@ -3,15 +3,15 @@
  *
  *   This file is part of Emu48
  *
- *   Copyright (C) 1999 Christoph Gießelink
+ *   Copyright (C) 1999 Christoph Gieï¿½elink
  *
  */
 #include "pch.h"
 #include "resource.h"
-#include "Emu48.h"
-#include "Opcodes.h"
+#include "emu48.h"
+#include "opcodes.h"
 #include "ops.h"
-#include "color.h"
+//#include "color.h"
 #include "debugger.h"
 
 #define MAXCODELINES     15					// number of lines in code window

@@ -9,7 +9,7 @@
  */
 #include "pch.h"
 #include "resource.h"
-#include "Emu48.h"
+#include "emu48.h"
 #include "io.h"
 #include "kml.h"
 

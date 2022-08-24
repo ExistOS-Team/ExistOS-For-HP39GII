@@ -4,11 +4,11 @@
  *   This file is part of Emu48, a ported version of x48
  *
  *   Copyright (C) 1994 Eddie C. Dost
- *   Copyright (C) 1998 Christoph Gießelink
+ *   Copyright (C) 1998 Christoph Gieï¿½elink
  *
  */
 #include "pch.h"
-#include "Emu48.h"
+#include "emu48.h"
 
 #define TAB_SKIP	8
 

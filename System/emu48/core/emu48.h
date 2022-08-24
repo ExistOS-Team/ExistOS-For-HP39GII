@@ -1,5 +1,5 @@
 /*
- *   Emu48.h
+ *   emu48.h
  *
  *   This file is part of Emu48
  *

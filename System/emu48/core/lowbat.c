@@ -7,7 +7,7 @@
  *
  */
 #include "pch.h"
-#include "Emu48.h"
+#include "emu48.h"
 #include "io.h"								// I/O definitions
 
 #define BAT_SIMULATION					// switch low bat simulation

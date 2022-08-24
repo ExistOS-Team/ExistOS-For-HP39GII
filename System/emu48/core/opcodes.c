@@ -8,8 +8,8 @@
  *
  */
 #include "pch.h"
-#include "Emu48.h"
-#include "Opcodes.h"
+#include "emu48.h"
+#include "opcodes.h"
 #include "apple.h"
 #include "io.h"								// I/O register definitions
 
@@ -25,7 +25,7 @@
 
 #pragma intrinsic(memset,memcpy)
 
-#include "Ops.h"
+#include "ops.h"
 
 // Fields start and length
 UINT F_s[16] = {0/*P*/,0,2,0,15,3,0,0,0,0,0,0,0,0,0,0};

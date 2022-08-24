@@ -3,11 +3,11 @@
  *
  *   This file is part of Emu48
  *
- *   Copyright (C) 2000 Christoph Gießelink
+ *   Copyright (C) 2000 Christoph Gieï¿½elink
  *
  */
 #include "pch.h"
-#include "Emu48.h"
+#include "emu48.h"
 #include "i28f160.h"
 
 // #define REGISTRY							// use registry instead of *.ini file

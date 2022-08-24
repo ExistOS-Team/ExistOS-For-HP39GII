@@ -7,7 +7,7 @@
  *
  */
 #include "pch.h"
-#include "Opcodes.h"
+#include "opcodes.h"
 
 #define F	0xFF							// F = function
 

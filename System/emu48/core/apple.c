@@ -4,12 +4,12 @@
  *   This file is part of Emu48
  *
  *   Copyright (C) 2005 CdB for HP
- *   Copyright (C) 2006 Christoph Gießelink
+ *   Copyright (C) 2006 Christoph Gieï¿½elink
  *
  */
 #include "pch.h"
-#include "Emu48.h"
-#include "Opcodes.h"
+#include "emu48.h"
+#include "opcodes.h"
 #include "apple.h"
 #include "io.h"								// I/O register definitions
 #include "i28f160.h"
@@ -20,7 +20,7 @@
 
 #pragma intrinsic(memset,memcpy)
 
-#include "Ops.h"
+#include "ops.h"
 
 static CONST LPBYTE ppReg[] = { w.A, w.B, w.C, w.D };
 
