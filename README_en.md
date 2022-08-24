@@ -80,7 +80,7 @@ Current development status is as described above. User interface etc. are still 
 
 ## Compiling
 
-- If you just want to try out the system instead of compiling it yourself, binaries are available at [Release](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/releases). Then jump to [Flashing with automated tools](#Flashing-with automated tools) section for instructions.
+- If you just want to try out the system instead of compiling it yourself, binaries are available at [Release](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/releases). Then jump to [Flashing with automated tools](#flashing-with-automated-tools) section for instructions.
 
 ### Prerequisites
 
