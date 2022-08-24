@@ -25,7 +25,7 @@
         - [添加 udev 规则](#添加-udev-规则)
         - [编译 sbtool](#编译-sbtool)
     - [编译系统](#编译系统)
-  - [固件安装（目前仅支持 Windows 下刷入）](#固件安装（目前仅支持-windows-下刷入）)
+  - [固件安装（目前仅支持 Windows 下刷入）](#固件安装目前仅支持-windows-下刷入)
     - [刷入 OSLoader](#刷入-osloader)
       - [手动刷入](#手动刷入)
       - [自动工具刷入](#自动工具刷入)
@@ -188,7 +188,7 @@ OSLoader 是引导程序，用于加载 ExistOS 并提供底层 API 和虚拟内
 
 Windows 系统下可以查看设备管理器是否出现一个名为 “USB 输入设备” 且 ID 为 066F:3770 的 USB HID 设备
 
-![USBID](Image/new2/0.png)
+![USBID](Image/0.png)
 
 
 #### 手动刷入
@@ -199,7 +199,7 @@ ninja sb_flash
 ```
 当 OSLoader 运行后，计算器会显示如下界面提示“找不到系统”：
 
-![OSL Boot](Image/new2/1.png)
+![OSL Boot](Image/1.png)
 
 此时 OSLoader 仅在内存中运行，接着执行以下将 OSLoader 刷入计算器的 Flash 引导区
 ```bash
@@ -227,19 +227,19 @@ ninja edb_flash_sys
 
 系统编译和安装完成后，第一次开机将会见到如下系统界面，提示将 Flash 的数据区格式化为 FAT16 格式的文件系统，`ENTER` 点击 OK 开始格式化，大约耗时半分钟。
 
-![Sys1](Image/new2/2.png)
+![Sys1](Image/2.png)
 
 出现以下界面后表示 Flash 数据区已经格式化完毕，点击 OK 进入系统主界面。
 
-![Sys1](Image/new2/3.png)
+![Sys1](Image/3.png)
 
 目前系统仅预装了一个 KhiCAS 应用，`←` `→` `↑` `↓` 键选择，`ENTER` 键确定/切换
 
-![Sys1](Image/new2/4.png)
+![Sys1](Image/4.png)
 
 Status 选项卡目前仅用于显示当前系统状态。
 
-![Sys1](Image/new2/5.png)
+![Sys1](Image/5.png)
 
 `ON`+`F6` 强制重启  
 `ON`+`F5` 进入格式化界面
@@ -248,25 +248,25 @@ Status 选项卡目前仅用于显示当前系统状态。
 
 在系统开机前（或按下 `ON/C` 开机之后立即）按住 `F2` 键不放，会出现如下界面：
 
-![Sys1](Image/new2/38.png)
+![Sys1](Image/38.png)
 
 此时电脑上会出现一个约 80 MB 的 U 盘，即为计算器内部 Flash 数据区的空间，System 为系统资源（字体、图片之类，目前暂不使用），xcas 文件夹存放 KhiCAS 的用户脚本、会话（历史记录）等资料。
 
-![Sys1](Image/new2/39.png)
+![Sys1](Image/39.png)
 
-![Sys1](Image/new2/40.png)
+![Sys1](Image/40.png)
 
 ### KhiCAS 的基本使用
 
 主界面 Application 选项卡中按下 `↓` 键选中 `KhiCAS` 应用，按下 `Enter` 键启动应用。第一次启动时会弹出提示选择使用 Xcas 语法模式 `F1` 还是 Python 语法模式 `F6`。
 
-![Sys1](Image/new2/6.png)
+![Sys1](Image/6.png)
 
 设定完成后当前状态会显示在下边的状态栏，其中第一项为当前时间，第二项为语法模式（Xcas 或 Python），第三项弧度或角度制，第四项为当前会话文件名。
 
 注：目前 RTC 函数接口还未适配，故时间显示可能是混乱的。
 
-![Sys1](Image/new2/7.png)
+![Sys1](Image/7.png)
 
 初始化完成后便可以进行一些相关的计算。
 
@@ -278,25 +278,25 @@ Status 选项卡目前仅用于显示当前系统状态。
 
 在 KhiCAS 中可以输入一般的表达式进行计算，支持大整数计算，但对于小数仅支持单精度浮点。
 
-![Sys1](Image/new2/8.png)
+![Sys1](Image/8.png)
 
 对于输入的表达式（或 `↑` `↓` 键选择的历史记录）可以按下 View 键 `F3` 后将其转化为自然输入模式进行编辑。
 
-![Sys1](Image/new2/9.png)
+![Sys1](Image/9.png)
 
-![Sys1](Image/new2/10.png)
+![Sys1](Image/10.png)
 
 使用 `F1` 和 `F2` 键可以调出可能常用的指令菜单。
 
-![Sys1](Image/new2/11.png)
+![Sys1](Image/11.png)
 
-![Sys1](Image/new2/12.png)
+![Sys1](Image/12.png)
 
 `cmds` 菜单 (`F4`) 里用二级目录的方式列出了 KhiCAS 中的全部命令（包括代数、复数、多项式、概率、绘图等命令），可以在其中搜寻需要的指令，选中对应的指令后 `input` 键输入到主界面，或按下 `help` 查看指令帮助，`ex1`、`ex2` 键输入自带的示例。
 
-![Sys1](Image/new2/13.png)
+![Sys1](Image/13.png)
 
-![Sys1](Image/new2/14.png)
+![Sys1](Image/14.png)
 
 #### 示例1: 绘图
 
@@ -307,55 +307,55 @@ Status 选项卡目前仅用于显示当前系统状态。
   plot(表达式, x=[起点...终点], xstep=步进)
 ```
 
-![Sys1](Image/new2/15.png)
-![Sys1](Image/new2/16.png)
+![Sys1](Image/15.png)
+![Sys1](Image/16.png)
 
 `plotpolar` 命令则在极坐标系下绘图
 
-![Sys1](Image/new2/17.png)
+![Sys1](Image/17.png)
 
-![Sys1](Image/new2/18.png)
+![Sys1](Image/18.png)
 
 `plotfield` 绘制矢量场
 
-![Sys1](Image/new2/19.png)
+![Sys1](Image/19.png)
 
-![Sys1](Image/new2/22.png)
+![Sys1](Image/22.png)
 
-![Sys1](Image/new2/20.png)
+![Sys1](Image/20.png)
 
-![Sys1](Image/new2/21.png)
+![Sys1](Image/21.png)
 
 #### 示例2: 不定积分
 
-![Sys1](Image/new2/23.png)
+![Sys1](Image/23.png)
 
-![Sys1](Image/new2/24.png)
+![Sys1](Image/24.png)
 
-![Sys1](Image/new2/25.png)
+![Sys1](Image/25.png)
 
-![Sys1](Image/new2/26.png)
+![Sys1](Image/26.png)
 
 #### 示例3: 定积分
 
-![Sys1](Image/new2/36.png)
+![Sys1](Image/36.png)
 
-![Sys1](Image/new2/37.png)
+![Sys1](Image/37.png)
 
 #### 示例4: 编程绘制 Logistic 方程映射 Feigenbaum 分岔图
 
 在 KhiCAS 中有两种语法工作模式 Xcas 和 Python，并提供了脚本执行功能，因此可以通过编程的方式定义新函数，这里使用Python语法来实现绘制如下的分岔图。
 
-![Sys1](Image/new2/27.png)
+![Sys1](Image/27.png)
 
 在主界面中按下 File 键 (`F6`)，选择第六项打开脚本编辑器。
 
-![Sys1](Image/new2/28.png)
+![Sys1](Image/28.png)
 
 脚本编辑器中，左上角显示当前时间，语法模式，文件名，当前编辑行号/总行数。
 `F1`~`F3`中存储了一些如符号判断、循环体、函数定义等的快捷命令
 
-![Sys1](Image/new2/29.png)
+![Sys1](Image/29.png)
 
 这里使用的脚本如下，首先先定义了两个全局向量 `r` 和 `p` ，函数 `f` 迭代的结果会存储在这两个向量中，最后在外部能够调用 KhiCAS 的 `point(r,p)` 命令进行绘图。
 
@@ -376,25 +376,25 @@ def f():
 
 编辑完成后使用 File 菜单里的 Check syntax 选项可以对脚本进行检查和编译，结果会输出到主控制台上。
 
-![Sys1](Image/new2/30.png)
+![Sys1](Image/30.png)
 
 如下图为脚本有符号错误时编译的结果，会具体提示所在行号（或者是在 Xcas 模式下编译 Python 脚本也会出现错误）
 
-![Sys1](Image/new2/31.png)
+![Sys1](Image/31.png)
 
 编译成功的结果如下图。
 
-![Sys1](Image/new2/32.png)
+![Sys1](Image/32.png)
 
 随后调用脚本中的函数名执行上面所写的函数，执行完后再调用 point 指令将迭代输出的散点绘制到画布上。
 
-![Sys1](Image/new2/33.png)
+![Sys1](Image/33.png)
 
 最终输出：
 
-![Sys1](Image/new2/34.png)
+![Sys1](Image/34.png)
 
-![Sys1](Image/new2/35.png)
+![Sys1](Image/35.png)
 
 注意:
 

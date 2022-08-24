@@ -191,7 +191,7 @@ Before flashing, please power off your calculator completely by removing the bat
 
 You can see if an HID device named "USB Input Device" with the ID of 066F:3770 shows up in Device Manager under Windows.
 
-![USBID](Image/new2/0.png)
+![USBID](Image/0.png)
 
 
 #### Manual flashing
@@ -202,7 +202,7 @@ ninja sb_flash
 ```
 After OSLoader has been running, the calculator will display the following screen saying "Could not find the System":
 
-![OSL Boot](Image/new2/1.png)
+![OSL Boot](Image/1.png)
 
 Right now OSLoader is only running off RAM, proceed to execute following commands to flash OSLoader to the boot sector on the flash of the calculator:
 ```bash
@@ -230,19 +230,19 @@ Or you can try to install stock tools and use Firmware Updater to flash OSLoader
 
 After booting and flashing, the first time the system boots you'll see the following dialog, prompting you to format the data section of the flash as FAT16. Press `ENTER` to confirm the operation. It usually takes around 30 seconds.
 
-![Sys1](Image/new2/2.png)
+![Sys1](Image/2.png)
 
 This screen indicates a successful format. Select OK to enter the main menu.
 
-![Sys1](Image/new2/3.png)
+![Sys1](Image/3.png)
 
 The system only comes with a KhiCAS application for now. Press `←` `→` `↑` `↓` to navigate, `ENTER` to confirm.
 
-![Sys1](Image/new2/4.png)
+![Sys1](Image/4.png)
 
 The Status tab currently shows the system status.
 
-![Sys1](Image/new2/5.png)
+![Sys1](Image/5.png)
 
 `ON` + `F6` Force reboot  
 `ON` + `F5` Enter formatting interface
@@ -251,25 +251,25 @@ The Status tab currently shows the system status.
 
 Holding down `F2` while booting (or immediately after pressing `ON/C`) will bring up the following interface:
 
-![Sys1](Image/new2/38.png)
+![Sys1](Image/38.png)
 
 A 80 MB USB drive will then show up on the computer, which is the data section of the onboard flash. `System` directory stores assets e.g. fonts and pictures which are unused right now. `xcas` directory stores KhiCAS user scripts, sessions (history) and other information.
 
-![Sys1](Image/new2/39.png)
+![Sys1](Image/39.png)
 
-![Sys1](Image/new2/40.png)
+![Sys1](Image/40.png)
 
 ### Basic usage of KhiCAS
 
 Press `↓` to select the KhiCAS app under the Application tab in the main menu, and press `ENTER` to launch. A dialog will show up on the first launch for you to choose between Xcas mode `F1` and Python mode `F6`.
 
-![Sys1](Image/new2/6.png)
+![Sys1](Image/6.png)
 
 After configuration, the current state is shown on the status bar below. The first item is current time, the second is mode (Xcas or Python), the third is the filename of the current session.
 
 Note: RTC interface is not ported for now, thus time might be shown incorrectly.
 
-![Sys1](Image/new2/7.png)
+![Sys1](Image/7.png)
 
 Calculations may be performed after initialization.
 
@@ -281,25 +281,25 @@ Press `SHIFT` then long press `ON/C` to save session and shutdown.
 
 General expressions can be entered in KhiCAS to perform calculations. Calculation of large integers is supported, however for floating point calculation, only single-percision floating point numbers are supported.
 
-![Sys1](Image/new2/8.png)
+![Sys1](Image/8.png)
 
 For an expression entered in linear mode, select View (`F3`) to edit it in the natural textbook editor.
 
-![Sys1](Image/new2/9.png)
+![Sys1](Image/9.png)
 
-![Sys1](Image/new2/10.png)
+![Sys1](Image/10.png)
 
 Press `F1` and `F2` to bring up *could-be* commonly-used commands menu.
 
-![Sys1](Image/new2/11.png)
+![Sys1](Image/11.png)
 
-![Sys1](Image/new2/12.png)
+![Sys1](Image/12.png)
 
 `cmds` menu (`F4`) lists all available commands in KhiCAS as nested entries, including algebraic, complex, polynominal, probability, plotting, etc., where you can search commands needed. After selecting the command, press `Input` to copy to the main menu, `ex1` `ex2` to copy built-in examples or `help` to show built-in help.
 
-![Sys1](Image/new2/13.png)
+![Sys1](Image/13.png)
 
-![Sys1](Image/new2/14.png)
+![Sys1](Image/14.png)
 
 #### Example 1: Plotting
 
@@ -310,40 +310,40 @@ Use `plot` command to plot functions. In the plot interface: Press `↑` `↓` `
   plot(expression, x=[start...end], xstep=step)
 ```
 
-![Sys1](Image/new2/15.png)
-![Sys1](Image/new2/16.png)
+![Sys1](Image/15.png)
+![Sys1](Image/16.png)
 
 `plotpolar` command plots in polar coordinate system.
 
-![Sys1](Image/new2/17.png)
+![Sys1](Image/17.png)
 
-![Sys1](Image/new2/18.png)
+![Sys1](Image/18.png)
 
 `plotfield` command draws vector fields.
 
-![Sys1](Image/new2/19.png)
+![Sys1](Image/19.png)
 
-![Sys1](Image/new2/22.png)
+![Sys1](Image/22.png)
 
-![Sys1](Image/new2/20.png)
+![Sys1](Image/20.png)
 
-![Sys1](Image/new2/21.png)
+![Sys1](Image/21.png)
 
 #### Example 2: Indefinite integrals
 
-![Sys1](Image/new2/23.png)
+![Sys1](Image/23.png)
 
-![Sys1](Image/new2/24.png)
+![Sys1](Image/24.png)
 
-![Sys1](Image/new2/25.png)
+![Sys1](Image/25.png)
 
-![Sys1](Image/new2/26.png)
+![Sys1](Image/26.png)
 
 #### Example 3: Definite integrals
 
-![Sys1](Image/new2/36.png)
+![Sys1](Image/36.png)
 
-![Sys1](Image/new2/37.png)
+![Sys1](Image/37.png)
 
 #### Example 4: Programming to draw Feigenbaum bifurcation diagrams mapped with Logistic equations
 
@@ -351,15 +351,15 @@ Use `plot` command to plot functions. In the plot interface: Press `↑` `↓` `
 
 Two input syntax modes are present in KhiCAS, namely Xcas and Python. With the ability to execute scripts, new functions can be defined via programming. Here we use Python syntax to implement the following bifurcation diagram.
 
-![Sys1](Image/new2/27.png)
+![Sys1](Image/27.png)
 
 Press `File` (F6) in the main menu and select the 6th item to open the script editor.
 
-![Sys1](Image/new2/28.png)
+![Sys1](Image/28.png)
 
 In the editor, the top left corner shows current time, syntax mode, filename and current line/total lines. `F1`~`F3` stores shortcut commands such as symbolic conditionals, loop bodies, function definitions, etc.
 
-![Sys1](Image/new2/29.png)
+![Sys1](Image/29.png)
 
 The script we are using is as follows. First we define two global vectors `r` and `p`, where the result of function `f` iteration will be stored. Then we can plot by calling KhiCAS command `point(r,p)` externally.
 
@@ -380,25 +380,25 @@ def f():
 
 After editing, the script can be checked and compiled using the Check syntax option in the File menu, and the result will be output to the console.
 
-![Sys1](Image/new2/30.png)
+![Sys1](Image/30.png)
 
 The following figure shows the result of compiling a script with a symbolic error, with a specific indication of the line number. (Compiling Python scripts in Xcas mode also causes error.)
 
-![Sys1](Image/new2/31.png)
+![Sys1](Image/31.png)
 
 The result of a successful compilation is shown below.
 
-![Sys1](Image/new2/32.png)
+![Sys1](Image/32.png)
 
 The function name in the script is called to execute the function written above, and the `point` command is then called to draw the scattered data to the canvas.
 
-![Sys1](Image/new2/33.png)
+![Sys1](Image/33.png)
 
 Final output:
 
-![Sys1](Image/new2/34.png)
+![Sys1](Image/34.png)
 
-![Sys1](Image/new2/35.png)
+![Sys1](Image/35.png)
 
 Note:
 
