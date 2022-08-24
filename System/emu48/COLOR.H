@@ -1,0 +1,27 @@
+/*
+ *   color.h
+ *
+ *   This file is part of Emu48
+ *
+ *   Copyright (C) 1999 Christoph Gieﬂelink
+ *
+ */
+
+#define COLOR_BLACK		0x00000000
+#define COLOR_MAROON	0x00000080
+#define COLOR_GREEN		0x00008000
+#define COLOR_OLIVE		0x00008080
+#define COLOR_NAVY		0x00800000
+#define COLOR_PURPLE	0x00800080
+#define COLOR_TEAL		0x00808000
+#define COLOR_GRAY		0x00808080
+#define COLOR_SILVER	0x00C0C0C0
+#define COLOR_RED		0x000000FF
+#define COLOR_LIME		0x0000FF00
+#define COLOR_YELLOW	0x0000FFFF
+#define COLOR_BLUE		0x00FF0000
+#define COLOR_FUCHSIA	0x00FF00FF
+#define	COLOR_AQUA		0x00FFFF00
+#define COLOR_LTGRAY	0x00C0C0C0
+#define COLOR_DKGRAY	0x00808080
+#define COLOR_WHITE		0x00FFFFFF

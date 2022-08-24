@@ -112,7 +112,7 @@ inline static bool vmMgr_CheckAddrVaild(uint32_t addr) {
     return true;
 }
 
-static void fetch_cache_and_move_to_tail() {
+static inline void fetch_cache_and_move_to_tail() {
 
     CachePageCur = CachePageHead;
 
@@ -126,7 +126,7 @@ static void fetch_cache_and_move_to_tail() {
     CachePageTail = CachePageCur;
 }
 
-static void move_cache_page_to_tail(CachePageInfo_t *item) {
+static inline void move_cache_page_to_tail(CachePageInfo_t *item) {
     if ((!item->next) && (item->prev)) {
         return;
     }
@@ -143,7 +143,7 @@ static void move_cache_page_to_tail(CachePageInfo_t *item) {
     }
 }
 
-static CachePageInfo_t *search_cache_page_by_vaddr(uint32_t vaddr) {
+static inline CachePageInfo_t *search_cache_page_by_vaddr(uint32_t vaddr) {
     CachePageInfo_t *tmp = (CachePageInfo_t *)CachePageTail;
     do {
         if (tmp->mapToVirtAddr == vaddr) {
@@ -154,7 +154,7 @@ static CachePageInfo_t *search_cache_page_by_vaddr(uint32_t vaddr) {
     return NULL;
 }
 
-static int save_cache_page(CachePageInfo_t *cache_page) {
+static inline int save_cache_page(CachePageInfo_t *cache_page) {
     int ret = 0;
     if (
         (cache_page->dirty) &&
@@ -167,7 +167,83 @@ static int save_cache_page(CachePageInfo_t *cache_page) {
     return ret;
 }
 
-void vmMgr_task() {
+bool inline vmMgr_checkAddressValid(uint32_t address, uint32_t perm) {
+    if (address < MEMORY_SIZE) {
+        return true;
+    }
+    #if (VMRAM_USE_FTL == 0)
+        if((address >= VM_RAM_BASE) && (address <= VM_RAM_BASE + VM_RAM_SIZE_NONE_FTL))
+        {
+            return true;
+        }
+
+    #endif
+    MapList_t *ret = mapList_findVirtAddrInWhichMap(address);
+    if (ret) {
+        if (ret->perm & perm) {
+            return true;
+        }
+    }
+    return false;
+}
+
+volatile uint8_t m_test_read;
+uint32_t vmMgr_LoadPageGetPAddr(uint32_t vaddr) {
+    if (!vmMgr_checkAddressValid(vaddr, PERM_R)) {
+        return 0;
+    }
+    m_test_read = *((uint8_t *)vaddr);
+    m_test_read--;
+
+    for (int i = 0; i < NUM_CACHEPAGE; i++) {
+        if (((CachePageInfo[i].mapToVirtAddr & 0xFFFFF000) == (vaddr & 0xFFFFF000))) {
+            mmu_clean_invalidated_dcache(vaddr & 0xFFFFF000, PAGE_SIZE);
+            return (CachePageInfo[i].PageOnPhyAddr + (vaddr & (PAGE_SIZE - 1)));
+        }
+    }
+
+    return 0;
+}
+
+void vmMgr_ReleaseAllPage() {
+    memset(CachePage, 0, sizeof(CachePage));
+    memset(CachePageInfo, 0, sizeof(CachePageInfo));
+    for (int i = 0; i < NUM_CACHEPAGE; i++) {
+        CachePageInfo[i].dirty = false;
+        CachePageInfo[i].onPart = -1;
+        CachePageInfo[i].onSector = 0;
+        CachePageInfo[i].PageOnPhyAddr = CACHE_PAGEn_BASE(i);
+        CachePageInfo[i].mapToVirtAddr = 0;
+        CachePageInfo[i].lock = false;
+        if (i > 0) {
+            CachePageInfo[i - 1].next = &CachePageInfo[i];
+            CachePageInfo[i].prev = &CachePageInfo[i - 1];
+        }
+    }
+
+    CachePageCur = CachePageHead = &CachePageInfo[0];
+    CachePageTail = &CachePageInfo[NUM_CACHEPAGE - 1];
+
+    mmu_drain_buffer();
+
+    for (uint32_t i = VM_ROM_BASE; i < VM_ROM_BASE + VM_ROM_SIZE; i += PAGE_SIZE) {
+        mmu_unmap_page(i);
+        mmu_clean_invalidated_dcache(i, PAGE_SIZE);
+    }
+    for (uint32_t i = VM_RAM_BASE; i < VM_RAM_BASE + VM_RAM_SIZE; i += PAGE_SIZE) {
+        mmu_unmap_page(i);
+        mmu_clean_dcache(i, PAGE_SIZE);
+        mmu_clean_invalidated_dcache(i, PAGE_SIZE);
+    }
+
+    mmu_invalidate_tlb();
+    mmu_invalidate_icache();
+    mmu_invalidate_dcache_all();
+
+
+}
+
+void  __attribute__((optimize("-O3"))) vmMgr_task() {
     pageFaultInfo_t currentFault;
     MapList_t *mapinfo;
 
@@ -280,82 +356,6 @@ void vmMgr_task() {
             swapping = 0;
         }
     }
-}
-
-bool vmMgr_checkAddressValid(uint32_t address, uint32_t perm) {
-    if (address < MEMORY_SIZE) {
-        return true;
-    }
-    #if (VMRAM_USE_FTL == 0)
-        if((address >= VM_RAM_BASE) && (address <= VM_RAM_BASE + VM_RAM_SIZE_NONE_FTL))
-        {
-            return true;
-        }
-
-    #endif
-    MapList_t *ret = mapList_findVirtAddrInWhichMap(address);
-    if (ret) {
-        if (ret->perm & perm) {
-            return true;
-        }
-    }
-    return false;
-}
-
-volatile uint8_t m_test_read;
-uint32_t vmMgr_LoadPageGetPAddr(uint32_t vaddr) {
-    if (!vmMgr_checkAddressValid(vaddr, PERM_R)) {
-        return 0;
-    }
-    m_test_read = *((uint8_t *)vaddr);
-    m_test_read--;
-
-    for (int i = 0; i < NUM_CACHEPAGE; i++) {
-        if (((CachePageInfo[i].mapToVirtAddr & 0xFFFFF000) == (vaddr & 0xFFFFF000))) {
-            mmu_clean_invalidated_dcache(vaddr & 0xFFFFF000, PAGE_SIZE);
-            return (CachePageInfo[i].PageOnPhyAddr + (vaddr & (PAGE_SIZE - 1)));
-        }
-    }
-
-    return 0;
-}
-
-void vmMgr_ReleaseAllPage() {
-    memset(CachePage, 0, sizeof(CachePage));
-    memset(CachePageInfo, 0, sizeof(CachePageInfo));
-    for (int i = 0; i < NUM_CACHEPAGE; i++) {
-        CachePageInfo[i].dirty = false;
-        CachePageInfo[i].onPart = -1;
-        CachePageInfo[i].onSector = 0;
-        CachePageInfo[i].PageOnPhyAddr = CACHE_PAGEn_BASE(i);
-        CachePageInfo[i].mapToVirtAddr = 0;
-        CachePageInfo[i].lock = false;
-        if (i > 0) {
-            CachePageInfo[i - 1].next = &CachePageInfo[i];
-            CachePageInfo[i].prev = &CachePageInfo[i - 1];
-        }
-    }
-
-    CachePageCur = CachePageHead = &CachePageInfo[0];
-    CachePageTail = &CachePageInfo[NUM_CACHEPAGE - 1];
-
-    mmu_drain_buffer();
-
-    for (uint32_t i = VM_ROM_BASE; i < VM_ROM_BASE + VM_ROM_SIZE; i += PAGE_SIZE) {
-        mmu_unmap_page(i);
-        mmu_clean_invalidated_dcache(i, PAGE_SIZE);
-    }
-    for (uint32_t i = VM_RAM_BASE; i < VM_RAM_BASE + VM_RAM_SIZE; i += PAGE_SIZE) {
-        mmu_unmap_page(i);
-        mmu_clean_dcache(i, PAGE_SIZE);
-        mmu_clean_invalidated_dcache(i, PAGE_SIZE);
-    }
-
-    mmu_invalidate_tlb();
-    mmu_invalidate_icache();
-    mmu_invalidate_dcache_all();
-
-
 }
 
 void vmMgr_init() {

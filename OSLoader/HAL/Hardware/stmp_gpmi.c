@@ -924,7 +924,7 @@ static inline void waitLastOpa()
     }
 }
 
-static void GPMI_sendCommand(uint32_t *cmd, uint32_t *para, uint16_t paraLen, uint32_t *buf, uint32_t RBlen, bool block)
+static inline void  __attribute__((optimize("-O3")))  GPMI_sendCommand(uint32_t *cmd, uint32_t *para, uint16_t paraLen, uint32_t *buf, uint32_t RBlen, bool block)
 {
     
     while (HW_APBH_CHn_SEMA(NAND_DMA_Channel).B.INCREMENT_SEMA)
@@ -960,7 +960,7 @@ static void GPMI_sendCommand(uint32_t *cmd, uint32_t *para, uint16_t paraLen, ui
 
 }
 
-static void GPMI_ReadPage(uint32_t ColumnAddress, uint32_t RowAddress, uint32_t *data, uint32_t *auxData, bool block)
+static inline void  __attribute__((optimize("-O3"))) GPMI_ReadPage(uint32_t ColumnAddress, uint32_t RowAddress, uint32_t *data, uint32_t *auxData, bool block)
 {
     volatile uint8_t *probe;
     waitLastOpa();
@@ -1022,7 +1022,7 @@ static void GPMI_ReadPage(uint32_t ColumnAddress, uint32_t RowAddress, uint32_t 
             ;
 }
 
-static void GPMI_EraseBlock(uint32_t blockAddress, bool block)
+static inline void  __attribute__((optimize("-O3")))  GPMI_EraseBlock(uint32_t blockAddress, bool block)
 {
     waitLastOpa();
 
@@ -1063,7 +1063,7 @@ static void GPMI_EraseBlock(uint32_t blockAddress, bool block)
         //portDelayms(4);
 }
 
-static void GPMI_WritePage(uint32_t ColumnAddress, uint32_t RowAddress, uint32_t *data, uint32_t *auxData, bool block)
+static inline void  __attribute__((optimize("-O3")))  GPMI_WritePage(uint32_t ColumnAddress, uint32_t RowAddress, uint32_t *data, uint32_t *auxData, bool block)
 {
     waitLastOpa();
 
@@ -1121,7 +1121,7 @@ static void GPMI_WritePage(uint32_t ColumnAddress, uint32_t RowAddress, uint32_t
 }
 
 
-static void GPMI_CopyPage(uint32_t srcPage, uint32_t dstPage)
+static inline void  __attribute__((optimize("-O3")))  GPMI_CopyPage(uint32_t srcPage, uint32_t dstPage)
 {
     waitLastOpa();
     

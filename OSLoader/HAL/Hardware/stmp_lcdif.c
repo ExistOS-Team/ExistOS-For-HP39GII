@@ -703,8 +703,8 @@ void portDispDeviceInit()
         printf("LCD ID[%d]:%02x\n",i, ID[i]);
     }
 
-
-    portDispSetContrast(57);
+    extern uint32_t g_lcd_contrast;
+    portDispSetContrast(g_lcd_contrast);
 
     portDispClean();
     
