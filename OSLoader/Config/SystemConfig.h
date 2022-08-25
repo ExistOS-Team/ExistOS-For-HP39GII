@@ -31,7 +31,7 @@
 #define VMRAM_USE_FTL   (1)
 
 #if (VMRAM_USE_FTL == 1)
-    #define NUM_CACHEPAGE             ( 75 )
+    #define NUM_CACHEPAGE             ( 77 ) // 77 *4 = 308 KB
 #else
     #define NUM_CACHEPAGE             ( 32 )
     #define VM_RAM_SIZE_NONE_FTL      ( 168 * 1024 )

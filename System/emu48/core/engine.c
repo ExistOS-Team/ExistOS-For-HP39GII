@@ -623,7 +623,9 @@ loop:
 			}
 			
 			LPBYTE gep = FASTPTR(Chipset.pc);
+
 			//printf("exec pc:%08x, %02x\n", Chipset.pc, gep[0]);
+
 			EvalOpcode(gep); // execute opcode
 
 			// check for display update in BW mode

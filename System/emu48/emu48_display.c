@@ -8,6 +8,8 @@
 #include "task.h"
 
 #include "sys_llapi.h"
+#include "SystemUI.h"
+
 void emu48_update_display();
 
 //#define DEBUG_DISPLAY
@@ -23,7 +25,7 @@ static DWORD dwGrayMask;
 
 
 //#define DIBPIXEL(d,p) *((DWORD*)(d)) = ((*((DWORD*)(d)) & dwGrayMask ) << 1) | (p); d += 1 //*(((DWORD*)(d))++) = ((*((DWORD*)(d)) & dwGrayMask) << 1) | (p)
-//#define DIBPIXEL(d,p) *d = (p); d += 1 //*(((DWORD*)(d))++) = ((*((DWORD*)(d)) & dwGrayMask) << 1) | (p)
+#define DIBPIXEL(d,p) *d = (p); d += 1 //*(((DWORD*)(d))++) = ((*((DWORD*)(d)) & dwGrayMask) << 1) | (p)
 
 #define GRAYMASK(c)	(((((c)-1)>>1)<<24) \
 					|((((c)-1)>>1)<<16) \
@@ -49,11 +51,12 @@ VOID (*StopDisplay)(VOID) = NULL;
 
 #define OutputDebugString(str) printf("%s\n",str)
 
+/*
 void DIBPIXEL(BYTE *d,DWORD p)
 {
 
 }
-
+*/
 VOID UpdateContrast(BYTE byContrast)
 {
 	RGBQUAD c,b;
@@ -215,6 +218,19 @@ VOID UpdateAnnunciators(VOID)
 	// switch annunciators off if timer stopped
 	if ((c & AON) == 0 || (Chipset.IORam[TIMER2_CTRL] & RUN) == 0)
 		c = 0;
+
+	int intBit = 0;
+    intBit |= c&LA1 ? INDICATE_LEFT : 0;
+    intBit |= c&LA2 ? INDICATE_RIGHT : 0;
+    intBit |= c&LA3 ? INDICATE_A__Z : 0;
+    intBit |= c&LA4 ? INDICATE_a__z : 0;
+    intBit |= c&LA5 ? INDICATE_BUSY : 0;
+    intBit |= c&LA6 ? INDICATE_RX : 0;
+    intBit |= c&LA6 ? INDICATE_TX : 0;
+
+
+	ll_disp_set_indicator(intBit,-1);
+
 /*
 	DrawAnnunciator(1,c&LA1);
 	DrawAnnunciator(2,c&LA2);
@@ -434,6 +450,7 @@ VOID RefreshDisp0()
 	EnterCriticalSection(&csGDILock);		// solving NT GDI problems
 	{
 		printf("update Disp0\n");
+		emu48_update_display();
 		//emu48_update_display();
         /*
 		StretchBlt(hWindowDC, 

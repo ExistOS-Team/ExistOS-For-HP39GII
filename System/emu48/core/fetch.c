@@ -784,6 +784,7 @@ VOID EvalOpcode(LPBYTE I)
 
 		dwTemp = I[dwIndex];
 		_ASSERT(dwTemp <= 0xf);			// found packed data
+		
 		dwIndex = pJmpTab[dwTemp].dwTyp; // table entry by opcode
 		pJmpTab = (PJMPTAB)pJmpTab[dwTemp].pLnk;  // next pointer type
 

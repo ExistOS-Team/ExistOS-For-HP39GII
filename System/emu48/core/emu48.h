@@ -264,6 +264,8 @@ extern BOOL    LoadObject(LPCTSTR szFilename);
 extern BOOL    SaveObject(LPCTSTR szFilename);
 extern HBITMAP LoadBitmapFile(LPCTSTR szFilename);
 
+extern uint8_t rom_read_nibbles(void *dst, uint32_t nibble_addr, uint32_t size);
+
 // Timer.c
 extern VOID  SetHP48Time(VOID);
 extern VOID  StartTimers(VOID);

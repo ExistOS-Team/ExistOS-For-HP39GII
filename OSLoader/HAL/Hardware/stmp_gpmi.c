@@ -160,7 +160,7 @@ static void GPMI_ClockConfigure()
 
 }
 
-static void GPMI_DMAChainsInit()
+static void __attribute__((target("thumb"))) GPMI_DMAChainsInit()
 {
     // ============================================Command Chains================================================
     //  Phase 1: Wait for ready;
@@ -853,7 +853,7 @@ static void GPMI_DMAChainsInit()
 
 }
 
-void GPMIConfigure()
+void __attribute__((target("thumb"))) GPMIConfigure()
 {
     GPMI_ClockConfigure();
     GPMI_EnableDMAChannel(true);
@@ -882,7 +882,7 @@ void GPMIConfigure()
 
 }
 
-static inline void waitLastOpa()
+static inline void __attribute__((target("thumb"))) waitLastOpa()
 {
     switch (LastOpa)
     {

@@ -11,8 +11,8 @@
 #define SYS_MODE 0x1f
 
 
-void _init() __attribute__((naked)) __attribute__((section(".init"))) __attribute__((naked));
-void _init()
+volatile void _init() __attribute__((naked)) __attribute__((section(".init"))) __attribute__((naked));
+volatile void _init()
 {
 	
 	asm volatile("ldr pc,.Lreset");
@@ -40,8 +40,8 @@ void _init()
 
 }
 
-void switch_mode(int mode) __attribute__((naked));
-void switch_mode(int mode) {
+volatile void switch_mode(int mode) __attribute__((naked));
+volatile void switch_mode(int mode) {
     asm volatile("and r0,r0,#0x1f");
     asm volatile("mrs r1,cpsr_all");
     asm volatile("bic r1,r1,#0x1f");
@@ -51,8 +51,8 @@ void switch_mode(int mode) {
     asm volatile("bx r0");
 }
 
-void set_stack(unsigned int newstackptr) __attribute__((naked));
-void set_stack(unsigned int newstackptr) {
+volatile void set_stack(unsigned int newstackptr) __attribute__((naked));
+volatile void set_stack(unsigned int newstackptr) {
     asm volatile("mov sp,r0");
     asm volatile("bx lr");
 }
@@ -61,8 +61,8 @@ extern unsigned int __bss_start;
 extern unsigned int __bss_end;
 
 
-void _boot() __attribute__((naked));
-void _boot(){
+volatile void _boot() __attribute__((naked));
+volatile void _boot(){
 	
 
 

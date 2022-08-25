@@ -121,6 +121,6 @@ VOID KeyboardEvent(BOOL bPress, UINT out, UINT in)
 	}
 	AdjKeySpeed();							// adjust key repeat speed
 	ScanKeyboard(FALSE,FALSE);				// update Chipset.in register by 1ms keyboard poll
-	Sleep(50);								// hold key state for a definite time
+	Sleep(10);								// hold key state for a definite time
 	return;
 }

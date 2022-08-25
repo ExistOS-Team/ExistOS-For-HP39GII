@@ -35,6 +35,9 @@
 #define TFbe(a, b, f)     Tbe((a)+F_s[f], (b)+F_s[f], F_l[f])
 #define TFnz(a, f)        Tnz((a)+F_s[f], F_l[f])
 
+LPBYTE FASTPTR(DWORD d);
+
+/*
 static __inline LPBYTE FASTPTR(DWORD d)
 {
 	static BYTE pbyNULL[16];
@@ -53,35 +56,6 @@ static __inline LPBYTE FASTPTR(DWORD d)
 	{
 		lpbyPage = pbyNULL;					// memory allocation
 		Npeek(lpbyPage, d, 13);				// fill with data (LA(8) = longest opcode)
-	}
-	return lpbyPage;
-}
-/*
-static __inline LPBYTE FASTPTR(DWORD d)
-{
-	static BYTE pbyNULL[21];
-	LPBYTE lpbyPage;
-	DWORD u, v;
-
-	d &= 0xFFFFF;							// handle address overflows
-
-	u = d >> 12;							// page
-	v = d & 0xFFF;							// offset
-
-	if (   !(Chipset.IOCfig && ((d & 0xFFFC0) == Chipset.IOBase))
-		&& RMap[u] != NULL					// page valid
-		&& (   v < 0x1000 - ARRAYSIZEOF(pbyNULL) // complete opcode inside page
-											// or next page continue linear addressing
-		    || (RMap[u] + 0x1000 == RMap[(u+1) & (ARRAYSIZEOF(RMap)-1)])
-		   )
-	   )
-	{
-		lpbyPage = RMap[u] + v;				// full address
-	}
-	else
-	{
-		lpbyPage = pbyNULL;					// memory allocation
-		Npeek(lpbyPage, d, ARRAYSIZEOF(pbyNULL)); // fill with data (LAHEX + 16 digits = longest opcode)
 	}
 	return lpbyPage;
 }

@@ -664,7 +664,10 @@ void tud_cdc_rx_cb(uint8_t itf) {
 static bool eraseDataMenu = false;
 static bool transScr = false;
 static int contrast_adj = 0;
-void vMainThread(void *pvParameters) {
+
+
+
+void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters) {
 
     // vTaskDelay(pdMS_TO_TICKS(100));
     setHCLKDivider(2);
@@ -814,8 +817,12 @@ void vMainThread(void *pvParameters) {
     }
 }
 
+void __attribute__((target("arm"))) vMainThread(void *pvParameters) {
+    vMainThread_thumb_entry(pvParameters);
+}
 
-int capt_ON_Key(int ck, int cp) 
+
+int __attribute__((target("thumb"))) capt_ON_Key(int ck, int cp) 
 {
 
     if(ck == KEY_F3 && cp)
@@ -1031,7 +1038,7 @@ void vApplicationIdleHook( void )
 }
 
 extern int bootTimes;
-void _startup() {
+volatile void _startup() {
 
     printf("Starting.(rebootTimes: %d)\n", bootTimes);
 

@@ -112,7 +112,7 @@ inline static bool vmMgr_CheckAddrVaild(uint32_t addr) {
     return true;
 }
 
-static inline void fetch_cache_and_move_to_tail() {
+static inline __attribute__((target("thumb")))  void fetch_cache_and_move_to_tail() {
 
     CachePageCur = CachePageHead;
 
@@ -126,7 +126,7 @@ static inline void fetch_cache_and_move_to_tail() {
     CachePageTail = CachePageCur;
 }
 
-static inline void move_cache_page_to_tail(CachePageInfo_t *item) {
+static inline __attribute__((target("thumb")))  void move_cache_page_to_tail(CachePageInfo_t *item) {
     if ((!item->next) && (item->prev)) {
         return;
     }
@@ -143,7 +143,7 @@ static inline void move_cache_page_to_tail(CachePageInfo_t *item) {
     }
 }
 
-static inline CachePageInfo_t *search_cache_page_by_vaddr(uint32_t vaddr) {
+static inline __attribute__((target("thumb")))  CachePageInfo_t *search_cache_page_by_vaddr(uint32_t vaddr) {
     CachePageInfo_t *tmp = (CachePageInfo_t *)CachePageTail;
     do {
         if (tmp->mapToVirtAddr == vaddr) {
@@ -154,7 +154,7 @@ static inline CachePageInfo_t *search_cache_page_by_vaddr(uint32_t vaddr) {
     return NULL;
 }
 
-static inline int save_cache_page(CachePageInfo_t *cache_page) {
+static inline __attribute__((target("thumb")))  int save_cache_page(CachePageInfo_t *cache_page) {
     int ret = 0;
     if (
         (cache_page->dirty) &&
@@ -167,7 +167,7 @@ static inline int save_cache_page(CachePageInfo_t *cache_page) {
     return ret;
 }
 
-bool inline vmMgr_checkAddressValid(uint32_t address, uint32_t perm) {
+bool inline __attribute__((target("thumb")))  vmMgr_checkAddressValid(uint32_t address, uint32_t perm) {
     if (address < MEMORY_SIZE) {
         return true;
     }
@@ -243,7 +243,7 @@ void vmMgr_ReleaseAllPage() {
 
 }
 
-void  __attribute__((optimize("-O3"))) vmMgr_task() {
+void  __attribute__((optimize("-O3"))) __attribute__((target("thumb")))  vmMgr_task() {
     pageFaultInfo_t currentFault;
     MapList_t *mapinfo;
 

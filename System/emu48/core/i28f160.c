@@ -662,7 +662,7 @@ VOID FlashInit(VOID)
 VOID FlashRead(BYTE *a, DWORD d, UINT s)
 {
 	BYTE v;
-
+	printf("Flash Read:%d %d\n", d ,s);
 	while (s)								// each nibble
 	{
 		// output muliplexer
@@ -685,7 +685,7 @@ VOID FlashWrite(BYTE *a, DWORD d, UINT s)
 {
 	BYTE  v;
 	DWORD p;
-
+	printf("Flash Wr:%d %d\n", d ,s);
 	while (s)								// each nibble
 	{
 		p = d >> 1;							// byte address

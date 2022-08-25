@@ -4,11 +4,12 @@
 
 #include "ff.h"
 
+#include "string.h"
 #include "stdio.h"
 
 #define LOAD_BLOCK_SIZE 65536
 
-static void *rom_addr = NULL;
+void *emu_rom_addr = NULL;
 
 static FIL *romf;
 
@@ -41,30 +42,35 @@ int load_rom(const char *romfile) {
         }
         rom_size = f_size(romf);
 
+/*
         fr = f_read(romf, &testread, 4, &btr);
         if ((fr) || (btr != 4)) {
             goto load_rom_fail_2;
         }
         if ((testread & 0xF0F0F0F0) == 0) {
             rom_isPacked = false;
-            rom_addr = pvPortMalloc(rom_size);
+            emu_rom_addr = pvPortMalloc(rom_size);
 
         } else {
             rom_isPacked = true;
-            rom_addr = pvPortMalloc(rom_size * 2);
+            emu_rom_addr = pvPortMalloc(rom_size * 2);
         }
-
-        if (!rom_addr) {
+*/
+        emu_rom_addr = pvPortMalloc(rom_size);
+        if (!emu_rom_addr) {
             goto load_rom_fail_1;
         }
-
+/*
         f_lseek(romf, 0);
         char rbyte;
         size_t rdcnt = 0;
-        uint8_t *pch = rom_addr;
+        uint8_t *pch = emu_rom_addr;
         uint8_t *u8pt = rdrom_buf;
-        size_t wbcnt = 0;
-        if (rom_isPacked) {
+        size_t wbcnt = 0;*/
+        /*
+        if (rom_isPacked) 
+        {
+
             while (rdcnt != rom_size) {
 
                 if (rdcnt + LOAD_BLOCK_SIZE <= rom_size) {
@@ -99,8 +105,10 @@ int load_rom(const char *romfile) {
                     printf("Load rom:%d/%d\n", rdcnt, rom_size);
                 }
             }
-        } else {
-            fr = f_read(romf, rom_addr, rom_size, &btr);
+        } else 
+        */
+        {
+            fr = f_read(romf, emu_rom_addr, rom_size, &btr);
             if ((fr) || (btr != rom_size)) {
                 goto load_rom_fail_2;
             }
@@ -112,19 +120,74 @@ int load_rom(const char *romfile) {
     }
 
 load_rom_fail_2:
-    vPortFree(rom_addr);
+    vPortFree(emu_rom_addr);
 
 load_rom_fail_1:
     f_close(romf);
     vPortFree(romf);
     vPortFree(rdrom_buf);
     rom_size = 0;
-    rom_addr = NULL;
+    emu_rom_addr = NULL;
     return -1;
 }
 
-void *get_rom_addr() {
-    return rom_addr;
+//static uint32_t maxsz = 0;
+static uint8_t data_packed[32];
+static uint8_t data_unpacked[sizeof(data_packed) * 2];
+
+uint8_t rom_read_nibbles(void *dst,uint32_t nibble_addr, uint32_t size)
+{
+    if(nibble_addr >= 0x70000000)
+    {
+        //if(nibble_addr < 0x70000000 + rom_size * 2)
+        {
+            uint32_t acc_addr = nibble_addr - 0x70000000;
+
+            memcpy(data_packed, (void *)(acc_addr / 2 + emu_rom_addr) , sizeof(data_packed));
+
+            for(int i =0, j =0; i < sizeof(data_packed); i++)
+            {
+                data_unpacked[j++] = data_packed[i] & 0xF;
+                data_unpacked[j++] = data_packed[i] >> 4;
+            }
+            memcpy(dst, &data_unpacked[nibble_addr & 1] , size);
+
+/*
+            if(nibble_addr & 1)
+            {
+                memcpy(dst, &data_unpacked[1] , size);
+            }else
+            {
+                memcpy(dst, data_unpacked , size);
+            }
+            */
+
+            //memcpy(dst, (void *)(acc_addr + emu_rom_addr) , size);
+
+/*
+            if(size > maxsz)
+            {
+                maxsz = size;
+                printf("rddmsz:%d\n", size);
+            }
+            */
+
+            return 0;
+        }
+    }else{
+        memcpy(dst, (void *)nibble_addr, size);
+    }
+
+
+    //printf("RD ERR:%08x %08x\n", nibble_addr, emu_rom_addr);
+}
+
+
+
+
+
+void *get_emu_rom_addr() {
+    return emu_rom_addr;
 }
 
 size_t get_rom_size() {

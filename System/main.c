@@ -334,10 +334,11 @@ void main_thread() {
     ll_cpu_slowdown_enable(false);
     uarmLinuxMain();
 */
+
 /*
-    void emu48_main();
+    void emu48_main(int select);
     SystemUISuspend();
-    emu48_main();
+    emu48_main(2);
 */
 /*
     for(;;)
@@ -671,7 +672,7 @@ const char *msgboxbtn[] = {""};
 void emu48_preThread(void *sel)
 {
     if(sel == 0){
-        emu48_msgbox = lv_msgbox_create(lv_scr_act(), "Error", "Cound not fine the ROM: /rom.39g or /rom.39g.unpack", msgboxbtn , false);
+        emu48_msgbox = lv_msgbox_create(lv_scr_act(), "Error", "Cound not fine the ROM: /rom.39g", msgboxbtn , false);
         lv_obj_add_event_cb(emu48_msgbox, emu48_msgbox_event_cb, LV_EVENT_ALL, 0);
         lv_obj_align(emu48_msgbox, LV_ALIGN_CENTER, 0, 0);
         lv_obj_center(emu48_msgbox);
@@ -713,13 +714,14 @@ void emu48Btn(lv_event_t *e)
         FIL *f = pvPortMalloc(sizeof(FIL));
         FRESULT fr;
 
-
+/*
         fr = f_open(f, "/rom.39g.unpack", FA_OPEN_EXISTING);
         if(fr == FR_OK)
         {
             romf = 2;
             goto fopen_testok;
         }
+*/
         fr = f_open(f, "/rom.39g", FA_OPEN_EXISTING);
         if(fr == FR_OK)
         {

@@ -748,7 +748,9 @@ VOID Npeek(BYTE *a, DWORD d, UINT s)
 			{
 				if ((p=RMap[u]) != NULL)	// module mapped
 				{
-					memcpy(a, p+v, c);
+					//memcpy(a, p+v, c);
+					rom_read_nibbles(a, (uint32_t)p+v, (uint32_t)c);
+					//printf("PEEK:%08x, rom:%08x\n", p+v, pbyRom);
 				}
 				else						// open data bus
 				{
@@ -834,7 +836,9 @@ VOID Nread(BYTE *a, DWORD d, UINT s)
 			{
 				if ((p=RMap[u]) != NULL)	// module mapped
 				{
-					memcpy(a, p+v, c);
+					//memcpy(a, p+v, c);
+					rom_read_nibbles(a, (uint32_t)p+v, (uint32_t)c);
+					//printf("READ:%08x, rom:%08x\n", p+v, pbyRom);
 				}
 				// simulate open data bus
 				else						// open data bus

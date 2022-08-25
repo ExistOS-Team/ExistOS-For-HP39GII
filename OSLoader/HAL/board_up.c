@@ -51,7 +51,7 @@ bool driverWaitFalseF(bool (*f)(), TickType_t timeout)
     return false;
 }
 
-void boardInit(void)
+volatile void boardInit(void)
 {
     INFO("portBoardInit\n");
     

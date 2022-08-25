@@ -204,7 +204,7 @@ void  __attribute__((target("arm"))) emu_timer_thread(void *_)
             }while(t != NULL);
         }
 
-        vTaskDelay(pdMS_TO_TICKS(30));
+        vTaskDelay(pdMS_TO_TICKS(20));
     }
 }
 
@@ -214,14 +214,98 @@ static bool need_Refresh = false;
 void emu48_update_display()
 {
     need_Refresh = true;
-    
-    
+}
+
+void  __attribute__((target("arm")))  emu48_disp_update_task(void *_)
+{
+    memset(full_screen_buf, 255, sizeof(full_screen_buf));
+    for(;;)
+    {
+        if(need_Refresh)
+        {
+                float sx,sy;
+                for(uint16_t y = 0; y < SCREENHEIGHT; y++)
+                {
+                    for(uint16_t x = 0; x < 144; x++)
+                    {
+                        sx = x * 1.96;
+                        sy = y * 2;
+                        if(sx < 255 && sy < 127){
+                            full_screen_buf[(int) (256 * (sy   ) + (sx   )) ] = pbyLcd[144 * y + x];
+                            full_screen_buf[(int) (256 * (sy +1) + (sx   )) ] = pbyLcd[144 * y + x];
+                            full_screen_buf[(int) (256 * (sy   ) + (sx +1)) ] = pbyLcd[144 * y + x];
+                            full_screen_buf[(int) (256 * (sy +1) + (sx +1)) ] = pbyLcd[144 * y + x];
+                        }
+                    }
+                }
+                //ll_disp_put_area(pbyLcd, 0,0, 144 - 1, SCREENHEIGHT - 1);
+                ll_disp_put_area(full_screen_buf, 0,0, 255, 126);
+                need_Refresh = false;
+        }
+        vTaskDelay(pdMS_TO_TICKS(76));
+    }
+}
+
+extern void *emu_rom_addr;
+
+static BYTE pbyNULL[16];
+//static BYTE pbyCODE[128];
+
+static BYTE pbyCODE_packed[64];
+static BYTE pbyCODE_unpacked[sizeof(pbyCODE_packed) * 2];
+LPBYTE FASTPTR(DWORD d)
+{
+	
+	LPBYTE lpbyPage;
+	
+	d &= 0xFFFFF;							// handle address overflows
+
+	if ((Chipset.IOCfig)&&((d&0xFFFC0)==Chipset.IOBase))
+		return Chipset.IORam+d-Chipset.IOBase;
+
+	if ((lpbyPage = RMap[d>>12]) != NULL)	// page valid
+	{
+		lpbyPage += d & 0xFFF;				// full address
+
+        if((uint32_t)lpbyPage >= 0x70000000)
+        {
+            //if((uint32_t)lpbyPage < 0x70000000 + dwRomSize * 2)
+            {
+
+                //memcpy(pbyCODE, (void *)((uint32_t)lpbyPage - 0x70000000 + (uint32_t)emu_rom_addr) ,128);
+                //return pbyCODE;
+
+                uint32_t acc_addr = ((uint32_t)lpbyPage - 0x70000000) / 2 + (uint32_t)emu_rom_addr;
+
+                memcpy(pbyCODE_packed, (void *)acc_addr ,sizeof(pbyCODE_packed));
+
+                for(int i = 0, j = 0; i < sizeof(pbyCODE_packed); i++)
+                {
+                    pbyCODE_unpacked[j++] = pbyCODE_packed[i] & 0xF;
+                    pbyCODE_unpacked[j++] = pbyCODE_packed[i] >> 4;
+                }
+                return &pbyCODE_unpacked[(uint32_t)lpbyPage & 1];
+                
+            }
+        }else{
+            return lpbyPage;
+        }
+        //printf("RD CODE ERR:%08x\n", lpbyPage);
+	}
+	else
+	{
+		lpbyPage = pbyNULL;					// memory allocation
+		Npeek(lpbyPage, d, 13);				// fill with data (LA(8) = longest opcode)
+	}
+	return lpbyPage;
 }
 
 void emu48_main(int select)
 {
     int ret;
 
+    ret = load_rom("/rom.39g");
+/*
     if(select == 1)
     {
         ret = load_rom("/rom.39g");
@@ -229,21 +313,24 @@ void emu48_main(int select)
     {
         ret = load_rom("/rom.39g.unpack");
     }
-    
+    */
 
     if(ret)
     {
         goto b_exit;
     }
 
-    pbyRom = get_rom_addr();
-    dwRomSize = get_rom_size();
+    //pbyRom = get_rom_addr();
 
+    pbyRom = (LPBYTE)0x70000000;
+
+    dwRomSize = get_rom_size() * 2;
+/*
     if(rom_is_packed())
     {
         dwRomSize *= 2;
     }
-
+*/
     cCurrentRomType = 'E';
     nCurrentClass = 39;
     
@@ -314,7 +401,8 @@ void emu48_main(int select)
 	nNextState = SM_INVALID;				// go into invalid state
 
     xTaskCreate(emu_thread, "emu48", 32768, NULL, configMAX_PRIORITIES - 3, NULL);
-    xTaskCreate(emu_timer_thread, "emu48 timer", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
+    xTaskCreate(emu_timer_thread, "emu48 timer", 1000, NULL, configMAX_PRIORITIES - 3, NULL);
+    xTaskCreate(emu48_disp_update_task, "emu48 timer", 1000, NULL, configMAX_PRIORITIES - 3, NULL);
 
     ll_cpu_slowdown_enable(false);
 
@@ -324,10 +412,14 @@ void emu48_main(int select)
     vTaskDelay(pdMS_TO_TICKS(1000));
 
     SwitchToState(SM_RUN);
+    vTaskDelay(pdMS_TO_TICKS(5000));
 
+
+    int on_press = 0;
     for(;;)
     {
         //printf("emu cpu pc:%08x\n", Chipset.pc);
+
         uint32_t keys, key, kpress;
         static uint32_t last_key;
         static uint32_t last_press;
@@ -337,38 +429,22 @@ void emu48_main(int select)
             key = keys & 0xFFFF;
             kpress = keys >> 16;
 
-            vTaskDelay(pdMS_TO_TICKS(50));
+            vTaskDelay(pdMS_TO_TICKS(40));
 
-            if(need_Refresh)
-            {   
-                uint16_t sx,sy;
-                for(uint16_t y = 0; y < SCREENHEIGHT; y++)
+            if(on_press > 0)
+            {
+                on_press--;
+                if(on_press == 1)
                 {
-                    for(uint16_t x = 0; x < 144; x++)
-                    {
-                        sx = x * 2;
-                        sy = y * 2;
-                        if(sx < 255 && sy < 127){
-                            full_screen_buf[256 * (sy   ) + (sx   )] = pbyLcd[144 * y + x];
-                            full_screen_buf[256 * (sy +1) + (sx   )] = pbyLcd[144 * y + x];
-                            full_screen_buf[256 * (sy   ) + (sx +1)] = pbyLcd[144 * y + x];
-                            full_screen_buf[256 * (sy +1) + (sx +1)] = pbyLcd[144 * y + x];
-
-
-                        }
-                    }
+                    KeyboardEvent(false, KEY_39G_ON.out, KEY_39G_ON.in);
                 }
-
-
-                //ll_disp_put_area(pbyLcd, 0,0, 144 - 1, SCREENHEIGHT - 1);
-                ll_disp_put_area(full_screen_buf, 0,0, 255, 126);
-                need_Refresh = false;
             }
 
         }while((last_key == key) && (last_press == kpress));
 
         #define KEYEVENT(name)  KeyboardEvent(kpress, name.out, name.in)
         #define KEY_CASE(w, s)  case w: KEYEVENT(s); break
+
 
 
         switch (key)
@@ -423,7 +499,7 @@ void emu48_main(int select)
             KEY_CASE(KEY_3            , KEY_39G_3            );
             KEY_CASE(KEY_PLUS         , KEY_39G_PLUS         );
 
-            KEY_CASE(KEY_ON           , KEY_39G_ON           );
+            //KEY_CASE(KEY_ON           , KEY_39G_ON           );
             KEY_CASE(KEY_0            , KEY_39G_0            );
             KEY_CASE(KEY_DOT          , KEY_39G_DOT          );
             KEY_CASE(KEY_NEGATIVE     , KEY_39G_NEGATIVE     );
@@ -434,6 +510,12 @@ void emu48_main(int select)
             KEY_CASE(KEY_DOWN     , KEY_39G_DOWN    );
             KEY_CASE(KEY_LEFT     , KEY_39G_LEFT    );
             KEY_CASE(KEY_UP       , KEY_39G_UP      );
+
+            case KEY_ON:
+                {
+                    KeyboardEvent(true, KEY_39G_ON.out, KEY_39G_ON.in);
+                    on_press = 10;
+                }
 
         
         default:
@@ -501,7 +583,7 @@ BOOL QueryPerformanceCounter(PLARGE_INTEGER l)
 
 MMRESULT timeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK fptc, DWORD_PTR dwUser, UINT fuEvent) 
 {
-    printf("set timer:%d, %d, %d\n", uDelay, dwUser, fuEvent);
+    //printf("set timer:%d, %d, %d\n", uDelay, dwUser, fuEvent);
     
     return (MMRESULT)emu_add_timer(uDelay, fptc, (uint32_t)dwUser, fuEvent == TIME_ONESHOT);
 }
@@ -509,7 +591,7 @@ MMRESULT timeSetEvent(UINT uDelay, UINT uResolution, LPTIMECALLBACK fptc, DWORD_
 
 MMRESULT timeKillEvent(UINT uTimerID)
 {
-    printf("del timer:%08x\n", uTimerID);
+    //printf("del timer:%08x\n", uTimerID);
     emu_del_timer((emu48_emu_timer_t *)uTimerID);
     return 0;
 }
