@@ -593,9 +593,15 @@ void main_thread() {
             SET_LABEL_TEXT(info_line3, "Batt: %d mv,  Charging: %s", cur_batt_volt, ll_get_charge_status() ? "Yes" : "NO" );
             SET_LABEL_TEXT(info_line4, "Pwr Speed: %d Ticks", ll_get_pwrspeed() );
 
+            if(cur_batt_volt > 1408)
+            {
+                ll_charge_enable(false);
+                lv_obj_clear_state(charge_chb, LV_STATE_CHECKED);
+            }
+
             //printf("f=%d,v=%d,t=%d\r\n", cur_fcpu, cur_batt_volt, cur_soc_temp);
             /*
-            if(runTime % 30 == 0)
+            if(runTime % 20 == 0)
             {
 
                 
