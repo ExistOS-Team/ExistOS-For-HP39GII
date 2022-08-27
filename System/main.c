@@ -317,6 +317,17 @@ void slider_cpu_minimum_frac_event_cb(lv_event_t *e) {
     ll_cpu_slowdown_min_frac(val);
 }
 
+void gb_main(void *_);
+
+void gb_entry(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+	    xTaskCreate(gb_main, "GB Emu", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
+    }
+}
+
+
 
 lv_obj_t *title, *tv, *t1, *t2, *imgbtn, *imgbtn2;
 
@@ -500,6 +511,39 @@ void main_thread() {
 
     
     lv_obj_add_event_cb(btn2, emu48Btn, LV_EVENT_ALL, NULL);
+
+
+
+    lv_obj_t *imgbtn3 = lv_imgbtn_create(t1);
+
+	lv_obj_set_scrollbar_mode(imgbtn3, LV_SCROLLBAR_MODE_OFF);
+
+    lv_obj_set_size(imgbtn3, 48, 48);
+    lv_obj_set_pos(imgbtn3, 48 + 48 + 76, 2);
+
+    LV_IMG_DECLARE(gbico);
+
+	lv_obj_add_style(imgbtn3, &style_screen_imgbtn_1_main_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
+	lv_imgbtn_set_src(imgbtn3, LV_IMGBTN_STATE_RELEASED, NULL, &gbico, NULL);
+	lv_obj_add_flag(imgbtn3, LV_OBJ_FLAG_CHECKABLE);
+
+    
+
+    lv_obj_t *btn3;
+    btn3 = lv_btn_create(t1);
+    lv_obj_set_size(btn3, 62, 13);
+    lv_obj_set_pos(btn3, 60 + 40 + 64 , 52);
+    lv_obj_t * label3 = lv_label_create(btn3);
+	lv_label_set_text(label3, "GameBoy");
+	lv_obj_set_style_pad_all(btn3, 0, LV_STATE_DEFAULT);
+	lv_obj_align(label3, LV_ALIGN_CENTER, 0, 0);
+	lv_obj_add_style(btn3, &style_screen_btn_1_main_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
+
+    void gb_entry();
+    lv_obj_add_event_cb(btn3, gb_entry, LV_EVENT_ALL, NULL);
+
+
+
     }
 
     //lv_obj_clear_flag(btn1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);

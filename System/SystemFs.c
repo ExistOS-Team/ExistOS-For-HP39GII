@@ -155,6 +155,7 @@ mount_flash:
         fres = f_mkdir(FS_SYSTEM_PATH "/" FS_FONTS_PATH);
         INFO("mkdir " FS_SYSTEM_PATH "/" FS_FONTS_PATH ", %d\n", fres);
     }
+    
 
     lv_fs_dir_close(&dir);
 #else

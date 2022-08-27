@@ -8,7 +8,7 @@
 unsigned int frames;
 
 #include "keyboard_gii39.h"
-
+#include <string.h>
 
 static int button_start, button_select;
 static int button_a, button_b;
@@ -70,14 +70,36 @@ int sdl_update(void)
 	uint32_t key = keys & 0xFFFF;
 	uint32_t press = keys >> 16;
 
-	button_up = (key == KEY_UP) & (press);
-	button_down = (key == KEY_DOWN) & (press);
-	button_left = (key == KEY_LEFT) & (press);
+/*
+	button_up =    (key == KEY_UP)    & (press);
+	button_down =  (key == KEY_DOWN)  & (press);
+	button_left =  (key == KEY_LEFT)  & (press);
 	button_right = (key == KEY_RIGHT) & (press);
-	button_a = (key == KEY_SYMB) & (press);
+*/
+	button_up    = ((key == KEY_8) | (key == KEY_UP)    ) & (press);
+	button_down  = ((key == KEY_2) | (key == KEY_DOWN)  ) & (press);
+	button_left  = ((key == KEY_4) | (key == KEY_LEFT)  ) & (press);
+	button_right = ((key == KEY_6) | (key == KEY_RIGHT) ) & (press);
+
+	button_a = ((key == KEY_SYMB) || (key == KEY_5)) & (press);
+
 	button_b = (key == KEY_HOME) & (press);
 	button_start = (key == KEY_NUM) & (press);
 	button_select = (key == KEY_VIEWS) & (press);
+
+
+	if((key == KEY_9) & (press))
+	{
+		button_a = 1;
+		button_right = 1;
+	}
+
+	if((key == KEY_7) & (press))
+	{
+		button_a = 1;
+		button_left = 1;
+	}
+
 /*
 
 	SDL_Event e;
@@ -130,19 +152,32 @@ unsigned int sdl_get_directions(void)
 	return (button_down*8) | (button_up*4) | (button_left*2) | button_right;
 }
 
-uint8_t frame_buffer[256 * 127];
+uint8_t gb_frame_buffer[256 * 127];
 
 unsigned int *sdl_get_framebuffer(void)
 {
 	//return surface->pixels;
-	return (unsigned int *)frame_buffer;
+	return (unsigned int *)gb_frame_buffer;
 }
 
 void sdl_frame(void)
 {
 	frames++;
-	if(frames % 4 == 0)
-		ll_disp_put_area(frame_buffer, 0, 0, 255, 127);
+	if(frames % 5 == 0)
+		ll_disp_put_area(gb_frame_buffer, 0, 0, 255, 126);
+	//SDL_UpdateWindowSurface(window);
+}
+
+void sdl_frame_i(void)
+{
+		ll_disp_put_area(gb_frame_buffer, 0, 0, 255, 126);
+	//SDL_UpdateWindowSurface(window);
+}
+
+void sdl_frame_clr(uint8_t c)
+{
+	memset(gb_frame_buffer, c, sizeof(gb_frame_buffer));
+	ll_disp_put_area(gb_frame_buffer, 0, 0, 255, 126);
 	//SDL_UpdateWindowSurface(window);
 }
 
