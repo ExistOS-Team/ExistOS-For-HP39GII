@@ -221,7 +221,7 @@ void arm_vector_dab() {
         break;
     case 0x5:
     case 0x7:
-        FaultInfo.FSR = FSR_DATA_ACCESS_UNMAP;
+        FaultInfo.FSR = FSR_DATA_ACCESS_UNMAP_DAB;
         break;
     case 0xD:
     case 0xF:
@@ -255,7 +255,7 @@ void arm_vector_pab() {
     pageFaultInfo_t FaultInfo;
     FaultInfo.FaultTask = xTaskGetCurrentTaskHandle();
     FaultInfo.FaultMemAddr = context[15 + 2] - 4;
-    FaultInfo.FSR = FSR_DATA_ACCESS_UNMAP;
+    FaultInfo.FSR = FSR_DATA_ACCESS_UNMAP_PAB;
 
     /*
     FaultInfo.FSR = FSR;

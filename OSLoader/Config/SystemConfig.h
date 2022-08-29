@@ -26,12 +26,18 @@
 // DATA   SYS   SWAP
 //#define DISK_PARTITION      {80, 15, 5, 0}
 
+#define USE_TINY_PAGE       (1)
+#define VMRAM_USE_FTL       (1)
+
 #define SEG_SIZE            1048576
 
-#define VMRAM_USE_FTL   (1)
 
-#if (VMRAM_USE_FTL == 1)
-    #define NUM_CACHEPAGE             ( 77 ) // 77 *4 = 308 KB
+#if VMRAM_USE_FTL
+    #if USE_TINY_PAGE
+        #define NUM_CACHEPAGE             ( 273 ) // 273 * 1 = 273 KB
+    #else
+        #define NUM_CACHEPAGE             ( 77 ) // 77 * 4 = 308 KB
+    #endif
 #else
     #define NUM_CACHEPAGE             ( 32 )
     #define VM_RAM_SIZE_NONE_FTL      ( 168 * 1024 )
@@ -40,17 +46,21 @@
 
 
 
-#define PAGE_SIZE           4096
+#if USE_TINY_PAGE
+    #define PAGE_SIZE           1024
+#else
+    #define PAGE_SIZE           4096
+#endif
 
 #define PAGES_SWAPFILE      (SIZE_SWAPFILE_MB * 1048576 / PAGE_SIZE)
 
 #define VM_ROM_BASE         (0x00100000)
-#define VM_ROM_SIZE         (1048576 * 10)
+#define VM_ROM_SIZE         (1048576 * 4)
 #define VM_ROM_SEG          (VM_ROM_BASE >> 20)
 #define VM_ROM_NUM_SEG      (VM_ROM_SIZE / SEG_SIZE)
 
 #define VM_RAM_BASE         (0x02000000)
-#define VM_RAM_SIZE         (1048576 * 8)
+#define VM_RAM_SIZE         (1048576 * 6)
 #define VM_RAM_SEG          (VM_ROM_BASE >> 20)
 #define VM_RAM_NUM_SEG      (VM_RAM_SIZE / SEG_SIZE)
 

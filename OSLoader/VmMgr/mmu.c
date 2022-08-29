@@ -17,9 +17,13 @@
 uint32_t L1PTE[L1PTE_NUM] __attribute__((aligned(16384)));  //Must 16KB aligned
 uint32_t DFLPT_BASE = (uint32_t)L1PTE;
 
-uint32_t L2PTE[TOTAL_VM_SEG * 256]  __attribute__((aligned(1024)));
-
-#define SEGn_L2TAB_BASE(x)    ((uint32_t)(&L2PTE[(x) * 256]))
+#if USE_TINY_PAGE
+    uint32_t L2PTE[TOTAL_VM_SEG * 1024]  __attribute__((aligned(4096)));
+    #define SEGn_L2TAB_BASE(x)    ((uint32_t)(&L2PTE[(x) * 1024]))
+#else
+    uint32_t L2PTE[TOTAL_VM_SEG * 256]  __attribute__((aligned(1024)));
+    #define SEGn_L2TAB_BASE(x)    ((uint32_t)(&L2PTE[(x) * 256]))
+#endif
 
 #define VADDR_TO_L1SEGn(addr)   ((addr) >> 20)
 
@@ -169,6 +173,7 @@ static inline void SetL1PTE(uint32_t pte, uint32_t interpret, uint32_t targetAdd
     switch (interpret)
     {
     case L1PTE_INTERPRET_INVALID:
+        PTE_LOC[pte] = 0;
         break;
     case L1PTE_INTERPRET_COARSE:
         PTE_LOC[pte] |= L1PTE_INTERPRET_COARSE;
@@ -186,6 +191,12 @@ static inline void SetL1PTE(uint32_t pte, uint32_t interpret, uint32_t targetAdd
             PTE_LOC[pte] |= (1) << 3;
         if(buffer)
             PTE_LOC[pte] |= (1) << 2;
+        break;
+    case L1PTE_INTERPRET_FINE:
+        PTE_LOC[pte] |= L1PTE_INTERPRET_FINE;
+        PTE_LOC[pte] |= targetAddr & 0xFFFFF000;
+        PTE_LOC[pte] |= (domain & 0xF) << 5;
+        PTE_LOC[pte] |= 1 << 4;
         break;
     default:
         INFO("ERROR: Unexpected L1 Interpret:%lu\n", interpret);
@@ -244,7 +255,12 @@ void mmu_unmap_page(uint32_t vaddr)
     }
     uint32_t *L1PTE = (uint32_t *)DFLPT_BASE;
     uint32_t *L2PTE = ((uint32_t *)(L1PTE[  vaddr >> 20 ] & ~0x3FF));
+
+    #if USE_TINY_PAGE
+    L2PTE[(vaddr >> 10) & 0x3FF] = 0;
+    #else
     L2PTE[(vaddr >> 12) & 0xFF] = 0;
+    #endif
 }
 
 void mmu_map_page(uint32_t vaddr, uint32_t paddr,
@@ -256,9 +272,18 @@ void mmu_map_page(uint32_t vaddr, uint32_t paddr,
         return;
     }
     uint32_t *L1PTE = (uint32_t *)DFLPT_BASE;
-    uint32_t *L2PTE = ((uint32_t *)(L1PTE[  vaddr >> 20 ] & ~0x3FF));
+    uint32_t *L2PTE = ((uint32_t *)(L1PTE[  vaddr >> 20 ] & ~0x3FF)); // check which seg (0~4095)
+
     uint32_t val = 0;
 
+#if USE_TINY_PAGE
+    val  = (paddr & (~0x3FF));
+    val |= (AP & 0x3) << 4;
+    val |= ((cache & 1) << 3);
+    val |= ((buffer & 1) << 2);
+    val |= 3;
+    L2PTE[(vaddr >> 10) & 0x3FF] = val;
+#else
     val  = (paddr & (~0xFFF));
     val |= (AP & 0x3) << 4;
     val |= (AP & 0x3) << 6;
@@ -270,6 +295,8 @@ void mmu_map_page(uint32_t vaddr, uint32_t paddr,
     val |= 2;
 
     L2PTE[(vaddr >> 12) & 0xFF] = val;
+
+#endif
     //INFO("SET VAL:%08x\n", val);
 
 }
@@ -286,17 +313,31 @@ void mmu_init()
     uint32_t j = 0;
     for(int i = 0; i < VM_ROM_NUM_SEG; i++)
     {
+        #if USE_TINY_PAGE
+        SetL1PTE(VADDR_TO_L1SEGn(VM_ROM_BASE + i * SEG_SIZE) ,
+                 L1PTE_INTERPRET_FINE,
+                 SEGn_L2TAB_BASE(j++),
+                 VM_ROM_DOMAIN, AP_SYSRW_USROR, true, true);
+        #else
         SetL1PTE(VADDR_TO_L1SEGn(VM_ROM_BASE + i * SEG_SIZE) ,
                  L1PTE_INTERPRET_COARSE,
                  SEGn_L2TAB_BASE(j++),
                  VM_ROM_DOMAIN, AP_SYSRW_USROR, true, true);
+        #endif
     }
     for(int i = 0; i < VM_RAM_NUM_SEG; i++)
     {
+        #if USE_TINY_PAGE
+        SetL1PTE(VADDR_TO_L1SEGn(VM_RAM_BASE + i * SEG_SIZE) ,
+                 L1PTE_INTERPRET_FINE,
+                 SEGn_L2TAB_BASE(j++),
+                 VM_ROM_DOMAIN, AP_SYSRW_USROR, true, true);
+        #else
         SetL1PTE(VADDR_TO_L1SEGn(VM_RAM_BASE + i * SEG_SIZE) ,
                  L1PTE_INTERPRET_COARSE,
                  SEGn_L2TAB_BASE(j++),
                  VM_ROM_DOMAIN, AP_SYSRW_USROR, true, true);
+        #endif
     }
 
     mmu_SetDomainPermCheck(HARDWARE_MEMORY_DOMAIN, true);
