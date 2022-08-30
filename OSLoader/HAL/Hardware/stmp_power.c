@@ -64,8 +64,9 @@ void portPowerIRQ(uint32_t nirq)
 void portBoardPowerOff()
 {
 
-    BF_SET(RTC_PERSISTENT0, DISABLE_PSWITCH);
-    //BF_CLR(RTC_PERSISTENT0, DISABLE_PSWITCH);
+    HW_POWER_VDDIOCTRL.B.DISABLE_FET = 0;
+    HW_POWER_5VCTRL.B.ENABLE_DCDC = 0;
+
     BF_WR(POWER_RESET, UNLOCK, 0x3E77);
     BF_WR(POWER_RESET, PWD_OFF, 1);
     BF_WR(POWER_RESET, PWD, 1);
@@ -246,7 +247,7 @@ void portPowerInit()
     portDelayus(200);
     BF_WR(POWER_VDDACTRL, TRG,  (uint8_t)((1.75 - 1.5)/0.025) );  // val = (TAG_v - 1.5v)/0.025v, 1.5~1.95, 1.75
     portDelayus(200);
-    BF_WR(POWER_VDDIOCTRL, TRG, (uint8_t)((3.45 - 2.8)/0.025));  // val = (TAG_v - 2.8v)/0.025v, 2.8~3.575, 3.1
+    BF_WR(POWER_VDDIOCTRL, TRG, (uint8_t)((3.3 - 2.8)/0.025));  // val = (TAG_v - 2.8v)/0.025v, 2.8~3.575, 3.1
     portDelayus(100);
 
     INFO("VDDIO LDO VAL:0x%03x\n", HW_POWER_VDDIOCTRL.B.TRG );
