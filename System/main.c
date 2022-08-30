@@ -570,9 +570,9 @@ void main_thread() {
     lv_obj_t* label_time = lv_label_create(cont);
     uint32_t rtc_time_sec = ll_rtc_get_sec();
     
-    lv_obj_set_size(label_time, 62, 13);
-    lv_obj_set_pos(label_time, 60 + 40 + 64 + 61 , 0);
-
+    lv_obj_set_size(label_time, 48, 13);
+    lv_obj_set_pos(label_time, 0 , 0);
+    lv_obj_align(label_time, LV_ALIGN_TOP_RIGHT, 0, 0);
     lv_obj_set_flex_flow(t2, LV_FLEX_FLOW_COLUMN);
     //
 
