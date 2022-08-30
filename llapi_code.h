@@ -46,6 +46,8 @@
 #define LL_FAST_SWI_PWR_VOLTAGE        (LL_FAST_SWI_BASE + 43)
 #define LL_FAST_SWI_CORE_TEMP          (LL_FAST_SWI_BASE + 44)
 #define LL_SWI_PWR_SPEED               (LL_SWI_BASE + 45)
+#define LL_FAST_SWI_RTC_GET_SEC        (LL_FAST_SWI_BASE + 46)
+#define LL_FAST_SWI_RTC_SET_SEC        (LL_FAST_SWI_BASE + 47)
 
 #define LL_SWI_SET_SERIALPORT          (LL_SWI_BASE + 50)
 #define LL_SWI_SERIAL_GETCH            (LL_SWI_BASE + 51)

@@ -62,7 +62,7 @@ bool MTD_upOpaFin(uint32_t eccResult)
 }
 
 uint32_t retry_cnt;
-void MTD_Task()
+void __attribute__((optimize("-O3")))  MTD_Task()
 {
     //vTaskDelay(pdMS_TO_TICKS(1000));
     while(1){

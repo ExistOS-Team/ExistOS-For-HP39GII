@@ -14,6 +14,8 @@
 #include "giac.h"
 #include "gen.h"
 
+#include "sys_llapi.h"
+
 using namespace giac;
 using namespace std;
 
@@ -26,6 +28,11 @@ volatile bool ctrl_c = false;
 //, esc_flag = false;
 
 namespace giac{
+
+unsigned int rtc_get_tick_ms()
+{
+    return ll_get_time_ms();
+}
 
 stdostream cout;
 

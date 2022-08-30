@@ -282,7 +282,9 @@ void LLAPI_init(TaskHandle_t upSys) {
 static uint32_t data_page_buffer[2048 / sizeof(uint32_t)];
 
 bool g_llapi_fin = true;
-void LLAPI_Task() {
+
+
+void __attribute__((target("thumb"))) LLAPI_Task_thumb_entry() {
     LLAPI_CallInfo_t currentCall;
     for (;;) {
         while (xQueueReceive(LLAPI_Queue, &currentCall, portMAX_DELAY) == pdTRUE) {
@@ -618,3 +620,10 @@ void LLAPI_Task() {
         }
     }
 }
+
+
+void LLAPI_Task()
+{
+    LLAPI_Task_thumb_entry();
+}
+

@@ -71,6 +71,8 @@ DECDEF_LLSWI(uint32_t,     ll_get_charge_status,    (void)                      
 DECDEF_LLSWI(uint32_t,     ll_charge_enable,    (bool enable)                               ,LL_SWI_CHARGE_ENABLE             );
 DECDEF_LLSWI(uint32_t,     ll_cpu_slowdown_enable,    (bool enable)                               ,LL_SWI_SLOW_DOWN_ENABLE             );
 DECDEF_LLSWI(uint32_t,     ll_cpu_slowdown_min_frac,    (uint32_t val)                               ,LL_SWI_SLOW_DOWN_MINFRAC            );
+DECDEF_LLSWI(uint32_t,     ll_rtc_get_sec,    (void)                                         ,LL_FAST_SWI_RTC_GET_SEC            );
+DECDEF_LLSWI(void,         ll_rtc_set_sec,    (uint32_t val)                                 ,LL_FAST_SWI_RTC_SET_SEC            );
 
 DECDEF_LLSWI(uint32_t,     ll_system_idle,      (void)                                    ,LL_FAST_SWI_SYSTEM_IDLE             );
 #ifdef __cplusplus          

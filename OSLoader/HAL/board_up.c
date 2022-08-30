@@ -10,6 +10,7 @@
 #include "mtd_up.h"
 #include "display_up.h"
 #include "keyboard_up.h"
+#include "rtc_up.h"
 
 #include "../debug.h"
 
@@ -51,7 +52,7 @@ bool driverWaitFalseF(bool (*f)(), TickType_t timeout)
     return false;
 }
 
-void boardInit(void)
+volatile void boardInit(void)
 {
     INFO("portBoardInit\n");
     
@@ -72,7 +73,7 @@ void boardInit(void)
     portKeyboardGPIOInit();
 
     
-
+    rtc_init();
     
 
 }

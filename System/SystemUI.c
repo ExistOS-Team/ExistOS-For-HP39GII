@@ -302,16 +302,16 @@ static void keypad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data) {
 
 void lvgl_tick() {
     for (;;) {
-        //lv_tick_inc(50);
-        vTaskDelay(pdMS_TO_TICKS(50));
+        lv_tick_inc(51);
+        vTaskDelay(pdMS_TO_TICKS(52));
     }
 }
 
 void lvgl_svc() {
-
+    vTaskDelay(pdMS_TO_TICKS(400));
     for (;;) {
         lv_timer_handler();
-        vTaskDelay(pdMS_TO_TICKS(LV_DISP_DEF_REFR_PERIOD));
+        vTaskDelay(pdMS_TO_TICKS(62));
     }
 }
 
@@ -334,7 +334,7 @@ void SystemUIInit() {
     indev_keypad = lv_indev_drv_register(&indev_drv);
 
     xTaskCreate(lvgl_svc, "lvgl svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, &lvgl_svc_task);
-    //xTaskCreate(lvgl_tick, "lvgl tick", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, &lvgl_tick_task);
+    xTaskCreate(lvgl_tick, "lvgl tick", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, &lvgl_tick_task);
 
     vTaskDelay(pdMS_TO_TICKS(100));
     
@@ -356,6 +356,8 @@ void SystemUIInit() {
         //     lv_indev_set_group(cur_drv, group);
         // }
     }
+
+    lv_group_set_refocus_policy(group, LV_GROUP_REFOCUS_POLICY_NEXT);
 
     indicator &= ~(INDICATE_LEFT | INDICATE_RIGHT);
     if (g_ShiftStatus == 1)
@@ -421,10 +423,10 @@ uint32_t SystemUIMsgBox(lv_obj_t *parent,char *msg, char *title, uint32_t button
 
 void SystemUISuspend() {
     vTaskSuspend(lvgl_svc_task);
-    //vTaskSuspend(lvgl_tick_task);
+    vTaskSuspend(lvgl_tick_task);
 }
 
 void SystemUIResume() {
     vTaskResume(lvgl_svc_task);
-    //vTaskResume(lvgl_tick_task);
+    vTaskResume(lvgl_tick_task);
 }

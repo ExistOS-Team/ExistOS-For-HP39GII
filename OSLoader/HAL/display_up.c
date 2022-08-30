@@ -10,7 +10,7 @@
 #include "display_up.h"
 #include "font_ascii.h"
 
-uint32_t g_lcd_contrast = 57;
+uint32_t g_lcd_contrast = 62;
 
 typedef enum {
     DISPOPA_CLEAN,

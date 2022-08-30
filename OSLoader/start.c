@@ -17,7 +17,9 @@
 #include "llapi.h"
 #include "llapi_code.h"
 #include "mtd_up.h"
+#include "rtc_up.h"
 #include "vmMgr.h"
+
 
 #include "../debug.h"
 
@@ -95,7 +97,7 @@ void printTaskList() {
     printf("Flash ECC FATAL:%lu\n", g_mtd_ecc_fatal_cnt);
     printf("Batt Charge:%d\n", HW_POWER_STS.B.CHRGSTS);
     printf("PWD_BATTCHRG:%d\n", HW_POWER_CHARGE.B.PWD_BATTCHRG);
-
+    printf("RTC:%ld\n", rtc_get_seconds());
     printf("=============================================\r\n\n");
 }
 
@@ -664,7 +666,10 @@ void tud_cdc_rx_cb(uint8_t itf) {
 static bool eraseDataMenu = false;
 static bool transScr = false;
 static int contrast_adj = 0;
-void vMainThread(void *pvParameters) {
+
+
+
+void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters) {
 
     // vTaskDelay(pdMS_TO_TICKS(100));
     setHCLKDivider(2);
@@ -814,8 +819,12 @@ void vMainThread(void *pvParameters) {
     }
 }
 
+void __attribute__((target("arm"))) vMainThread(void *pvParameters) {
+    vMainThread_thumb_entry(pvParameters);
+}
 
-int capt_ON_Key(int ck, int cp) 
+
+int __attribute__((target("thumb"))) capt_ON_Key(int ck, int cp) 
 {
 
     if(ck == KEY_F3 && cp)
@@ -1031,7 +1040,7 @@ void vApplicationIdleHook( void )
 }
 
 extern int bootTimes;
-void _startup() {
+volatile void _startup() {
 
     printf("Starting.(rebootTimes: %d)\n", bootTimes);
 

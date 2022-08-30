@@ -21,9 +21,10 @@
 #define    PERM_W       (1 << 1)
 
 #define    FSR_DATA_UNALIGN             1
-#define    FSR_DATA_ACCESS_UNMAP        2
-#define    FSR_DATA_WR_RDONLY           3
-#define    FSR_INST_FETCH               4
+#define    FSR_DATA_ACCESS_UNMAP_DAB    2
+#define    FSR_DATA_ACCESS_UNMAP_PAB    3
+#define    FSR_DATA_WR_RDONLY           4
+#define    FSR_INST_FETCH               5
 #define    FSR_UNKNOWN                  0xF
 
 typedef struct pageFaultInfo_t
@@ -31,6 +32,7 @@ typedef struct pageFaultInfo_t
     TaskHandle_t FaultTask;
     uint32_t FaultMemAddr;
     uint32_t FSR;
+    uint32_t FaultPC;
 }pageFaultInfo_t;
 
 extern QueueHandle_t PageFaultQueue;

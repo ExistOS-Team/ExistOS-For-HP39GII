@@ -29,6 +29,7 @@
 
 #include "lv_demo_keypad_encoder.h"
 
+#include "Fatfs/ff.h"
 //#include "mpy_port.h"
 
 volatile unsigned long ulHighFrequencyTimerTicks;
@@ -100,7 +101,7 @@ void vApplicationIdleHook( void )
 
 }
 
-
+void emu48Btn(lv_event_t *e);
 void khicasBtn(lv_event_t *e);
 static bool suspend = false;
 static lv_obj_t *screen;
@@ -199,6 +200,12 @@ void draw_main_win()
 	lv_obj_t *screen_win_1_btn;
 	lv_obj_t *screen_win_1_label = lv_label_create(lv_win_get_content(win));
 	lv_label_set_text(screen_win_1_label, "");
+
+
+
+
+
+
 
 /*
     obj = lv_textarea_create(lv_scr_act());
@@ -310,7 +317,19 @@ void slider_cpu_minimum_frac_event_cb(lv_event_t *e) {
     ll_cpu_slowdown_min_frac(val);
 }
 
+void gb_main(void *_);
 
+void gb_entry(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+	    xTaskCreate(gb_main, "GB Emu", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
+    }
+}
+
+
+
+static lv_obj_t *title, *tv, *t1, *t2, *imgbtn, *imgbtn2;
 
 void main_thread() {
 
@@ -320,6 +339,19 @@ void main_thread() {
     SystemUIInit();
     SystemFSInit();
 
+/*
+    ll_cpu_slowdown_enable(false);
+    extern void doom_main(int argc, char *argv[]);
+
+    char *argv[] = {"doom", "-iwad", "doom.wad", NULL};
+    int argc = sizeof(argv) / sizeof(argv[0]) - 1;
+
+    doom_main(argc, argv);
+
+    for(;;)
+    {
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }*/
 
 /*
     SystemUISuspend();
@@ -327,6 +359,11 @@ void main_thread() {
     uarmLinuxMain();
 */
 
+/*
+    void emu48_main(int select);
+    SystemUISuspend();
+    emu48_main(2);
+*/
 /*
     for(;;)
     {
@@ -347,7 +384,6 @@ void main_thread() {
     draw_main_win();
 
 
-    lv_obj_t *title, *tv, *t1, *t2, *imgbtn;
     lv_obj_t * cont = lv_scr_act();
 
     //title = lv_label_create(cont);
@@ -392,6 +428,7 @@ void main_thread() {
 	lv_obj_add_style(imgbtn, &style_screen_imgbtn_1_main_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
 
 	//Write style state: LV_STATE_PRESSED for style_screen_imgbtn_1_main_main_pressed
+    /*
 	static lv_style_t style_screen_imgbtn_1_main_main_pressed;
 	if (style_screen_imgbtn_1_main_main_pressed.prop_cnt > 1)
 		lv_style_reset(&style_screen_imgbtn_1_main_main_pressed);
@@ -403,7 +440,8 @@ void main_thread() {
 	lv_style_set_img_recolor_opa(&style_screen_imgbtn_1_main_main_pressed, 0);
 	lv_style_set_img_opa(&style_screen_imgbtn_1_main_main_pressed, 255);
 	lv_obj_add_style(imgbtn, &style_screen_imgbtn_1_main_main_pressed, LV_PART_MAIN|LV_STATE_PRESSED);
-
+*/
+/*
 	//Write style state: LV_STATE_CHECKED for style_screen_imgbtn_1_main_main_checked
 	static lv_style_t style_screen_imgbtn_1_main_main_checked;
 	if (style_screen_imgbtn_1_main_main_checked.prop_cnt > 1)
@@ -415,8 +453,12 @@ void main_thread() {
 	lv_style_set_img_recolor(&style_screen_imgbtn_1_main_main_checked, lv_color_make(0x00, 0x00, 0x00));
 	lv_style_set_img_recolor_opa(&style_screen_imgbtn_1_main_main_checked, 0);
 	lv_style_set_img_opa(&style_screen_imgbtn_1_main_main_checked, 255);
-
 	lv_obj_add_style(imgbtn, &style_screen_imgbtn_1_main_main_checked, LV_PART_MAIN|LV_STATE_CHECKED);
+*/
+
+    
+    LV_IMG_DECLARE(emu48ico);
+
 	lv_imgbtn_set_src(imgbtn, LV_IMGBTN_STATE_RELEASED, NULL, &xcaslogo_s, NULL);
 	lv_obj_add_flag(imgbtn, LV_OBJ_FLAG_CHECKABLE);
 
@@ -454,6 +496,67 @@ void main_thread() {
 	lv_obj_set_style_pad_all(btn1, 0, LV_STATE_DEFAULT);
 	lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 
+
+
+    imgbtn2 = lv_imgbtn_create(t1);
+
+	lv_obj_set_scrollbar_mode(imgbtn2, LV_SCROLLBAR_MODE_OFF);
+
+    lv_obj_set_size(imgbtn2, 48, 48);
+    lv_obj_set_pos(imgbtn2, 48 + 45, 2);
+
+    
+	lv_obj_add_style(imgbtn2, &style_screen_imgbtn_1_main_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
+	lv_imgbtn_set_src(imgbtn2, LV_IMGBTN_STATE_RELEASED, NULL, &emu48ico, NULL);
+	lv_obj_add_flag(imgbtn2, LV_OBJ_FLAG_CHECKABLE);
+
+
+
+    lv_obj_t *btn2;
+    btn2 = lv_btn_create(t1);
+    lv_obj_set_size(btn2, 48, 13);
+    lv_obj_set_pos(btn2, 12 + 40*2 , 52);
+    lv_obj_t * label2 = lv_label_create(btn2);
+	lv_label_set_text(label2, "Emu48");
+	lv_obj_set_style_pad_all(btn2, 0, LV_STATE_DEFAULT);
+	lv_obj_align(label2, LV_ALIGN_CENTER, 0, 0);
+	lv_obj_add_style(btn2, &style_screen_btn_1_main_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
+
+    
+    lv_obj_add_event_cb(btn2, emu48Btn, LV_EVENT_ALL, NULL);
+
+
+
+    lv_obj_t *imgbtn3 = lv_imgbtn_create(t1);
+
+	lv_obj_set_scrollbar_mode(imgbtn3, LV_SCROLLBAR_MODE_OFF);
+
+    lv_obj_set_size(imgbtn3, 48, 48);
+    lv_obj_set_pos(imgbtn3, 48 + 48 + 76, 2);
+
+    LV_IMG_DECLARE(gbico);
+
+	lv_obj_add_style(imgbtn3, &style_screen_imgbtn_1_main_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
+	lv_imgbtn_set_src(imgbtn3, LV_IMGBTN_STATE_RELEASED, NULL, &gbico, NULL);
+	lv_obj_add_flag(imgbtn3, LV_OBJ_FLAG_CHECKABLE);
+
+    
+
+    lv_obj_t *btn3;
+    btn3 = lv_btn_create(t1);
+    lv_obj_set_size(btn3, 62, 13);
+    lv_obj_set_pos(btn3, 60 + 40 + 64 , 52);
+    lv_obj_t * label3 = lv_label_create(btn3);
+	lv_label_set_text(label3, "GameBoy");
+	lv_obj_set_style_pad_all(btn3, 0, LV_STATE_DEFAULT);
+	lv_obj_align(label3, LV_ALIGN_CENTER, 0, 0);
+	lv_obj_add_style(btn3, &style_screen_btn_1_main_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
+
+    void gb_entry();
+    lv_obj_add_event_cb(btn3, gb_entry, LV_EVENT_ALL, NULL);
+
+
+
     }
 
     //lv_obj_clear_flag(btn1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
@@ -464,7 +567,12 @@ void main_thread() {
 //tv2
     //lv_obj_set_scrollbar_mode(t2, LV_SCROLLBAR_MODE_ON);
 
-
+    lv_obj_t* label_time = lv_label_create(cont);
+    uint32_t rtc_time_sec = ll_rtc_get_sec();
+    
+    lv_obj_set_size(label_time, 48, 13);
+    lv_obj_set_pos(label_time, 0 , 0);
+    lv_obj_align(label_time, LV_ALIGN_TOP_RIGHT, 0, 0);
     lv_obj_set_flex_flow(t2, LV_FLEX_FLOW_COLUMN);
     //
 
@@ -513,7 +621,15 @@ void main_thread() {
     int cur_cpu_div = 1;
     int cur_cpu_frac = 25;
     int cur_hclk_div = 2;
-    int runTime = 0;
+    unsigned int runTime = 0;
+
+    uint32_t tmp[3];
+    uint32_t cur_fcpu;
+    uint32_t cur_batt_volt;
+    uint32_t cur_soc_temp;
+
+    FIL *f = pvPortMalloc(sizeof(FIL));
+
     for (;;) {
         
 
@@ -523,17 +639,48 @@ void main_thread() {
 
             
 
-            uint32_t tmp[3];
+            
             ll_get_clkctrl_div(tmp);
             cur_cpu_div = tmp[0];
             cur_cpu_frac = tmp[1];
             cur_hclk_div = tmp[2];
 
 
-            SET_LABEL_TEXT(info_line1, "CPU Freq:%d / %d MHz,  Temp:%d °C", ll_get_cur_freq() , 480 * 18 / cur_cpu_div / cur_cpu_frac, ll_get_core_temp() );
-            SET_LABEL_TEXT(info_line2, "Mem: %d / %d KB,  Ticks:%d s", xPortGetFreeHeapSize() / 1024, 8192, runTime );
-            SET_LABEL_TEXT(info_line3, "Batt: %d mv,  Charging: %s", ll_get_bat_voltage(), ll_get_charge_status() ? "Yes" : "NO" );
+            cur_fcpu = ll_get_cur_freq();
+            cur_batt_volt = ll_get_bat_voltage();
+            cur_soc_temp = ll_get_core_temp();
+
+            SET_LABEL_TEXT(info_line1, "CPU Freq:%d / %d MHz,  Temp:%d °C", cur_fcpu , 480 * 18 / cur_cpu_div / cur_cpu_frac, cur_soc_temp );
+            SET_LABEL_TEXT(info_line2, "Mem: %d / %d KB,  Ticks:%d s", xPortGetFreeHeapSize() / 1024, 6*1024, runTime );
+            SET_LABEL_TEXT(info_line3, "Batt: %d mv,  Charging: %s", cur_batt_volt, ll_get_charge_status() ? "Yes" : "NO" );
             SET_LABEL_TEXT(info_line4, "Pwr Speed: %d Ticks", ll_get_pwrspeed() );
+
+
+            rtc_time_sec = ll_rtc_get_sec();
+            lv_label_set_text_fmt(label_time, "%02d:%02d",  (rtc_time_sec / (60 * 60)) % 24, (rtc_time_sec / 60) % 60 );
+
+            if(cur_batt_volt > 1408)
+            {
+                ll_charge_enable(false);
+                lv_obj_clear_state(charge_chb, LV_STATE_CHECKED);
+            }
+
+            //printf("f=%d,v=%d,t=%d\r\n", cur_fcpu, cur_batt_volt, cur_soc_temp);
+            /*
+            if(runTime % 20 == 0)
+            {
+
+                
+                if(f)
+                {
+                    f_open(f, "pwr_infolog.txt", FA_OPEN_ALWAYS | FA_OPEN_APPEND | FA_WRITE);
+                    f_printf(f, "%d\t%d\t%d\t%d\r\n", runTime, cur_fcpu, cur_batt_volt, cur_soc_temp);
+                    f_sync(f);
+                    f_close(f);
+                    
+                }
+                
+            }*/
 
 
 /*
@@ -575,6 +722,97 @@ void khicasBtn(lv_event_t *e) {
 
     }
 }
+static lv_obj_t *emu48_msgbox ;
+
+
+static void emu48_msgbox_event_cb(lv_event_t *e) {
+    
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *msgbox = lv_event_get_current_target(e);
+
+    if (code == LV_EVENT_VALUE_CHANGED) {
+        
+        lv_msgbox_close(msgbox);
+        lv_group_focus_freeze(g, false);
+    }
+}
+
+
+const char *msgboxbtn[] = {""};
+
+
+void emu48_preThread(void *sel)
+{
+    if(sel == 0){
+        emu48_msgbox = lv_msgbox_create(lv_scr_act(), "Error", "Cound not fine the ROM: /rom.39g", msgboxbtn , false);
+        lv_obj_add_event_cb(emu48_msgbox, emu48_msgbox_event_cb, LV_EVENT_ALL, 0);
+        lv_obj_align(emu48_msgbox, LV_ALIGN_CENTER, 0, 0);
+        lv_obj_center(emu48_msgbox);
+
+        lv_group_focus_freeze(g, true);
+        
+        vTaskDelay(pdMS_TO_TICKS(2500));
+
+        lv_msgbox_close(emu48_msgbox);
+
+        lv_group_focus_freeze(g, false);
+        vTaskDelete(NULL);
+    }
+
+
+    lv_obj_t *win = lv_win_create(lv_scr_act(), 0);
+    lv_obj_t *cont = lv_win_get_content(win);
+    lv_obj_t *text = lv_label_create(cont);
+    lv_label_set_text(text, "Loading...");
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    
+    void emu48_main(int select);
+    SystemUISuspend();
+
+    emu48_main((int)sel);
+
+    for(;;)
+    {
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+    
+}
+
+void emu48Btn(lv_event_t *e)
+{
+    int romf = -1;
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_CLICKED) {
+        FIL *f = pvPortMalloc(sizeof(FIL));
+        FRESULT fr;
+
+/*
+        fr = f_open(f, "/rom.39g.unpack", FA_OPEN_EXISTING);
+        if(fr == FR_OK)
+        {
+            romf = 2;
+            goto fopen_testok;
+        }
+*/
+        fr = f_open(f, "/rom.39g", FA_OPEN_EXISTING);
+        if(fr == FR_OK)
+        {
+            romf = 1;
+            goto fopen_testok;
+        }
+        xTaskCreate(emu48_preThread, "emu48", configMINIMAL_STACK_SIZE, (void *)0, configMAX_PRIORITIES - 3, NULL);
+
+
+        return;
+
+        fopen_testok:
+        f_close(f);
+        vPortFree(f);
+
+        xTaskCreate(emu48_preThread, "emu48", configMINIMAL_STACK_SIZE, (void *)romf, configMAX_PRIORITIES - 3, NULL);
+
+    }
+}
  
 extern int __HEAP_START[384*1024 / 4];
 
@@ -592,14 +830,14 @@ void main() {
     // ll_set_keyboard(true);  
     ll_cpu_slowdown_enable(false);
 
-    memset(&__HEAP_START[0], 0xFF, 384 * 1024);
+    //memset(&__HEAP_START[0], 0xFF, 384 * 1024);
   
     printf("System Booting...\n");
 
     xTaskCreate(vTask1, "Task1", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
     xTaskCreate(vTask2, "Task2", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
 
-    xTaskCreate(main_thread, "System", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 3, NULL);
+    xTaskCreate(main_thread, "System", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
 
     ll_cpu_slowdown_enable(true);
 
