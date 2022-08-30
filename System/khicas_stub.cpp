@@ -112,6 +112,7 @@ char *Setup_SetEntry(unsigned int index, char setting) {
 
     if (index == 0x14) {
         keyStatus = setting;
+        flush_indBit();
 
         return NULL;
     }
@@ -292,8 +293,17 @@ int GetKey(int *key) {
 }
 
 int RTC_GetTicks() {
-    return ll_get_time_ms();
+    return ll_rtc_get_sec();
 }
+ 
+void RTC_SetDateTime(unsigned char *time) {
+    uint8_t hours = time[4];
+    uint8_t minus = time[5];
+    printf("set time %02d:%02d\n", hours, minus);
+    ll_rtc_set_sec(hours * (60 * 60) + minus * 60);
+}
+
+
 
 void Sleep(int millisecond) {
     int start = ll_get_time_ms();
@@ -302,8 +312,7 @@ void Sleep(int millisecond) {
     }
 }
 
-void RTC_SetDateTime(unsigned char *time) {
-}
+
 
 } // extern "C"    
 
@@ -720,7 +729,7 @@ int Bfile_FindFirst(const unsigned short *pathname, int *FindHandle, const unsig
         *FindHandle = 0;
         return -1;
     }
-    
+     
 
     fr = f_findfirst(&fh->dp, &fh->finfo, (const char *)pathname, "*.*");
     if(fr)

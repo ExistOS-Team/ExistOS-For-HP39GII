@@ -130,7 +130,7 @@ void volatile portCLKCtrlInit(void) {
     setCPU_HFreqDomain(true);
 
     setHCLKDivider(2);
-    setCPUFracDivider(24);
+    setCPUFracDivider(22);
     
     enableUSBClock(true);
 }

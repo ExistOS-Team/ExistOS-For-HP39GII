@@ -36,7 +36,7 @@
     #if USE_TINY_PAGE
         #define NUM_CACHEPAGE             ( 273 ) // 273 * 1 = 273 KB
     #else
-        #define NUM_CACHEPAGE             ( 77 ) // 77 * 4 = 308 KB
+        #define NUM_CACHEPAGE             ( 79 ) // 79 * 4 = 316 KB
     #endif
 #else
     #define NUM_CACHEPAGE             ( 32 )

@@ -10,6 +10,7 @@
 #include "mtd_up.h"
 #include "display_up.h"
 #include "keyboard_up.h"
+#include "rtc_up.h"
 
 #include "../debug.h"
 
@@ -72,7 +73,7 @@ volatile void boardInit(void)
     portKeyboardGPIOInit();
 
     
-
+    rtc_init();
     
 
 }

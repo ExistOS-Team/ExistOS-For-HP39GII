@@ -17,7 +17,9 @@
 #include "llapi.h"
 #include "llapi_code.h"
 #include "mtd_up.h"
+#include "rtc_up.h"
 #include "vmMgr.h"
+
 
 #include "../debug.h"
 
@@ -95,7 +97,7 @@ void printTaskList() {
     printf("Flash ECC FATAL:%lu\n", g_mtd_ecc_fatal_cnt);
     printf("Batt Charge:%d\n", HW_POWER_STS.B.CHRGSTS);
     printf("PWD_BATTCHRG:%d\n", HW_POWER_CHARGE.B.PWD_BATTCHRG);
-
+    printf("RTC:%ld\n", rtc_get_seconds());
     printf("=============================================\r\n\n");
 }
 

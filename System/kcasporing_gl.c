@@ -15,6 +15,7 @@
 
 extern const unsigned char VGA_Ascii_5x8[];
 extern const unsigned char VGA_Ascii_6x12[];
+extern const unsigned char orp_Ascii_6x12[];
 extern const unsigned char VGA_Ascii_8x16[];
 
 // extern "C" {
@@ -91,17 +92,17 @@ int vGL_GetPoint(unsigned int x,unsigned int y)
         y = VIR_LCD_PIX_H - 1;
     }
     return virtual_screen[x + y * VIR_LCD_PIX_W];
-}
-
+}  
+    
 void vGL_putChar(int x0, int y0, char ch, int fg, int bg, int fontSize) {
     int font_w;
     int font_h;
     const unsigned char *pCh;
-    unsigned int x = 0, y = 0, i = 0, j = 0;
-
+    unsigned int x = 0, y = 0, i = 0, j = 0; 
+ 
     if ((ch < ' ') || (ch > '~' + 1)) {
         return;
-    }
+    } 
 
     switch (fontSize) {
     case 8:
@@ -113,7 +114,7 @@ void vGL_putChar(int x0, int y0, char ch, int fg, int bg, int fontSize) {
     case 12:
         font_w = 8;
         font_h = 12;
-        pCh = VGA_Ascii_6x12 + (ch - ' ') * font_h;
+        pCh = orp_Ascii_6x12 + (ch - ' ') * font_h;
         break;
 
     case 16:
@@ -374,7 +375,7 @@ bool vGL_chkEsc()
     }
     return false;
 } 
-
+ 
 bool vGL_getkey(int *keyid)
 {
     uint32_t keys, key, kpress;
@@ -388,7 +389,7 @@ bool vGL_getkey(int *keyid)
         kpress = keys >> 16;
 
         
-        vTaskDelay(5);
+        //vTaskDelay(5);
 
     }while((last_key == key) && (last_press == kpress));
 

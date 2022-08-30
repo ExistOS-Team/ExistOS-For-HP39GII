@@ -19,6 +19,8 @@
 #include "llapi.h"
 #include "llapi_code.h"
 
+#include "rtc_up.h"
+
 extern volatile void *pxCurrentTCB;
 extern volatile uint32_t ulCriticalNesting;
 uint32_t
@@ -135,6 +137,12 @@ void volatile arm_vector_swi() {
             pRegFram[0 + 2] = g_chargeEnable;
             break;
 
+        case LL_FAST_SWI_RTC_GET_SEC:
+            pRegFram[0 + 2] = rtc_get_seconds();
+            break;
+        case LL_FAST_SWI_RTC_SET_SEC:
+            rtc_set_seconds(pRegFram[0 + 2]);
+            break;
         default:
             break;
         }

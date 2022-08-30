@@ -329,7 +329,7 @@ void gb_entry(lv_event_t *e)
 
 
 
-lv_obj_t *title, *tv, *t1, *t2, *imgbtn, *imgbtn2;
+static lv_obj_t *title, *tv, *t1, *t2, *imgbtn, *imgbtn2;
 
 void main_thread() {
 
@@ -339,6 +339,19 @@ void main_thread() {
     SystemUIInit();
     SystemFSInit();
 
+/*
+    ll_cpu_slowdown_enable(false);
+    extern void doom_main(int argc, char *argv[]);
+
+    char *argv[] = {"doom", "-iwad", "doom.wad", NULL};
+    int argc = sizeof(argv) / sizeof(argv[0]) - 1;
+
+    doom_main(argc, argv);
+
+    for(;;)
+    {
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }*/
 
 /*
     SystemUISuspend();
@@ -554,6 +567,11 @@ void main_thread() {
 //tv2
     //lv_obj_set_scrollbar_mode(t2, LV_SCROLLBAR_MODE_ON);
 
+    lv_obj_t* label_time = lv_label_create(cont);
+    uint32_t rtc_time_sec = ll_rtc_get_sec();
+    
+    lv_obj_set_size(label_time, 62, 13);
+    lv_obj_set_pos(label_time, 60 + 40 + 64 + 61 , 0);
 
     lv_obj_set_flex_flow(t2, LV_FLEX_FLOW_COLUMN);
     //
@@ -633,9 +651,13 @@ void main_thread() {
             cur_soc_temp = ll_get_core_temp();
 
             SET_LABEL_TEXT(info_line1, "CPU Freq:%d / %d MHz,  Temp:%d °C", cur_fcpu , 480 * 18 / cur_cpu_div / cur_cpu_frac, cur_soc_temp );
-            SET_LABEL_TEXT(info_line2, "Mem: %d / %d KB,  Ticks:%d s", xPortGetFreeHeapSize() / 1024, 8192, runTime );
+            SET_LABEL_TEXT(info_line2, "Mem: %d / %d KB,  Ticks:%d s", xPortGetFreeHeapSize() / 1024, 6*1024, runTime );
             SET_LABEL_TEXT(info_line3, "Batt: %d mv,  Charging: %s", cur_batt_volt, ll_get_charge_status() ? "Yes" : "NO" );
             SET_LABEL_TEXT(info_line4, "Pwr Speed: %d Ticks", ll_get_pwrspeed() );
+
+
+            rtc_time_sec = ll_rtc_get_sec();
+            lv_label_set_text_fmt(label_time, "%02d:%02d",  (rtc_time_sec / (60 * 60)) % 24, (rtc_time_sec / 60) % 60 );
 
             if(cur_batt_volt > 1408)
             {
@@ -815,7 +837,7 @@ void main() {
     xTaskCreate(vTask1, "Task1", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
     xTaskCreate(vTask2, "Task2", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
 
-    xTaskCreate(main_thread, "System", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 3, NULL);
+    xTaskCreate(main_thread, "System", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
 
     ll_cpu_slowdown_enable(true);
 

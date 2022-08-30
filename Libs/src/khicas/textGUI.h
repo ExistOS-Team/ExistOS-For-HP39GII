@@ -32,7 +32,7 @@ typedef struct
   int clipline,undoclipline;
   int clippos,undoclippos;
   int width=LCD_WIDTH_PX;
-  int lineHeight=12; // -2 if minimini is true 
+  int lineHeight=12; // -2 if minimini is true //!!!!!
   ustl::vector<textElement> elements,undoelements;
   char* title = NULL;
   ustl::string filename;
