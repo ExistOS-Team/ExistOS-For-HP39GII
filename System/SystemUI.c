@@ -60,7 +60,7 @@ static char *msgbox_button[] = {"OK", "Cancel", ""};
 static uint8_t indicator = 0;
 
 #define DISP_HOR_RES 256
-#define VBUFFER_LINE 32
+#define VBUFFER_LINE 127
 
 uint8_t g_ShiftStatus = 0;
 uint8_t g_AlphaStatus = 0; //2; // 0:normal  1:A..Z  2:a..Z
@@ -171,7 +171,7 @@ static void keypad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data) {
             data->state = 0;
             break;
         case KEY_F1:
-            data->key = LV_KEY_ESC;
+            data->key = KEY_F1 | 0xE000;
             break;
         case KEY_F2:
             data->key = KEY_F2 | 0xE000;
@@ -276,7 +276,7 @@ static void keypad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data) {
             {
                 ll_power_off();
             }else{
-                SHIFT_ALPHA_SELECT(data->key, KEY_ON | 0xE000, KEY_ON | 0xE100, KEY_ON | 0xE200, KEY_ON | 0xE300, KEY_ON | 0xE400);
+                SHIFT_ALPHA_SELECT(data->key, LV_KEY_ESC, KEY_ON | 0xE100, KEY_ON | 0xE200, KEY_ON | 0xE300, KEY_ON | 0xE400);
             }
         }
             
@@ -315,6 +315,11 @@ void lvgl_svc() {
     }
 }
 
+lv_indev_t *SystemGetInKeypad()
+{
+    return indev_keypad;
+}
+
 void SystemUIInit() {
 
     lv_init();
@@ -332,7 +337,7 @@ void SystemUIInit() {
     indev_drv.type = LV_INDEV_TYPE_KEYPAD;
     indev_drv.read_cb = keypad_read;
     indev_keypad = lv_indev_drv_register(&indev_drv);
-
+    
     xTaskCreate(lvgl_svc, "lvgl svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, &lvgl_svc_task);
     xTaskCreate(lvgl_tick, "lvgl tick", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, &lvgl_tick_task);
 
@@ -376,6 +381,14 @@ void SystemUIInit() {
 
 void SystemUIEditing(bool edit) {
     lv_group_set_editing(group, edit);
+}
+
+void SystemUISetBusy(bool enable)
+{
+    indicator &= ~INDICATE_BUSY;
+    if(enable)
+        indicator |= INDICATE_BUSY;
+    ll_disp_set_indicator(indicator, -1);
 }
 
 static void systemui_msgbox_event_cb(lv_event_t *e) {
