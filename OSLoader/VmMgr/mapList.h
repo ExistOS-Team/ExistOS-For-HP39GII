@@ -4,6 +4,7 @@
 
 #define MAP_PART_RAWFLASH   1
 #define MAP_PART_FTL        2
+#define MAP_PART_SYS        3
 
 typedef struct MapList_t
 {

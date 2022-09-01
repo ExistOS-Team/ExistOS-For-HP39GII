@@ -10,7 +10,7 @@
 #define INDICATE_RX        (1 << 6)
 
 #define RAM_BASE    (0x02000000)
-#define RAM_SIZE    (6 * 1048576)
+#define RAM_SIZE    (5 * 1048576)
 
 #define FS_FATFS        0
 #define FS_LITTLEFS     1

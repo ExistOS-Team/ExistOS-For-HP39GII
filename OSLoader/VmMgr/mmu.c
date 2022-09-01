@@ -339,6 +339,20 @@ void mmu_init()
                  VM_ROM_DOMAIN, AP_SYSRW_USROR, true, true);
         #endif
     }
+    for(int i = 0; i < VM_SYS_ROM_NUM_SEG; i++)
+    {
+        #if USE_TINY_PAGE
+        SetL1PTE(VADDR_TO_L1SEGn(VM_SYS_ROM_BASE + i * SEG_SIZE) ,
+                 L1PTE_INTERPRET_FINE,
+                 SEGn_L2TAB_BASE(j++),
+                 VM_ROM_DOMAIN, AP_SYSRW_USRRW, true, true);
+        #else
+        SetL1PTE(VADDR_TO_L1SEGn(VM_SYS_ROM_BASE + i * SEG_SIZE) ,
+                 L1PTE_INTERPRET_COARSE,
+                 SEGn_L2TAB_BASE(j++),
+                 VM_ROM_DOMAIN, AP_SYSRW_USROR, true, true);
+        #endif
+    }
 
     mmu_SetDomainPermCheck(HARDWARE_MEMORY_DOMAIN, true);
     mmu_SetDomainPermCheck(OSLOADER_MEMORY_DOMAIN, true);

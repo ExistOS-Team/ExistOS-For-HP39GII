@@ -27,6 +27,7 @@
 #include "SystemUI.h"
 #include "SystemFs.h"
 
+#include "VROMLoader.h"
 
 #include "Fatfs/ff.h"
 //#include "mpy_port.h"
@@ -61,7 +62,6 @@ void softDelayMs(uint32_t ms)
         ;
     }
 }
-
 
 
 void vTask2(void *par1) {
@@ -430,11 +430,9 @@ static void fexplorer_file_handler(lv_event_t * e)
         strcat(FilePath, fname);
 
         strcat(LvFilePath, "A:");
-        strcat(LvFilePath, FilePath);
+        strcat(LvFilePath, FilePath);/*
         if((strcmp(FileExt,"gif") == 0))
         {
-        
-            /*
             printf("fpath:%s\n", LvFilePath);
             lv_group_remove_all_objs(group_imgexp);
             lv_group_set_default(group_imgexp);
@@ -449,8 +447,8 @@ static void fexplorer_file_handler(lv_event_t * e)
             lv_group_add_obj(group_imgexp, imgexp);
 
             //group_null = SystemGetInKeypad()->group;
-            lv_indev_set_group(SystemGetInKeypad(), group_imgexp);*/
-        }else
+            lv_indev_set_group(SystemGetInKeypad(), group_imgexp);
+        }else*/
         if((strcmp(FileExt,"jpg") == 0))
         {
             printf("fpath:%s\n", FilePath);
@@ -464,6 +462,11 @@ static void fexplorer_file_handler(lv_event_t * e)
 
             extern void mjpegPlayer(void *par);
             xTaskCreate(mjpegPlayer, "mjpegPlayer", configMINIMAL_STACK_SIZE, FilePath, configMAX_PRIORITIES - 3, NULL);
+        }else 
+        if((strcmp(FileExt,"bin") == 0))
+        {
+            void bin_exec(void *par);
+            xTaskCreate(bin_exec, fname, configMINIMAL_STACK_SIZE, FilePath, configMAX_PRIORITIES - 3, NULL);
         }
 
 
@@ -723,6 +726,9 @@ static void app_btn_handler(lv_event_t * e)
             }else if(strcmp(lv_label_get_text(label), "GameBoy") == 0)
             {
                 xTaskCreate(gb_main, "GB Emu", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
+            }else if(strcmp(lv_label_get_text(label), "Test") == 0)
+            {
+                printf("testRead:%08x\n", *((uint32_t *)(0x03000000)));
             }
         }
     }else if(code == LV_EVENT_KEY)
@@ -1014,6 +1020,17 @@ void main_thread() {
     lv_group_add_obj(group_status, charge_chb);
 
 
+    lv_obj_t *btn4;
+    btn4 = lv_btn_create(t2);
+    lv_obj_set_size(btn4, 62, 13);
+    lv_obj_set_pos(btn4, 60 + 40 + 64 , 52);
+    lv_obj_t * label4 = lv_label_create(btn4);
+	lv_label_set_text(label4, "Test");
+	lv_obj_set_style_pad_all(btn4, 0, LV_STATE_DEFAULT);
+	lv_obj_align(label4, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_add_event_cb(btn4, app_btn_handler, LV_EVENT_ALL, NULL);
+    lv_group_add_obj(group_status, btn4);
+
     //lv_demo_keypad_encoder(); 
     int cur_cpu_div = 1;
     int cur_cpu_frac = 25;
@@ -1034,9 +1051,7 @@ void main_thread() {
 
         if(!suspend){
 
-            
-
-            
+        
             ll_get_clkctrl_div(tmp);
             cur_cpu_div = tmp[0];
             cur_cpu_frac = tmp[1];
@@ -1048,7 +1063,7 @@ void main_thread() {
             cur_soc_temp = ll_get_core_temp();
 
             SET_LABEL_TEXT(info_line1, "CPU Freq:%d / %d MHz,  Temp:%d °C", cur_fcpu , 480 * 18 / cur_cpu_div / cur_cpu_frac, cur_soc_temp );
-            SET_LABEL_TEXT(info_line2, "Mem: %d / %d KB,  Ticks:%d s", xPortGetFreeHeapSize() / 1024, 6*1024, runTime );
+            SET_LABEL_TEXT(info_line2, "Mem: %d / %d KB,  Ticks:%d s", xPortGetFreeHeapSize() / 1024, RAM_SIZE / 1024, runTime );
             SET_LABEL_TEXT(info_line3, "Batt: %d mv,  Charging: %s", cur_batt_volt, ll_get_charge_status() ? "Yes" : "NO" );
             SET_LABEL_TEXT(info_line4, "Pwr Speed: %d Ticks", ll_get_pwrspeed() );
 
@@ -1109,6 +1124,8 @@ void main() {
     ll_cpu_slowdown_enable(false);
 
     //memset(&__HEAP_START[0], 0xFF, 384 * 1024);
+
+    VROMLoader_Initialize();
   
     printf("System Booting...\n");
 

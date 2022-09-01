@@ -22,6 +22,12 @@ void portRTC_init()
 
     while(HW_RTC_STAT.B.NEW_REGS);
 
+    HW_RTC_PERSISTENT0.B.DISABLE_PSWITCH = 1;
+
+    while(HW_RTC_STAT.B.NEW_REGS);
+
+
+
 }
 
 uint32_t rtc_get_seconds()

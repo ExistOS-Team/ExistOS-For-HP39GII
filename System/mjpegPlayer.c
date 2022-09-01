@@ -266,7 +266,7 @@ void mjpegPlayer(void *par) {
 
     uint32_t last_tick_ms = ll_get_time_ms();
 
-    bool pause = false;
+    bool pause = false, skip = false;
     
     uint32_t keys, key, kpress;
     do {
@@ -277,7 +277,7 @@ void mjpegPlayer(void *par) {
                 err_msgbox("ERROR", "Read file error! Search movi.");
                 goto mjpgPlayerExit4;
             }
-            if (curBk.fcc == 0x63643030) {
+            if ((curBk.fcc == 0x63643030) && (skip == false)) {
 
                 while (ll_get_time_ms() - last_tick_ms < (aviHead.dwMicroSecPerFrame / 1000)) {
                 }
@@ -321,9 +321,9 @@ void mjpegPlayer(void *par) {
                 last_tick_ms = ll_get_time_ms();
             }
 
-            {
-                f_lseek(avifile, f_tell(avifile) + curBk.dwSize + (curBk.dwSize % 2));
-            }
+            
+            f_lseek(avifile, f_tell(avifile) + curBk.dwSize + (curBk.dwSize % 2));
+            
             if (f_tell(avifile) > movi_start + movi_size) {
                 break;
             }
@@ -334,6 +334,12 @@ void mjpegPlayer(void *par) {
     keys = ll_vm_check_key();
     key = keys & 0xFFFF;
     kpress = keys >> 16;
+
+    if(key == KEY_ON)
+    {
+        goto mjpgPlayerExit4;
+    }
+
     if(kpress)
     {
         switch (key)
@@ -342,8 +348,9 @@ void mjpegPlayer(void *par) {
             pause = !pause;
             break;
         
-        case KEY_F6:
-            goto mjpgPlayerExit4;
+        case KEY_PLUS:
+            skip = !skip;
+            break;
         
         default:
             break;

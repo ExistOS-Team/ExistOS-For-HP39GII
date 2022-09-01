@@ -341,6 +341,21 @@ void  __attribute__((optimize("-O3")))  vmMgr_task() {
                         #endif
                         //INFO("ram:%d\n", CachePageCur->onSector );
                         break;
+
+                    case MAP_PART_SYS:
+                        {
+                            #include "llapi_code.h"
+                            void vm_set_irq_num(uint32_t IRQNum, uint32_t r1, uint32_t r2, uint32_t r3);
+                            void vm_jump_irq();
+                            void vm_save_context();
+    
+                            vm_save_context();
+                            vm_jump_irq();
+                            vm_set_irq_num(LL_IRQ_MMU, CachePageCur->mapToVirtAddr, 0, 0);
+                        }
+
+
+                        break;
                     default:
                         ret = -1;
                         break;
@@ -447,6 +462,9 @@ void vmMgr_init() {
         //
 
     #endif
+    
+    mapList_AddPartitionMap(MAP_PART_SYS, PERM_R | PERM_W, VM_SYS_ROM_BASE, 0, VM_SYS_ROM_SIZE);
+
     // xTaskCreate(vVmBlockTask, "VM Swap IO Waiting", 12, NULL, 6, &vmBlockTask);
     // vTaskSuspend(vmBlockTask);
 

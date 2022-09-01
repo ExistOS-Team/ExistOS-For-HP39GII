@@ -2,7 +2,7 @@
 
 MEMORY
 {
-  vmRAM    (rwx) : ORIGIN = 0x02000000, LENGTH = 6M
+  vmRAM    (rwx) : ORIGIN = 0x02000000, LENGTH = 5M
   vmROM    (rx ) : ORIGIN = 0x00100000, LENGTH = 4M
 }
 

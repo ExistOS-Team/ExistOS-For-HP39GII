@@ -69,10 +69,10 @@ static void vm_load_context(uint32_t *from, bool add_pc_4) {
     }
 }
 
-static void vm_save_context() {
+void vm_save_context() {/*
     if(isSaved){
         INFO("Context has been saved!\n");
-    }
+    }*/
 
     isSaved = true;
 
@@ -97,7 +97,8 @@ static void get_saved_context(uint32_t *to_addr)
     memcpy(to_addr, (void *)&vm_saved_context[context_ptr], 17 * 4);
 }
 
-static void vm_jump_irq() {
+void vm_jump_irq() 
+{
     if(vm_in_exception && (curExp == 1))
     {
         INFO("Reenter IRQ Exception!\n");
@@ -112,11 +113,11 @@ static void vm_jump_irq() {
     pRegFram[13] = vm_irq_stack_address;
 }
 
-static void vm_jump_svc() {
+static void vm_jump_svc() {/*
     if(vm_in_exception  && (curExp == 2))
     {
         INFO("Reenter SVC Exception!\n");
-    }
+    }*/
     curExp = 2;
     vm_in_exception = true;
     uint32_t *pRegFram = (uint32_t *)((volatile uint32_t *)vm_sys)[1];
@@ -126,7 +127,8 @@ static void vm_jump_svc() {
     pRegFram[13] = vm_svc_stack_address;
 }
 
-static inline void vm_set_irq_num(uint32_t IRQNum, uint32_t r1, uint32_t r2, uint32_t r3) {
+void vm_set_irq_num(uint32_t IRQNum, uint32_t r1, uint32_t r2, uint32_t r3) 
+{
     uint32_t *pRegFram = (uint32_t *)((uint32_t *)vm_sys)[1];
     pRegFram -= 16;
     pRegFram[0] = IRQNum;
