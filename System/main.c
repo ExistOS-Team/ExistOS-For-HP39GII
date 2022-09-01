@@ -27,7 +27,6 @@
 #include "SystemUI.h"
 #include "SystemFs.h"
 
-#include "lv_demo_keypad_encoder.h"
 
 #include "Fatfs/ff.h"
 //#include "mpy_port.h"
@@ -233,6 +232,7 @@ static FILINFO finfo;
 
 static char FileExplorerPwd[256];
 static char FilePath[256];
+static char LvFilePath[256];
 static char FileExt[12];
 
 static void FileExplorerRefresh(char *path);
@@ -373,7 +373,7 @@ void slider_cpu_minimum_frac_event_cb(lv_event_t *e) {
         ll_cpu_slowdown_min_frac(val);
     }
 }
-
+/*
 static lv_obj_t *imgexp;
 static void imgexp_handler(lv_event_t * e)
 {
@@ -404,7 +404,7 @@ static void imgexp_handler(lv_event_t * e)
         lv_img_set_src(obj, NULL);
     }
 }
-
+*/
 
 static void fexplorer_file_handler(lv_event_t * e)
 {
@@ -415,6 +415,7 @@ static void fexplorer_file_handler(lv_event_t * e)
         int i = strlen(fname);
         memset(FileExt, 0, sizeof(FileExt));
         memset(FilePath, 0, sizeof(FilePath));
+        memset(LvFilePath, 0, sizeof(LvFilePath));
         while(i > 0)
         {
             i--;
@@ -425,22 +426,22 @@ static void fexplorer_file_handler(lv_event_t * e)
             }
         }
         
-        strcat(FilePath, "A:");
         strcat(FilePath, FileExplorerPwd);
         strcat(FilePath, fname);
 
-        if( (strcmp(FileExt,"png") == 0) || (strcmp(FileExt,"jpg") == 0))
+        strcat(LvFilePath, "A:");
+        strcat(LvFilePath, FilePath);
+        if((strcmp(FileExt,"gif") == 0))
         {
-            printf("fpath:%s\n", FilePath);
-
+        
+            /*
+            printf("fpath:%s\n", LvFilePath);
             lv_group_remove_all_objs(group_imgexp);
             lv_group_set_default(group_imgexp);
-
-            imgexp = lv_img_create(lv_scr_act());
+            imgexp = lv_gif_create(lv_scr_act());//lv_img_create(lv_scr_act());
             lv_obj_add_event_cb(imgexp, imgexp_handler, LV_EVENT_ALL, NULL);
-            
             time_lable_refresh = false;
-            lv_img_set_src(imgexp, FilePath);
+            lv_gif_set_src(imgexp, LvFilePath);
         
             lv_obj_align(imgexp, LV_ALIGN_CENTER, 0, 0);
             lv_obj_set_size(imgexp, 256, 127);
@@ -448,10 +449,21 @@ static void fexplorer_file_handler(lv_event_t * e)
             lv_group_add_obj(group_imgexp, imgexp);
 
             //group_null = SystemGetInKeypad()->group;
-            lv_indev_set_group(SystemGetInKeypad(), group_imgexp);
+            lv_indev_set_group(SystemGetInKeypad(), group_imgexp);*/
+        }else
+        if((strcmp(FileExt,"jpg") == 0))
+        {
+            printf("fpath:%s\n", FilePath);
 
+            extern void jpgViewer(void *par);
+            xTaskCreate(jpgViewer, "jpgViewer", configMINIMAL_STACK_SIZE, FilePath, configMAX_PRIORITIES - 3, NULL);
+        }else
+        if((strcmp(FileExt,"avi") == 0))
+        {
+            printf("fpath:%s\n", FilePath);
 
-
+            extern void mjpegPlayer(void *par);
+            xTaskCreate(mjpegPlayer, "mjpegPlayer", configMINIMAL_STACK_SIZE, FilePath, configMAX_PRIORITIES - 3, NULL);
         }
 
 

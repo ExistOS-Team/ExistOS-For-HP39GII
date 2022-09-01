@@ -262,14 +262,11 @@ void  __attribute__((target("arm"))) gb_main(void *_)
 
 	gb_main_thumb(NULL);
 
-	vTaskDelay(pdMS_TO_TICKS(500));
-	lv_refr_now(NULL);
-	vTaskDelay(pdMS_TO_TICKS(500));
+	lv_obj_invalidate(lv_scr_act());
 	lv_refr_now(NULL);
 	
-    lv_disp_trig_activity(NULL);
 
-	
+
 	vTaskDelete(NULL);
 }
 

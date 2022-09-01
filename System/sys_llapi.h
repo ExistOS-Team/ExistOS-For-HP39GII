@@ -62,19 +62,19 @@ DECDEF_LLSWI(uint32_t,     ll_flash_get_page_size,(void)                        
 
 DECDEF_LLSWI(uint32_t,     ll_power_off,          (void)                                  ,LL_SWI_PWR_POWEROFF             );
 
-DECDEF_LLSWI(uint32_t,     ll_get_bat_voltage,    (void)                                  ,LL_FAST_SWI_PWR_VOLTAGE             );
-DECDEF_LLSWI(uint32_t,     ll_get_pwrspeed  ,    (void)                                  ,LL_SWI_PWR_SPEED             );
-DECDEF_LLSWI(uint32_t,     ll_get_core_temp,      (void)                                    ,LL_FAST_SWI_CORE_TEMP             );
-DECDEF_LLSWI(uint32_t,     ll_get_cur_freq,        (void)                                     ,LL_FAST_SWI_CORE_CUR_FREQ             );
-DECDEF_LLSWI(uint32_t,     ll_get_charge_status,    (void)                                     ,LL_FAST_SWI_GET_CHARGE_STATUS             );
-DECDEF_LLSWI(uint32_t,     ll_charge_enable,         (bool enable)                               ,LL_SWI_CHARGE_ENABLE             );
-DECDEF_LLSWI(uint32_t,     ll_cpu_slowdown_enable,    (bool enable)                               ,LL_SWI_SLOW_DOWN_ENABLE             );
-DECDEF_LLSWI(uint32_t,     ll_cpu_slowdown_min_frac,    (uint32_t val)                               ,LL_SWI_SLOW_DOWN_MINFRAC            );
-DECDEF_LLSWI(uint32_t,     ll_rtc_get_sec,    (void)                                         ,LL_FAST_SWI_RTC_GET_SEC            );
-DECDEF_LLSWI(void,         ll_rtc_set_sec,    (uint32_t val)                                 ,LL_FAST_SWI_RTC_SET_SEC            );
+DECDEF_LLSWI(uint32_t,     ll_get_bat_voltage,          (void)                                  ,LL_FAST_SWI_PWR_VOLTAGE                );
+DECDEF_LLSWI(uint32_t,     ll_get_pwrspeed  ,           (void)                                  ,LL_SWI_PWR_SPEED                       );
+DECDEF_LLSWI(uint32_t,     ll_get_core_temp,            (void)                                  ,LL_FAST_SWI_CORE_TEMP                  );
+DECDEF_LLSWI(uint32_t,     ll_get_cur_freq,             (void)                                  ,LL_FAST_SWI_CORE_CUR_FREQ              );
+DECDEF_LLSWI(uint32_t,     ll_get_charge_status,        (void)                                  ,LL_FAST_SWI_GET_CHARGE_STATUS          );
+DECDEF_LLSWI(uint32_t,     ll_charge_enable,            (bool enable)                           ,LL_SWI_CHARGE_ENABLE                   );
+DECDEF_LLSWI(uint32_t,     ll_cpu_slowdown_enable,      (bool enable)                           ,LL_SWI_SLOW_DOWN_ENABLE                );
+DECDEF_LLSWI(uint32_t,     ll_cpu_slowdown_min_frac,    (uint32_t val)                          ,LL_SWI_SLOW_DOWN_MINFRAC               );
+DECDEF_LLSWI(uint32_t,     ll_rtc_get_sec,              (void)                                  ,LL_FAST_SWI_RTC_GET_SEC                );
+DECDEF_LLSWI(void,         ll_rtc_set_sec,              (uint32_t val)                          ,LL_FAST_SWI_RTC_SET_SEC                );
 
 
-DECDEF_LLSWI(uint32_t,     ll_system_idle,      (void)                                    ,LL_FAST_SWI_SYSTEM_IDLE             );
+DECDEF_LLSWI(uint32_t,     ll_system_idle,              (void)                                  ,LL_FAST_SWI_SYSTEM_IDLE                );
 
 
 
