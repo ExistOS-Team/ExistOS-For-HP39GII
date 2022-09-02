@@ -426,11 +426,29 @@ static void fexplorer_file_handler(lv_event_t * e)
             }
         }
         
+        
         strcat(FilePath, FileExplorerPwd);
+        
+        
+        //printf("NotProcPath:%s\n", FilePath);
+        for(int fpPtr=1;fpPtr<255;fpPtr++){
+            if(FilePath[fpPtr]==0){
+                if(FilePath[fpPtr-1]!='/'){
+                    strcat(FilePath,"/");
+                }
+                break;
+            }
+        }
+        //printf("fpath1:%s\n", FilePath);
+
         strcat(FilePath, fname);
+        //printf("fpathAndFName1:%s\n", FilePath);
 
         strcat(LvFilePath, "A:");
-        strcat(LvFilePath, FilePath);/*
+        strcat(LvFilePath, FilePath);
+        
+
+        /*
         if((strcmp(FileExt,"gif") == 0))
         {
             printf("fpath:%s\n", LvFilePath);
