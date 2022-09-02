@@ -29,41 +29,6 @@ static uint32_t elf_hash(const uint8_t* name)
     return h;
 }
 
-int dll_table_add(const char *fname, void *func)
-{
-   
-
-    if(!dll_tab)
-    {
-        dll_tab = pvPortMalloc(sizeof(dll_table_t));
-        if(!dll_tab)
-        {
-            return -1;
-        }
-    }
-
-    dll_table_t *tab;
-    tab = dll_tab;
-
-    while(tab->next)
-    {
-        tab = tab->next;
-    }
-
-    tab->next = pvPortMalloc(sizeof(dll_table_t));
-    if(!tab->next)
-    {
-        return -1;
-    }
-    tab = tab->next;
-    
-    tab->next = NULL;
-    tab->func = func;
-    tab->name = fname;
-    tab->elfHash = elf_hash(fname);
-    return 0;
-}
-
 void *dll_table_find(char *fname)
 {
     if(!dll_tab)
@@ -87,6 +52,46 @@ void *dll_table_find(char *fname)
     }
     return NULL;
 }
+
+
+int dll_table_add(const char *fname, void *func)
+{
+    if(dll_table_find((char *)fname))
+    {
+        return 1;
+    }
+
+    if(!dll_tab)
+    {
+        dll_tab = pvPortMalloc(sizeof(dll_table_t));
+        if(!dll_tab)
+        {
+            return -1;
+        }
+    }
+
+    dll_table_t *tab;
+    tab = dll_tab;
+
+    while(tab && tab->next)
+    {
+        tab = tab->next;
+    }
+
+    tab->next = pvPortMalloc(sizeof(dll_table_t));
+    if(!tab->next)
+    {
+        return -1;
+    }
+    tab = tab->next;
+    
+    tab->next = NULL;
+    tab->func = func;
+    tab->name = fname;
+    tab->elfHash = elf_hash(fname);
+    return 0;
+}
+
 
 
 
