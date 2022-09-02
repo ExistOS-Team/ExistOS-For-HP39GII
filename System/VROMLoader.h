@@ -16,7 +16,7 @@ typedef struct VROMMapInfo_t
 }VROMMapInfo_t;
  
 void VROMLoader_Initialize();
-int VROMLoaderCreateFileMap(char *filePath, uint32_t inFileStart, uint32_t memAddress, uint32_t mapSize);
+int VROMLoaderCreateFileMap(FIL *f, uint32_t inFileStart, uint32_t memAddress, uint32_t mapSize);
 int VROMIRQLoad(uint32_t vaddr);
 int VROMLoaderDeleteMap(uint32_t vaddr);
 

@@ -11,6 +11,13 @@ ENTRY(_init)
 SECTIONS
 {
 
+  .interp         : { *(.interp) }
+  .note.gnu.build-id  : { *(.note.gnu.build-id) }
+  .dynsym         : { *(.dynsym) } 
+  .dynstr         : { *(.dynstr) } 
+  .hash           : { *(.hash) } 
+  .gnu.hash       : { *(.gnu.hash) }  
+
 	.init.text :
 	{ 
 		*(.init)

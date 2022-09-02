@@ -36,9 +36,10 @@ static inline int VROMMapCheck(uint32_t memAddress, uint32_t mapSize)
 
 }
 
-int VROMLoaderCreateFileMap(char *filePath, uint32_t inFileStart, uint32_t memAddress, uint32_t mapSize)
+int VROMLoaderCreateFileMap(FIL *f, uint32_t inFileStart, uint32_t memAddress, uint32_t mapSize)
 {
-    FRESULT fr;
+    //FRESULT fr;
+    /*
     FIL *f = pvPortMalloc(sizeof(FIL));
     if(!f)
     {
@@ -51,7 +52,7 @@ int VROMLoaderCreateFileMap(char *filePath, uint32_t inFileStart, uint32_t memAd
         vPortFree(f);
         return -1;
     }
-    
+    */
 
     VROMMapInfo_t *map;
     if(vmmap_list == NULL)
@@ -150,7 +151,7 @@ int VROMIRQLoad(uint32_t vaddr)
     VROMMapInfo_t *map = findMappedMap(vaddr);
     if(map)
     {
-        f_lseek(map->map_f, vaddr - map->map_vm_addr);
+        f_lseek(map->map_f, vaddr - map->map_vm_addr + map->map_file_start);
         f_read(map->map_f, (uint8_t *)vaddr, MEM_PAGE_SIZE, &br);
     }
 }

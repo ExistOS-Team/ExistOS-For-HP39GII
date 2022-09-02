@@ -28,6 +28,7 @@
 #include "SystemFs.h"
 
 #include "VROMLoader.h"
+#include "dll_table.h"
 
 #include "Fatfs/ff.h"
 //#include "mpy_port.h"
@@ -63,6 +64,130 @@ void softDelayMs(uint32_t ms)
     }
 }
 
+static void build_dll_table()
+{
+
+    DLL_TABLE_ADD(printf);
+    DLL_TABLE_ADD(puts);
+    DLL_TABLE_ADD(putc);
+    DLL_TABLE_ADD(malloc);
+    DLL_TABLE_ADD(free);
+    DLL_TABLE_ADD(pvPortMalloc);
+    DLL_TABLE_ADD(vPortFree);
+    DLL_TABLE_ADD(ll_put_str);
+    DLL_TABLE_ADD(ll_put_str2);
+    DLL_TABLE_ADD(ll_get_time_us);
+    DLL_TABLE_ADD(ll_get_time_ms);
+    DLL_TABLE_ADD(ll_vm_check_key);
+    DLL_TABLE_ADD(ll_set_timer);
+    DLL_TABLE_ADD(ll_set_irq_vector);
+    DLL_TABLE_ADD(ll_set_irq_stack);
+    DLL_TABLE_ADD(ll_set_svc_vector);
+    DLL_TABLE_ADD(ll_set_svc_stack);
+    DLL_TABLE_ADD(ll_set_context);
+    DLL_TABLE_ADD(ll_restore_context);
+    DLL_TABLE_ADD(ll_get_context);
+    DLL_TABLE_ADD(ll_enable_irq);
+    DLL_TABLE_ADD(ll_disp_put_area);
+    DLL_TABLE_ADD(ll_disp_set_indicator);
+    DLL_TABLE_ADD(ll_get_tmp_storage_val);
+    DLL_TABLE_ADD(ll_set_tmp_storage_val);
+    DLL_TABLE_ADD(ll_get_clkctrl_div);
+    DLL_TABLE_ADD(ll_flash_page_read);
+    DLL_TABLE_ADD(ll_flash_page_write);
+    DLL_TABLE_ADD(ll_flash_page_trim);
+    DLL_TABLE_ADD(ll_flash_sync);
+    DLL_TABLE_ADD(ll_flash_get_pages);
+    DLL_TABLE_ADD(ll_flash_get_page_size);
+    DLL_TABLE_ADD(ll_power_off);
+    DLL_TABLE_ADD(ll_get_bat_voltage);
+    DLL_TABLE_ADD(ll_get_pwrspeed);
+    DLL_TABLE_ADD(ll_get_core_temp);
+    DLL_TABLE_ADD(ll_get_cur_freq);
+    DLL_TABLE_ADD(ll_get_charge_status);
+    DLL_TABLE_ADD(ll_charge_enable);
+    DLL_TABLE_ADD(ll_cpu_slowdown_enable);
+    DLL_TABLE_ADD(ll_cpu_slowdown_min_frac);
+    DLL_TABLE_ADD(ll_rtc_get_sec);
+    DLL_TABLE_ADD(ll_rtc_set_sec);
+    DLL_TABLE_ADD(ll_system_idle);
+
+    DLL_TABLE_ADD(vListInitialise);
+    DLL_TABLE_ADD(vListInitialiseItem);
+    DLL_TABLE_ADD(vListInsertEnd);
+    DLL_TABLE_ADD(vListInsert);
+    DLL_TABLE_ADD(uxListRemove);
+    DLL_TABLE_ADD(pvPortMalloc);
+    DLL_TABLE_ADD(vPortFree);
+    DLL_TABLE_ADD(pvPortRealloc);
+    DLL_TABLE_ADD(vApplicationGetIdleTaskMemory);
+    DLL_TABLE_ADD(xQueueGenericReset);
+    DLL_TABLE_ADD(xQueueGenericCreate);
+    DLL_TABLE_ADD(xQueueGenericSend);
+    DLL_TABLE_ADD(xQueueCreateMutex);
+    DLL_TABLE_ADD(xQueueSemaphoreTake);
+    DLL_TABLE_ADD(vQueueDelete);
+    DLL_TABLE_ADD(xTaskCreateStatic);
+    DLL_TABLE_ADD(xTaskCreate);
+    DLL_TABLE_ADD(vTaskDelete);
+    DLL_TABLE_ADD(eTaskGetState);
+    DLL_TABLE_ADD(vTaskResume);
+    DLL_TABLE_ADD(vTaskStartScheduler);
+    DLL_TABLE_ADD(vTaskSuspendAll);
+    DLL_TABLE_ADD(xTaskIncrementTick);
+    DLL_TABLE_ADD(xTaskResumeAll);
+    DLL_TABLE_ADD(vTaskDelay);
+    DLL_TABLE_ADD(vTaskSwitchContext);
+    DLL_TABLE_ADD(vTaskSuspend);
+    DLL_TABLE_ADD(vTaskPlaceOnEventList);
+    DLL_TABLE_ADD(xTaskRemoveFromEventList);
+    DLL_TABLE_ADD(vTaskInternalSetTimeOutState);
+    DLL_TABLE_ADD(xTaskCheckForTimeOut);
+    DLL_TABLE_ADD(vTaskMissedYield);
+    DLL_TABLE_ADD(vTaskGetInfo);
+    DLL_TABLE_ADD(uxTaskGetSystemState);
+    DLL_TABLE_ADD(xTaskGetSchedulerState);
+    DLL_TABLE_ADD(xTaskPriorityInherit);
+    DLL_TABLE_ADD(xTaskPriorityDisinherit);
+    DLL_TABLE_ADD(vTaskPriorityDisinheritAfterTimeout);
+    DLL_TABLE_ADD(vTaskList);
+    DLL_TABLE_ADD(vTaskGetRunTimeStats);
+    DLL_TABLE_ADD(pvTaskIncrementMutexHeldCount);
+    DLL_TABLE_ADD(pxPortInitialiseStack);
+    DLL_TABLE_ADD(xPortStartScheduler);
+    DLL_TABLE_ADD(vPortEnterCritical);
+    DLL_TABLE_ADD(vPortExitCritical);
+
+    DLL_TABLE_ADD(f_mount);
+    DLL_TABLE_ADD(f_open);
+    DLL_TABLE_ADD(f_read);
+    DLL_TABLE_ADD(f_write);
+    DLL_TABLE_ADD(f_sync);
+    DLL_TABLE_ADD(f_close);
+    DLL_TABLE_ADD(f_lseek);
+    DLL_TABLE_ADD(f_opendir);
+    DLL_TABLE_ADD(f_closedir);
+    DLL_TABLE_ADD(f_readdir);
+    DLL_TABLE_ADD(f_findnext);
+    DLL_TABLE_ADD(f_findfirst);
+    DLL_TABLE_ADD(f_stat);
+    DLL_TABLE_ADD(f_unlink);
+    DLL_TABLE_ADD(f_mkdir);
+    DLL_TABLE_ADD(f_expand);
+    DLL_TABLE_ADD(f_mkfs);
+    DLL_TABLE_ADD(ff_memalloc);
+    DLL_TABLE_ADD(ff_memfree);
+    DLL_TABLE_ADD(ff_cre_syncobj);
+    DLL_TABLE_ADD(ff_del_syncobj);
+    DLL_TABLE_ADD(ff_req_grant);
+    DLL_TABLE_ADD(ff_rel_grant);
+    DLL_TABLE_ADD(ff_uni2oem);
+    DLL_TABLE_ADD(ff_oem2uni);
+    DLL_TABLE_ADD(ff_wtoupper);
+
+
+
+}
 
 void vTask2(void *par1) {
     uint32_t ticks = 0;
@@ -293,7 +418,7 @@ static void charge_msgbox_event_cb(lv_event_t *e)
         }
 
         lv_indev_set_group(SystemGetInKeypad(), group_status);
-        lv_msgbox_close(msgbox);
+        lv_msgbox_close_async(msgbox);
     }
 }
 
@@ -480,11 +605,16 @@ static void fexplorer_file_handler(lv_event_t * e)
 
             extern void mjpegPlayer(void *par);
             xTaskCreate(mjpegPlayer, "mjpegPlayer", configMINIMAL_STACK_SIZE, FilePath, configMAX_PRIORITIES - 3, NULL);
-        }else 
+        }/*else 
         if((strcmp(FileExt,"bin") == 0))
         {
             void bin_exec(void *par);
-            xTaskCreate(bin_exec, fname, configMINIMAL_STACK_SIZE, FilePath, configMAX_PRIORITIES - 3, NULL);
+            xTaskCreate(bin_exec, fname, 32768, FilePath, configMAX_PRIORITIES - 3, NULL);
+        }*/else 
+        if((strcmp(FileExt,"elf") == 0))
+        {
+            void elf_exec(void *par);
+            xTaskCreate(elf_exec, fname, 32768, FilePath, configMAX_PRIORITIES - 3, NULL);
         }
 
 
@@ -783,7 +913,7 @@ void main_thread() {
     {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }*/
-
+    build_dll_table();
 
     draw_main_win();
 

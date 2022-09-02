@@ -28,15 +28,30 @@ static void api_taskSleepMs(uint32_t ms)
 void bin_exec(void *par)
 {
     FILINFO finfo;
+    FRESULT fr;
     int res;
     void (*app_entry)();
     app_entry = (void (*)())0x0300000C;
 
     f_stat(par, &finfo);
-    res = VROMLoaderCreateFileMap(par, 0, 0x03000000, finfo.fsize);
+
+    FIL *f = pvPortMalloc(sizeof(FIL));
+    if(!f)
+    {
+        vTaskDelete(NULL);
+    }
+    fr = f_open(f, par, FA_OPEN_EXISTING | FA_READ);
+
+    if(fr)
+    {
+        vPortFree(f);
+        vTaskDelete(NULL);
+    }
+
+    res = VROMLoaderCreateFileMap(f, 0, 0x03000000, finfo.fsize);
     if(res)
     {
-        return;
+        vTaskDelete(NULL);
     }
 
     if(
