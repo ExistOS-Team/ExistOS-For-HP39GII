@@ -34,7 +34,7 @@
 
 #if VMRAM_USE_FTL
     #if USE_TINY_PAGE
-        #define NUM_CACHEPAGE             ( 273 ) // 273 * 1 = 273 KB
+        #define NUM_CACHEPAGE             ( 256 ) // 273 * 1 = 273 KB
     #else
         #define NUM_CACHEPAGE             ( 79 ) // 79 * 4 = 316 KB
     #endif
@@ -54,26 +54,38 @@
 
 #define PAGES_SWAPFILE      (SIZE_SWAPFILE_MB * 1048576 / PAGE_SIZE)
 
-#define VM_ROM_BASE         (0x00100000)
-#define VM_ROM_SIZE         (1048576 * 4)
-#define VM_ROM_SEG          (VM_ROM_BASE >> 20)
-#define VM_ROM_NUM_SEG      (VM_ROM_SIZE / SEG_SIZE)
+#define VM_ROM_BASE             (0x00100000)
+#define VM_ROM_SIZE             (1048576 * 4)
+#define VM_ROM_SEG              (VM_ROM_BASE >> 20)
+#define VM_ROM_NUM_SEG          (VM_ROM_SIZE / SEG_SIZE)
 
-#define VM_RAM_BASE         (0x02000000)
-#define VM_RAM_SIZE         (1048576 * 6)
-#define VM_RAM_SEG          (VM_ROM_BASE >> 20)
-#define VM_RAM_NUM_SEG      (VM_RAM_SIZE / SEG_SIZE)
+#define VM_RAM_BASE             (0x02000000)
+#define VM_RAM_SIZE             (1048576 * 6)
+#define VM_RAM_SEG              (VM_ROM_BASE >> 20)
+#define VM_RAM_NUM_SEG          (VM_RAM_SIZE / SEG_SIZE)
+
+#define VM_SYS_ROM_BASE         (0x03000000)
+#define VM_SYS_ROM_SIZE         (1048576 * 4)
+#define VM_SYS_ROM_SEG          (VM_SYS_ROM_BASE >> 20)
+#define VM_SYS_ROM_NUM_SEG      (VM_SYS_ROM_SIZE / SEG_SIZE)
+
+/*
+#define VM_SYS_RAM_BASE         (0x02000000)
+#define VM_SYS_RAM_SIZE         (1048576 * 6)
+#define VM_SYS_RAM_SEG          (VM_ROM_BASE >> 20)
+#define VM_SYS_RAM_NUM_SEG      (VM_RAM_SIZE / SEG_SIZE)
+*/
 
 #define VM_CACHE_ENABLE     (true)
 #define VM_BUFFER_ENABLE    (true)
 
-#define TOTAL_VM_SEG        ((VM_ROM_SIZE + VM_RAM_SIZE) / SEG_SIZE)
+#define TOTAL_VM_SEG        ((VM_SYS_ROM_SIZE + VM_ROM_SIZE + VM_RAM_SIZE) / SEG_SIZE)
 
 
 #define SIZE_SWAPAREA_MB    (VM_RAM_SIZE / 1048576)
 
 #define CPU_DIVIDE_NORMAL       1
-#define CPU_DIVIDE_IDLE_INTIAL  12
+#define CPU_DIVIDE_IDLE_INTIAL  6
 
 #define FLASH_LOADER_BLOCK      22
 #define FLASH_CONFIG_BLOCK      23

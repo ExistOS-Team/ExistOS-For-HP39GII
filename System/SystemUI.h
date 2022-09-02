@@ -21,4 +21,5 @@ uint32_t SystemUIMsgBox(lv_obj_t *parent,char *msg, char *title, uint32_t button
 void SystemUISuspend();
 void SystemUIResume();
 void SystemUIEditing(bool edit);
-
+lv_indev_t *SystemGetInKeypad();
+void SystemUISetBusy(bool enable);

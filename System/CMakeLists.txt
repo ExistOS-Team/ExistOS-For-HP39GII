@@ -18,7 +18,6 @@ include_directories(./Config)
 include_directories(./CoremarkTest)
 
 include_directories(./KLib/lvgl)
-include_directories(./KLib/lvgl/demos/keypad_encoder)
 
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/micropython-master/)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/micropython-master/ports/eoslib)
@@ -40,6 +39,8 @@ aux_source_directory(./Fs/littlefs                             SYS_SRCS)
 
 add_subdirectory(gb)
 add_subdirectory(KLib)
+add_subdirectory(KLib/tjpgdec)
+add_subdirectory(KLib/libelf)
 add_subdirectory(emu48)
 
 add_executable(sys.elf ${SYS_SRCS})
@@ -49,14 +50,15 @@ ${CMAKE_SOURCE_DIR}/Script/sys_ld.script
 )
 set(LINKER_FLAGS "SHELL:-T${LINKER_SCRIPT} -Wl,--gc-sections -Wl,--wrap=malloc -Wl,--wrap=free")
 target_link_options(sys.elf PRIVATE ${LINKER_FLAGS}) 
- 
- 
 
+ 
 target_compile_options(gb PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Ofast)
 target_compile_options(emu48 PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Ofast)
 target_compile_options(lvgl PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft  -mthumb -Os)
+target_compile_options(tjpgd PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft  -mthumb -Os)
+target_compile_options(libelf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft  -mthumb -Os)
 
-
+ 
 #-mthumb
 target_compile_options(sys.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft 
 -Os -pipe -ffunction-sections -fno-strict-aliasing -fomit-frame-pointer
@@ -69,9 +71,11 @@ target_compile_options(sys.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlitt
 set_property(TARGET gb PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 target_link_libraries(sys.elf -lm -lc -lrdimon -lgcc -lstdc++ -nostartfiles
+libelf
+tjpgd
 gb 
 emu48
-lvgl 
+lvgl
 ${CMAKE_SOURCE_DIR}/Libs/libkcasgui.libcpp
 #${CMAKE_SOURCE_DIR}/Libs/libmpy.libc
 ${CMAKE_SOURCE_DIR}/Libs/libcas.libcpp

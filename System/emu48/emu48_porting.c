@@ -542,9 +542,12 @@ void emu48_main(int select)
 
 }
 
-
-
-
+#include "SystemUI.h"
+void __attribute__((target("arm"))) emu48_task(void *_)
+{
+    SystemUISuspend();
+    emu48_main(0);
+}
 
 void EnterCriticalSection(CRITICAL_SECTION *obj)
 {

@@ -148,7 +148,8 @@ void volatile arm_vector_swi() {
         }
 
         break;
-
+        
+    case 0xAC:
     case 0:
     case 0xEE:
         //vm_in_exception = true;

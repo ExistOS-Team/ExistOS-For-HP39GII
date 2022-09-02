@@ -6,6 +6,7 @@
 
 #define LL_FAST_SWI_BASE                (0xEF00)
 #define LL_SWI_BASE                     (0xEE00)
+#define SYS_SWI_BASE                     (0xAC00)
 #define LL_SWI_NUM                      (255)
 
 #define LL_FAST_SWI_GET_STVAL          (LL_FAST_SWI_BASE + 0)
@@ -76,6 +77,13 @@
 #define LL_IRQ_SERIAL                  (0)
 #define LL_IRQ_KEYBOARD                (1)
 #define LL_IRQ_TIMER                   (2)
+#define LL_IRQ_MMU                     (3)
+
+
+
+#define SYS_APP_EXIT                            (SYS_SWI_BASE + 1)
+#define SYS_APP_SLEEP_MS                        (SYS_SWI_BASE + 2)
+
 
 #endif
 

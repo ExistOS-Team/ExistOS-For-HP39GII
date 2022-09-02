@@ -27,15 +27,13 @@
 #include "SystemUI.h"
 #include "SystemFs.h"
 
-#include "lv_demo_keypad_encoder.h"
+#include "VROMLoader.h"
+#include "dll_table.h"
 
 #include "Fatfs/ff.h"
 //#include "mpy_port.h"
 
 volatile unsigned long ulHighFrequencyTimerTicks;
-
-
-
 
 char pcWriteBuffer[4096];
 void printTaskList() {
@@ -53,7 +51,7 @@ void printTaskList() {
 void vTask1(void *par1) {
     while (1) {
         printTaskList();
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        vTaskDelay(pdMS_TO_TICKS(5678));
     }
 }
 
@@ -66,31 +64,146 @@ void softDelayMs(uint32_t ms)
     }
 }
 
+static void build_dll_table()
+{
 
+    DLL_TABLE_ADD(printf);
+    DLL_TABLE_ADD(puts);
+    DLL_TABLE_ADD(putc);
+    DLL_TABLE_ADD(malloc);
+    DLL_TABLE_ADD(free);
+    DLL_TABLE_ADD(pvPortMalloc);
+    DLL_TABLE_ADD(vPortFree);
+    DLL_TABLE_ADD(ll_put_str);
+    DLL_TABLE_ADD(ll_put_str2);
+    DLL_TABLE_ADD(ll_get_time_us);
+    DLL_TABLE_ADD(ll_get_time_ms);
+    DLL_TABLE_ADD(ll_vm_check_key);
+    DLL_TABLE_ADD(ll_set_timer);
+    DLL_TABLE_ADD(ll_set_irq_vector);
+    DLL_TABLE_ADD(ll_set_irq_stack);
+    DLL_TABLE_ADD(ll_set_svc_vector);
+    DLL_TABLE_ADD(ll_set_svc_stack);
+    DLL_TABLE_ADD(ll_set_context);
+    DLL_TABLE_ADD(ll_restore_context);
+    DLL_TABLE_ADD(ll_get_context);
+    DLL_TABLE_ADD(ll_enable_irq);
+    DLL_TABLE_ADD(ll_disp_put_area);
+    DLL_TABLE_ADD(ll_disp_set_indicator);
+    DLL_TABLE_ADD(ll_get_tmp_storage_val);
+    DLL_TABLE_ADD(ll_set_tmp_storage_val);
+    DLL_TABLE_ADD(ll_get_clkctrl_div);
+    DLL_TABLE_ADD(ll_flash_page_read);
+    DLL_TABLE_ADD(ll_flash_page_write);
+    DLL_TABLE_ADD(ll_flash_page_trim);
+    DLL_TABLE_ADD(ll_flash_sync);
+    DLL_TABLE_ADD(ll_flash_get_pages);
+    DLL_TABLE_ADD(ll_flash_get_page_size);
+    DLL_TABLE_ADD(ll_power_off);
+    DLL_TABLE_ADD(ll_get_bat_voltage);
+    DLL_TABLE_ADD(ll_get_pwrspeed);
+    DLL_TABLE_ADD(ll_get_core_temp);
+    DLL_TABLE_ADD(ll_get_cur_freq);
+    DLL_TABLE_ADD(ll_get_charge_status);
+    DLL_TABLE_ADD(ll_charge_enable);
+    DLL_TABLE_ADD(ll_cpu_slowdown_enable);
+    DLL_TABLE_ADD(ll_cpu_slowdown_min_frac);
+    DLL_TABLE_ADD(ll_rtc_get_sec);
+    DLL_TABLE_ADD(ll_rtc_set_sec);
+    DLL_TABLE_ADD(ll_system_idle);
+
+    DLL_TABLE_ADD(vListInitialise);
+    DLL_TABLE_ADD(vListInitialiseItem);
+    DLL_TABLE_ADD(vListInsertEnd);
+    DLL_TABLE_ADD(vListInsert);
+    DLL_TABLE_ADD(uxListRemove);
+    DLL_TABLE_ADD(pvPortMalloc);
+    DLL_TABLE_ADD(vPortFree);
+    DLL_TABLE_ADD(pvPortRealloc);
+    DLL_TABLE_ADD(vApplicationGetIdleTaskMemory);
+    DLL_TABLE_ADD(xQueueGenericReset);
+    DLL_TABLE_ADD(xQueueGenericCreate);
+    DLL_TABLE_ADD(xQueueGenericSend);
+    DLL_TABLE_ADD(xQueueCreateMutex);
+    DLL_TABLE_ADD(xQueueSemaphoreTake);
+    DLL_TABLE_ADD(vQueueDelete);
+    DLL_TABLE_ADD(xTaskCreateStatic);
+    DLL_TABLE_ADD(xTaskCreate);
+    DLL_TABLE_ADD(vTaskDelete);
+    DLL_TABLE_ADD(eTaskGetState);
+    DLL_TABLE_ADD(vTaskResume);
+    DLL_TABLE_ADD(vTaskStartScheduler);
+    DLL_TABLE_ADD(vTaskSuspendAll);
+    DLL_TABLE_ADD(xTaskIncrementTick);
+    DLL_TABLE_ADD(xTaskResumeAll);
+    DLL_TABLE_ADD(vTaskDelay);
+    DLL_TABLE_ADD(vTaskSwitchContext);
+    DLL_TABLE_ADD(vTaskSuspend);
+    DLL_TABLE_ADD(vTaskPlaceOnEventList);
+    DLL_TABLE_ADD(xTaskRemoveFromEventList);
+    DLL_TABLE_ADD(vTaskInternalSetTimeOutState);
+    DLL_TABLE_ADD(xTaskCheckForTimeOut);
+    DLL_TABLE_ADD(vTaskMissedYield);
+    DLL_TABLE_ADD(vTaskGetInfo);
+    DLL_TABLE_ADD(uxTaskGetSystemState);
+    DLL_TABLE_ADD(xTaskGetSchedulerState);
+    DLL_TABLE_ADD(xTaskPriorityInherit);
+    DLL_TABLE_ADD(xTaskPriorityDisinherit);
+    DLL_TABLE_ADD(vTaskPriorityDisinheritAfterTimeout);
+    DLL_TABLE_ADD(vTaskList);
+    DLL_TABLE_ADD(vTaskGetRunTimeStats);
+    DLL_TABLE_ADD(pvTaskIncrementMutexHeldCount);
+    DLL_TABLE_ADD(pxPortInitialiseStack);
+    DLL_TABLE_ADD(xPortStartScheduler);
+    DLL_TABLE_ADD(vPortEnterCritical);
+    DLL_TABLE_ADD(vPortExitCritical);
+
+    DLL_TABLE_ADD(f_open);
+    DLL_TABLE_ADD(f_close);
+    DLL_TABLE_ADD(f_read);
+    DLL_TABLE_ADD(f_write);
+    DLL_TABLE_ADD(f_lseek);
+    DLL_TABLE_ADD(f_truncate);
+    DLL_TABLE_ADD(f_sync);
+    DLL_TABLE_ADD(f_opendir);
+    DLL_TABLE_ADD(f_closedir);
+    DLL_TABLE_ADD(f_readdir);
+    DLL_TABLE_ADD(f_findfirst);
+    DLL_TABLE_ADD(f_findnext);
+    DLL_TABLE_ADD(f_mkdir);
+    DLL_TABLE_ADD(f_unlink);
+    DLL_TABLE_ADD(f_rename);
+    DLL_TABLE_ADD(f_stat);
+    //DLL_TABLE_ADD(f_chmod);
+    //DLL_TABLE_ADD(f_utime);
+    DLL_TABLE_ADD(f_chdir);
+    DLL_TABLE_ADD(f_chdrive);
+    DLL_TABLE_ADD(f_getcwd);
+    DLL_TABLE_ADD(f_getfree);
+    //DLL_TABLE_ADD(f_getlabel);
+    //DLL_TABLE_ADD(f_setlabel);
+    //DLL_TABLE_ADD(f_forward);
+    DLL_TABLE_ADD(f_expand);
+    DLL_TABLE_ADD(f_mount);
+    DLL_TABLE_ADD(f_mkfs);
+    //DLL_TABLE_ADD(f_fdisk);
+    //DLL_TABLE_ADD(f_setcp);
+    DLL_TABLE_ADD(f_putc);
+    DLL_TABLE_ADD(f_puts);
+    DLL_TABLE_ADD(f_printf);
+    DLL_TABLE_ADD(f_gets);
+
+
+
+
+}
 
 void vTask2(void *par1) {
-
-    //__asm volatile("sub R13,R13,#4");
-
     uint32_t ticks = 0;
-
-    
-
     while (1) {
-/*
-        static float f1 = 0.1;
-        static float f2 = 0.2;
-        f1 += 0.01;
-        f1 /= 1.001;
-        f2 = f2 + f1;
-        printf("test:%f,%f\n", (f1 * 10), (f2 * 10));
-        printf("R13:%08x\n", get_stack());*/
-
         printf("SYS Run Time: %d s\n", ticks);
         ticks++;
-
         vTaskDelay(pdMS_TO_TICKS(1000));
-        
     }
 }
 
@@ -98,7 +211,6 @@ void vTask2(void *par1) {
 void vApplicationIdleHook( void )
 {
     ll_system_idle();
-
 }
 
 void emu48Btn(lv_event_t *e);
@@ -106,11 +218,22 @@ void khicasBtn(lv_event_t *e);
 static bool suspend = false;
 static lv_obj_t *screen;
 static lv_obj_t *win;
+
+static lv_group_t *group_null;
+static lv_group_t *group_tabview;
+static lv_group_t *group_apps;
+static lv_group_t *group_files;
+static lv_group_t *group_status;
+static lv_group_t *group_msgbox;
+static lv_group_t *group_imgexp;
+
+static bool time_lable_refresh = true;
+static lv_obj_t* label_time;
+
+static lv_style_t style_screen_list_1_extra_btns_main_default;
+
 void draw_main_win()
 {
-
-
-
 
     screen = lv_obj_create(lv_scr_act());
 
@@ -231,7 +354,59 @@ void draw_main_win()
 
 }
 
-static lv_group_t *g;
+
+void gb_main(void *_);
+
+
+static lv_obj_t *title, *tv, *t1, *t2, *t3, *imgbtn, *imgbtn2;
+static lv_obj_t *file_list;
+
+static DIR dp;
+static FILINFO finfo;
+
+static char FileExplorerPwd[256];
+static char FilePath[256];
+static char LvFilePath[256];
+static char FileExt[12];
+
+static void FileExplorerRefresh(char *path);
+
+static void tabview_switch(uint32_t key)
+{
+    switch (key)
+    {
+    case KEY_F1 | 0xE000:
+        lv_tabview_set_act(tv, 0, false);
+        lv_indev_set_group(SystemGetInKeypad(), group_apps);
+    
+        break;
+    case KEY_F2 | 0xE000:
+        lv_tabview_set_act(tv, 1, false);
+        lv_indev_set_group(SystemGetInKeypad(), group_files);
+        FileExplorerRefresh(FileExplorerPwd);
+        
+        break;
+    case KEY_F3 | 0xE000:
+        lv_tabview_set_act(tv, 2, false);
+        
+        lv_indev_set_group(SystemGetInKeypad(), group_status);
+        break;
+
+    case LV_KEY_LEFT:
+        lv_group_focus_prev(SystemGetInKeypad()->group);
+        break;
+    case LV_KEY_RIGHT:
+        lv_group_focus_next(SystemGetInKeypad()->group);
+
+        break;
+
+    default:
+        break;
+    }
+}
+
+
+
 static lv_obj_t *charge_chb, *slow_down_chb;
 
 static void charge_msgbox_event_cb(lv_event_t *e) 
@@ -251,11 +426,9 @@ static void charge_msgbox_event_cb(lv_event_t *e)
             lv_obj_clear_state(charge_chb, LV_STATE_CHECKED);
         }
 
-        
-        lv_msgbox_close(msgbox);
-        lv_group_focus_freeze(g, false);
+        lv_indev_set_group(SystemGetInKeypad(), group_status);
+        lv_msgbox_close_async(msgbox);
     }
-
 }
 
 static void slowdown_chb_handler(lv_event_t * e)
@@ -272,7 +445,11 @@ static void slowdown_chb_handler(lv_event_t * e)
             ll_cpu_slowdown_enable(false);
         }
     }
-
+    else if(code == LV_EVENT_KEY)
+    {
+        uint32_t key = lv_event_get_key(e);
+        tabview_switch(key);
+    }
 }
 
 static void charge_chb_handler(lv_event_t * e)
@@ -287,49 +464,436 @@ static void charge_chb_handler(lv_event_t * e)
 
         if(lv_obj_get_state(obj) & LV_STATE_CHECKED)
         {
+            lv_group_remove_all_objs(group_msgbox);
+            lv_group_set_default(group_msgbox);
 
             lv_obj_t *mbox = lv_msgbox_create( lv_scr_act(), "!!! Warning !!!", "[Experimental Features] PLEASE make sure use \n1.2 V Rechargeable Battery, i.e. NiCd, NiMH, etc.", (const char **)msgbox_button, false);
 
             lv_obj_add_event_cb(mbox, charge_msgbox_event_cb, LV_EVENT_ALL, NULL);
             lv_obj_align(mbox, LV_ALIGN_CENTER, 0, 0);
             lv_obj_center(mbox);
+            lv_obj_set_size(mbox, 240, 120);
+
+            //group_null = SystemGetInKeypad()->group;
+            lv_indev_set_group(SystemGetInKeypad(), group_msgbox);
             
-            lv_group_focus_next(g);
-            lv_group_focus_freeze(g, true);
         }else{
             ll_charge_enable(false);
         }
 
-        //const char * state = lv_obj_get_state(obj) & LV_STATE_CHECKED ? "Checked" : "Unchecked";
-        //LV_LOG_USER("%s: %s", txt, state);
+    }
+    else if(code == LV_EVENT_KEY)
+    {
+        uint32_t key = lv_event_get_key(e);
+        tabview_switch(key);
     }
 }
 
 lv_obj_t* label_cpuminirac;
-
 void slider_cpu_minimum_frac_event_cb(lv_event_t *e) {
-    lv_obj_t *slider = lv_event_get_target(e);
-    char buf[32];
-    int val = (int)lv_slider_get_value(slider);
-    lv_snprintf(buf, sizeof(buf), "CPU Freq Minimum Frac: %d", val);
-    lv_label_set_text(label_cpuminirac, buf);
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
 
-    ll_cpu_slowdown_min_frac(val);
+    if(code == LV_EVENT_KEY)
+    {
+        uint32_t key = lv_event_get_key(e);
+        tabview_switch(key);
+    }else{
+        lv_obj_t *slider = lv_event_get_target(e);
+        char buf[32];
+        int val = (int)lv_slider_get_value(slider);
+        lv_snprintf(buf, sizeof(buf), "CPU Freq Minimum Frac: %d", val);
+        lv_label_set_text(label_cpuminirac, buf);
+        ll_cpu_slowdown_min_frac(val);
+    }
 }
-
-void gb_main(void *_);
-
-void gb_entry(lv_event_t *e)
+/*
+static lv_obj_t *imgexp;
+static void imgexp_handler(lv_event_t * e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-	    xTaskCreate(gb_main, "GB Emu", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
+    lv_obj_t * obj = lv_event_get_target(e);
+    if(code == LV_EVENT_KEY)
+    {
+        uint32_t key = lv_event_get_key(e);
+        switch (key)
+        {
+        case LV_KEY_ESC:
+
+            lv_indev_set_group(SystemGetInKeypad(), group_files);
+            
+            time_lable_refresh = true;
+            lv_obj_del_delayed(obj, 10);
+            break;
+        
+        default:
+            break;
+        }
+    }else if(code == LV_EVENT_DRAW_MAIN_BEGIN)
+    {
+        SystemUISetBusy(true);
+    }else if(code == LV_EVENT_DRAW_MAIN_END)
+    {
+        SystemUISetBusy(false);
+        lv_img_set_src(obj, NULL);
+    }
+}
+*/
+
+static void fexplorer_file_handler(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
+    if(code == LV_EVENT_CLICKED) {
+        const char *fname = lv_list_get_btn_text(file_list, obj);
+        int i = strlen(fname);
+        memset(FileExt, 0, sizeof(FileExt));
+        memset(FilePath, 0, sizeof(FilePath));
+        memset(LvFilePath, 0, sizeof(LvFilePath));
+        while(i > 0)
+        {
+            i--;
+            if(fname[i] == '.')
+            {
+                strcpy(FileExt, &fname[i+1]);
+                break;
+            }
+        }
+        
+        
+        strcat(FilePath, FileExplorerPwd);
+        
+        
+        //printf("NotProcPath:%s\n", FilePath);
+        for(int fpPtr=1;fpPtr<255;fpPtr++){
+            if(FilePath[fpPtr]==0){
+                if(FilePath[fpPtr-1]!='/'){
+                    strcat(FilePath,"/");
+                }
+                break;
+            }
+        }
+        //printf("fpath1:%s\n", FilePath);
+
+        strcat(FilePath, fname);
+        //printf("fpathAndFName1:%s\n", FilePath);
+
+        strcat(LvFilePath, "A:");
+        strcat(LvFilePath, FilePath);
+        
+
+        /*
+        if((strcmp(FileExt,"gif") == 0))
+        {
+            printf("fpath:%s\n", LvFilePath);
+            lv_group_remove_all_objs(group_imgexp);
+            lv_group_set_default(group_imgexp);
+            imgexp = lv_gif_create(lv_scr_act());//lv_img_create(lv_scr_act());
+            lv_obj_add_event_cb(imgexp, imgexp_handler, LV_EVENT_ALL, NULL);
+            time_lable_refresh = false;
+            lv_gif_set_src(imgexp, LvFilePath);
+        
+            lv_obj_align(imgexp, LV_ALIGN_CENTER, 0, 0);
+            lv_obj_set_size(imgexp, 256, 127);
+
+            lv_group_add_obj(group_imgexp, imgexp);
+
+            //group_null = SystemGetInKeypad()->group;
+            lv_indev_set_group(SystemGetInKeypad(), group_imgexp);
+        }else*/
+        if((strcmp(FileExt,"jpg") == 0))
+        {
+            printf("fpath:%s\n", FilePath);
+
+            extern void jpgViewer(void *par);
+            xTaskCreate(jpgViewer, "jpgViewer", configMINIMAL_STACK_SIZE, FilePath, configMAX_PRIORITIES - 3, NULL);
+        }else
+        if((strcmp(FileExt,"avi") == 0))
+        {
+            printf("fpath:%s\n", FilePath);
+
+            extern void mjpegPlayer(void *par);
+            xTaskCreate(mjpegPlayer, "mjpegPlayer", configMINIMAL_STACK_SIZE, FilePath, configMAX_PRIORITIES - 3, NULL);
+        }/*else 
+        if((strcmp(FileExt,"bin") == 0))
+        {
+            void bin_exec(void *par);
+            xTaskCreate(bin_exec, fname, 32768, FilePath, configMAX_PRIORITIES - 3, NULL);
+        }*/else 
+        if((strcmp(FileExt,"elf") == 0))
+        {
+            void elf_exec(void *par);
+            xTaskCreate(elf_exec, fname, 32768, FilePath, configMAX_PRIORITIES - 3, NULL);
+        }
+
+
+    } else if(code == LV_EVENT_KEY)
+    {
+        uint32_t key = lv_event_get_key(e);
+        tabview_switch(key);
+    }
+
+}
+
+static void fexplorer_dir_handler(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
+    if(code == LV_EVENT_CLICKED) {
+        if(strcmp(lv_list_get_btn_text(file_list, obj), "..") == 0)
+        {
+            int i = strlen(FileExplorerPwd);
+
+            for(; i >= 0; i--)
+            {
+                if(FileExplorerPwd[i] == '/')
+                {
+                    if(i == 0)
+                    {
+                        FileExplorerPwd[++i] = 0;
+                        break;
+                    }else{
+                        FileExplorerPwd[i] = 0;
+                        break;
+                    }
+                }
+            }
+
+        }else{
+            if(FileExplorerPwd[strlen(FileExplorerPwd) - 1] != '/')
+               strcat(FileExplorerPwd, "/");
+
+            strcat(FileExplorerPwd, lv_list_get_btn_text(file_list, obj));
+        }
+        FileExplorerRefresh(FileExplorerPwd);
+    }else if(code == LV_EVENT_KEY)
+    {
+        uint32_t key = lv_event_get_key(e);
+        tabview_switch(key);
     }
 }
 
+static void FileExplorerRefresh(char *path)
+{
+    bool firstItem = true;
+
+    lv_obj_clean(file_list);
+
+    lv_obj_t *screen_list_1_btn;
+
+    FRESULT fr;
+    
+    screen_list_1_btn = lv_list_add_text(file_list, FileExplorerPwd);
+    lv_group_add_obj(group_files, screen_list_1_btn);
+
+    lv_obj_add_flag(screen_list_1_btn, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+
+    if(strcmp(path, "/") != 0)
+    {
+        screen_list_1_btn = lv_list_add_btn(file_list, LV_SYMBOL_DIRECTORY, "..");
+        lv_group_add_obj(group_files, screen_list_1_btn);
+        lv_obj_add_event_cb(screen_list_1_btn, fexplorer_dir_handler, LV_EVENT_ALL, NULL);
+        lv_group_focus_obj(screen_list_1_btn);
+        firstItem = false;
+    }
 
 
-static lv_obj_t *title, *tv, *t1, *t2, *imgbtn, *imgbtn2;
+    fr = f_findfirst(&dp, &finfo, path, "*");
+    if((fr) && (finfo.fname[0] == 0))
+	{
+		goto find_fin;
+	}
+
+	while(fr == 0 && (finfo.fname[0]))
+	{
+        if(finfo.fattrib == AM_DIR)
+        {
+            screen_list_1_btn = lv_list_add_btn(file_list, LV_SYMBOL_DIRECTORY, finfo.fname);
+            lv_obj_add_event_cb(screen_list_1_btn, fexplorer_dir_handler, LV_EVENT_ALL, NULL);
+        }
+        else
+        {
+            screen_list_1_btn = lv_list_add_btn(file_list, LV_SYMBOL_FILE, finfo.fname);
+            lv_obj_add_event_cb(screen_list_1_btn, fexplorer_file_handler, LV_EVENT_ALL, NULL);
+        }
+        
+	    lv_obj_add_style(screen_list_1_btn, &style_screen_list_1_extra_btns_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
+        lv_group_add_obj(group_files, screen_list_1_btn);
+
+        if(firstItem)
+        {
+            lv_group_focus_obj(screen_list_1_btn);
+            firstItem = false;
+        }
+
+		fr = f_findnext(&dp, &finfo);
+	}
+
+    find_fin:
+    return;
+
+}
+
+static void FileExplorerCreate()
+{	
+
+	if (style_screen_list_1_extra_btns_main_default.prop_cnt > 1)
+		lv_style_reset(&style_screen_list_1_extra_btns_main_default);
+	else
+		lv_style_init(&style_screen_list_1_extra_btns_main_default);
+	lv_style_set_radius(&style_screen_list_1_extra_btns_main_default, 3);
+	lv_style_set_bg_color(&style_screen_list_1_extra_btns_main_default, lv_color_make(0xff, 0xff, 0xff));
+	lv_style_set_bg_grad_color(&style_screen_list_1_extra_btns_main_default, lv_color_make(0xff, 0xff, 0xff));
+	lv_style_set_bg_grad_dir(&style_screen_list_1_extra_btns_main_default, LV_GRAD_DIR_NONE);
+	lv_style_set_bg_opa(&style_screen_list_1_extra_btns_main_default, 255);
+	lv_style_set_text_color(&style_screen_list_1_extra_btns_main_default, lv_color_make(0x0D, 0x30, 0x55));
+	lv_style_set_text_font(&style_screen_list_1_extra_btns_main_default, &SourceHanSans11);
+
+    file_list = lv_list_create(t3);
+	lv_obj_set_pos(file_list, 0, 0);
+	lv_obj_set_size(file_list, 230, 100);
+	lv_obj_set_scrollbar_mode(file_list, LV_SCROLLBAR_MODE_OFF);
+    
+
+	static lv_style_t style_screen_list_1_main_main_default;
+	if (style_screen_list_1_main_main_default.prop_cnt > 1)
+		lv_style_reset(&style_screen_list_1_main_main_default);
+	else
+		lv_style_init(&style_screen_list_1_main_main_default);
+	lv_style_set_radius(&style_screen_list_1_main_main_default, 0);
+	lv_style_set_bg_color(&style_screen_list_1_main_main_default, lv_color_make(0xff, 0xff, 0xff));
+	lv_style_set_bg_grad_color(&style_screen_list_1_main_main_default, lv_color_make(0xff, 0xff, 0xff));
+	lv_style_set_bg_grad_dir(&style_screen_list_1_main_main_default, LV_GRAD_DIR_NONE);
+	lv_style_set_bg_opa(&style_screen_list_1_main_main_default, 255);
+	lv_style_set_border_color(&style_screen_list_1_main_main_default, lv_color_make(0xe1, 0xe6, 0xee));
+	lv_style_set_border_width(&style_screen_list_1_main_main_default, 0);
+	lv_style_set_border_opa(&style_screen_list_1_main_main_default, 255);
+	lv_style_set_pad_left(&style_screen_list_1_main_main_default, 0);
+	lv_style_set_pad_right(&style_screen_list_1_main_main_default, 0);
+	lv_style_set_pad_top(&style_screen_list_1_main_main_default, 0);
+	lv_style_set_pad_bottom(&style_screen_list_1_main_main_default, 0);
+	lv_obj_add_style(file_list, &style_screen_list_1_main_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
+
+    strcpy(FileExplorerPwd, "/");
+
+    //lv_group_add_obj(group_files, file_list);
+
+}
+
+
+
+static void tabview_event(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
+    
+    if(code == LV_EVENT_KEY)
+    {
+        uint32_t key = lv_event_get_key(e);
+        tabview_switch(key);
+    }
+}
+
+static void status_label_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
+    
+    if(code == LV_EVENT_KEY)
+    {
+        uint32_t key = lv_event_get_key(e);
+        tabview_switch(key);
+    }
+}
+
+static lv_obj_t *emu48_msgbox ;
+const char *msgboxbtn[] = {""};
+
+static void emu48_msgbox_event_cb(lv_event_t *e) {
+    
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *msgbox = lv_event_get_current_target(e);
+
+    if (code == LV_EVENT_DELETE) {
+        lv_indev_set_group(SystemGetInKeypad(), group_apps);
+    }
+}
+
+void khicasTask(void *arg)
+{
+    lv_obj_t *win = lv_win_create(lv_scr_act(), 0);
+    lv_obj_t *cont = lv_win_get_content(win);
+    lv_obj_t *text = lv_label_create(cont);
+
+    lv_label_set_text(text, "Loading...");
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+
+    SystemUISuspend();
+    void testcpp();
+    testcpp(); 
+
+    SystemUIResume();
+    vTaskDelete(NULL);
+}
+
+
+static void app_btn_handler(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * obj = lv_event_get_target(e);
+    if(code == LV_EVENT_CLICKED) {
+        lv_obj_t *label = lv_obj_get_child(obj, 0);
+        if(label)
+        {
+            if(strcmp(lv_label_get_text(label), "KhiCAS") == 0)
+            {
+                xTaskCreate(khicasTask, "KhiCAS", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
+            }else if(strcmp(lv_label_get_text(label), "Emu48") == 0)
+            {
+                FIL *f = pvPortMalloc(sizeof(FIL));
+                FRESULT fr;
+                fr = f_open(f, "/rom.39g", FA_OPEN_EXISTING);
+                if(fr == FR_OK)
+                {
+                    f_close(f);
+                    vPortFree(f);
+                    lv_obj_t *win = lv_win_create(lv_scr_act(), 0);
+                    lv_obj_t *cont = lv_win_get_content(win);
+                    lv_obj_t *text = lv_label_create(cont);
+                    lv_label_set_text(text, "Loading...");
+                    //vTaskDelay(pdMS_TO_TICKS(1000));
+                    void emu48_task(void *_);
+                    xTaskCreate(emu48_task, "emu48", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
+
+                }else{
+                    vPortFree(f);
+                    lv_group_remove_all_objs(group_msgbox);
+                    lv_group_set_default(group_msgbox);
+
+                    emu48_msgbox = lv_msgbox_create(lv_scr_act(), "Error", "Could not find the ROM: /rom.39g", msgboxbtn , true);
+                    lv_obj_add_event_cb(emu48_msgbox, emu48_msgbox_event_cb, LV_EVENT_DELETE, 0);
+                    lv_obj_align(emu48_msgbox, LV_ALIGN_CENTER, 0, 0);
+                    lv_obj_center(emu48_msgbox);
+                
+                    //group_null = SystemGetInKeypad()->group;
+                    lv_indev_set_group(SystemGetInKeypad(), group_msgbox);
+                }
+
+            }else if(strcmp(lv_label_get_text(label), "GameBoy") == 0)
+            {
+                xTaskCreate(gb_main, "GB Emu", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
+            }else if(strcmp(lv_label_get_text(label), "Test") == 0)
+            {
+                printf("testRead:%08x\n", *((uint32_t *)(0x03000000)));
+            }
+        }
+    }else if(code == LV_EVENT_KEY)
+    {
+        uint32_t key = lv_event_get_key(e);
+        tabview_switch(key);
+    }
+}
 
 void main_thread() {
 
@@ -338,7 +902,13 @@ void main_thread() {
 
     SystemUIInit();
     SystemFSInit();
-
+    
+    /*
+    lv_obj_t * img1 = lv_img_create(lv_scr_act());
+    lv_img_set_src(img1, &existos_logo_grey2);
+    lv_obj_align(img1, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_size(img1, 256, 128);
+    for(;;)vTaskDelay(pdMS_TO_TICKS(1000)); */
 /*
     ll_cpu_slowdown_enable(false);
     extern void doom_main(int argc, char *argv[]);
@@ -352,34 +922,7 @@ void main_thread() {
     {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }*/
-
-/*
-    SystemUISuspend();
-    ll_cpu_slowdown_enable(false);
-    uarmLinuxMain();
-*/
-
-/*
-    void emu48_main(int select);
-    SystemUISuspend();
-    emu48_main(2);
-*/
-/*
-    for(;;)
-    {
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }*/
-    //vTaskDelay(pdMS_TO_TICKS(1000));
-    
-    
-    // lv_demo_benchmark();
-    //  lv_demo_stress();
-    //  lv_demo_music();
-    //  lv_demo_widgets();
-
-
-    //SystemUIMsgBox("测试?", "Unicode测试", SYSTEMUI_MSGBOX_BUTTON_CANCAL);
-    //SystemUIMsgBox("测试?", "Unicode测试", SYSTEMUI_MSGBOX_BUTTON_CANCAL);
+    build_dll_table();
 
     draw_main_win();
 
@@ -389,17 +932,33 @@ void main_thread() {
     //title = lv_label_create(cont);
     //lv_label_set_text(title, "Exist OS");
 
-    static lv_style_t style;
     {
-    lv_style_init(&style);
+    group_tabview = lv_group_create();
+    group_apps =  lv_group_create();
+    group_files =  lv_group_create();
+    group_status =  lv_group_create();
+    group_null = lv_group_create();
+    group_msgbox =  lv_group_create();
+    group_imgexp =  lv_group_create();
 
+    lv_indev_set_group(SystemGetInKeypad(), group_apps);
     tv = lv_tabview_create(cont, LV_DIR_TOP, LV_DPI_DEF / 4);
 	lv_obj_set_pos(tv, 4, 15);
 	lv_obj_set_size(tv, 248, 109);
 
 
-    t1 = lv_tabview_add_tab(tv, "Application");
-    t2 = lv_tabview_add_tab(tv, "Status");
+    t1 = lv_tabview_add_tab(tv, "Apps(F1)");
+    t3 = lv_tabview_add_tab(tv, "Files(F2)");
+    t2 = lv_tabview_add_tab(tv, "Status(F3)");
+
+    lv_group_add_obj(group_tabview, tv);
+    //lv_group_add_obj(group_apps, tv);
+    
+    
+
+    lv_obj_add_event_cb(tv, tabview_event, LV_EVENT_VALUE_CHANGED, NULL);
+
+    lv_obj_add_event_cb(tv, tabview_event, LV_EVENT_KEY, NULL);
 
     LV_IMG_DECLARE(xcaslogo_s);
     imgbtn = lv_imgbtn_create(t1);
@@ -470,9 +1029,6 @@ void main_thread() {
     lv_obj_t * label = lv_label_create(btn1);
 
 
-    lv_obj_add_event_cb(btn1, khicasBtn, LV_EVENT_ALL, NULL);
-
-
 	static lv_style_t style_screen_btn_1_main_main_default;
 	if (style_screen_btn_1_main_main_default.prop_cnt > 1)
 		lv_style_reset(&style_screen_btn_1_main_main_default);
@@ -484,7 +1040,7 @@ void main_thread() {
 	lv_style_set_bg_grad_dir(&style_screen_btn_1_main_main_default, LV_GRAD_DIR_NONE);
 	lv_style_set_bg_opa(&style_screen_btn_1_main_main_default, 255);
 	lv_style_set_border_color(&style_screen_btn_1_main_main_default, lv_color_make(0x00, 0x00, 0x00));
-	lv_style_set_border_width(&style_screen_btn_1_main_main_default, 1);
+	lv_style_set_border_width(&style_screen_btn_1_main_main_default, 0);
 	lv_style_set_border_opa(&style_screen_btn_1_main_main_default, 100);
 	lv_style_set_text_color(&style_screen_btn_1_main_main_default, lv_color_make(0x00, 0x00, 0x00));
 	lv_style_set_text_font(&style_screen_btn_1_main_main_default, &lv_font_montserrat_12);
@@ -495,7 +1051,7 @@ void main_thread() {
 	lv_label_set_text(label, "KhiCAS");
 	lv_obj_set_style_pad_all(btn1, 0, LV_STATE_DEFAULT);
 	lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
-
+    lv_obj_add_event_cb(btn1, app_btn_handler, LV_EVENT_ALL, NULL);
 
 
     imgbtn2 = lv_imgbtn_create(t1);
@@ -523,7 +1079,7 @@ void main_thread() {
 	lv_obj_add_style(btn2, &style_screen_btn_1_main_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
 
     
-    lv_obj_add_event_cb(btn2, emu48Btn, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn2, app_btn_handler, LV_EVENT_ALL, NULL);
 
 
 
@@ -553,21 +1109,22 @@ void main_thread() {
 	lv_obj_add_style(btn3, &style_screen_btn_1_main_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
 
     void gb_entry();
-    lv_obj_add_event_cb(btn3, gb_entry, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn3, app_btn_handler, LV_EVENT_ALL, NULL);
 
-
+    lv_group_add_obj(group_apps, btn1);
+    lv_group_add_obj(group_apps, btn2);
+    lv_group_add_obj(group_apps, btn3);
 
     }
 
     //lv_obj_clear_flag(btn1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
-    
-
+    FileExplorerCreate();
 
 //===============================================================
 //tv2
     //lv_obj_set_scrollbar_mode(t2, LV_SCROLLBAR_MODE_ON);
 
-    lv_obj_t* label_time = lv_label_create(cont);
+    label_time = lv_label_create(cont);
     uint32_t rtc_time_sec = ll_rtc_get_sec();
     
     lv_obj_set_size(label_time, 48, 13);
@@ -577,12 +1134,13 @@ void main_thread() {
     //
 
     
-    g = lv_group_get_default();
 
     #define DEF_INFO_LABEL(label_name, fcous_able) lv_obj_t* label_name; label_name = lv_label_create(t2); \
     lv_obj_set_flex_grow(label_name, 0); \
-    if(fcous_able){lv_group_add_obj(g, label_name); \
-    lv_obj_add_flag(label_name, LV_OBJ_FLAG_SCROLL_ON_FOCUS);}
+    if(fcous_able){lv_group_add_obj(group_status, label_name); \
+    lv_obj_add_flag(label_name, LV_OBJ_FLAG_SCROLL_ON_FOCUS);} \
+    lv_obj_add_event_cb(label_name, status_label_cb, LV_EVENT_ALL, NULL);
+
     #define SET_LABEL_TEXT(label, ...) lv_label_set_text_fmt(label, __VA_ARGS__)
 
 
@@ -594,28 +1152,41 @@ void main_thread() {
 
     
     label_cpuminirac = lv_label_create(t2);
-    SET_LABEL_TEXT(label_cpuminirac, "CPU Freq Minimum Frac: 12");
+    SET_LABEL_TEXT(label_cpuminirac, "CPU Freq Minimum Frac: 6");
     lv_obj_set_flex_grow(label_cpuminirac, 0);
 
     lv_obj_t *cpu_minpwr_slider = lv_slider_create(t2);
     lv_obj_set_flex_grow(cpu_minpwr_slider, 0);
     lv_slider_set_range(cpu_minpwr_slider, 2, 14);
     lv_obj_add_flag(cpu_minpwr_slider, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
-    lv_slider_set_value(cpu_minpwr_slider, 12, false);
+    lv_slider_set_value(cpu_minpwr_slider, 6, false);
     lv_obj_add_event_cb(cpu_minpwr_slider, slider_cpu_minimum_frac_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_group_add_obj(group_status, cpu_minpwr_slider);
 
     slow_down_chb = lv_checkbox_create(t2);
     lv_checkbox_set_text(slow_down_chb, "CPU Auto Slow-Down");
     lv_obj_set_flex_grow(slow_down_chb, 0); 
     lv_obj_add_event_cb(slow_down_chb, slowdown_chb_handler, LV_EVENT_ALL, NULL);
     lv_obj_add_state(slow_down_chb, LV_STATE_CHECKED);
+    lv_group_add_obj(group_status, slow_down_chb);
 
     charge_chb = lv_checkbox_create(t2);
     lv_checkbox_set_text(charge_chb, "Enable Charge");
     lv_obj_set_flex_grow(charge_chb, 0);
     lv_obj_add_event_cb(charge_chb, charge_chb_handler, LV_EVENT_ALL, NULL);
+    lv_group_add_obj(group_status, charge_chb);
 
 
+    lv_obj_t *btn4;
+    btn4 = lv_btn_create(t2);
+    lv_obj_set_size(btn4, 62, 13);
+    lv_obj_set_pos(btn4, 60 + 40 + 64 , 52);
+    lv_obj_t * label4 = lv_label_create(btn4);
+	lv_label_set_text(label4, "Test");
+	lv_obj_set_style_pad_all(btn4, 0, LV_STATE_DEFAULT);
+	lv_obj_align(label4, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_add_event_cb(btn4, app_btn_handler, LV_EVENT_ALL, NULL);
+    lv_group_add_obj(group_status, btn4);
 
     //lv_demo_keypad_encoder(); 
     int cur_cpu_div = 1;
@@ -637,9 +1208,7 @@ void main_thread() {
 
         if(!suspend){
 
-            
-
-            
+        
             ll_get_clkctrl_div(tmp);
             cur_cpu_div = tmp[0];
             cur_cpu_frac = tmp[1];
@@ -651,14 +1220,15 @@ void main_thread() {
             cur_soc_temp = ll_get_core_temp();
 
             SET_LABEL_TEXT(info_line1, "CPU Freq:%d / %d MHz,  Temp:%d °C", cur_fcpu , 480 * 18 / cur_cpu_div / cur_cpu_frac, cur_soc_temp );
-            SET_LABEL_TEXT(info_line2, "Mem: %d / %d KB,  Ticks:%d s", xPortGetFreeHeapSize() / 1024, 6*1024, runTime );
+            SET_LABEL_TEXT(info_line2, "Mem: %d / %d KB,  Ticks:%d s", xPortGetFreeHeapSize() / 1024, RAM_SIZE / 1024, runTime );
             SET_LABEL_TEXT(info_line3, "Batt: %d mv,  Charging: %s", cur_batt_volt, ll_get_charge_status() ? "Yes" : "NO" );
             SET_LABEL_TEXT(info_line4, "Pwr Speed: %d Ticks", ll_get_pwrspeed() );
 
-
-            rtc_time_sec = ll_rtc_get_sec();
-            lv_label_set_text_fmt(label_time, "%02d:%02d",  (rtc_time_sec / (60 * 60)) % 24, (rtc_time_sec / 60) % 60 );
-
+            if(time_lable_refresh)
+            {
+                rtc_time_sec = ll_rtc_get_sec();
+                lv_label_set_text_fmt(label_time, "%02d:%02d",  (rtc_time_sec / (60 * 60)) % 24, (rtc_time_sec / 60) % 60 );
+            }
             if(cur_batt_volt > 1408)
             {
                 ll_charge_enable(false);
@@ -695,126 +1265,6 @@ void main_thread() {
     }
 }
 
-void khicasTask(void *arg)
-{
-    lv_obj_t *win = lv_win_create(lv_scr_act(), 0);
-    lv_obj_t *cont = lv_win_get_content(win);
-
-    lv_obj_t *text = lv_label_create(cont);
-
-    lv_label_set_text(text, "Loading...");
-    vTaskDelay(pdMS_TO_TICKS(1000));
-
-
-    SystemUISuspend();
-    void testcpp();
-    testcpp(); 
-
-    SystemUIResume();
-    vTaskDelete(NULL);
-}
-
-void khicasBtn(lv_event_t *e) {
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_CLICKED) {
-        xTaskCreate(khicasTask, "KhiCAS", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
-
-    }
-}
-static lv_obj_t *emu48_msgbox ;
-
-
-static void emu48_msgbox_event_cb(lv_event_t *e) {
-    
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t *msgbox = lv_event_get_current_target(e);
-
-    if (code == LV_EVENT_VALUE_CHANGED) {
-        
-        lv_msgbox_close(msgbox);
-        lv_group_focus_freeze(g, false);
-    }
-}
-
-
-const char *msgboxbtn[] = {""};
-
-
-void emu48_preThread(void *sel)
-{
-    if(sel == 0){
-        emu48_msgbox = lv_msgbox_create(lv_scr_act(), "Error", "Cound not fine the ROM: /rom.39g", msgboxbtn , false);
-        lv_obj_add_event_cb(emu48_msgbox, emu48_msgbox_event_cb, LV_EVENT_ALL, 0);
-        lv_obj_align(emu48_msgbox, LV_ALIGN_CENTER, 0, 0);
-        lv_obj_center(emu48_msgbox);
-
-        lv_group_focus_freeze(g, true);
-        
-        vTaskDelay(pdMS_TO_TICKS(2500));
-
-        lv_msgbox_close(emu48_msgbox);
-
-        lv_group_focus_freeze(g, false);
-        vTaskDelete(NULL);
-    }
-
-
-    lv_obj_t *win = lv_win_create(lv_scr_act(), 0);
-    lv_obj_t *cont = lv_win_get_content(win);
-    lv_obj_t *text = lv_label_create(cont);
-    lv_label_set_text(text, "Loading...");
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    
-    void emu48_main(int select);
-    SystemUISuspend();
-
-    emu48_main((int)sel);
-
-    for(;;)
-    {
-        vTaskDelay(pdMS_TO_TICKS(100));
-    }
-    
-}
-
-void emu48Btn(lv_event_t *e)
-{
-    int romf = -1;
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED) {
-        FIL *f = pvPortMalloc(sizeof(FIL));
-        FRESULT fr;
-
-/*
-        fr = f_open(f, "/rom.39g.unpack", FA_OPEN_EXISTING);
-        if(fr == FR_OK)
-        {
-            romf = 2;
-            goto fopen_testok;
-        }
-*/
-        fr = f_open(f, "/rom.39g", FA_OPEN_EXISTING);
-        if(fr == FR_OK)
-        {
-            romf = 1;
-            goto fopen_testok;
-        }
-        xTaskCreate(emu48_preThread, "emu48", configMINIMAL_STACK_SIZE, (void *)0, configMAX_PRIORITIES - 3, NULL);
-
-
-        return;
-
-        fopen_testok:
-        f_close(f);
-        vPortFree(f);
-
-        xTaskCreate(emu48_preThread, "emu48", configMINIMAL_STACK_SIZE, (void *)romf, configMAX_PRIORITIES - 3, NULL);
-
-    }
-}
- 
-extern int __HEAP_START[384*1024 / 4];
 
 void main() { 
 
@@ -831,6 +1281,8 @@ void main() {
     ll_cpu_slowdown_enable(false);
 
     //memset(&__HEAP_START[0], 0xFF, 384 * 1024);
+
+    VROMLoader_Initialize();
   
     printf("System Booting...\n");
 

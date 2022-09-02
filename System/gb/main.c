@@ -261,8 +261,12 @@ void  __attribute__((target("arm"))) gb_main(void *_)
 {
 
 	gb_main_thumb(NULL);
+
+	lv_obj_invalidate(lv_scr_act());
+	lv_refr_now(NULL);
 	
-	
+
+
 	vTaskDelete(NULL);
 }
 
