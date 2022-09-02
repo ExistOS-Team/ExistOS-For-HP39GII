@@ -158,32 +158,41 @@ static void build_dll_table()
     DLL_TABLE_ADD(vPortEnterCritical);
     DLL_TABLE_ADD(vPortExitCritical);
 
-    DLL_TABLE_ADD(f_mount);
     DLL_TABLE_ADD(f_open);
+    DLL_TABLE_ADD(f_close);
     DLL_TABLE_ADD(f_read);
     DLL_TABLE_ADD(f_write);
-    DLL_TABLE_ADD(f_sync);
-    DLL_TABLE_ADD(f_close);
     DLL_TABLE_ADD(f_lseek);
+    DLL_TABLE_ADD(f_truncate);
+    DLL_TABLE_ADD(f_sync);
     DLL_TABLE_ADD(f_opendir);
     DLL_TABLE_ADD(f_closedir);
     DLL_TABLE_ADD(f_readdir);
-    DLL_TABLE_ADD(f_findnext);
     DLL_TABLE_ADD(f_findfirst);
-    DLL_TABLE_ADD(f_stat);
-    DLL_TABLE_ADD(f_unlink);
+    DLL_TABLE_ADD(f_findnext);
     DLL_TABLE_ADD(f_mkdir);
+    DLL_TABLE_ADD(f_unlink);
+    DLL_TABLE_ADD(f_rename);
+    DLL_TABLE_ADD(f_stat);
+    //DLL_TABLE_ADD(f_chmod);
+    //DLL_TABLE_ADD(f_utime);
+    DLL_TABLE_ADD(f_chdir);
+    DLL_TABLE_ADD(f_chdrive);
+    DLL_TABLE_ADD(f_getcwd);
+    DLL_TABLE_ADD(f_getfree);
+    //DLL_TABLE_ADD(f_getlabel);
+    //DLL_TABLE_ADD(f_setlabel);
+    //DLL_TABLE_ADD(f_forward);
     DLL_TABLE_ADD(f_expand);
+    DLL_TABLE_ADD(f_mount);
     DLL_TABLE_ADD(f_mkfs);
-    DLL_TABLE_ADD(ff_memalloc);
-    DLL_TABLE_ADD(ff_memfree);
-    DLL_TABLE_ADD(ff_cre_syncobj);
-    DLL_TABLE_ADD(ff_del_syncobj);
-    DLL_TABLE_ADD(ff_req_grant);
-    DLL_TABLE_ADD(ff_rel_grant);
-    DLL_TABLE_ADD(ff_uni2oem);
-    DLL_TABLE_ADD(ff_oem2uni);
-    DLL_TABLE_ADD(ff_wtoupper);
+    //DLL_TABLE_ADD(f_fdisk);
+    //DLL_TABLE_ADD(f_setcp);
+    DLL_TABLE_ADD(f_putc);
+    DLL_TABLE_ADD(f_puts);
+    DLL_TABLE_ADD(f_printf);
+    DLL_TABLE_ADD(f_gets);
+
 
 
 

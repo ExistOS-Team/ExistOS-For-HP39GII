@@ -21,6 +21,55 @@ static uint32_t *rel_dyn;
 static uint32_t rel_dyn_num;
 static const char *dynstr;
 
+static size_t text_load_addr;
+
+static lv_group_t *group_backup;
+static lv_group_t *group_default_backup;
+static lv_group_t *group_elf_mbox = NULL;
+
+static int mbox_sel = -1;
+static lv_obj_t *mbox;
+static const char *mbox_btns[] = {"OK" , "Cancel", ""};
+
+static void elf_loader_msg_cb(lv_event_t *e) {
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *msgbox = lv_event_get_current_target(e);
+
+    if (code == LV_EVENT_VALUE_CHANGED) {
+        uint16_t select_btn = lv_msgbox_get_active_btn(msgbox); // 0 or 1
+
+        if (select_btn == 0) {
+            mbox_sel = 0;
+        } else {
+            mbox_sel = 1;
+        }
+
+        lv_group_set_default(group_default_backup);
+        lv_indev_set_group(SystemGetInKeypad(), group_backup);
+        lv_msgbox_close_async(msgbox);
+    }
+}
+
+static int elfld_msgbox(char *title, char *info, bool waitselect) {
+    group_backup = SystemGetInKeypad()->group;
+    group_default_backup = lv_group_get_default();
+    lv_group_remove_all_objs(group_elf_mbox);
+    lv_group_set_default(group_elf_mbox);
+    mbox = lv_msgbox_create(lv_scr_act(), title, info, (const char **)mbox_btns, false);
+    lv_obj_add_event_cb(mbox, elf_loader_msg_cb, LV_EVENT_ALL, NULL);
+    lv_obj_align(mbox, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_center(mbox);
+    lv_indev_set_group(SystemGetInKeypad(), group_elf_mbox);
+    if(waitselect)
+    {
+        mbox_sel = -1;
+        while(mbox_sel == -1)
+        {
+            vTaskDelay(pdMS_TO_TICKS(500));
+        }
+    }
+    return mbox_sel;
+}
 
 
 void dl_nop()
@@ -35,17 +84,11 @@ uint32_t _dl_fixup(uint32_t linker_map,  uint32_t reloc_arg)
     Elf32_Sym *sym;
     Elf32_Rel *reloc;
 
-    //printf("call dls:%08x, %08x\n", linker_map, reloc_arg);
-    //printf("rel_plt + reloc_arg: %08x\n", (uint32_t)rel_plt + reloc_arg);
+    char msg[128];
 
     reloc = (Elf32_Rel *)((uint32_t)rel_plt + reloc_arg);
 
-    //printf("reloc->offset: %08x\n", reloc->r_offset);
-    //printf("reloc->info: %08x\n", reloc->r_info);
-
     sym = dynamic_table + (reloc->r_info >> 8);
-
-    //printf("sym:%s, at:%08x\n",&dynstr[sym->st_name], sym->st_value   );
         
     if(sym->st_value)
     {
@@ -59,12 +102,21 @@ uint32_t _dl_fixup(uint32_t linker_map,  uint32_t reloc_arg)
             return (uint32_t)func;
         }
 
-        printf("unresolve symbol:%s\n", &dynstr[sym->st_name]);
+        sprintf(msg, "unresolve symbol:%s\n Continue?", &dynstr[sym->st_name]);
+
+        SystemUIResume();
+
+        if(elfld_msgbox("ERROR", msg, true) == 1)
+        {
+            VROMLoaderDeleteMap(TMP_LOAD_ADDR);
+            VROMLoaderDeleteMap(text_load_addr);
+            vTaskDelete(NULL);
+        }
+
+        SystemUISuspend();
+
         return (uint32_t)dl_nop;
     }
-
-    //printf("sym:%08x, %08x, %08x\n", sym->st_name, sym->st_value, sym->st_size);
-
 
     while(1)
     {
@@ -116,6 +168,8 @@ void elf_exec(void *par)
     FRESULT fr;
     int res;
     void (*app_entry)();
+    if(!group_elf_mbox)
+    group_elf_mbox = lv_group_create();
 
     FIL *f = pvPortMalloc(sizeof(FIL));
     if(!f)
@@ -158,7 +212,8 @@ void elf_exec(void *par)
                 paddr = elf_getProgramHeaderPaddr(&elf_file, i);
                 sz = elf_getProgramHeaderFileSize(&elf_file, i);
                 printf("(text) Executable:%08x,%08x,%08x,%d\n",fileOffset, vaddr, paddr, sz);
-                res = VROMLoaderCreateFileMap(f, fileOffset, vaddr, sz);
+                text_load_addr = vaddr;
+                res = VROMLoaderCreateFileMap(f, fileOffset, text_load_addr, sz);
                 if(res)
                 {
                     printf("Load Error!\n");
@@ -231,6 +286,7 @@ void elf_exec(void *par)
     SystemUIResume();
 
     VROMLoaderDeleteMap(TMP_LOAD_ADDR);
+    VROMLoaderDeleteMap(text_load_addr);
 
     vTaskDelete(NULL);
 }
