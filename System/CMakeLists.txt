@@ -90,10 +90,18 @@ add_custom_target(
   COMMAND ${CMAKE_OBJCOPY} -I elf32-little -O binary -R .note -R .comment -S ${CMAKE_CURRENT_BINARY_DIR}/sys.elf ${CMAKE_CURRENT_BINARY_DIR}/ExistOS.sys 
   DEPENDS sys.elf 
   )
-
+if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
   add_custom_target(
     edb_flash_sys 
     COMMAND ${CMAKE_SOURCE_DIR}/tools/edb -r -s -f ${CMAKE_CURRENT_BINARY_DIR}/ExistOS.sys 1984
     DEPENDS ExistOS.sys
     )
-
+else()
+if(EXISTS ${CMAKE_SOURCE_DIR}/tools/edb-unix/build/)
+  add_custom_target(
+    edb_flash_sys 
+    COMMAND ${CMAKE_SOURCE_DIR}/tools/edb-unix/build/edb -r -s -f ${CMAKE_CURRENT_BINARY_DIR}/ExistOS.sys 1984
+    DEPENDS ExistOS.sys
+    )
+endif()
+endif()

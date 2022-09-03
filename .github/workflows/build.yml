@@ -4,36 +4,38 @@ on: [push]
 
 env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Install package arm-none-eabi-gcc
-      run: sudo apt-get install gcc-arm-none-eabi -y
-    - name: Install packages build sbtools required
-      run: sudo apt-get install libcrypto++6 libcrypto++-dev libusb-1.0-0-dev -y
-    - name: Build sbtools
-      run: |
-        cd tools/sbtools
-        make
-        cd ../..
-        cd Libs/src/micropython-master/ports/eoslib
-        make
-        cd ../../../../..
-    - name: Cmake configure
-      run: cmake .
-    - name : Cmake build
-      run: cmake --build .
-    - name: Create GitHub release
-      uses: marvinpinto/action-automatic-releases@latest
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag:  build-${{ github.run_number }}
-        title: build ${{ github.run_number }}
-        prerelease: true
-        files: |
-          ./System/ExistOS.sys
-          ./OSLoader/OSLoader.sb
+      - uses: actions/checkout@v2
+      - name: Install package arm-none-eabi-gcc
+        run: sudo apt-get install gcc-arm-none-eabi -y
+      - name: Install packages build sbtools required
+        run: sudo apt-get install libcrypto++6 libcrypto++-dev libusb-1.0-0-dev -y
+      - name: Build sbtools
+        run: |
+          cd tools/sbtools
+          make
+          cd ../..
+          cd Libs/src/micropython-master/ports/eoslib
+          make
+          cd ../../../../..
+      - name: Cmake configure
+        run: |
+          mkdir build
+          cmake -S . -B build
+      - name: Cmake build
+        run: cmake --build build
+      - name: Create GitHub release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: build-${{ github.run_number }}
+          title: build ${{ github.run_number }}
+          prerelease: true
+          files: |
+            ./build/System/ExistOS.sys
+            ./build/OSLoader/OSLoader.sb
