@@ -293,7 +293,7 @@ static void charge_msgbox_event_cb(lv_event_t *e)
         }
 
         lv_indev_set_group(SystemGetInKeypad(), group_status);
-        lv_msgbox_close(msgbox);
+        lv_msgbox_close_async(msgbox);
     }
 }
 
@@ -1147,8 +1147,8 @@ void main() {
   
     printf("System Booting...\n");
 
-    xTaskCreate(vTask1, "Task1", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
-    xTaskCreate(vTask2, "Task2", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
+    //xTaskCreate(vTask1, "Task1", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
+    //xTaskCreate(vTask2, "Task2", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
 
     xTaskCreate(main_thread, "System", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
 
