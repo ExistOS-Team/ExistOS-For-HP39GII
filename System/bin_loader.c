@@ -1,4 +1,7 @@
 
+#include <stdio.h>
+#include <stdint.h>
+
 #include "SystemUI.h"
 #include "VROMLoader.h"
 
@@ -14,16 +17,42 @@ typedef struct apiFuncList_t
     pvoid_ApiFunc taskCreate;
     pvoid_ApiFunc kmalloc;
     void_ApiFunc kfree;
+    void_ApiFunc printf;
+    void_ApiFunc puts;
+    void_ApiFunc _exit;
 
 }apiFuncList_t;
 
 apiFuncList_t apiFuncList;
 
+static bool apiListInited = false;
 
 static void api_taskSleepMs(uint32_t ms)
 {
     vTaskDelay(pdMS_TO_TICKS(ms));
 }
+
+static void api_app_exit()
+{
+    lv_obj_invalidate(lv_scr_act());
+    SystemUIResume();
+    VROMLoaderDeleteMap(0x03000000);
+    vTaskDelete(NULL);
+}
+
+static void build_api_list()
+{
+    apiFuncList.taskSleepMs = api_taskSleepMs;
+    apiFuncList.taskCreate = (pvoid_ApiFunc)xTaskCreate;
+    apiFuncList.kmalloc = (pvoid_ApiFunc)pvPortMalloc;
+    apiFuncList.kfree = (pvoid_ApiFunc)vPortFree;
+    apiFuncList.printf = (void_ApiFunc)printf;
+    apiFuncList.puts = (void_ApiFunc)puts;
+    apiFuncList._exit = (void_ApiFunc)api_app_exit;
+    
+}
+
+
 
 void bin_exec(void *par)
 {
@@ -31,6 +60,11 @@ void bin_exec(void *par)
     int res;
     void (*app_entry)();
     app_entry = (void (*)())0x0300000C;
+
+    if(!apiListInited){
+        build_api_list();
+        apiListInited = true;
+    }
 
     f_stat(par, &finfo);
     res = VROMLoaderCreateFileMap(par, 0, 0x03000000, finfo.fsize);
@@ -47,8 +81,6 @@ void bin_exec(void *par)
     {
         SystemUISuspend();
 
-        apiFuncList.taskSleepMs = api_taskSleepMs;
-        apiFuncList.taskCreate = (pvoid_ApiFunc)xTaskCreate;
         
         app_entry(&apiFuncList);
 
