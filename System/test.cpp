@@ -279,15 +279,20 @@ void tstrun(const char *s)
 
     int kcas_main(int isAppli, unsigned short OptionNum);
 extern "C"{
-
+extern bool khicasRunning;
 #include "SystemFs.h"
 #include "lfs.h"
 #include "SysConf.h"
  
     void testcpp() 
     {
+
+		
+		khicasRunning = true;
+
         if(vGL_Initialize())
         {
+			khicasRunning=false;
           return;
         } 
 /*

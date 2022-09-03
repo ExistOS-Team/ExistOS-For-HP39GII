@@ -24,6 +24,9 @@
 
 #include "SystemUI.h"
 #include "SystemFs.h"
+
+
+
 /*
 int doMenu(Menu* menu, MenuItemIcon* icontable)
 {
@@ -41,6 +44,7 @@ int showCatalog(char* insertText,int preselect,int menupos)
 */
 
 extern "C" {
+bool khicasRunning = false;
 
 char keyStatus = 0;
 int intBit = 0;
@@ -254,19 +258,27 @@ int GetKey(int *key) {
                     
                     
                     vGL_clearArea(0, 0, 255, 126);
-                    vGL_putString(0, 0, (char *)"Power OFF: ", COLOR_BLACK , COLOR_WHITE, 16);
+                    vGL_putString(0, 0, (char *)"Quitting...", COLOR_BLACK , COLOR_WHITE, 16);
                     vGL_putString(0, 16, (char *)"Waiting session save...", COLOR_BLACK , COLOR_WHITE, 16);
 
                     XcasExitCb();
                     
                     
-                    ll_flash_sync();
-                    printf("power OFF\n");
+                    //ll_flash_sync();
+                    //printf("power OFF\n");
+                    khicasRunning = false;
+                    keyStatus = 0;
+                    vTaskDelay(pdMS_TO_TICKS(1000));
+
+                    lv_obj_invalidate(lv_scr_act());
+                    SystemUIResume();
+
+                    vTaskDelete(NULL);
 
                     
-                    ll_power_off();
-                    ll_power_off();
-                    ll_power_off();
+                    //ll_power_off();
+                   //ll_power_off();
+                    //ll_power_off();
                 }
             }  
             else if(rshift)  {*key = KEY_CTRL_AC;}  
@@ -920,6 +932,13 @@ typedef struct ktimer_t
 
 ktimer_t ktimer[6];
 
+void KillTimer(int TimerID)
+{
+    ktimer[TimerID].period = 0;
+    ktimer[TimerID].cnt = 0;
+    ktimer[TimerID].callback = NULL;
+}
+
 void kcas_timer(void *arg)
 {
 
@@ -938,6 +957,13 @@ void kcas_timer(void *arg)
                 ktimer[i].cnt = 0;
                 ktimer[i].callback(); 
             }
+        }
+
+        if(!khicasRunning)
+        {
+            for(int i = 0; i < 6; i++)
+                KillTimer(i);
+            vTaskDelete(NULL);
         }
 
     }
@@ -963,9 +989,4 @@ int SetTimer(int TimerID, int period, void (*callback)(void))
     return -1;
 }
 
-void KillTimer(int TimerID)
-{
-    ktimer[TimerID].period = 0;
-    ktimer[TimerID].cnt = 0;
-    ktimer[TimerID].callback = NULL;
-}
+

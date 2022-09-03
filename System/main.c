@@ -689,12 +689,15 @@ void khicasTask(void *arg)
     lv_label_set_text(text, "Loading...");
     vTaskDelay(pdMS_TO_TICKS(1000));
 
+    lv_obj_del_async(win);
 
     SystemUISuspend();
     void testcpp();
     testcpp(); 
 
     SystemUIResume();
+
+
     vTaskDelete(NULL);
 }
 

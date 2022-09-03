@@ -44,6 +44,7 @@ static bool cursor_enable = false;
 static bool concur_reverse = false;
 
 static bool ImmediateRefrush = false;
+extern bool khicasRunning;
 
 void vGL_FlushVScreen()
 {
@@ -290,6 +291,11 @@ static void vGL_flushTask(void *arg)
                 vGL_FlushVScreen(); 
             }
         }
+
+        if(!khicasRunning)
+        {
+            vTaskDelete(NULL);
+        }
     } 
 }
 
@@ -330,6 +336,10 @@ static void vGL_consoleTask(void *arg)
             vGL_concur_reverse();
         }
         vTaskDelay(pdMS_TO_TICKS(500));
+        if(!khicasRunning)
+        {
+            vTaskDelete(NULL);
+        }
     }
 }
 

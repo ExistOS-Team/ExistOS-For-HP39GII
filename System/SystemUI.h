@@ -11,6 +11,9 @@
 #define SYSTEMUI_MSGBOX_BUTTON_OK       (0)
 #define SYSTEMUI_MSGBOX_BUTTON_CANCAL   (1 << 1)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 void SystemUIInit();
@@ -23,3 +26,8 @@ void SystemUIResume();
 void SystemUIEditing(bool edit);
 lv_indev_t *SystemGetInKeypad();
 void SystemUISetBusy(bool enable);
+
+
+#ifdef __cplusplus
+}
+#endif

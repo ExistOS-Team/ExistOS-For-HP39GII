@@ -44,7 +44,9 @@ static void build_api_list()
 {
     apiFuncList.taskSleepMs = api_taskSleepMs;
     apiFuncList.taskCreate = (pvoid_ApiFunc)xTaskCreate;
+    
     apiFuncList.kmalloc = (pvoid_ApiFunc)pvPortMalloc;
+
     apiFuncList.kfree = (pvoid_ApiFunc)vPortFree;
     apiFuncList.printf = (void_ApiFunc)printf;
     apiFuncList.puts = (void_ApiFunc)puts;
