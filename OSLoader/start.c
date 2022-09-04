@@ -77,6 +77,7 @@ uint32_t check_frequency() {
     return (s1 - s0) / 1;
 }
 void printTaskList() {
+    /*
     vTaskList((char *)&pcWriteBuffer);
     printf("=================OS Loader TASK==================\r\n");
     printf("Task Name         Task Status   Priority   Stack   ID\n");
@@ -86,6 +87,8 @@ void printTaskList() {
     printf("%s\n", pcWriteBuffer);
     printf("Status:  X-Running  R-Ready  B-Block  S-Suspend  D-Delete\n");
     printf("Free PhyMem:   %d Bytes\n", (unsigned int)xPortGetFreeHeapSize());
+*/
+    printf("=================OS Loader Info==================\r\n");
     printf("VRAM PageFault:   %ld \n", g_page_vram_fault_cnt);
     printf("VROM PageFault:   %ld \n", g_page_vrom_fault_cnt);
     printf("HCLK Freq:%ld MHz\n", HCLK_Freq / 1000000);
@@ -108,7 +111,7 @@ void vTask1(void *pvParameters) {
         HCLK_Freq = check_frequency();
         g_core_cur_freq_mhz = (HCLK_Freq / 1000000) * (*((uint32_t *)0x80040030) & 0x1F);
         c++;
-        if (c == 10) {
+        if (c == 30) {
             printTaskList();
             c = 0;
         }
@@ -193,7 +196,7 @@ void System(void *par) {
     
     setCPUDivider(CPU_DIVIDE_NORMAL);
     // vTaskSuspend(NULL);
-    bootAddr += 2;
+    bootAddr += 4;
     atagsAddr = (uint32_t *)(VM_ROM_BASE + (4234 - 1984) * 2048);
 
     g_vm_status = VM_STATUS_RUNNING;
@@ -925,7 +928,7 @@ void vBatteryMon(void *__n) {
         vdd5v_voltage = (int)(portLRADCConvCh(5, 5) * 0.45 * 4);
         coreTemp = (int)((portLRADCConvCh(4, 5) - portLRADCConvCh(3, 5)) * 1.012 / 4 - 273.15);
 
-        if (t % 10 == 0) {
+        if (t % 5 == 0) {
             
             g_core_temp = coreTemp;
             g_batt_volt = batt_voltage;
@@ -955,7 +958,7 @@ void vBatteryMon(void *__n) {
         if (show_bat_val < 800) {
             show_bat_val = 800;
         }
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(2000));
         n = 0;
         if (((show_bat_val - 800) * 100 / (1500 - 800)) >= ((100 / 4) * 1))
             n |= (1 << 0);

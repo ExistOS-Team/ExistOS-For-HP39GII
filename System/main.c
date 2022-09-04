@@ -81,7 +81,7 @@ void vApplicationIdleHook( void )
 
 void emu48Btn(lv_event_t *e);
 void khicasBtn(lv_event_t *e);
-static bool suspend = false;
+bool OS_UISuspend = false;
 static lv_obj_t *screen;
 static lv_obj_t *win;
 
@@ -97,6 +97,19 @@ static bool time_lable_refresh = true;
 static lv_obj_t* label_time;
 
 static lv_style_t style_screen_list_1_extra_btns_main_default;
+
+/*
+void *calloc(size_t a, size_t b)
+{
+    void * mem =
+    pvPortMalloc(a*b);
+    if(!mem)
+    {
+        return NULL;
+    }
+    memset(mem, 0, a*b);
+    return mem;
+}*/
 
 void draw_main_win()
 {
@@ -484,7 +497,12 @@ static void fexplorer_file_handler(lv_event_t * e)
         if((strcmp(FileExt,"bin") == 0))
         {
             void bin_exec(void *par);
-            xTaskCreate(bin_exec, fname, configMINIMAL_STACK_SIZE, FilePath, configMAX_PRIORITIES - 3, NULL);
+            xTaskCreate(bin_exec, fname, 32768, FilePath, configMAX_PRIORITIES - 3, NULL);
+        }else 
+        if((strcmp(FileExt,"exp") == 0))
+        {
+            void exp_exec(void *par);
+            xTaskCreate(exp_exec, fname, configMINIMAL_STACK_SIZE, FilePath, configMAX_PRIORITIES - 3, NULL);
         }
 
 
@@ -744,10 +762,10 @@ static void app_btn_handler(lv_event_t * e)
                     lv_indev_set_group(SystemGetInKeypad(), group_msgbox);
                 }
 
-            }else if(strcmp(lv_label_get_text(label), "GameBoy") == 0)
+            }/*else if(strcmp(lv_label_get_text(label), "GameBoy") == 0)
             {
                 xTaskCreate(gb_main, "GB Emu", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
-            }else if(strcmp(lv_label_get_text(label), "Test") == 0)
+            }*/else if(strcmp(lv_label_get_text(label), "Test") == 0)
             {
                 printf("testRead:%08x\n", *((uint32_t *)(0x03000000)));
             }
@@ -946,7 +964,7 @@ void main_thread() {
     lv_obj_add_event_cb(btn2, app_btn_handler, LV_EVENT_ALL, NULL);
 
 
-
+/*
     lv_obj_t *imgbtn3 = lv_imgbtn_create(t1);
 
 	lv_obj_set_scrollbar_mode(imgbtn3, LV_SCROLLBAR_MODE_OFF);
@@ -959,9 +977,9 @@ void main_thread() {
 	lv_obj_add_style(imgbtn3, &style_screen_imgbtn_1_main_main_default, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_imgbtn_set_src(imgbtn3, LV_IMGBTN_STATE_RELEASED, NULL, &gbico, NULL);
 	lv_obj_add_flag(imgbtn3, LV_OBJ_FLAG_CHECKABLE);
-
+*/
     
-
+/*
     lv_obj_t *btn3;
     btn3 = lv_btn_create(t1);
     lv_obj_set_size(btn3, 62, 13);
@@ -974,10 +992,10 @@ void main_thread() {
 
     void gb_entry();
     lv_obj_add_event_cb(btn3, app_btn_handler, LV_EVENT_ALL, NULL);
-
+*/
     lv_group_add_obj(group_apps, btn1);
     lv_group_add_obj(group_apps, btn2);
-    lv_group_add_obj(group_apps, btn3);
+    //lv_group_add_obj(group_apps, btn3);
 
     }
 
@@ -995,9 +1013,8 @@ void main_thread() {
     lv_obj_set_pos(label_time, 0 , 0);
     lv_obj_align(label_time, LV_ALIGN_TOP_RIGHT, 0, 0);
     lv_obj_set_flex_flow(t2, LV_FLEX_FLOW_COLUMN);
-    //
 
-    
+    extern const char system_build_time[];
 
     #define DEF_INFO_LABEL(label_name, fcous_able) lv_obj_t* label_name; label_name = lv_label_create(t2); \
     lv_obj_set_flex_grow(label_name, 0); \
@@ -1007,13 +1024,14 @@ void main_thread() {
 
     #define SET_LABEL_TEXT(label, ...) lv_label_set_text_fmt(label, __VA_ARGS__)
 
-
+    
     DEF_INFO_LABEL(info_line1, true);
     DEF_INFO_LABEL(info_line2, false);
     DEF_INFO_LABEL(info_line3, false);
     DEF_INFO_LABEL(info_line4, false);
 
-
+    DEF_INFO_LABEL(info_line5, true);
+    SET_LABEL_TEXT(info_line5, "Build time:%s", system_build_time);
     
     label_cpuminirac = lv_label_create(t2);
     SET_LABEL_TEXT(label_cpuminirac, "CPU Freq Minimum Frac: 6");
@@ -1070,7 +1088,7 @@ void main_thread() {
 
         runTime ++;
 
-        if(!suspend){
+        if(!OS_UISuspend){
 
         
             ll_get_clkctrl_div(tmp);
@@ -1125,7 +1143,7 @@ void main_thread() {
             lv_label_set_text_fmt(lab_cpu_temp, "Core: %d °C" , ll_get_core_temp());*/
         }
 
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(3000));
     }
 }
 

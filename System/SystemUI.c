@@ -65,6 +65,9 @@ static uint8_t indicator = 0;
 uint8_t g_ShiftStatus = 0;
 uint8_t g_AlphaStatus = 0; //2; // 0:normal  1:A..Z  2:a..Z
 
+
+extern bool OS_UISuspend;
+
 static TaskHandle_t lvgl_svc_task;
 static TaskHandle_t lvgl_tick_task;
 
@@ -434,7 +437,9 @@ uint32_t SystemUIMsgBox(lv_obj_t *parent,char *msg, char *title, uint32_t button
     return retval & 0xFFFF;
 }
 
+
 void SystemUISuspend() {
+    OS_UISuspend = true;
     vTaskSuspend(lvgl_svc_task);
     vTaskSuspend(lvgl_tick_task);
 }
@@ -442,4 +447,5 @@ void SystemUISuspend() {
 void SystemUIResume() {
     vTaskResume(lvgl_svc_task);
     vTaskResume(lvgl_tick_task);
+    OS_UISuspend = false;
 }

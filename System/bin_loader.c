@@ -44,7 +44,7 @@ static void build_api_list()
 {
     apiFuncList.taskSleepMs = api_taskSleepMs;
     apiFuncList.taskCreate = (pvoid_ApiFunc)xTaskCreate;
-    
+
     apiFuncList.kmalloc = (pvoid_ApiFunc)pvPortMalloc;
 
     apiFuncList.kfree = (pvoid_ApiFunc)vPortFree;
@@ -69,10 +69,25 @@ void bin_exec(void *par)
     }
 
     f_stat(par, &finfo);
-    res = VROMLoaderCreateFileMap(par, 0, 0x03000000, finfo.fsize);
+
+    FRESULT fr;
+    FIL *f = pvPortMalloc(sizeof(FIL));
+    if(!f)
+    {
+        vTaskDelete(NULL);
+    }
+    fr = f_open(f, par, FA_OPEN_EXISTING | FA_READ);
+
+    if(fr)
+    {
+        vPortFree(f);
+        vTaskDelete(NULL);
+    }
+
+    res = VROMLoaderCreateFileMap(f, 0, 0x03000000, finfo.fsize);
     if(res)
     {
-        return;
+        vTaskDelete(NULL);
     }
 
     if(
@@ -92,6 +107,8 @@ void bin_exec(void *par)
 
     }
     VROMLoaderDeleteMap(0x03000000);
+    f_close(f);
+    vPortFree(f);
 
     vTaskDelete(NULL);
 }

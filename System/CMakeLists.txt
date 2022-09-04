@@ -28,7 +28,8 @@ include_directories(${CMAKE_SOURCE_DIR}/Libs/src/micropython-master/ports/eoslib
 #include_directories(${CMAKE_SOURCE_DIR}/Libs/src/gmp/include)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/libtommath-0.39/)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/khicas/)
- 
+
+
 aux_source_directory(.                                         SYS_SRCS)
 aux_source_directory(./Core                                    SYS_SRCS)
 aux_source_directory(./Core/porting                            SYS_SRCS)
@@ -37,7 +38,7 @@ aux_source_directory(./Fs                                      SYS_SRCS)
 aux_source_directory(./Fs/Fatfs                                SYS_SRCS)
 aux_source_directory(./Fs/littlefs                             SYS_SRCS)
 
-add_subdirectory(gb)
+#add_subdirectory(gb)
 add_subdirectory(KLib)
 add_subdirectory(KLib/tjpgdec)
 add_subdirectory(emu48)
@@ -47,11 +48,12 @@ add_executable(sys.elf ${SYS_SRCS})
 set(LINKER_SCRIPT 
 ${CMAKE_SOURCE_DIR}/Script/sys_ld.script
 )
-set(LINKER_FLAGS "SHELL:-T${LINKER_SCRIPT} -Wl,--gc-sections -Wl,--wrap=malloc -Wl,--wrap=free")
+set(LINKER_FLAGS "SHELL:-T${LINKER_SCRIPT} -Wl,--wrap=malloc -Wl,--wrap=free")
+#-Wl,--gc-sections 
 target_link_options(sys.elf PRIVATE ${LINKER_FLAGS}) 
 
  
-target_compile_options(gb PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Ofast)
+#target_compile_options(gb PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Ofast)
 target_compile_options(emu48 PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Ofast)
 target_compile_options(lvgl PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft  -mthumb -Os)
 target_compile_options(tjpgd PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft  -mthumb -Os)
@@ -59,18 +61,19 @@ target_compile_options(tjpgd PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle
 
 #-mthumb
 target_compile_options(sys.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft 
--Os -pipe -ffunction-sections -fno-strict-aliasing -fomit-frame-pointer
+-Os -pipe 
+#-ffunction-sections -fno-strict-aliasing -fomit-frame-pointer
 #-fcommon -fno-strict-aliasing -fomit-frame-pointer
 #-fpermissive  -fdata-sections
-#-fno-exceptions
+#-fno-exceptions 
 ) 
 
 #set_property(TARGET lvgl PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-set_property(TARGET gb PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+#set_property(TARGET gb PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 target_link_libraries(sys.elf -lm -lc -lrdimon -lgcc -lstdc++ -nostartfiles
 tjpgd
-gb 
+#gb 
 emu48
 lvgl
 ${CMAKE_SOURCE_DIR}/Libs/libkcasgui.libcpp
@@ -81,6 +84,25 @@ ${CMAKE_SOURCE_DIR}/Libs/libcas.libcpp
 ${CMAKE_SOURCE_DIR}/Libs/libtommath.libcpp
 #${CMAKE_SOURCE_DIR}/Libs/libgmp.libcpp 
 )
+
+# build time in UTC ISO 8601
+FILE (WRITE ${CMAKE_BINARY_DIR}/timestamp.cmake "STRING(TIMESTAMP TIMEZ UTC)\n")
+FILE (APPEND ${CMAKE_BINARY_DIR}/timestamp.cmake "FILE(WRITE timestamp.h \"#ifndef TIMESTAMP_H\\n\")\n")
+FILE (APPEND ${CMAKE_BINARY_DIR}/timestamp.cmake "FILE(APPEND timestamp.h \"#define TIMESTAMP_H\\n\\n\")\n")
+FILE (APPEND ${CMAKE_BINARY_DIR}/timestamp.cmake "FILE(APPEND timestamp.h \"#define _TIMEZ_ \\\"\${TIMEZ}\\\"\\n\\n\")\n")
+FILE (APPEND ${CMAKE_BINARY_DIR}/timestamp.cmake "FILE(APPEND timestamp.h \"#endif // TIMESTAMP_H\\n\")\n")
+ADD_CUSTOM_TARGET (
+    timestamp
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/timestamp.cmake
+    ADD_DEPENDENCIES ${CMAKE_BINARY_DIR}/timestamp.cmake)
+
+    include_directories(${CMAKE_CURRENT_BINARY_DIR})
+    add_dependencies(sys.elf timestamp)
+    
+# add_custom_target(file_toucher 
+#         COMMAND ${CMAKE_COMMAND} -E touch_nocreate ${CMAKE_SOURCE_DIR}/init.c)
+
+# add_dependencies(sys.elf file_toucher)
 
 add_custom_target(
   ExistOS.sys ALL
@@ -94,3 +116,4 @@ add_custom_target(
     DEPENDS ExistOS.sys
     )
 
+add_dependencies(edb_flash_sys timestamp)

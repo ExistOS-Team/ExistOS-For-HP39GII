@@ -17,6 +17,11 @@ SECTIONS
 
 	} >vmROM
 
+	.sysinfo.data :
+	{ 
+		*(.sysinfo.data)
+
+	} >vmROM
 
  	.fini_array    :
  	{

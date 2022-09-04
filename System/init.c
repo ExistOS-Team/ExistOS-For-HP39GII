@@ -1,6 +1,6 @@
 
 #include "SysConf.h"
-
+#include "timestamp.h"
 #include <sys/types.h>
 #include <stdlib.h>
 extern unsigned int _sbss;
@@ -23,11 +23,15 @@ void volatile set_r13(uint32_t r13)
     __asm volatile("mov r13,r0");
 }
 
+const char __attribute__((section(".sysinfo"))) system_build_time[] = _TIMEZ_;//__DATE__ " " __TIME__;
+
 void volatile _init() __attribute__((section(".init"))) __attribute__((naked));
 void volatile _init() {
 
     __asm volatile(".word 0xEF5AE0EF");
     __asm volatile(".word 0xFECDAFDE");
+    __asm volatile(".word 0x00000000");
+    __asm volatile(".word 0x00000000");
 
     set_r13(NORMAL_STACK_ADDR);
 
