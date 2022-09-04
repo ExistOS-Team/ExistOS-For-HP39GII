@@ -31,6 +31,12 @@ typedef struct exp_header_t
 
     uint32_t dynsym_of;
     uint32_t dynstr_of;
+    uint32_t rel_dyn_of;
+    uint32_t rel_plt_of;
+    uint32_t got_of;
+
+    uint32_t num_rel_dyn;
+    uint32_t num_rel_plt;
 
     char sys_build_date[32];
 
