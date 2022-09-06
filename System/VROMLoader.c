@@ -1,5 +1,6 @@
 #include <string.h>
-
+#include <stdio.h>
+#include <stdint.h>
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -7,7 +8,11 @@
 
 static VROMMapInfo_t *vmmap_list;
 
+extern bool g_system_in_emulator;
+
 void VROMLoader_Initialize() {
+    printf("Running in Emulator:%d\n", g_system_in_emulator);
+
 }
 
 static inline int VROMMapCheck(uint32_t memAddress, uint32_t mapSize) {
@@ -74,6 +79,14 @@ int VROMLoaderCreateFileMap(FIL *f, uint32_t inFileStart, uint32_t memAddress, u
     map->map_vm_addr = memAddress;
     map->map_size = mapSize;
     map->next = NULL;
+
+    if(g_system_in_emulator)
+    {
+        UINT br;
+        f_lseek(f, inFileStart);
+        f_read(f, (void *)memAddress, mapSize, &br);
+        f_lseek(f, 0);
+    }
 
     return 0;
 }

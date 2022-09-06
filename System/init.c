@@ -3,6 +3,7 @@
 #include "timestamp.h"
 #include <sys/types.h>
 #include <stdlib.h>
+#include <stdbool.h>
 extern unsigned int _sbss;
 extern unsigned int _ebss;
 
@@ -10,6 +11,8 @@ extern void (*__preinit_array_start[])(void) __attribute__((weak));
 extern void (*__preinit_array_end[])(void) __attribute__((weak));
 extern void (*__init_array_start[])(void) __attribute__((weak));
 extern void (*__init_array_end[])(void) __attribute__((weak));
+
+bool g_system_in_emulator = false;
 
 void main();
 
@@ -57,6 +60,7 @@ void volatile _init() {
         (*p)();
     }
 
+    g_system_in_emulator = ((uint32_t *)(_init))[2];
 
     main();
 

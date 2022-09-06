@@ -101,13 +101,18 @@ static int tjpg_out_func (
 {
 
     uint8_t *src;
-    src = (uint8_t*)bitmap;	
+    src = (uint8_t *)bitmap;
+    //uint16_t *src;
+    //src = (uint16_t *)bitmap;
 
     for(uint32_t y = rect-> top -off_y ; y < rect->bottom + 1 -off_y; y++) {
         for(uint32_t x = rect-> left -off_x ; x < rect->right + 1 -off_x; x++) {
             
             if((y < 127) && (x < 256))
             {
+                
+                //vrambuf[x + 256 * y] = (((*src >> 11)/5)<<5) |  ((((*src >> 5) & 0x3F)/9)<<2) | ((*src & 5)/10)      ;
+                //src++;
                 vrambuf[x + 256 * y] = *src++;
             }
         }
@@ -134,9 +139,9 @@ static key_t l_getKey()
         key = keys & 0xFFFF;
         kpress = keys >> 16;
         
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(20));
     }while((last_key == key) && (last_press == kpress));
-    
+    /*
     do{
         keys = ll_vm_check_key();
         key = keys & 0xFFFF;
@@ -146,9 +151,10 @@ static key_t l_getKey()
             return KEY_ON;
         }
         
-        vTaskDelay(pdMS_TO_TICKS(10));
+        //vTaskDelay(pdMS_TO_TICKS(10));
 
-    }while(kpress);
+    }while(kpress);*/
+    vTaskDelay(pdMS_TO_TICKS(20));
 
     return key;
 }

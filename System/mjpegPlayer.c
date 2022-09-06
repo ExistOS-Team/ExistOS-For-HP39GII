@@ -142,11 +142,15 @@ static int tjpg_out_func(
 
     uint8_t *src;
     src = (uint8_t *)bitmap;
+    // uint16_t *src;
+    // src = (uint16_t *)bitmap;
 
     for (uint32_t y = rect->top - off_y; y < rect->bottom + 1 - off_y; y++) {
         for (uint32_t x = rect->left - off_x; x < rect->right + 1 - off_x; x++) {
 
             if ((y < 127) && (x < 256)) {
+                // vrambuf[x + 256 * y] = (((*src >> 11)/5)<<5) |  ((((*src >> 5) & 0x3F)/9)<<2) | ((*src & 5)/10)      ;
+                // src++;
                 vrambuf[x + 256 * y] = *src++;
             }
         }
@@ -154,7 +158,6 @@ static int tjpg_out_func(
 
     return 1;
 }
-
 
 void mjpegPlayer(void *par) {
     FRESULT fr;
@@ -267,7 +270,13 @@ void mjpegPlayer(void *par) {
     uint32_t last_tick_ms = ll_get_time_ms();
 
     bool pause = false, skip = false;
-    
+
+    int32_t frame_time_ms = aviHead.dwMicroSecPerFrame / 1000;
+    if(frame_time_ms - 10 > 0)
+    {
+        frame_time_ms -= 10;
+    }
+
     uint32_t keys, key, kpress;
     do {
         if (!pause) {
@@ -278,9 +287,9 @@ void mjpegPlayer(void *par) {
                 goto mjpgPlayerExit4;
             }
             if ((curBk.fcc == 0x63643030) && (skip == false)) {
-
-                while (ll_get_time_ms() - last_tick_ms < (aviHead.dwMicroSecPerFrame / 1000)) {
-                }
+                    while (ll_get_time_ms() - last_tick_ms < frame_time_ms) {
+                    }
+                
 
                 save_pointer = f_tell(avifile);
                 jr = jd_prepare(&jdecobj, tjpg_in_func, mempool, 65536, NULL);
@@ -318,51 +327,44 @@ void mjpegPlayer(void *par) {
 
                 f_lseek(avifile, save_pointer);
 
-                last_tick_ms = ll_get_time_ms();
+                last_tick_ms = ll_get_time_us();
             }
 
-            
             f_lseek(avifile, f_tell(avifile) + curBk.dwSize + (curBk.dwSize % 2));
-            
+
             if (f_tell(avifile) > movi_start + movi_size) {
                 break;
             }
         }
 
+        keys = ll_vm_check_key();
+        key = keys & 0xFFFF;
+        kpress = keys >> 16;
 
-
-    keys = ll_vm_check_key();
-    key = keys & 0xFFFF;
-    kpress = keys >> 16;
-
-    if(key == KEY_ON)
-    {
-        goto mjpgPlayerExit4;
-    }
-
-    if(kpress)
-    {
-        switch (key)
-        {
-        case KEY_ENTER:
-            pause = !pause;
-            break;
-        
-        case KEY_PLUS:
-            skip = !skip;
-            break;
-        
-        default:
-            break;
+        if (key == KEY_ON) {
+            goto mjpgPlayerExit4;
         }
 
+        if (kpress) {
+            switch (key) {
+            case KEY_ENTER:
+                pause = !pause;
+                break;
 
-        do{
-            keys = ll_vm_check_key();
-            key = keys & 0xFFFF;
-            kpress = keys >> 16;
-        }while(kpress);
-    }
+            case KEY_PLUS:
+                skip = !skip;
+                break;
+
+            default:
+                break;
+            }
+
+            do {
+                keys = ll_vm_check_key();
+                key = keys & 0xFFFF;
+                kpress = keys >> 16;
+            } while (kpress);
+        }
 
     } while (1);
 
