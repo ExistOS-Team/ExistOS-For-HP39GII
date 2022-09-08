@@ -19,6 +19,10 @@ jobs:
       run: |
         cd tools/sbtools
         make
+        cd ../sys_signer
+        cmake .
+        cmake --build .
+        cp sysigner ../
         cd ../..
         cd Libs/src/micropython-master/ports/eoslib
         make

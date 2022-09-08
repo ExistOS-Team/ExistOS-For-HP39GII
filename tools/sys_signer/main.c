@@ -117,14 +117,14 @@ int main(int argc, char **argv) {
             {
                 sys_symtab = (Elf32_Sym *)elf_getSectionOffset(&elf_sys, i);
                 syssym_num = elf_getSectionSize(&elf_sys, i) / sizeof(Elf32_Sym);
-                printf("sys_symtab:%08x, item:%d\n", sys_symtab, syssym_num);
-                sys_symtab = (Elf32_Sym *)((uint32_t)sys_symtab + (uint32_t)buf_syself);
+                printf("sys_symtab:%p, item:%ld\n", sys_symtab, syssym_num);
+                sys_symtab = (Elf32_Sym *)((uint64_t)sys_symtab + (uint64_t)buf_syself);
             }
             if (strcmp(sname, ".strtab") == 0)
             {
                 sys_symstr = (char *)elf_getSectionOffset(&elf_sys, i);
-                printf("sys_symstr:%08x\n", sys_symstr);
-                sys_symstr += (uint32_t)buf_syself;
+                printf("sys_symstr:%p\n", sys_symstr);
+                sys_symstr += (uint64_t)buf_syself;
             }
         }
 		uint32_t hash = calc_sys_sym_hash();
