@@ -11,7 +11,7 @@
 #include "diskio.h" /* Declarations of disk functions */
 
 #include "sys_llapi.h"
-
+#include <stdio.h>
 /* Definitions of physical drive number for each drive */
 #define DEV_RAM 0 /* Example: Map Ramdisk to physical drive 0 */
 #define DEV_MMC 1 /* Example: Map MMC/SD card to physical drive 1 */
@@ -91,6 +91,7 @@ DRESULT disk_ioctl(
     void *buff /* Buffer to send/receive control data */
 ) {
     DRESULT res;
+    DWORD val;
     int result;
 
     switch (cmd) {
@@ -108,13 +109,19 @@ DRESULT disk_ioctl(
         return RES_OK;
     }
     case GET_BLOCK_SIZE:
-        *((uint32_t *)buff) = ll_flash_get_page_size();
+        *((DWORD *)buff) = 1;
         return RES_OK;
-    case GET_SECTOR_COUNT:
-        *((uint32_t *)buff) = ll_flash_get_pages();
+    case GET_SECTOR_COUNT: 
+        val = ll_flash_get_pages();
+        printf("sc:%d\n", val);
+        *((LBA_t *)buff) = val;
         return RES_OK;
     case GET_SECTOR_SIZE:
-        *((uint32_t *)buff) = ll_flash_get_page_size();
+        val = ll_flash_get_page_size();
+        printf("ss:%d\n", val);
+        ((BYTE *)buff)[0] = val & 0xFF;
+        ((BYTE *)buff)[1] = (val>>8) & 0xFF;
+        //*((WORD *)buff) = val;
         return RES_OK;
     default:
         break;
