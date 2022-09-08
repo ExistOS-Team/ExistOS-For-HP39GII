@@ -41,3 +41,4 @@ jobs:
         files: |
           ./System/ExistOS.sys
           ./OSLoader/OSLoader.sb
+          ./OSLoader/rom.elf
