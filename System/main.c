@@ -298,7 +298,7 @@ static void tabview_switch(uint32_t key) {
     }
 }
 
-static lv_obj_t *charge_chb, *slow_down_chb;
+static lv_obj_t *charge_chb, *slow_down_chb, *load_hash_err_app;
 
 static void charge_msgbox_event_cb(lv_event_t *e) {
     lv_event_code_t code = lv_event_get_code(e);
@@ -330,6 +330,24 @@ static void slowdown_chb_handler(lv_event_t *e) {
             ll_cpu_slowdown_enable(true);
         } else {
             ll_cpu_slowdown_enable(false);
+        }
+    } else if (code == LV_EVENT_KEY) {
+        uint32_t key = lv_event_get_key(e);
+        tabview_switch(key);
+    }
+}
+
+bool g_allow_load_err_app = false;
+static void loaderrapp_chb_handler(lv_event_t *e) {
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *obj = lv_event_get_target(e);
+    if (code == LV_EVENT_VALUE_CHANGED) {
+        // const char * txt = lv_checkbox_get_text(obj);
+
+        if (lv_obj_get_state(obj) & LV_STATE_CHECKED) {
+            g_allow_load_err_app = (true);
+        } else {
+            g_allow_load_err_app = (false);
         }
     } else if (code == LV_EVENT_KEY) {
         uint32_t key = lv_event_get_key(e);
@@ -993,6 +1011,12 @@ void main_thread() {
     lv_obj_set_flex_grow(charge_chb, 0);
     lv_obj_add_event_cb(charge_chb, charge_chb_handler, LV_EVENT_ALL, NULL);
     lv_group_add_obj(group_status, charge_chb);
+
+    load_hash_err_app = lv_checkbox_create(t2);
+    lv_checkbox_set_text(load_hash_err_app, "Load app with hash error");
+    lv_obj_set_flex_grow(load_hash_err_app, 0);
+    lv_obj_add_event_cb(load_hash_err_app, loaderrapp_chb_handler, LV_EVENT_ALL, NULL);
+    lv_group_add_obj(group_status, load_hash_err_app);
 
     lv_obj_t *btn4;
     btn4 = lv_btn_create(t2);

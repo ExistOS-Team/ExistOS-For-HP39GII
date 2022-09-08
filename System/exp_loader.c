@@ -45,7 +45,8 @@ typedef struct exp_header_t
 
 
 extern const char system_build_time[];
-
+extern const uint32_t g_system_symtab_hash;
+extern bool g_allow_load_err_app;
 
 static TaskHandle_t exp_loader_task_handel;
 
@@ -87,13 +88,14 @@ void exp_exec(void *par) {
     printf("exp reloc_load_addr:%08x\n", exp_h.reloc_load_addr);
     printf("exp data_load_addr:%08x\n", exp_h.data_load_addr);
     printf("exp sys_build_date:%s == %s\n", exp_h.sys_build_date, system_build_time); 
-    printf("exp syshash:%08x\n", exp_h.sys_hash);
+    printf("exp syshash:%08x == %08x\n", exp_h.sys_hash, g_system_symtab_hash);
 
-    if(strcmp(system_build_time, exp_h.sys_build_date))
-    {
-        printf("This application is not compatible this system version.\n");
-        goto exp_load_exit1;
-    }
+    if(g_allow_load_err_app == false)
+        if(exp_h.sys_hash != g_system_symtab_hash)
+        {
+            printf("This application is not compatible this system version.\n");
+            goto exp_load_exit1;
+        }
 
     fr = f_lseek(f, exp_h.reloc_fo);
     fr = f_read(f, (void *)exp_h.reloc_load_addr, exp_h.reloc_sz, &br);

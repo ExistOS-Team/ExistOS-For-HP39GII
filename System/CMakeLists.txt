@@ -91,22 +91,19 @@ FILE (APPEND ${CMAKE_BINARY_DIR}/timestamp.cmake "FILE(WRITE timestamp.h \"#ifnd
 FILE (APPEND ${CMAKE_BINARY_DIR}/timestamp.cmake "FILE(APPEND timestamp.h \"#define TIMESTAMP_H\\n\\n\")\n")
 FILE (APPEND ${CMAKE_BINARY_DIR}/timestamp.cmake "FILE(APPEND timestamp.h \"#define _TIMEZ_ \\\"\${TIMEZ}\\\"\\n\\n\")\n")
 FILE (APPEND ${CMAKE_BINARY_DIR}/timestamp.cmake "FILE(APPEND timestamp.h \"#endif // TIMESTAMP_H\\n\")\n")
+
 ADD_CUSTOM_TARGET (
     timestamp
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/timestamp.cmake
     ADD_DEPENDENCIES ${CMAKE_BINARY_DIR}/timestamp.cmake)
 
-    include_directories(${CMAKE_CURRENT_BINARY_DIR})
-    add_dependencies(sys.elf timestamp)
-    
-# add_custom_target(file_toucher 
-#         COMMAND ${CMAKE_COMMAND} -E touch_nocreate ${CMAKE_SOURCE_DIR}/init.c)
-
-# add_dependencies(sys.elf file_toucher)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+add_dependencies(sys.elf timestamp)
 
 add_custom_target(
   ExistOS.sys ALL
   COMMAND ${CMAKE_OBJCOPY} -I elf32-little -O binary -R .note -R .comment -S ${CMAKE_CURRENT_BINARY_DIR}/sys.elf ${CMAKE_CURRENT_BINARY_DIR}/ExistOS.sys 
+  COMMAND ${CMAKE_SOURCE_DIR}/tools/sysigner ${CMAKE_CURRENT_BINARY_DIR}/sys.elf ${CMAKE_CURRENT_BINARY_DIR}/ExistOS.sys 
   DEPENDS sys.elf 
   )
 

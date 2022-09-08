@@ -13,6 +13,7 @@ extern void (*__init_array_start[])(void) __attribute__((weak));
 extern void (*__init_array_end[])(void) __attribute__((weak));
 
 bool g_system_in_emulator = false;
+uint32_t g_system_symtab_hash = 0;
 
 void main();
 
@@ -61,6 +62,7 @@ void volatile _init() {
     }
 
     g_system_in_emulator = ((uint32_t *)(_init))[2];
+    g_system_symtab_hash = ((uint32_t *)(_init))[3];
 
     main();
 
