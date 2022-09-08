@@ -276,7 +276,7 @@ void mjpegPlayer(void *par) {
     {
         frame_time_ms -= 10;
     }
-
+    memset(vrambuf,0,sizeof(vrambuf));
     uint32_t keys, key, kpress;
     do {
         if (!pause) {
