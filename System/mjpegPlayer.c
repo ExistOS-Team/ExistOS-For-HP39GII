@@ -327,7 +327,7 @@ void mjpegPlayer(void *par) {
 
                 f_lseek(avifile, save_pointer);
 
-                last_tick_ms = ll_get_time_us();
+                last_tick_ms = ll_get_time_ms();
             }
 
             f_lseek(avifile, f_tell(avifile) + curBk.dwSize + (curBk.dwSize % 2));
