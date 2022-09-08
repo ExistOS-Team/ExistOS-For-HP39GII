@@ -18,7 +18,7 @@ add_subdirectory(libelf)
 
 add_executable(sysigner ${EXE_SRCS})
  
-SET_TARGET_PROPERTIES(sysigner PROPERTIES COMPILE_FLAGS "-O3 -static" ) 
+SET_TARGET_PROPERTIES(sysigner PROPERTIES COMPILE_FLAGS "-O0 -static" ) 
 
 
 target_link_libraries(sysigner -lm -lgcc -lstdc++
