@@ -49,7 +49,7 @@ set(LINKER_SCRIPT
 ${CMAKE_SOURCE_DIR}/Script/sys_ld.script
 )
 set(LINKER_FLAGS "SHELL:-T${LINKER_SCRIPT} -Wl,--wrap=malloc -Wl,--wrap=free")
-#-Wl,--gc-sections 
+#-Wl,--gc-sections  
 target_link_options(sys.elf PRIVATE ${LINKER_FLAGS}) 
 
  

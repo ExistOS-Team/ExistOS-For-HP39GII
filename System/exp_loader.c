@@ -60,18 +60,21 @@ void exp_exec(void *par) {
     void (*app_entry)();
     exp_loader_task_handel = xTaskGetCurrentTaskHandle();
     
-
+    printf("pre exec:%s\n", par);
     f = pvPortMalloc(sizeof(FIL));
     if (!f) {
+        printf("Failed to alloc memory!\n");
         vTaskDelete(NULL);
     }
     fr = f_open(f, par, FA_OPEN_EXISTING | FA_READ);
     if (fr) {
+        printf("Failed to open file:%s,%d!\n", par,fr);
         goto exp_load_exit0;
     }
 
     fr = f_read(f, &exp_h, sizeof(exp_header_t), &br);
     if (br != sizeof(exp_header_t)) {
+        printf("Failed to read file:%d!\n", fr);
         goto exp_load_exit1;
     }
 
@@ -79,6 +82,7 @@ void exp_exec(void *par) {
         exp_h.Mark0 != 0x5AA52333 ||
         exp_h.Mark1 != 1936291909 ||
         exp_h.Mark2 != 1347436916) {
+        printf("File header ERROR\n:%08x,%d,%d!\n", exp_h.Mark0,exp_h.Mark1,exp_h.Mark2);
         goto exp_load_exit1;
     }
     app_entry = (void (*)())exp_h.entry;
