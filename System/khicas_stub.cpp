@@ -145,7 +145,8 @@ bool IsKeyDown(int test_key)
     keys = ll_vm_check_key();
     key_get = keys & 0xFFFF;
     kpress = keys >> 16;
-    printf("IsKeyDown:%d\n",test_key);
+    //printf("IsKeyDown:%d\n",test_key);
+    if(kpress){
     switch (key_get)
     {
 
@@ -213,16 +214,19 @@ bool IsKeyDown(int test_key)
         break;
     }
 
+    }
 
+    //printf("kpress:%d, %d, %d\n",test_key, tr_key, kpress);
     if(kpress)
     {
         if(tr_key == test_key)
         {
+            
             return true;
         } 
     }
     
-        return false;
+    return false;
 
 }
 

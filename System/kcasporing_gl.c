@@ -401,9 +401,6 @@ bool vGL_getkey(int *keyid)
         key = keys & 0xFFFF;
         kpress = keys >> 16;
 
-        
-        vTaskDelay(10);
-
     }while((last_key == key) && (last_press == kpress));
 
 
