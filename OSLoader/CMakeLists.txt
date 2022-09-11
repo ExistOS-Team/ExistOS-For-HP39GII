@@ -53,6 +53,7 @@ target_link_libraries(rom.elf PRIVATE -lc_nano -nostartfiles)
 
 target_compile_options(rom.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -marm -Wall
 #-O2
+-Os -DNDEBUG
 -pipe 
 -fdata-sections 
 -ffunction-sections
@@ -108,7 +109,7 @@ target_compile_options(rom.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlitt
 -fdelete-null-pointer-checks 
 -fdevirtualize  -fdevirtualize-speculatively 
 -fexpensive-optimizations 
-#-ffinite-loops 
+-ffinite-loops 
 #-finline-functions 
 #-finline-small-functions 
 #-findirect-inlining 

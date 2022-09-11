@@ -11,8 +11,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install package arm-none-eabi-gcc
-      run: sudo apt-get install gcc-arm-none-eabi -y
+    - name: Install gcc-arm-none-eabi-10.3
+      run: |
+        wget "https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2"
+        sudo tar -xvf gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2 -C /usr/
+        PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
     - name: Install packages build sbtools required
       run: sudo apt-get install libcrypto++6 libcrypto++-dev libusb-1.0-0-dev -y
     - name: Build sbtools
@@ -27,7 +30,7 @@ jobs:
         cd Libs/src/micropython-master/ports/eoslib
         make
         cd ../../../../..
-    - name: Cmake configure
+    - name: CMake configure
       run: cmake .
     - name : Cmake build
       run: cmake --build .
