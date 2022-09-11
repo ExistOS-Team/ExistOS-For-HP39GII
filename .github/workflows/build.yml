@@ -30,7 +30,7 @@ jobs:
     - name: Cmake configure
       run: cmake .
     - name : Cmake build
-      run: cmake --build .
+      run: cmake --config MinSizeRel --build .
     - name: Create GitHub release
       uses: marvinpinto/action-automatic-releases@latest
       with:
