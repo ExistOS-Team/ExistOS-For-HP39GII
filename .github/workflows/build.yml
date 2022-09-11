@@ -45,7 +45,7 @@ jobs:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         automatic_release_tag:  build-${{ github.run_number }}
         title: build ${{ github.run_number }}
-        prerelease: true
+        prerelease: false
         files: |
           ./System/ExistOS.sys
           ./OSLoader/OSLoader.sb
