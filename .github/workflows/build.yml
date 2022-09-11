@@ -13,7 +13,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install gcc-arm-none-eabi-10.3
       run: |
-        wget "https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2"
+        wget -q "https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2"
         sudo tar -xf gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2 -C /usr/
         export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
     - name: Install packages build sbtools required
