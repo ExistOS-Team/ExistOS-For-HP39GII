@@ -108,7 +108,7 @@ target_compile_options(rom.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlitt
 -fdelete-null-pointer-checks 
 -fdevirtualize  -fdevirtualize-speculatively 
 -fexpensive-optimizations 
--ffinite-loops 
+#-ffinite-loops 
 #-finline-functions 
 #-finline-small-functions 
 #-findirect-inlining 
