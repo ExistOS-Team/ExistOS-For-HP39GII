@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+void rtc_init();
 void portRTC_init();
 
 

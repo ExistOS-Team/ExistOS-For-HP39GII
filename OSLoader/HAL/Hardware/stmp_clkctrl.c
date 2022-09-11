@@ -85,6 +85,7 @@ void setCPUDivider(uint32_t div)
 }
 
 void setCPUFracDivider(uint32_t div) {
+
     if (!div) {
         return;
     }

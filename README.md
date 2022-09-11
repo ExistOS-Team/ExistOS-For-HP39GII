@@ -84,7 +84,7 @@
 
 ## 最新编译固件下载
 
-固件：https://github.com/ExistOS-Team/ExistOS-For-HP39GII/releases/tag/Latest
+固件：https://github.com/ExistOS-Team/ExistOS-For-HP39GII/releases
 
 刷机工具：https://github.com/ExistOS-Team/ExistOS_Updater_v2/releases
 
@@ -92,7 +92,7 @@
 
 ### 准备
 
-需要安装 `gcc-arm-none-eabi`：  
+需要安装 `gcc-arm-none-eabi` （务必使用10.3版本的GCC，否则OSLoader编译后将无法运行）：  
 - 对于 Windows 系统，请从[这里](https://developer.arm.com/downloads/-/gnu-rm)下载和安装。
   - 注意：需要将安装目录下的 `bin` 路径添加到 PATH 中
 - 对于 Linux 系统，不同的发行版可能略有差异

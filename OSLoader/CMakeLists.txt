@@ -6,6 +6,7 @@ project(ExistOS-OSLoader VERSION 0.1.0.1)
 add_link_options(-T ${CMAKE_SOURCE_DIR}/Script/ldr_ld.script -Wl,--gc-sections)
 
 SET(CMAKE_EXE_LINKER_FLAGS "-static")
+set(CMAKE_BUILD_TYPE "MinSizeRel") 
 
 include_directories(./Config)
 include_directories(./Fonts)
@@ -48,10 +49,86 @@ aux_source_directory(./Component3rd/dhara               LOADER_SRCS)
 
 add_executable(rom.elf ${LOADER_SRCS})
 
-target_link_libraries(rom.elf PRIVATE -lm -lc_nano -nostartfiles)
+target_link_libraries(rom.elf PRIVATE -lc_nano -nostartfiles)
 
-target_compile_options(rom.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -marm
--Os -pipe -fdata-sections -ffunction-sections -fcommon -finline-functions -Wall)
+target_compile_options(rom.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -marm -Wall
+#-O2
+-Os -DNDEBUG
+-pipe 
+-fdata-sections 
+-ffunction-sections
+-fdelete-null-pointer-checks 
+-fcommon 
+-finline-functions 
+-finline-small-functions
+
+-fauto-inc-dec 
+-fcombine-stack-adjustments 
+-fcompare-elim 
+-fcprop-registers 
+-fdce 
+-fdefer-pop 
+-fdse 
+-fforward-propagate 
+-fguess-branch-probability 
+-fif-conversion 
+-fif-conversion2 
+-finline-functions-called-once 
+-fmerge-constants 
+-fmove-loop-invariants 
+-fomit-frame-pointer 
+-freorder-blocks 
+-fshrink-wrap 
+-fshrink-wrap-separate 
+-fsplit-wide-types 
+-fssa-backprop 
+-fssa-phiopt 
+-ftree-bit-ccp 
+-ftree-ccp 
+-ftree-ch 
+-ftree-coalesce-vars 
+-ftree-copy-prop 
+-ftree-dce 
+-ftree-dominator-opts 
+-ftree-dse 
+-ftree-forwprop 
+-ftree-fre 
+-ftree-phiprop 
+-ftree-pta 
+-ftree-scev-cprop 
+-ftree-sink 
+-ftree-slsr 
+-ftree-sra 
+-ftree-ter 
+-funit-at-a-time
+
+-fcaller-saves 
+-fcode-hoisting 
+-fcrossjumping 
+-fcse-follow-jumps  -fcse-skip-blocks 
+-fdelete-null-pointer-checks 
+-fdevirtualize  -fdevirtualize-speculatively 
+-fexpensive-optimizations 
+-ffinite-loops 
+#-finline-functions 
+#-finline-small-functions 
+#-findirect-inlining 
+-foptimize-sibling-calls 
+-foptimize-strlen 
+-fpartial-inlining 
+-fpeephole2 
+-frerun-cse-after-loop  
+-fstore-merging 
+-fstrict-aliasing 
+-fthread-jumps 
+-ftree-builtin-call-dce 
+-ftree-loop-vectorize 
+-ftree-pre 
+-ftree-slp-vectorize 
+-ftree-switch-conversion  -ftree-tail-merge 
+-ftree-vrp 
+
+)
  
 
 add_custom_command(TARGET rom.elf POST_BUILD

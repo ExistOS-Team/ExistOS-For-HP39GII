@@ -78,16 +78,13 @@ void waitIRQ(int r);
 extern uint32_t g_latest_key_status;
 extern uint32_t g_core_temp, g_batt_volt, g_core_cur_freq_mhz;
 extern bool vm_in_exception, g_chargeEnable;
-void volatile arm_vector_swi() __attribute__((naked));
-void volatile arm_vector_swi() {
-    __asm volatile("ADD   LR, LR, #4");
-    SAVE_CONTEXT();
 
-    uint32_t SWINum = *((uint32_t *)(context[15 + 2] - 8)) & 0x00FFFFFF;
+
+void volatile arm_do_swi(uint32_t SWINum, uint32_t *pRegFram)
+{
+
     LLAPI_CallInfo_t currentCall;
     BaseType_t SwitchContext;
-
-    
 
     switch (SWINum >> 8) {
     case 0xEF:
@@ -166,6 +163,15 @@ void volatile arm_vector_swi() {
         vTaskSwitchContext();
         break;
     }
+}
+
+void volatile arm_vector_swi() __attribute__((naked)) ;
+void volatile arm_vector_swi() {
+    __asm volatile("ADD   LR, LR, #4");
+    SAVE_CONTEXT();
+
+    uint32_t SWINum = *((uint32_t *)(context[15 + 2] - 8)) & 0x00FFFFFF;
+    arm_do_swi(SWINum, pRegFram);
 
     asm volatile("ADD     SP, SP, #68");
     portRESTORE_CONTEXT();
@@ -173,8 +179,8 @@ void volatile arm_vector_swi() {
 
 volatile uint32_t IRQ_REGS_Frame[18];
 
-void arm_vector_irq() __attribute__((naked));
-void arm_vector_irq() {
+void volatile arm_vector_irq() __attribute__((naked));
+void volatile arm_vector_irq() {
     SAVE_CONTEXT();
 
     up_isr();
@@ -185,8 +191,8 @@ void arm_vector_irq() {
 
 void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address);
 
-void arm_vector_und() __attribute__((naked));
-void arm_vector_und() {
+void volatile arm_vector_und() __attribute__((naked));
+void volatile arm_vector_und() {
     __asm volatile("SUB   LR, LR, #4");
     SAVE_CONTEXT();
 
@@ -204,12 +210,8 @@ void arm_vector_und() {
     portRESTORE_CONTEXT();
 }
 
-void arm_vector_dab() __attribute__((naked));
-void arm_vector_dab() {
-
-    __asm volatile("SUB   LR, LR, #4");
-    SAVE_CONTEXT();
-
+void volatile arm_do_dab(uint32_t *context)
+{
     __asm volatile("PUSH	{R0}");
     __asm volatile("mrc p15, 0, r0, c6, c0, 0");
     __asm volatile("str r0,%0"
@@ -251,43 +253,27 @@ void arm_vector_dab() {
     if (SwitchContext) {
         vTaskSwitchContext();
     }
+}
+
+void volatile arm_vector_dab() __attribute__((naked));
+void volatile arm_vector_dab() {
+
+    __asm volatile("SUB   LR, LR, #4");
+    SAVE_CONTEXT();
+
+    arm_do_dab(context);
 
     asm volatile("ADD     SP, SP, #68");
     portRESTORE_CONTEXT();
 }
 
-void arm_vector_pab() __attribute__((naked));
-void arm_vector_pab() {
-
-    SAVE_CONTEXT();
+void volatile arm_do_pab(uint32_t *context)
+{
 
     pageFaultInfo_t FaultInfo;
     FaultInfo.FaultTask = xTaskGetCurrentTaskHandle();
     FaultInfo.FaultMemAddr = context[15 + 2] - 4;
     FaultInfo.FSR = FSR_DATA_ACCESS_UNMAP_PAB;
-
-    /*
-    FaultInfo.FSR = FSR;
-    switch (FSR & 0xF)
-    {
-    case 0x1:
-    case 0x3:
-        FaultInfo.FSR = FSR_DATA_UNALIGN;
-        break;
-    case 0x5:
-    case 0x7:
-        FaultInfo.FSR = FSR_DATA_ACCESS_UNMAP;
-        break;
-    case 0xD:
-    case 0xF:
-        FaultInfo.FSR = FSR_DATA_WR_RDONLY;
-        break;
-    default:
-        FaultInfo.FSR = FSR_UNKNOWN;
-        printf("TASK [%s] PAB. AT:%08x access %08x, FSR:%08x\n", pcTaskGetName(NULL), DAB_REGS_Frame[16], faultAddress, FSR);
-        break;
-    }
-*/
 
     // printf("TASK [%s] PAB. AT:%08x\n", pcTaskGetName(NULL),context[15 + 2] - 4);
     // printf("TASK [%s] PAB. AT:%08x access %08x, FSR:%08x\n", pcTaskGetName(NULL), DAB_REGS_Frame[16], faultAddress, FSR);
@@ -301,14 +287,21 @@ void arm_vector_pab() {
     if (SwitchContext) {
         vTaskSwitchContext();
     }
+}
+
+void volatile arm_vector_pab() __attribute__((naked));
+void volatile arm_vector_pab() {
+
+    SAVE_CONTEXT();
+    arm_do_pab(context);
 
     asm volatile("ADD     SP, SP, #68");
     portRESTORE_CONTEXT();
 }
 
 
-void arm_vector_fiq() __attribute__((naked));
-void arm_vector_fiq() {
+void volatile arm_vector_fiq() __attribute__((naked));
+void volatile arm_vector_fiq() {
 
     /*
     SAVE_CONTEXT();
