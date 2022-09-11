@@ -391,15 +391,15 @@ bool vGL_getkey(int *keyid)
     uint32_t keys, key, kpress;
     static uint32_t last_key;
     static uint32_t last_press;
-
-
+        keys = ll_vm_check_key();
+        key = keys & 0xFFFF;
+        kpress = keys >> 16;
+    last_key = key;
+    last_press = kpress;
     do{
         keys = ll_vm_check_key();
         key = keys & 0xFFFF;
         kpress = keys >> 16;
-
-        
-        //vTaskDelay(5);
 
     }while((last_key == key) && (last_press == kpress));
 

@@ -263,7 +263,7 @@
 */
 
 
-#define FF_FS_LOCK		0
+#define FF_FS_LOCK		8
 /* The option FF_FS_LOCK switches file lock function to control duplicated file open
 /  and illegal operation to open objects. This option must be 0 when FF_FS_READONLY
 /  is 1.
@@ -281,7 +281,7 @@
 #include "queue.h"
 #include "semphr.h"
 #define FF_FS_REENTRANT	1
-#define FF_FS_TIMEOUT	1000
+#define FF_FS_TIMEOUT	3000
 #define FF_SYNC_t		SemaphoreHandle_t
 /* The option FF_FS_REENTRANT switches the re-entrancy (thread safe) of the FatFs
 /  module itself. Note that regardless of this option, file access to different

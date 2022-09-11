@@ -1133,7 +1133,24 @@ void main() {
 
     for (;;) {
         *((double *)0x45678901) = 114514.1919810f;
+        void symtab_def();
     }
+}
+
+void symtab_def()
+{
+    asm volatile("b vram_initialize");
+
+
+    asm volatile("b snprintf");
+    asm volatile("b system");
+    asm volatile("b remove");
+    asm volatile("b rename");
+    asm volatile("b strrchr");
+    asm volatile("b atof");
+    asm volatile("b strstr");
+    asm volatile("b strcasecmp  ");
+    asm volatile("b strdup");
 }
 
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
