@@ -32,9 +32,13 @@ jobs:
         make
         cd ../../../../..
     - name: CMake configure
-      run: cmake .
-    - name : Cmake build
-      run: cmake --build .
+      run: |
+        export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
+        cmake .
+    - name : CMake build
+      run: |
+        export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
+        cmake --build .
     - name: Create GitHub release
       uses: marvinpinto/action-automatic-releases@latest
       with:
