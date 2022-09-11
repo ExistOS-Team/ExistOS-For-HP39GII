@@ -28,9 +28,9 @@ jobs:
         make
         cd ../../../../..
     - name: Cmake configure
-      run: cmake .
+      run: cmake . --config MinSizeRel 
     - name : Cmake build
-      run: cmake --config MinSizeRel --build .
+      run: cmake --build .
     - name: Create GitHub release
       uses: marvinpinto/action-automatic-releases@latest
       with:
