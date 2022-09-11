@@ -28,7 +28,7 @@ jobs:
         make
         cd ../../../../..
     - name: Cmake configure
-      run: cmake . --config MinSizeRel 
+      run: cmake .
     - name : Cmake build
       run: cmake --build .
     - name: Create GitHub release
