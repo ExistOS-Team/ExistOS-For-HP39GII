@@ -21,6 +21,8 @@ static void PLLEnable(bool enable) {
 
 void setHCLKDivider(uint32_t div) 
 {
+    
+    return;
     if (!div) {
         return;
     }
@@ -71,6 +73,8 @@ void slowDownEnable(bool enable)
 
 void setCPUDivider(uint32_t div) 
 {
+    
+    return;
     //uint32_t val = BF_RD(CLKCTRL_CPU, DIV_CPU);
     //INFO("CPU old Div:%lu\n", val);
     if (!div) {
@@ -85,6 +89,8 @@ void setCPUDivider(uint32_t div)
 }
 
 void setCPUFracDivider(uint32_t div) {
+    
+    return;
     if (!div) {
         return;
     }
@@ -98,6 +104,8 @@ void setCPUFracDivider(uint32_t div) {
 }
 
 static void setCPU_HFreqDomain(bool enable) {
+    
+    return;
     if (enable) {
         
         BF_CLR(CLKCTRL_CLKSEQ, BYPASS_CPU);
