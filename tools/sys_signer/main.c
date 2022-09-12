@@ -20,24 +20,55 @@ size_t sz_sysbin;
 
 elf_t elf_sys;
 
-
 static Elf32_Sym *sys_symtab;
 static const char *sys_symstr;
 static size_t syssym_num;
 
-uint32_t calc_sys_sym_hash()
-{
+uint32_t calc_sys_sym_hash() {
     uint32_t hash = 0x5a5a1234;
-    for (int i = 0; i < syssym_num; i++)
+    int fr;
+    uint32_t addr;
+    char type;
+    char s[1024];
+
+    int i = 0;
+
+    fr = sscanf((const char *)&buf_syself[i], "%08X %c %s", &addr, &type, s);
+    while (fr == 3)
     {
+        if ((type >= 'A') && type <= 'Z')
+        {
+            //printf("adr:%08x, type:%c, sym:%s\n", addr, type, s);
+            hash ^= addr;
+            hash ^= hash << 16;
+        }
+        i++;
+        if (buf_syself[i] == 0)
+        {
+            break;
+        }
+        while ((buf_syself[i] != '\n'))
+        {
+            i++;
+            if (buf_syself[i] == 0)
+            {
+                break;
+            }
+        }
+        fr = sscanf((const char *)&buf_syself[i], "%08X %c %s", &addr, &type, s);
+    }
+    return hash;
+    /*
+    uint32_t hash = 0x5a5a1234;
+    for (int i = 0; i < syssym_num; i++) {
         hash ^= sys_symtab[i].st_value;
         hash ^= hash << 16;
     }
-    return hash;
+    return hash;*/
 }
 
 void Usage() {
-    printf("sysign sys.elf ExistOS.sys");
+    printf("\tUsage:sysign sys_symtab.txt ExistOS.sys\n");
     exit(-1);
 }
 
@@ -64,8 +95,8 @@ int main(int argc, char **argv) {
     sz_syself = ftell(f_syself);
     fseek(f_syself, 0, SEEK_SET);
 
-    //fseek(f_sysbin, 0, SEEK_END);
-    sz_sysbin = 4*32;
+    // fseek(f_sysbin, 0, SEEK_END);
+    sz_sysbin = 4 * 32;
     fseek(f_sysbin, 0, SEEK_SET);
 
     buf_syself = malloc(sz_syself);
@@ -89,58 +120,22 @@ int main(int argc, char **argv) {
         exit(-1);
     }
 
-    elf_sys.elfFile = buf_syself;
-    elf_sys.elfClass = ELFCLASS32;
-    elf_sys.elfSize = sz_syself;
-
-    if (elf_checkFile(&elf_sys)) {
-        fprintf(stderr, "Error SysELF Format!\n");
-        exit(-1);
-    }
 
 
-        static uint32_t *got_table;
-        static Elf32_Sym *dynamic_table;
-        static uint32_t *rel_plt;
-        static uint32_t rel_plt_num;
-        static uint32_t *rel_dyn;
-        static uint32_t rel_dyn_num;
-        static const char *dynstr;
 
-        const char *sname;
+    uint32_t hash = calc_sys_sym_hash();
+    printf("System Symbol Hash:%08x\n", hash);
 
-        size_t SysNumSection = elf_getNumSections(&elf_sys);
-        for (int i = 0; i < SysNumSection; i++)
-        {
-            sname = elf_getSectionName(&elf_sys, i);
-            if (strcmp(sname, ".symtab") == 0)
-            {
-                sys_symtab = (Elf32_Sym *)elf_getSectionOffset(&elf_sys, i);
-                syssym_num = elf_getSectionSize(&elf_sys, i) / sizeof(Elf32_Sym);
-                printf("sys_symtab:%p, item:%ld\n", sys_symtab, syssym_num);
-                sys_symtab = (Elf32_Sym *)((uint64_t)sys_symtab + (uint64_t)buf_syself);
-            }
-            if (strcmp(sname, ".strtab") == 0)
-            {
-                sys_symstr = (char *)elf_getSectionOffset(&elf_sys, i);
-                printf("sys_symstr:%p\n", sys_symstr);
-                sys_symstr += (uint64_t)buf_syself;
-            }
-        }
-		uint32_t hash = calc_sys_sym_hash();
-		printf("System Symbol Hash:%08x\n", hash);
+    ((uint32_t *)buf_sysbin)[3] = hash;
 
-		((uint32_t *)buf_sysbin)[3] = hash;
+    fseek(f_sysbin, 0, SEEK_SET);
 
-		
-    	fseek(f_sysbin, 0, SEEK_SET);
+    fwrite(buf_sysbin, 1, sz_sysbin, f_sysbin);
 
-		fwrite(buf_sysbin, 1, sz_sysbin, f_sysbin);
+    fclose(f_sysbin);
+    fclose(f_syself);
+    free(buf_sysbin);
+    free(buf_syself);
 
-		fclose(f_sysbin);
-		fclose(f_syself);
-		free(buf_sysbin);
-		free(buf_syself);
-
-		return 0;
+    return 0;
 }

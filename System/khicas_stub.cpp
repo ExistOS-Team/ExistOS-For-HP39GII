@@ -181,7 +181,7 @@ bool IsKeyDown(int test_key)
         INPUT_TRANSLATE(KEY_XY, KEY_CHAR_POW, KEY_CHAR_POWROOT, KEY_CHAR_POWROOT, 'k', 'K');
  
         INPUT_TRANSLATE(KEY_LEFTBRACKET, '(', '[', KEY_CTRL_CLIP, 'l', 'L');
-        INPUT_TRANSLATE(KEY_RIGHTBRACET, ')', ']', KEY_CTRL_PASTE, 'm', 'M');
+        INPUT_TRANSLATE(KEY_RIGHTBRACKET, ')', ']', KEY_CTRL_PASTE, 'm', 'M');
 
         INPUT_TRANSLATE(KEY_COMMA, ',', ',', ',', 'o', 'O');
 
@@ -312,7 +312,7 @@ int GetKey(int *key) {
         INPUT_TRANSLATE(KEY_XY, KEY_CHAR_POW, KEY_CHAR_POWROOT, KEY_CHAR_POWROOT, 'k', 'K');
  
         INPUT_TRANSLATE(KEY_LEFTBRACKET, '(', '[', KEY_CTRL_CLIP, 'l', 'L');
-        INPUT_TRANSLATE(KEY_RIGHTBRACET, ')', ']', KEY_CTRL_PASTE, 'm', 'M');
+        INPUT_TRANSLATE(KEY_RIGHTBRACKET, ')', ']', KEY_CTRL_PASTE, 'm', 'M');
 
         INPUT_TRANSLATE(KEY_COMMA, ',', ',', ',', 'o', 'O');
 

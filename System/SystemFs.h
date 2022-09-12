@@ -10,7 +10,7 @@ void *GetFsObj();
 }
 #endif
 
-#define FS_FLASH_PATH        "/flash"
+#define FS_FLASH_PATH        "/"
 #define FS_LVGL_FLASH_PATH   "A:"
 
 #define FS_SYSTEM_PATH       "System"
