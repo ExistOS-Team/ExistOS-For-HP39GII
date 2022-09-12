@@ -119,9 +119,9 @@ DRESULT disk_ioctl(
     case GET_SECTOR_SIZE:
         val = ll_flash_get_page_size();
         printf("ss:%d\n", val);
-        ((BYTE *)buff)[0] = val & 0xFF;
-        ((BYTE *)buff)[1] = (val>>8) & 0xFF;
-        //*((WORD *)buff) = val;
+        //((BYTE *)buff)[0] = val & 0xFF;
+        //((BYTE *)buff)[1] = (val>>8) & 0xFF;
+        *((WORD *)buff) = val;
         return RES_OK;
     default:
         break;

@@ -505,7 +505,7 @@ static void fexplorer_file_handler(lv_event_t *e) {
             xTaskCreate(mjpegPlayer, "mjpegPlayer", configMINIMAL_STACK_SIZE, FilePath, configMAX_PRIORITIES - 3, NULL);
         } else if ((strcmp(FileExt, "bin") == 0)) {
             void bin_exec(void *par);
-            xTaskCreate(bin_exec, fname, 32768, FilePath, configMAX_PRIORITIES - 3, NULL);
+            xTaskCreate(bin_exec, fname, 65535, FilePath, configMAX_PRIORITIES - 3, NULL);
         } else if ((strcmp(FileExt, "exp") == 0)) {
             xTaskCreate(exp_exec, fname, configMINIMAL_STACK_SIZE, FilePath, configMAX_PRIORITIES - 3, NULL);
         }
@@ -737,6 +737,20 @@ static void app_btn_handler(lv_event_t *e) {
              }*/
             else if (strcmp(lv_label_get_text(label), "Test") == 0) {
                 printf("testRead:%08x\n", *((uint32_t *)(0x03000000)));
+
+                FIL *f;
+                FRESULT fr;
+                UINT br;
+
+                f = pvPortMalloc(sizeof(FIL));
+                fr = f_open(f, "/test.txt", FA_WRITE | FA_CREATE_ALWAYS | FA_READ);
+                printf("fr:%d\n", fr);
+                fr = f_printf(f, "hello world!\n");
+                printf("fr:%d\n", fr);
+                fr = f_write(f, "tetea", 6, &br);
+                printf("fr:%d, %d\n", fr, br);
+                f_close(f);
+                vPortFree(f);
             }
         }
     } else if (code == LV_EVENT_KEY) {
@@ -749,6 +763,7 @@ void main_thread() {
 
     // printf("R13:%08x\n", get_stack());
 
+    void SystemUIInit();
     SystemUIInit();
     SystemFSInit();
 
@@ -1134,23 +1149,8 @@ void main() {
     for (;;) {
         *((double *)0x45678901) = 114514.1919810f;
         void symtab_def();
+        symtab_def();
     }
-}
-
-void symtab_def()
-{
-    asm volatile("b vram_initialize");
-
-
-    asm volatile("b snprintf");
-    asm volatile("b system");
-    asm volatile("b remove");
-    asm volatile("b rename");
-    asm volatile("b strrchr");
-    asm volatile("b atof");
-    asm volatile("b strstr");
-    asm volatile("b strcasecmp  ");
-    asm volatile("b strdup");
 }
 
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {

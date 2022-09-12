@@ -48,4 +48,5 @@ jobs:
         prerelease: false
         files: |
           ./System/ExistOS.sys
+          ./System/sys_symtab.txt
           ./OSLoader/OSLoader.sb

@@ -20,6 +20,11 @@
 #include "SystemFs.h"
 #include "SystemUI.h"
 
+uint32_t SystemUIMsgBox(lv_obj_t *parent,char *msg, char *title, uint32_t button);
+
+#define SYSTEMUI_MSGBOX_BUTTON_OK       (0)
+#define SYSTEMUI_MSGBOX_BUTTON_CANCAL   (1 << 1)
+
 #if FS_TYPE == FS_FATFS
     FATFS *fs;
 #else

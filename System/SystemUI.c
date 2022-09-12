@@ -8,6 +8,8 @@
 #include "debug.h"
 #include "keyboard_gii39.h"
 
+#define SYSTEMUI_MSGBOX_BUTTON_OK       (0)
+#define SYSTEMUI_MSGBOX_BUTTON_CANCAL   (1 << 1)
 #define isKeyRelease(k) (last_key == k) && (last_press == 1) && (key == k) && (kpress == 0)
 #define ALPHA_SELECT(k, a, b, c) \
     do {                         \
@@ -228,8 +230,8 @@ static void keypad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data) {
         case KEY_LEFTBRACKET:
             SHIFT_ALPHA_SELECT(data->key, '(', KEY_LEFTBRACKET | 0xE100, KEY_LEFTBRACKET | 0xE200, 'L', 'l');
             break;
-        case KEY_RIGHTBRACET:
-            SHIFT_ALPHA_SELECT(data->key, ')', KEY_RIGHTBRACET | 0xE100, KEY_RIGHTBRACET | 0xE200, 'M', 'm');
+        case KEY_RIGHTBRACKET:
+            SHIFT_ALPHA_SELECT(data->key, ')', KEY_RIGHTBRACKET | 0xE100, KEY_RIGHTBRACKET | 0xE200, 'M', 'm');
             break;
         case KEY_DIVISION:
             SHIFT_ALPHA_SELECT(data->key, '/', KEY_DIVISION | 0xE100, KEY_DIVISION | 0xE200, 'N', 'n');

@@ -56,7 +56,7 @@ typedef enum Keys_t {
     KEY_X2 = (5 << 3) + 0,
     KEY_COS = (5 << 3) + 1,
     KEY_LEFTBRACKET = (5 << 3) + 2,
-    KEY_RIGHTBRACET = (5 << 3) + 3,
+    KEY_RIGHTBRACKET = (5 << 3) + 3,
     KEY_DIVISION = (5 << 3) + 4,
     KEY_COMMA = (6 << 3) + 0,
     KEY_XY = (6 << 3) + 1,

@@ -478,7 +478,7 @@ void emu48_main(int select)
             KEY_CASE(KEY_X2              , KEY_39G_X2             );
             KEY_CASE(KEY_XY              , KEY_39G_XY             );
             KEY_CASE(KEY_LEFTBRACKET     , KEY_39G_LEFTBRACKET    );
-            KEY_CASE(KEY_RIGHTBRACET     , KEY_39G_RIGHTBRACKET   );
+            KEY_CASE(KEY_RIGHTBRACKET     , KEY_39G_RIGHTBRACKET   );
             KEY_CASE(KEY_DIVISION        , KEY_39G_DIVISION       );
 
             KEY_CASE(KEY_COMMA         , KEY_39G_COMMA         );

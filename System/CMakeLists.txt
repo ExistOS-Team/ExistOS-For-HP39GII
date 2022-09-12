@@ -1,10 +1,5 @@
 
 
-
-
-
-
-
 include_directories(./)
 include_directories(./Core)
 include_directories(./Core/include)
@@ -55,8 +50,8 @@ target_link_options(sys.elf PRIVATE ${LINKER_FLAGS})
  
 #target_compile_options(gb PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Ofast)
 target_compile_options(emu48 PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
-target_compile_options(lvgl PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft  -mthumb -Os)
-target_compile_options(tjpgd PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft  -mthumb -Os)
+target_compile_options(lvgl PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb-interwork -Os)
+target_compile_options(tjpgd PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb-interwork -mthumb -Os)
 
 
 #-mthumb
@@ -82,7 +77,7 @@ ${CMAKE_SOURCE_DIR}/Libs/libcas.libcpp
 #${CMAKE_SOURCE_DIR}/Libs/libgiac1.4.9.libcpp
 #${CMAKE_SOURCE_DIR}/Libs/libgiac1.2.0.libcpp
 ${CMAKE_SOURCE_DIR}/Libs/libtommath.libcpp
-#${CMAKE_SOURCE_DIR}/Libs/libgmp.libcpp 
+#${CMAKE_SOURCE_DIR}/Libs/libgmp.libcpp   
 )
 
 # build time in UTC ISO 8601
@@ -103,7 +98,8 @@ add_dependencies(sys.elf timestamp)
 add_custom_target(
   ExistOS.sys ALL
   COMMAND ${CMAKE_OBJCOPY} -I elf32-little -O binary -R .note -R .comment -S ${CMAKE_CURRENT_BINARY_DIR}/sys.elf ${CMAKE_CURRENT_BINARY_DIR}/ExistOS.sys 
-  COMMAND ${CMAKE_SOURCE_DIR}/tools/sysigner ${CMAKE_CURRENT_BINARY_DIR}/sys.elf ${CMAKE_CURRENT_BINARY_DIR}/ExistOS.sys 
+  COMMAND ${CMAKE_NM} -n ${CMAKE_CURRENT_BINARY_DIR}/sys.elf > ${CMAKE_CURRENT_BINARY_DIR}/sys_symtab.txt 
+  COMMAND ${CMAKE_SOURCE_DIR}/tools/sysigner ${CMAKE_CURRENT_BINARY_DIR}/sys_symtab.txt ${CMAKE_CURRENT_BINARY_DIR}/ExistOS.sys 
   DEPENDS sys.elf 
   )
 
