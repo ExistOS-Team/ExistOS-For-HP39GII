@@ -481,9 +481,9 @@ Flash全盘擦除方法：在刷入OS Loader后或Exist OS系统运行时，按�
 ## 第三方APP开发
 
 ExistOS APP开发见如下仓库：
-```
+
 https://github.com/ExistOS-Team/ExistOS-App-demo
-```
+
 
 ## 代码提交规范
 
@@ -576,11 +576,11 @@ https://github.com/ExistOS-Team/ExistOS-App-demo
         return i;
     ```
 
-    ​	(c) 不得将for循环此三处中任意一处空出：`for ( ; ; )`，否则请使用while循环。
+    ​	(c) 非必要不得将for循环此三处中任意一处空出：`for ( ; ; )`，否则请使用while循环。
 
     7.4 禁止在需要判断语句的地方进行赋值操作，如 `if (a = 1)，(a = 1) ? a : 0` 等。
 
-    7.5 应尽量避免使用 goto 语句。
+    7.5 非必要应尽量避免使用 goto 语句。
 
     7.6 应多用 switch，少用 else if。switch 语句中，每一个 case 中都最好有一个 break/return 语句，多个 case 共用完全相同的一段代码时除外。使用 switch 穿越时应分外小心并最好加注注释。
 
@@ -588,7 +588,9 @@ https://github.com/ExistOS-Team/ExistOS-App-demo
 
 ## 贡献者
 
-
+<a href = "https://github.com/ExistOS-Team/ExistOS-For-HP39GII/graphs/contributors">
+  <img src = "https://contrib.rocks/image?repo=ExistOS-Team/ExistOS-For-HP39GII"/>
+</a>
 
 ## 许可协议
 

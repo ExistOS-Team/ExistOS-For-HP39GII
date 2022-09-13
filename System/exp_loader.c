@@ -50,6 +50,32 @@ extern bool g_allow_load_err_app;
 
 static TaskHandle_t exp_loader_task_handel;
 
+
+static lv_group_t *group_backup;
+static lv_group_t *group_default_backup;
+static lv_group_t *group_msgbox;
+static const char *mbox_btns[] = {"OK", "Cancel" , ""};
+static lv_obj_t *mbox;
+static bool wait_msg_exit;
+
+static void exp_ldr_msgbox_cb(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *msgbox = lv_event_get_current_target(e);
+    if (code == LV_EVENT_VALUE_CHANGED) {
+        uint16_t select_btn = lv_msgbox_get_active_btn(msgbox); // 0 or 1
+
+        if(select_btn == 0){
+
+        }else{
+
+        }
+        wait_msg_exit = false;
+        lv_msgbox_close_async(msgbox);
+    }
+}
+
+
 void exp_exec(void *par) {
     FILINFO finfo;
     FRESULT fr;
@@ -59,6 +85,10 @@ void exp_exec(void *par) {
     static FIL *f;
     void (*app_entry)();
     exp_loader_task_handel = xTaskGetCurrentTaskHandle();
+
+    group_default_backup = lv_group_get_default();
+    group_backup = SystemGetInKeypad()->group;
+    group_msgbox = lv_group_create();
     
     printf("pre exec:%s\n", par);
     f = pvPortMalloc(sizeof(FIL));
@@ -98,6 +128,18 @@ void exp_exec(void *par) {
         if(exp_h.sys_hash != g_system_symtab_hash)
         {
             printf("This application is not compatible this system version.\n");
+            wait_msg_exit = true;
+            lv_group_remove_all_objs(group_msgbox);
+            lv_group_set_default(group_msgbox);
+            lv_indev_set_group(SystemGetInKeypad(), group_msgbox);
+            mbox = lv_msgbox_create(lv_scr_act(), "ERROR", "This application is not compatible this system version.", (const char **)mbox_btns, false);
+            lv_obj_add_event_cb(mbox, exp_ldr_msgbox_cb, LV_EVENT_ALL, NULL);
+            lv_obj_align(mbox, LV_ALIGN_CENTER, 0, 0);
+            lv_obj_center(mbox);
+            while(wait_msg_exit)
+            {
+                vTaskDelay(pdMS_TO_TICKS(100));
+            }
             goto exp_load_exit1;
         }
 
@@ -126,6 +168,11 @@ void exp_exec(void *par) {
     
 
 exp_load_exit1:
+
+    lv_group_set_default(group_default_backup);
+    lv_indev_set_group(SystemGetInKeypad(), group_backup);
+    lv_group_del(group_msgbox);
+
     f_close(f);
 exp_load_exit0:
     vPortFree(f);
