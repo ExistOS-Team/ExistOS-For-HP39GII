@@ -112,7 +112,7 @@ bool portIRQDecode(IRQNumber* IRQNum, IRQTypes *IRQType, IRQInfo *IRQInfo)
     break;
         
     default:
-        PANNIC("ERR IRQNum:%d\n", *IRQNum);
+        PANIC("ERR IRQNum:%d\n", *IRQNum);
         return false;
     }
     return true;

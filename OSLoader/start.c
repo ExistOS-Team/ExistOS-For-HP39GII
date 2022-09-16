@@ -1085,11 +1085,11 @@ volatile void _startup() {
 }
 
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
-    PANNIC("StackOverflowHook:%s\n", pcTaskName);
+    PANIC("StackOverflowHook:%s\n", pcTaskName);
 }
 
 void vAssertCalled(char *file, int line) {
-    PANNIC("ASSERT %s:%d\n", file, line);
+    PANIC("ASSERT %s:%d\n", file, line);
 }
 
 void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
@@ -1101,5 +1101,5 @@ void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
 }
 
 void vApplicationMallocFailedHook() {
-    PANNIC("ASSERT: Out of Memory.\n");
+    PANIC("ASSERT: Out of Memory.\n");
 }

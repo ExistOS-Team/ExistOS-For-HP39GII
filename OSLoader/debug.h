@@ -8,7 +8,7 @@ volatile uint32_t isIRQAllowed();
 
 void dbg_printf(char *fmt, ...);
 
-#define PANNIC(...)  do{printf(__VA_ARGS__);while(1);}while(0)
+#define PANIC(...)  do{printf(__VA_ARGS__);while(1);}while(0)
 
 
 //#define INFO(...) do{dbg_printf(__VA_ARGS__);}while(0)
