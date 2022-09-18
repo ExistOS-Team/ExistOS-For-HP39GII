@@ -389,7 +389,7 @@ static void charge_chb_handler(lv_event_t *e) {
 }
 
 lv_obj_t *label_cpuminirac;
-void slider_cpu_minimum_frac_event_cb(lv_event_t *e) {
+void slider_cpu_minimal_frac_event_cb(lv_event_t *e) {
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *obj = lv_event_get_target(e);
 
@@ -1003,7 +1003,7 @@ void main_thread() {
     SET_LABEL_TEXT(info_line5, "Build time:%s", system_build_time);
 
     label_cpuminirac = lv_label_create(t2);
-    SET_LABEL_TEXT(label_cpuminirac, "CPU Freq Minimum Frac: 6");
+    SET_LABEL_TEXT(label_cpuminirac, "CPU Freq Minimal Frac: 6");
     lv_obj_set_flex_grow(label_cpuminirac, 0);
 
     lv_obj_t *cpu_minpwr_slider = lv_slider_create(t2);
@@ -1011,7 +1011,7 @@ void main_thread() {
     lv_slider_set_range(cpu_minpwr_slider, 2, 14);
     lv_obj_add_flag(cpu_minpwr_slider, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
     lv_slider_set_value(cpu_minpwr_slider, 6, false);
-    lv_obj_add_event_cb(cpu_minpwr_slider, slider_cpu_minimum_frac_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_add_event_cb(cpu_minpwr_slider, slider_cpu_minimal_frac_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_group_add_obj(group_status, cpu_minpwr_slider);
 
     slow_down_chb = lv_checkbox_create(t2);
