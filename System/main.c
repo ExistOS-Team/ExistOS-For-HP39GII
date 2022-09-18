@@ -106,7 +106,7 @@ void check_emulator_status() {
             UINT br;
             char *fname = (char *)&EMU_DATA_PORT[10];
             uint32_t fsz = ((uint32_t *)(&EMU_DATA_PORT[4]))[0];
-            printf("Files send command detected.\n");
+            printf("File send command detected.\n");
             printf("Receive file:%s\n", fname);
             printf("file size:%d\n", fsz);
 
@@ -368,7 +368,7 @@ static void charge_chb_handler(lv_event_t *e) {
             lv_group_remove_all_objs(group_msgbox);
             lv_group_set_default(group_msgbox);
 
-            lv_obj_t *mbox = lv_msgbox_create(lv_scr_act(), "!!! Warning !!!", "[Experimental Features] PLEASE make sure use \n1.2 V Rechargeable Battery, i.e. NiCd, NiMH, etc.", (const char **)msgbox_button, false);
+            lv_obj_t *mbox = lv_msgbox_create(lv_scr_act(), "!!! Warning !!!", "[Experimental Features]\nPLEASE make sure to use \n1.2 V Rechargeable Battery, i.e. NiCd, NiMH, etc.", (const char **)msgbox_button, false);
 
             lv_obj_add_event_cb(mbox, charge_msgbox_event_cb, LV_EVENT_ALL, NULL);
             lv_obj_align(mbox, LV_ALIGN_CENTER, 0, 0);
@@ -400,7 +400,7 @@ void slider_cpu_minimum_frac_event_cb(lv_event_t *e) {
         lv_obj_t *slider = lv_event_get_target(e);
         char buf[32];
         int val = (int)lv_slider_get_value(slider);
-        lv_snprintf(buf, sizeof(buf), "CPU Freq Minimum Frac: %d", val);
+        lv_snprintf(buf, sizeof(buf), "CPU Freq Minimal Frac: %d", val);
         lv_label_set_text(label_cpuminirac, buf);
         ll_cpu_slowdown_min_frac(val);
     }
@@ -1022,7 +1022,7 @@ void main_thread() {
     lv_group_add_obj(group_status, slow_down_chb);
 
     charge_chb = lv_checkbox_create(t2);
-    lv_checkbox_set_text(charge_chb, "Enable Charge");
+    lv_checkbox_set_text(charge_chb, "Enable Charging");
     lv_obj_set_flex_grow(charge_chb, 0);
     lv_obj_add_event_cb(charge_chb, charge_chb_handler, LV_EVENT_ALL, NULL);
     lv_group_add_obj(group_status, charge_chb);
@@ -1154,11 +1154,11 @@ void main() {
 }
 
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
-    PANNIC("StackOverflowHook:%s\n", pcTaskName);
+    PANIC("StackOverflowHook:%s\n", pcTaskName);
 }
 
 void vAssertCalled(char *file, int line) {
-    PANNIC("ASSERT FAILED AT %s:%d\n", file, line);
+    PANIC("ASSERTION FAILED AT %s:%d\n", file, line);
 }
 
 void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
@@ -1170,5 +1170,5 @@ void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
 }
 
 void vApplicationMallocFailedHook() {
-    PANNIC("ASSERT: Out of Memory.\n");
+    PANIC("ASSERT: Out of Memory.\n");
 }
