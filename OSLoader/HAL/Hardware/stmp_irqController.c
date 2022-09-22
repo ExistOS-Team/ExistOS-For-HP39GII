@@ -110,6 +110,11 @@ bool portIRQDecode(IRQNumber* IRQNum, IRQTypes *IRQType, IRQInfo *IRQInfo)
         *IRQInfo = *IRQNum;
         *IRQType = IRQType_PWR;
     break;
+    case HW_IRQ_DAC_DMA:
+    case HW_IRQ_DAC_ERROR:
+        *IRQInfo = *IRQNum;
+        *IRQType = IRQType_DAC;
+        break;
         
     default:
         PANNIC("ERR IRQNum:%d\n", *IRQNum);

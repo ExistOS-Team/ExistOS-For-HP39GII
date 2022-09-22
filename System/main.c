@@ -508,6 +508,10 @@ static void fexplorer_file_handler(lv_event_t *e) {
             xTaskCreate(bin_exec, fname, 65535, FilePath, configMAX_PRIORITIES - 3, NULL);
         } else if ((strcmp(FileExt, "exp") == 0)) {
             xTaskCreate(exp_exec, fname, configMINIMAL_STACK_SIZE, FilePath, configMAX_PRIORITIES - 3, NULL);
+        } else if ((strcmp(FileExt, "wav") == 0))
+        {
+           extern void wavPlayer(void *par);
+            xTaskCreate(wavPlayer, "wavPlayer", configMINIMAL_STACK_SIZE, FilePath, configMAX_PRIORITIES - 3, NULL);
         }
 
     } else if (code == LV_EVENT_KEY) {

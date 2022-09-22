@@ -34,7 +34,7 @@
 
 #if VMRAM_USE_FTL
     #if USE_TINY_PAGE
-        #define NUM_CACHEPAGE             ( 256 ) // 273 * 1 = 273 KB
+        #define NUM_CACHEPAGE             ( 226 ) // 273 * 1 = 273 KB
     #else
         #define NUM_CACHEPAGE             ( 79 ) // 79 * 4 = 316 KB
     #endif

@@ -20,7 +20,8 @@ typedef enum IRQTypes
     IRQType_MTD,
     IRQType_DISP,
     IRQType_LRADC,
-    IRQType_PWR
+    IRQType_PWR,
+    IRQType_DAC
 
 }IRQTypes;
 

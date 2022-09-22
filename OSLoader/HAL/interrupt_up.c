@@ -27,6 +27,8 @@ bool portMTD_ECC_ISR();
 void portDISP_ISR();
 void port_LRADC_IRQ(uint32_t ch);
 void portPowerIRQ(uint32_t nirq);
+void portDAC_IRQ(uint32_t IRQn);
+
 void up_isr( void )
 {
     IRQTypes IRQType;
@@ -60,6 +62,9 @@ void up_isr( void )
         break;
     case IRQType_PWR:
         portPowerIRQ(IRQInfo);
+        break;
+    case IRQType_DAC:
+        portDAC_IRQ(IRQInfo);
         break;
     default:
         PANNIC("Unknown IRQ:%d,%d\n", CurrentIRQNumber, IRQInfo);

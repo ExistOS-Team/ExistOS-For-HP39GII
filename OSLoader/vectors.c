@@ -80,6 +80,9 @@ extern uint32_t g_core_temp, g_batt_volt, g_core_cur_freq_mhz;
 extern bool vm_in_exception, g_chargeEnable;
 
 
+bool is_pcm_buffer_idle();
+void pcm_buffer_load(void *pcmdat);
+
 void volatile arm_do_swi(uint32_t SWINum, uint32_t *pRegFram)
 {
 
@@ -140,6 +143,15 @@ void volatile arm_do_swi(uint32_t SWINum, uint32_t *pRegFram)
         case LL_FAST_SWI_RTC_SET_SEC:
             rtc_set_seconds(pRegFram[0 + 2]);
             break;
+
+        case LL_FAST_SWI_PCM_BUFFER_IS_IDLE:
+            pRegFram[0 + 2] = is_pcm_buffer_idle();
+            break;
+        
+        case LL_FAST_SWI_PCM_BUFFER_PLAY:
+            pcm_buffer_load((void *)pRegFram[0 + 2]);
+            break;
+        
         default:
             break;
         }

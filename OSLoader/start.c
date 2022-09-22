@@ -86,8 +86,9 @@ void printTaskList() {
     vTaskGetRunTimeStats((char *)&pcWriteBuffer);
     printf("%s\n", pcWriteBuffer);
     printf("Status:  X-Running  R-Ready  B-Block  S-Suspend  D-Delete\n");
+    */
     printf("Free PhyMem:   %d Bytes\n", (unsigned int)xPortGetFreeHeapSize());
-*/
+
     printf("=================OS Loader Info==================\r\n");
     printf("VRAM PageFault:   %ld \n", g_page_vram_fault_cnt);
     printf("VROM PageFault:   %ld \n", g_page_vrom_fault_cnt);
@@ -195,7 +196,6 @@ void System(void *par) {
     }
     
     setCPUDivider(CPU_DIVIDE_NORMAL);
-    // vTaskSuspend(NULL);
     bootAddr += 4;
     atagsAddr = (uint32_t *)(VM_ROM_BASE + (4234 - 1984) * 2048);
 

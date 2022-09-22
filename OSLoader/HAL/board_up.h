@@ -44,4 +44,8 @@ void exitSlowDown();
 void slowDownEnable(bool enable);
 void setSlowDownMinCpuFrac(uint8_t frac);
 
+void stmp_audio_init();
+void pcm_play();
+
+
 #endif
