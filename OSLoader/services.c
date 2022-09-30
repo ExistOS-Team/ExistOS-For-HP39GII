@@ -82,7 +82,12 @@ void vLLAPISvc(void *pvParameters)
 void vDispSvc(void *pvParameters)
 {
   DisplayInit();
-  DisplayPutStr(0, 16 * 0, "System Booting...", 0, 255, 16);
+  //DisplayPutStr(0, 16 * 0, "System Booting...", 0, 255, 16);
+  DisplayFillBox(32, 32, 224, 64, 128);
+  DisplayPutStr(72, 42, "Init display" ,255 ,128, 16);
+
+  DisplayFillBox(48, 80, 208, 96, 200);
+  DisplayFillBox(50, 82, 206, 94, 255);
   
   DisplaySetIndicate(0, 0);
   for(;;){

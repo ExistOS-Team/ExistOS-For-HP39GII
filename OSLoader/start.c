@@ -144,23 +144,44 @@ uint32_t *atagsAddr;
 void System(void *par) {
     bootAddr = (uint32_t *)VM_ROM_BASE;
 
-    // vTaskDelay(pdMS_TO_TICKS(5000));
+    //vTaskDelay(pdMS_TO_TICKS(5000));
     INFO("Booting...\n");
-    DisplayClean();
+    //DisplayClean();
 
-    DisplayPutStr(0, 16 * 0, "System Booting...", 0, 255, 16);
-    DisplayPutStr(0, 16 * 1, "Waiting for Flash GC...", 0, 255, 16);
+    DisplayFillBox(32, 32, 224, 64, 128);
+    DisplayPutStr(64, 42, "System booting..." ,255 ,128, 16);
+
+    for(int i = 90; i <= 120; ++i) DisplayFillBox(52, 84, i, 92, 16);
+    
+    //DisplayPutStr(64, 16 * 2, "System Booting...", 255, 32, 16);
+    //DisplayPutStr(64, 16 * 3, "Waiting for Flash GC...", 255, 32, 16);
 
     if ((*bootAddr != 0xEF5AE0EF) && *(bootAddr + 1) != 0xFECDAFDE) {
         slowDownEnable(false);
-        DisplayClean();
-        DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
-        DisplayPutStr(0, 16 * 1, "Could not find the System!", 0, 255, 16);
+        //DisplayClean();
+        //DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
+        //DisplayPutStr(0, 16 * 1, "Could not find the System!", 0, 255, 16);
+
+        DisplayFillBox(32, 32, 224, 64, 128);
+        DisplayFillBox(48, 80, 208, 96, 255);
+        DisplayPutStr(54, 42, "No System Installed ", 255, 128, 16);
+
+        for(int i = 16; i >= 0; --i){
+            DisplayFillBox(115, 76, 141, 128, 255);
+            DisplayFillBox(123, 112 + i, 132, 128 + i, 128);
+            DisplayFillBox(120, 76 + i, 136, 80 + i, 192);
+            DisplayFillBox(115, 80 + i, 141, 112 + i, 0);
+            vTaskDelay(pdMS_TO_TICKS(4 * (16 - i)));
+        }
+
+
         g_vm_status = VM_STATUS_SUSPEND;
         vTaskSuspend(NULL);
     }
 
     vTaskPrioritySet(pDispTask, configMAX_PRIORITIES - 5);
+
+    for(int i = 120; i <= 150; ++i) DisplayFillBox(52, 84, i, 92, 16);
 
     vTaskDelay(pdMS_TO_TICKS(100));
     uint32_t k, kp;
@@ -168,10 +189,13 @@ void System(void *par) {
     if ((k == KEY_F2) && kp) {
         slowDownEnable(false);
         tud_disconnect();
-        DisplayClean();
-        DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
-        DisplayPutStr(0, 16 * 1, "USB MSC Mode.", 0, 255, 16);
-        DisplayPutStr(0, 16 * 2, "[Views] Continue Boot.", 0, 255, 16);
+        //DisplayClean();
+        //DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
+        //DisplayPutStr(0, 16 * 1, "USB MSC Mode", 0, 255, 16);
+
+        DisplayFillBox(32, 32, 224, 64, 128);
+        DisplayPutStr(80, 42, "USB MSC Mode" ,255 ,128, 16);
+        DisplayPutStr(42, 8, "Press [Views] to exit", 0, 255, 16);
         
         vTaskDelay(pdMS_TO_TICKS(200));
         g_MSC_Configuration = MSC_CONF_SYS_DATA;
@@ -185,7 +209,12 @@ void System(void *par) {
                 FTL_Sync();
 
                 tud_disconnect();
-                DisplayClean();
+                //DisplayClean();
+
+                DisplayFillBox(42, 8, 210, 24, 255);
+                DisplayFillBox(32, 32, 224, 64, 128);
+                DisplayPutStr(64, 42, "System booting..." ,255 ,128, 16);
+
                 g_MSC_Configuration = MSC_CONF_OSLOADER_EDB;
                 vTaskDelay(pdMS_TO_TICKS(10));
                 tud_connect();
@@ -199,7 +228,11 @@ void System(void *par) {
     bootAddr += 4;
     atagsAddr = (uint32_t *)(VM_ROM_BASE + (4234 - 1984) * 2048);
 
+    for(int i = 150; i <= 180; ++i) DisplayFillBox(52, 84, i, 92, 16);
+
     g_vm_status = VM_STATUS_RUNNING;
+
+    for(int i = 180; i <= 203; ++i) DisplayFillBox(52, 84, i, 92, 16);
 
     __asm volatile("mrs r1,cpsr_all");
     __asm volatile("bic r1,r1,#0x1f");

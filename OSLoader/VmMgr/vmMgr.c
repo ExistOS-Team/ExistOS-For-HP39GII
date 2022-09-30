@@ -441,7 +441,16 @@ void vmMgr_init() {
 
     vmMgr_ReleaseAllPage();
     
-    DisplayPutStr(0, 16 * 1, "Waiting for Flash GC...", 0, 255, 16);
+    //DisplayPutStr(0, 16 * 1, "Waiting for Flash GC...", 0, 255, 16);
+    DisplayFillBox(32, 32, 224, 64, 128);
+    DisplayPutStr(60, 42, "Wait for Flash GC ", 255 ,128, 16);
+
+    DisplayFillBox(48, 80, 208, 96, 200);
+    DisplayFillBox(50, 82, 206, 94, 255);
+
+    //DisplayFillBox(52, 84, 90, 92, 16);
+    for(int i = 84; i <= 90; ++i) DisplayFillBox(52, 84, i, 92, 16);
+
     for (int i = 0; i < FLASH_FTL_DATA_SECTOR  ; i++) {
         FTL_TrimSector(i);
     }
