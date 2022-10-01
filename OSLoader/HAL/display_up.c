@@ -23,6 +23,7 @@ typedef enum {
     DISPOPA_FILL_BOX,
     DISPOPA_SET_INDICATE,
     DISPOPA_READ_VRAM
+    //DISPOPA_CIRCLE,
 } DispOpa;
 
 typedef struct DisplayOpaQueue_t {
@@ -115,12 +116,14 @@ bool DisplayPutStr(uint32_t x, uint32_t y, char *s, uint8_t fg, uint8_t bg, uint
     strcpy(str, s);
     if (!pars)
         return false;
+
     pars[0] = x;
     pars[1] = y;
     pars[2] = (uint32_t)str;
     pars[3] = fg;
     pars[4] = bg;
     pars[5] = fontSize;
+
     opa.opa = DISPOPA_PUT_STR;
     opa.parNum = 6;
     opa.pars = pars;
@@ -233,6 +236,25 @@ void DisplayFillBox(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint8_t 
     xQueueSend(DisplayOpaQueue, &opa, portMAX_DELAY);
 }
 
+/*
+void DisplayCircle(uint32_t x0, uint32_t y0, uint32_t r, uint8_t c, bool isFill) {
+    DisplayOpaQueue_t opa;
+    uint32_t *pars = pvPortMalloc(6 * sizeof(uint32_t));
+    if (!pars)
+        return;
+    pars[0] = x0;
+    pars[1] = y0;
+    pars[2] = r;
+    pars[3] = c;
+    pars[4] = isFill;
+    pars[5] = 0;
+    opa.opa = DISPOPA_CIRCLE;
+    opa.parNum = 5;
+    opa.pars = pars;
+    xQueueSend(DisplayOpaQueue, &opa, portMAX_DELAY);
+}
+*/
+
 bool DisplayOperatesFin() {
     uint32_t len = uxQueueGetQueueNumber((QueueHandle_t)&DisplayOpaQueue);
     // printf("Qlen:%d\n",len);
@@ -271,6 +293,15 @@ static void innerDispVLine(uint32_t y0, uint32_t y1, uint32_t x, uint8_t c) {
     portDispFlushAreaBuf(x, y0, x, y1, buf);
     vPortFree(buf);
 }
+
+/*
+static void innerDispPoint(uint32_t x0, uint32_t y0, uint8_t c) {
+    uint8_t *buf = pvPortMalloc(3);
+    memset(buf, c, 3);
+    portDispFlushAreaBuf(x0 - 1, y0, x0 + 1, y0, buf);
+    vPortFree(buf);
+}
+*/
 
 void Display_InterfaceInit() {
     portDispInterfaceInit();
@@ -318,6 +349,7 @@ void DisplayTask() {
                 uint32_t x_end = curOpa.pars[2];
                 uint32_t y_end = curOpa.pars[3];
                 uint8_t *buf = (uint8_t *)curOpa.pars[4];
+                
                 portDispFlushAreaBuf(x_start, y_start, x_end, y_end, buf);
 
                 bool *fin = (bool *)curOpa.pars[5];
@@ -397,9 +429,7 @@ void DisplayTask() {
                 vPortFree(curOpa.pars);
                 vPortFree(s);
             } break;
-            case DISPOPA_HLINE:
-
-            {
+            case DISPOPA_HLINE: {
                 uint32_t x0 = curOpa.pars[0];
                 uint32_t x1 = curOpa.pars[1];
                 uint32_t y = curOpa.pars[2];
@@ -433,9 +463,7 @@ void DisplayTask() {
                 }
                 vPortFree(curOpa.pars);
 
-            }
-
-            break;
+            } break;
             case DISPOPA_FILL_BOX: {
                 uint32_t x0 = curOpa.pars[0];
                 uint32_t y0 = curOpa.pars[1];
@@ -452,7 +480,6 @@ void DisplayTask() {
                 }
                 vPortFree(curOpa.pars);
             } break;
-
             case DISPOPA_SET_INDICATE: {
                 /*
                 int indicate = curOpa.pars[0];
@@ -473,6 +500,51 @@ void DisplayTask() {
                 vPortFree(curOpa.pars);
                 *fin = true;
             } break;
+            /*
+            case DISPOPA_CIRCLE: {
+                uint32_t x0 = curOpa.pars[0];
+                uint32_t y0 = curOpa.pars[1];
+                uint32_t r = curOpa.pars[2];
+                uint32_t c = curOpa.pars[3];
+                bool isFill = curOpa.pars[4];
+
+                int x1, y1;
+                int j;
+                int pow_r;
+                int y_last;
+
+                for (int rr = r; rr >= 0; rr--) {
+                    pow_r = rr * rr;
+                    for (x1 = x0 - rr, y_last = y0; x1 <= x0; x1++) {
+                        y1 = y0 + __sqrt(pow_r - (x1 - x0) * (x1 - x0));
+                        if (y1 - y_last > 1) {
+
+                            for (j = y_last; j < (y1 + y_last) / 2; j++) { // add pixel from y_last to harf
+                                innerDispPoint(x1 - 1, j, c);
+                                innerDispPoint((x0 << 1) - x1 + 1, j, c);
+                                innerDispPoint((x0 << 1) - x1 + 1, (y0 << 1) - j, c);
+                                innerDispPoint(x1 - 1, (y0 << 1) - j, c);
+                            }
+                            for (j = (y1 + y_last) / 2; j < y1; j++) { // add pixel from hart to y_now
+                                innerDispPoint(x1, j, c);
+                                innerDispPoint((x0 << 1) - x1, j, c);
+                                innerDispPoint((x0 << 1) - x1, (y0 << 1) - j, c);
+                                innerDispPoint(x1, (y0 << 1) - j, c);
+                            }
+                        }
+                        innerDispPoint(x1, y1, c);
+                        innerDispPoint((x0 << 1) - x1, y1, c);
+                        innerDispPoint((x0 << 1) - x1, (y0 << 1) - y1, c);
+                        innerDispPoint(x1, (y0 << 1) - y1, c);
+                        y_last = y1;
+                    }
+                    if (!isFill)
+                        break;
+                }
+
+                vPortFree(curOpa.pars);
+            } break;
+            */
             default:
                 break;
             }
@@ -486,3 +558,23 @@ void DisplayInit() {
     DisplayOpaQueue = xQueueCreate(4, sizeof(DisplayOpaQueue_t));
     portDispDeviceInit();
 }
+
+/*
+float __sqrt(int x) {
+    x = x << 8; 
+    uint32_t mask = 0x800;
+    uint32_t root = 0;
+    uint32_t trial;
+    // uint16_t i, f;
+    do {
+        trial = root + mask;
+        if (trial * trial <= x)
+            root = trial;
+        mask = mask >> 1;
+    } while (mask);
+
+    // i = root >> 4;
+    // f = (root & 0xf) << 4;
+    return (root >> 4);
+}
+*/
