@@ -149,10 +149,9 @@ void System(void *par) {
     INFO("Booting...\n");
     // DisplayClean();
 
-
-    //DisplayFillBox(32, 32, 224, 64, 128);
+    // DisplayFillBox(32, 32, 224, 64, 128);
     DisplayFlushArea(103, 32, 152, 56, &logo, false);
-    //DisplayPutStr(64, 42, "System Booting...", 255, 128, 16);
+    // DisplayPutStr(64, 42, "System Booting...", 255, 128, 16);
 
     for (int i = 90; i <= 120; ++i)
         DisplayFillBox(i - 2, 84, i, 92, 72);
@@ -214,7 +213,7 @@ void System(void *par) {
                 DisplayFillBox(42, 8, 210, 24, 255);
                 DisplayFillBox(32, 32, 224, 64, 255);
                 DisplayFlushArea(103, 32, 152, 56, &logo, false);
-                //DisplayPutStr(64, 42, "System Booting...", 255, 128, 16);
+                // DisplayPutStr(64, 42, "System Booting...", 255, 128, 16);
 
                 g_MSC_Configuration = MSC_CONF_OSLOADER_EDB;
                 vTaskDelay(pdMS_TO_TICKS(10));
@@ -357,37 +356,35 @@ void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
         pRegFram -= 16;
 
         DisplayClean();
+        DisplayFillBox(4, 4, 252, 20, 0);
+        DisplayPutStr(16, 5, "System Panic! ", 255, 0, 16);
+        DisplayFillBox(8, 24, 248, 120, 208);
 
-        DisplayPutStr(0, 16 * 0, "System Panic!", 0, 255, 16);
         if (res != NULL) {
-            DisplayPutStr(14 * 8, 16 * 0, res, 0, 255, 16);
+            DisplayPutStr(240 - 8 * strlen(res), 5, strcat(res, " "), 208, 0, 16);
         }
-        // DisplayPutStr(0, 16 * 1, "Press [ON]+[F5] Soft-reboot.", 0, 255, 16);
+
+        DisplayPutStr(24, 16 * 2 - 8, "[ON+F5] > Maintenance Menu", 96, 208, 16);
 
         memset(buf, 0, sizeof(buf));
-
-        DisplayPutStr(0, 16 * 1, "[ON]>[F6] Reboot", 0, 255, 16);
-        DisplayPutStr(0, 16 * 2, "[ON]>[F5] Clear ALL Data", 0, 255, 16);
-
-        memset(buf, 0, sizeof(buf));
-        sprintf(buf, "R12:%08lx R0:%08lx", pRegFram[12], pRegFram[0]);
-        DisplayPutStr(0, 16 * 3, buf, 0, 255, 16);
+        sprintf(buf, "R12:%08lx  R0:%08lx ", pRegFram[12], pRegFram[0]);
+        DisplayPutStr(24, 16 * 3 - 8, buf, 0, 208, 16);
 
         memset(buf, 0, sizeof(buf));
-        sprintf(buf, "R13:%08lx  R1:%08lx", pRegFram[13], pRegFram[1]);
-        DisplayPutStr(0, 16 * 4, buf, 0, 255, 16);
+        sprintf(buf, "R13:%08lx  R1:%08lx ", pRegFram[13], pRegFram[1]);
+        DisplayPutStr(24, 16 * 4 - 8, buf, 0, 208, 16);
 
         memset(buf, 0, sizeof(buf));
-        sprintf(buf, "R14:%08lx  R2:%08lx", pRegFram[14], pRegFram[2]);
-        DisplayPutStr(0, 16 * 5, buf, 0, 255, 16);
+        sprintf(buf, "R14:%08lx  R2:%08lx ", pRegFram[14], pRegFram[2]);
+        DisplayPutStr(24, 16 * 5 - 8, buf, 0, 208, 16);
 
         memset(buf, 0, sizeof(buf));
-        sprintf(buf, "R15:%08lx  R3:%08lx", pRegFram[15], pRegFram[3]);
-        DisplayPutStr(0, 16 * 6, buf, 0, 255, 16);
+        sprintf(buf, "R15:%08lx  R3:%08lx ", pRegFram[15], pRegFram[3]);
+        DisplayPutStr(24, 16 * 6 - 8, buf, 0, 208, 16);
 
         memset(buf, 0, sizeof(buf));
-        sprintf(buf, "CPSR:%08lx [FAR:%08lx]", pRegFram[-1], address);
-        DisplayPutStr(0, 16 * 7, buf, 0, 255, 16);
+        sprintf(buf, "CPSR:%08lx FAR:%08lx ", pRegFram[-1], address);
+        DisplayPutStr(24, 16 * 7 - 8, buf, 0, 208, 16);
 
         g_vm_status = VM_STATUS_UNCONSCIOUS;
 
@@ -777,8 +774,8 @@ void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters
                 DisplayPutStr(36, 44, "[F1]  Clear System Data ", 32, 208, 16);
                 DisplayPutStr(36, 60, "[F2]  Erase All Flash ", 32, 208, 16);
                 DisplayPutStr(36, 76, "[F3]  Exit & Reboot ", 32, 208, 16);
-                //DisplayFlushArea(20, 100, 39, 109, &logo, true);
-                // DisplayCircle(128, 64, 48, 129, true);
+                // DisplayFlushArea(20, 100, 39, 109, &logo, true);
+                //  DisplayCircle(128, 64, 48, 129, true);
 
                 vTaskDelay(pdMS_TO_TICKS(500));
                 key = waitAnyKey();

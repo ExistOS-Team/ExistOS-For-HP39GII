@@ -9,7 +9,7 @@
             ;                \
     } while (0)
 
-#define INFO(...)          \
+#define INFO(...)            \
     do {                     \
         printf(__VA_ARGS__); \
     } while (0)
