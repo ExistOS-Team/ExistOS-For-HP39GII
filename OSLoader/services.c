@@ -82,9 +82,9 @@ void vLLAPISvc(void *pvParameters)
 void vDispSvc(void *pvParameters)
 {
   DisplayInit();
-  DisplayPutStr(0, 16 * 0, "System Booting...", 0, 255, 16);
-  
+
   DisplaySetIndicate(0, 0);
+
   for(;;){
     DisplayTask();
   }

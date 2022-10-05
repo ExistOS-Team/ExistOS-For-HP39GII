@@ -20,7 +20,6 @@
 #include "rtc_up.h"
 #include "vmMgr.h"
 
-
 #include "../debug.h"
 
 #include "stmp37xxNandConf.h"
@@ -30,6 +29,8 @@
 #include "regspower.h"
 
 #include "regsdigctl.h"
+
+#include "logo.h"
 
 void vTaskTinyUSB(void *pvParameters);
 void vMTDSvc(void *pvParameters);
@@ -93,7 +94,7 @@ void printTaskList() {
     printf("VRAM PageFault:   %ld \n", g_page_vram_fault_cnt);
     printf("VROM PageFault:   %ld \n", g_page_vrom_fault_cnt);
     printf("HCLK Freq:%ld MHz\n", HCLK_Freq / 1000000);
-    printf("CPU Freq:%ld MHz\n", g_core_cur_freq_mhz );
+    printf("CPU Freq:%ld MHz\n", g_core_cur_freq_mhz);
     printf("Flash IO_Writes:%lu\n", g_mtd_write_cnt);
     printf("Flash IO_Reads:%lu\n", g_mtd_read_cnt);
     printf("Flash IO_Erases:%lu\n", g_mtd_erase_cnt);
@@ -147,21 +148,44 @@ void System(void *par) {
 
     // vTaskDelay(pdMS_TO_TICKS(5000));
     INFO("Booting...\n");
-    DisplayClean();
+    // DisplayClean();
 
-    DisplayPutStr(0, 16 * 0, "System Booting...", 0, 255, 16);
-    DisplayPutStr(0, 16 * 1, "Waiting for Flash GC...", 0, 255, 16);
+    // DisplayFillBox(32, 32, 224, 64, 128);
+    DisplayFlushArea(103, 32, 152, 56, &logo, false);
+    // DisplayPutStr(64, 42, "System Booting...", 255, 128, 16);
+
+    for (int i = 90; i <= 120; ++i)
+        DisplayFillBox(i - 2, 84, i, 92, 72);
+
+    // DisplayPutStr(64, 16 * 2, "System Booting...", 255, 32, 16);
+    // DisplayPutStr(64, 16 * 3, "Waiting for Flash GC...", 255, 32, 16);
 
     if ((*bootAddr != 0xEF5AE0EF) && *(bootAddr + 1) != 0xFECDAFDE) {
         slowDownEnable(false);
-        DisplayClean();
-        DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
-        DisplayPutStr(0, 16 * 1, "Could not find the System!", 0, 255, 16);
+        // DisplayClean();
+        // DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
+        // DisplayPutStr(0, 16 * 1, "Could not find the System!", 0, 255, 16);
+
+        DisplayFillBox(32, 32, 224, 64, 128);
+        DisplayFillBox(48, 80, 208, 96, 255);
+        DisplayPutStr(54, 42, "No System Installed ", 255, 128, 16);
+
+        for (int i = 16; i >= 0; --i) {
+            DisplayFillBox(115, 76, 141, 128, 255);
+            DisplayFillBox(123, 112 + i, 132, 128 + i, 128);
+            DisplayFillBox(120, 76 + i, 136, 80 + i, 192);
+            DisplayFillBox(115, 80 + i, 141, 112 + i, 0);
+            vTaskDelay(pdMS_TO_TICKS(4 * (16 - i)));
+        }
+
         g_vm_status = VM_STATUS_SUSPEND;
         vTaskSuspend(NULL);
     }
 
     vTaskPrioritySet(pDispTask, configMAX_PRIORITIES - 5);
+
+    for (int i = 120; i <= 150; ++i)
+        DisplayFillBox(i - 2, 84, i, 92, 72);
 
     vTaskDelay(pdMS_TO_TICKS(100));
     uint32_t k, kp;
@@ -169,11 +193,11 @@ void System(void *par) {
     if ((k == KEY_F2) && kp) {
         slowDownEnable(false);
         tud_disconnect();
-        DisplayClean();
-        DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
-        DisplayPutStr(0, 16 * 1, "USB MSC Mode.", 0, 255, 16);
-        DisplayPutStr(0, 16 * 2, "[Views] Continue Boot.", 0, 255, 16);
-        
+
+        DisplayFillBox(32, 32, 224, 64, 128);
+        DisplayPutStr(80, 42, "USB MSC Mode", 255, 128, 16);
+        DisplayPutStr(42, 8, "Press [Views] to exit", 128, 255, 16);
+
         vTaskDelay(pdMS_TO_TICKS(200));
         g_MSC_Configuration = MSC_CONF_SYS_DATA;
         vTaskDelay(pdMS_TO_TICKS(10));
@@ -186,7 +210,12 @@ void System(void *par) {
                 FTL_Sync();
 
                 tud_disconnect();
-                DisplayClean();
+
+                DisplayFillBox(42, 8, 210, 24, 255);
+                DisplayFillBox(32, 32, 224, 64, 255);
+                DisplayFlushArea(103, 32, 152, 56, &logo, false);
+                // DisplayPutStr(64, 42, "System Booting...", 255, 128, 16);
+
                 g_MSC_Configuration = MSC_CONF_OSLOADER_EDB;
                 vTaskDelay(pdMS_TO_TICKS(10));
                 tud_connect();
@@ -194,12 +223,18 @@ void System(void *par) {
             }
         }
     }
-    
+
+    for (int i = 150; i <= 180; ++i)
+        DisplayFillBox(i - 2, 84, i, 92, 72);
+
     setCPUDivider(CPU_DIVIDE_NORMAL);
     bootAddr += 4;
     atagsAddr = (uint32_t *)(VM_ROM_BASE + (4234 - 1984) * 2048);
 
     g_vm_status = VM_STATUS_RUNNING;
+
+    for (int i = 180; i <= 202; ++i)
+        DisplayFillBox(i - 2, 84, i, 92, 72);
 
     __asm volatile("mrs r1,cpsr_all");
     __asm volatile("bic r1,r1,#0x1f");
@@ -321,42 +356,40 @@ void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
         pRegFram -= 16;
 
         DisplayClean();
+        DisplayFillBox(4, 4, 252, 20, 0);
+        DisplayPutStr(16, 5, "System Panic! ", 255, 0, 16);
+        DisplayFillBox(8, 24, 248, 120, 208);
 
-        DisplayPutStr(0, 16 * 0, "System Panic!", 0, 255, 16);
         if (res != NULL) {
-            DisplayPutStr(14 * 8, 16 * 0, res, 0, 255, 16);
+            DisplayPutStr(240 - 8 * strlen(res), 5, strcat(res, " "), 208, 0, 16);
         }
-        // DisplayPutStr(0, 16 * 1, "Press [ON]+[F5] Soft-reboot.", 0, 255, 16);
+
+        DisplayPutStr(24, 16 * 2 - 8, "[ON+F5] > Maintenance Menu", 96, 208, 16);
 
         memset(buf, 0, sizeof(buf));
-
-        DisplayPutStr(0, 16 * 1, "[ON]>[F6] Reboot", 0, 255, 16);
-        DisplayPutStr(0, 16 * 2, "[ON]>[F5] Clear ALL Data", 0, 255, 16);
-
-        memset(buf, 0, sizeof(buf));
-        sprintf(buf, "R12:%08lx R0:%08lx", pRegFram[12], pRegFram[0]);
-        DisplayPutStr(0, 16 * 3, buf, 0, 255, 16);
+        sprintf(buf, "R12:%08lx  R0:%08lx ", pRegFram[12], pRegFram[0]);
+        DisplayPutStr(24, 16 * 3 - 8, buf, 0, 208, 16);
 
         memset(buf, 0, sizeof(buf));
-        sprintf(buf, "R13:%08lx  R1:%08lx", pRegFram[13], pRegFram[1]);
-        DisplayPutStr(0, 16 * 4, buf, 0, 255, 16);
+        sprintf(buf, "R13:%08lx  R1:%08lx ", pRegFram[13], pRegFram[1]);
+        DisplayPutStr(24, 16 * 4 - 8, buf, 0, 208, 16);
 
         memset(buf, 0, sizeof(buf));
-        sprintf(buf, "R14:%08lx  R2:%08lx", pRegFram[14], pRegFram[2]);
-        DisplayPutStr(0, 16 * 5, buf, 0, 255, 16);
+        sprintf(buf, "R14:%08lx  R2:%08lx ", pRegFram[14], pRegFram[2]);
+        DisplayPutStr(24, 16 * 5 - 8, buf, 0, 208, 16);
 
         memset(buf, 0, sizeof(buf));
-        sprintf(buf, "R15:%08lx  R3:%08lx", pRegFram[15], pRegFram[3]);
-        DisplayPutStr(0, 16 * 6, buf, 0, 255, 16);
+        sprintf(buf, "R15:%08lx  R3:%08lx ", pRegFram[15], pRegFram[3]);
+        DisplayPutStr(24, 16 * 6 - 8, buf, 0, 208, 16);
 
         memset(buf, 0, sizeof(buf));
-        sprintf(buf, "CPSR:%08lx [FAR:%08lx]", pRegFram[-1], address);
-        DisplayPutStr(0, 16 * 7, buf, 0, 255, 16);
+        sprintf(buf, "CPSR:%08lx FAR:%08lx ", pRegFram[-1], address);
+        DisplayPutStr(24, 16 * 7 - 8, buf, 0, 208, 16);
 
         g_vm_status = VM_STATUS_UNCONSCIOUS;
 
         // portBoardReset();
-    } 
+    }
 }
 
 unsigned char blockChksum(char *block, unsigned int blockSize) {
@@ -387,7 +420,7 @@ void parseCDCCommand(char *cmd) {
     if (strcmp(cmd, "RESETDBUF") == 0) {
         slowDownEnable(false);
         VMSuspend();
-        
+
         if (binBuf == NULL) {
             binBuf = (char *)VMMGR_GetCacheAddress();
         }
@@ -670,8 +703,6 @@ static bool eraseDataMenu = false;
 static bool transScr = false;
 static int contrast_adj = 0;
 
-
-
 void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters) {
 
     // vTaskDelay(pdMS_TO_TICKS(100));
@@ -703,24 +734,21 @@ void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters
 
     HW_POWER_CHARGE.B.CHRG_STS_OFF = 0;
 
-    HW_POWER_CHARGE.B.BATTCHRG_I  = 1 << 5;
+    HW_POWER_CHARGE.B.BATTCHRG_I = 1 << 5;
     HW_POWER_CHARGE.B.STOP_ILIMIT = 0;
 
     HW_POWER_CHARGE.B.PWD_BATTCHRG = 1;
 
-
     HW_POWER_VDDDCTRL.B.DISABLE_FET = 1;
 
+    // HW_POWER_VDDACTRL.B.DISABLE_FET = 1;
+    // HW_POWER_VDDIOCTRL.B.DISABLE_FET = 1;
 
-    //HW_POWER_VDDACTRL.B.DISABLE_FET = 1;
-    //HW_POWER_VDDIOCTRL.B.DISABLE_FET = 1;
-    
     for (;;) {
 
         vTaskDelay(pdMS_TO_TICKS(100));
 
-        if(contrast_adj)
-        {
+        if (contrast_adj) {
             extern uint32_t g_lcd_contrast;
             g_lcd_contrast += contrast_adj;
             portDispSetContrast(g_lcd_contrast);
@@ -736,89 +764,119 @@ void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters
             VMSuspend();
             DisplayClean();
 
-            DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
-            DisplayPutStr(0, 16 * 1, "Clean All Data ??", 0, 255, 16);
-            DisplayPutStr(0, 16 * 2, "[F1]: YES", 0, 255, 16);
-            DisplayPutStr(0, 16 * 3, "[F6]: NO", 0, 255, 16);
-            DisplayPutStr(0, 16 * 5, "[Symb]: ERASE ALL FLASH", 0, 255, 16);
+            int key, op;
+            op = 0;
+            DisplayFillBox(4, 4, 252, 20, 0);
+            DisplayPutStr(36, 5, "Device Maintenance Menu ", 255, 0, 16);
 
-            vTaskDelay(pdMS_TO_TICKS(1000));
-            int key;
-            key = waitAnyKey();
-            if (key == KEY_F1) {
-                DisplayClean();
-                DisplayPutStr(0, 0, "Erase All Data ...", 0, 255, 16);
-                vTaskDelay(pdMS_TO_TICKS(2000));
-                for (int i = FLASH_DATA_BLOCK; i < 1024; i++) {
-                    MTD_ErasePhyBlock(i);
-                }
+            do {
+                DisplayFillBox(8, 24, 248, 120, 208);
+                DisplayPutStr(36, 44, "[F1]  Clear System Data ", 32, 208, 16);
+                DisplayPutStr(36, 60, "[F2]  Erase All Flash ", 32, 208, 16);
+                DisplayPutStr(36, 76, "[F3]  Exit & Reboot ", 32, 208, 16);
+                // DisplayFlushArea(20, 100, 39, 109, &logo, true);
+                //  DisplayCircle(128, 64, 48, 129, true);
 
-            } else if (key == KEY_SYMB) {
-                
-                DisplayClean();
-                
-                DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
-                DisplayPutStr(0, 16 * 1, "ERASE ALL FLASH?", 0, 255, 16);
-                DisplayPutStr(0, 16 * 2, "You need to re-install system", 255, 0, 16);
-                DisplayPutStr(0, 16 * 3, "after low-level format.", 255, 0, 16);
-                DisplayPutStr(0, 16 * 4, "[F1]: YES", 0, 255, 16);
-                DisplayPutStr(0, 16 * 5, "[F6]: NO", 0, 255, 16);
-                vTaskDelay(pdMS_TO_TICKS(100));
+                vTaskDelay(pdMS_TO_TICKS(500));
                 key = waitAnyKey();
-                if (key == KEY_F1) {
-                    DisplayClean();
-                    DisplayPutStr(0, 0, "Erase All Flash..........", 255, 0, 16);
-                    vTaskDelay(pdMS_TO_TICKS(2000));
-                    for (int i = 0; i < 1024; i++) {
-                        MTD_ErasePhyBlock(i);
-                    }
-                    DisplayClean();
-                    DisplayPutStr(0, 16 * 1, "ALL FLASH HAS BEEN ERASED!", 255, 0, 16);
-                    vTaskDelay(pdMS_TO_TICKS(1000));
-                }
-            }
 
-            DisplayClean();
-            DisplayPutStr(0, 16 * 0, "Operation Finish.", 255, 0, 16);
-            vTaskDelay(pdMS_TO_TICKS(1000));
-            portBoardReset();
+                DisplayFillBox(8, 24, 248, 120, 208);
+                if (key == KEY_F1) {
+                    DisplayPutStr(16, 32, "Clear System Data?", 32, 208, 16);
+                    DisplayPutStr(16, 48, "User data will be erased! ", 128, 208, 16);
+                    DisplayPutStr(16, 104, "[Enter]: YES    [Else]: NO ", 32, 208, 16);
+
+                    vTaskDelay(pdMS_TO_TICKS(200));
+                    key = waitAnyKey();
+
+                    DisplayFillBox(8, 24, 248, 120, 208);
+                    if (key == KEY_ENTER) {
+                        DisplayFillBox(32, 32, 224, 64, 128);
+                        DisplayPutStr(48, 42, "Clearing System Data", 255, 128, 16);
+                        DisplayFillBox(48, 80, 208, 96, 200);
+                        DisplayFillBox(50, 82, 206, 94, 255);
+
+                        vTaskDelay(pdMS_TO_TICKS(500));
+                        for (int i = FLASH_DATA_BLOCK; i < 1024; i++) {
+                            MTD_ErasePhyBlock(i);
+                            DisplayFillBox(52, 84, 52 + i * 0.15, 92, 16);
+                        }
+                        op = 1;
+                    }
+
+                } else if (key == KEY_F2) {
+                    DisplayPutStr(16, 32, "Erase ALL Flash? ", 32, 208, 16);
+                    DisplayPutStr(16, 48, "You need to ", 128, 208, 16);
+                    DisplayPutStr(16, 64, "reinstall firmware! ", 128, 208, 16);
+                    DisplayPutStr(16, 104, "[Enter]: YES    [Else]: NO ", 32, 208, 16);
+
+                    vTaskDelay(pdMS_TO_TICKS(200));
+                    key = waitAnyKey();
+
+                    DisplayFillBox(8, 24, 248, 120, 208);
+                    if (key == KEY_ENTER) {
+                        DisplayFillBox(32, 32, 224, 64, 128);
+                        DisplayPutStr(60, 42, "Erasing All Flash", 255, 128, 16);
+                        DisplayFillBox(48, 80, 208, 96, 200);
+                        DisplayFillBox(50, 82, 206, 94, 255);
+                        vTaskDelay(pdMS_TO_TICKS(500));
+
+                        for (int i = 0; i < 1024; i++) {
+                            MTD_ErasePhyBlock(i);
+                            DisplayFillBox(52, 84, 52 + i * 0.15, 92, 16);
+                        }
+
+                        DisplayFillBox(8, 24, 248, 120, 208);
+                        DisplayPutStr(30, 48, "ALL FLASH HAS BEEN ERASED ", 32, 208, 16);
+                        vTaskDelay(pdMS_TO_TICKS(1000));
+                        op = 2;
+                    }
+
+                } else if (key == KEY_F3) {
+                    op = 1;
+                }
+            } while (op == 0);
+
+            DisplayFillBox(8, 24, 248, 120, 208);
+            if (op == 1) {
+                DisplayPutStr(48, 52, "Device is Rebooting", 32, 208, 16);
+                vTaskDelay(pdMS_TO_TICKS(500));
+                portBoardReset();
+            } else if (op == 2) {
+                DisplayClean();
+                DisplayPutStr(76, 52, "Flash Cleared ", 0, 255, 16);
+                vTaskDelay(pdMS_TO_TICKS(500));
+                portBoardReset();
+            }
         }
 
         uint8_t *vramBuf;
-        if(transScr)
-        {
+        if (transScr) {
             vTaskDelay(pdMS_TO_TICKS(1000));
 
             vramBuf = pvPortMalloc(256 * 3);
-            if(!vramBuf)
-            {
+            if (!vramBuf) {
                 goto fin;
             }
 
-            for(int y = 0; y < 128; y += 2)
-            {
+            for (int y = 0; y < 128; y += 2) {
                 bool fin;
                 DisplayReadArea(0, y, 255, y + 2, vramBuf, &fin);
-                while(!fin)
-                {
-                    vTaskDelay(pdMS_TO_TICKS(30));    
+                while (!fin) {
+                    vTaskDelay(pdMS_TO_TICKS(30));
                 }
 
                 tud_cdc_write(vramBuf, 256 * 3);
                 tud_cdc_write_flush();
                 vTaskDelay(pdMS_TO_TICKS(15));
             }
-            
-
 
             vPortFree(vramBuf);
-            
 
-            fin:
+        fin:
             vTaskDelay(pdMS_TO_TICKS(100));
             transScr = false;
         }
-
     }
 }
 
@@ -826,40 +884,34 @@ void __attribute__((target("arm"))) vMainThread(void *pvParameters) {
     vMainThread_thumb_entry(pvParameters);
 }
 
+int __attribute__((target("thumb"))) capt_ON_Key(int ck, int cp) {
 
-int __attribute__((target("thumb"))) capt_ON_Key(int ck, int cp) 
-{
-
-    if(ck == KEY_F3 && cp)
-    {
+    if (ck == KEY_F3 && cp) {
         portBoardPowerOff();
-
     }
 
     if ((ck == KEY_PLUS)) {
-        if(cp)
-        {
+        if (cp) {
             contrast_adj = 1;
-        }else{
+        } else {
             contrast_adj = 0;
         }
-        
+
         return 1;
     }
     if ((ck == KEY_SUBTRACTION)) {
-        if(cp)
-        {
+        if (cp) {
             contrast_adj = -1;
-        }else{
+        } else {
             contrast_adj = 0;
         }
         return 1;
     }
 
     if ((ck == KEY_F6) && cp) { // [ON] + [F6]
-        //DisplayClean();
+        // DisplayClean();
 
-        //FTL_Sync();
+        // FTL_Sync();
         portBoardReset();
         return 1;
     }
@@ -869,22 +921,17 @@ int __attribute__((target("thumb"))) capt_ON_Key(int ck, int cp)
         return 1;
     }
 
-    if((ck == KEY_F2) && cp)
-    {
-        if(g_CDC_TransTo == CDC_PATH_SCRCAP)
-        {
-            //tud_cdc_write_clear();
-            //tud_cdc_write_flush();
-            if(!transScr)
-            {
+    if ((ck == KEY_F2) && cp) {
+        if (g_CDC_TransTo == CDC_PATH_SCRCAP) {
+            // tud_cdc_write_clear();
+            // tud_cdc_write_flush();
+            if (!transScr) {
                 transScr = true;
             }
         }
 
         return 1;
-
     }
-
 
     return 0;
 }
@@ -929,7 +976,7 @@ void vBatteryMon(void *__n) {
         coreTemp = (int)((portLRADCConvCh(4, 5) - portLRADCConvCh(3, 5)) * 1.012 / 4 - 273.15);
 
         if (t % 5 == 0) {
-            
+
             g_core_temp = coreTemp;
             g_batt_volt = batt_voltage;
 
@@ -944,8 +991,6 @@ void vBatteryMon(void *__n) {
             printf("VBG: %d mV\n", (int)(portLRADCConvCh(2, 5) * 0.45));
             printf("Core Temp: %d ℃\n", coreTemp);
             printf("Power Speed:%lu\n", portGetPWRSpeed());
-
-
         }
         t++;
 
@@ -1019,27 +1064,22 @@ void TaskUSBLog(void *_) {
 }
 extern bool g_slowdown_enable;
 #include "regsclkctrl.h"
-void waitIRQ(int r)
-{
-    
+void waitIRQ(int r) {
+
     enterSlowDown();
-    if(g_slowdown_enable){
-    HW_CLKCTRL_CPU.B.INTERRUPT_WAIT = 1;
-    
-    asm volatile("mov r0, #0");             // Rd SBZ (should be 0)
-    asm volatile("mcr p15,0,r0,c7,c0,4");   // Drain write buffers, idle CPU clock & processor, and stop processor at this instruction
-    asm volatile("nop");
+    if (g_slowdown_enable) {
+        HW_CLKCTRL_CPU.B.INTERRUPT_WAIT = 1;
+
+        asm volatile("mov r0, #0");           // Rd SBZ (should be 0)
+        asm volatile("mcr p15,0,r0,c7,c0,4"); // Drain write buffers, idle CPU clock & processor, and stop processor at this instruction
+        asm volatile("nop");
     }
 
-    
     exitSlowDown();
-
 }
 
-void vApplicationIdleHook( void )
-{
+void vApplicationIdleHook(void) {
     waitIRQ(0);
-
 }
 
 extern int bootTimes;

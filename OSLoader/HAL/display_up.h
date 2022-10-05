@@ -41,13 +41,15 @@ void DisplayBoxBlock(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint8_t
 void DisplayHLine(uint32_t y0, uint32_t y1, uint32_t x, uint8_t c);
 void DisplayVLine(uint32_t y0, uint32_t y1, uint32_t x, uint8_t c);
 void DisplayFillBox(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint8_t c);
-void DisplayFillBoxBlock(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint8_t c);
+//void DisplayCircle(uint32_t x0, uint32_t y0, uint32_t r, uint8_t c, bool isFill);
 void DisplaySetIndicate(int Indicate, int batInd);
 void DisplayClean(void);
 
 void Display_InterfaceInit(void);
 void DisplayInit(void);
 void DisplayTask(void);
+
+//float __sqrt(int x);
 
 #endif
 
