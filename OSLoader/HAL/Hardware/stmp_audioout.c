@@ -9,8 +9,11 @@
 #include "regsclkctrl.h"
 #include "regsclkctrl.h"
 #include "regsapbx.h"
-
 #include "hw_irq.h"
+
+#include "SystemConfig.h"
+
+#ifdef ENABLE_AUIDIOOUT
 
 struct apb_dma_command_t
 {
@@ -220,6 +223,6 @@ void stmp_audio_init()
 
 }
 
-
+#endif
 
 

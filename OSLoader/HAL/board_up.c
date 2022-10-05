@@ -76,8 +76,9 @@ void boardInit(void)
     rtc_init();
 
     
+#ifdef ENABLE_AUIDIOOUT
     stmp_audio_init();
-
+#endif
 }
 
  

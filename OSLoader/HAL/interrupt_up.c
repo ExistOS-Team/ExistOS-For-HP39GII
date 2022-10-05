@@ -1,8 +1,8 @@
 
 
 #include "interrupt_up.h"
-#include "timer_up.h"
 #include "../debug.h"
+#include "timer_up.h"
 
 #include "hw_irq.h"
 
@@ -29,16 +29,13 @@ void port_LRADC_IRQ(uint32_t ch);
 void portPowerIRQ(uint32_t nirq);
 void portDAC_IRQ(uint32_t IRQn);
 
-void up_isr( void )
-{
+void up_isr(void) {
     IRQTypes IRQType;
     IRQInfo IRQInfo;
 
+    portIRQDecode(&CurrentIRQNumber, &IRQType, &IRQInfo);
 
-    portIRQDecode(&CurrentIRQNumber, &IRQType, &IRQInfo);   
-
-    switch (IRQType)
-    {
+    switch (IRQType) {
     case IRQType_Timer:
         portAckTimerIRQ();
         break;
@@ -63,9 +60,11 @@ void up_isr( void )
     case IRQType_PWR:
         portPowerIRQ(IRQInfo);
         break;
+#ifdef ENABLE_AUIDIOOUT
     case IRQType_DAC:
         portDAC_IRQ(IRQInfo);
         break;
+#endif
     default:
         PANNIC("Unknown IRQ:%d,%d\n", CurrentIRQNumber, IRQInfo);
         break;
@@ -74,9 +73,6 @@ void up_isr( void )
     portAckIRQ(CurrentIRQNumber);
 }
 
-void IRQInit()
-{
+void IRQInit() {
     portIRQCtrlInit();
-
 }
-

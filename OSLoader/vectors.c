@@ -53,8 +53,6 @@ extern bool g_vm_in_pagefault;
 extern TaskHandle_t upSystem;
 extern uint32_t savedBy;
 
-
-
 uint32_t _dump_REGS[16];
 void __dumpRegs() __attribute__((naked));
 void __dumpRegs() {
@@ -79,12 +77,10 @@ extern uint32_t g_latest_key_status;
 extern uint32_t g_core_temp, g_batt_volt, g_core_cur_freq_mhz;
 extern bool vm_in_exception, g_chargeEnable;
 
-
 bool is_pcm_buffer_idle();
 void pcm_buffer_load(void *pcmdat);
 
-void volatile arm_do_swi(uint32_t SWINum, uint32_t *pRegFram)
-{
+void volatile arm_do_swi(uint32_t SWINum, uint32_t *pRegFram) {
 
     LLAPI_CallInfo_t currentCall;
     BaseType_t SwitchContext;
@@ -124,7 +120,7 @@ void volatile arm_do_swi(uint32_t SWINum, uint32_t *pRegFram)
         case LL_FAST_SWI_CORE_TEMP:
             pRegFram[0 + 2] = g_core_temp;
             break;
-            
+
         case LL_FAST_SWI_SYSTEM_IDLE:
             waitIRQ(0);
             break;
@@ -145,23 +141,29 @@ void volatile arm_do_swi(uint32_t SWINum, uint32_t *pRegFram)
             break;
 
         case LL_FAST_SWI_PCM_BUFFER_IS_IDLE:
+            pRegFram[0 + 2] = 1;
+#ifdef ENABLE_AUIDIOOUT
             pRegFram[0 + 2] = is_pcm_buffer_idle();
+#endif
             break;
-        
+
         case LL_FAST_SWI_PCM_BUFFER_PLAY:
+
+#ifdef ENABLE_AUIDIOOUT
             pcm_buffer_load((void *)pRegFram[0 + 2]);
+#endif
             break;
-        
+
         default:
             break;
         }
 
         break;
-        
+
     case 0xAC:
     case 0:
     case 0xEE:
-        //vm_in_exception = true;
+        // vm_in_exception = true;
         currentCall.task = xTaskGetCurrentTaskHandle();
         currentCall.SWINum = SWINum;
         currentCall.para0 = pRegFram[0 + 2];
@@ -177,7 +179,7 @@ void volatile arm_do_swi(uint32_t SWINum, uint32_t *pRegFram)
     }
 }
 
-void volatile arm_vector_swi() __attribute__((naked)) ;
+void volatile arm_vector_swi() __attribute__((naked));
 void volatile arm_vector_swi() {
     __asm volatile("ADD   LR, LR, #4");
     SAVE_CONTEXT();
@@ -222,8 +224,7 @@ void volatile arm_vector_und() {
     portRESTORE_CONTEXT();
 }
 
-void volatile arm_do_dab(uint32_t *context)
-{
+void volatile arm_do_dab(uint32_t *context) {
     __asm volatile("PUSH	{R0}");
     __asm volatile("mrc p15, 0, r0, c6, c0, 0");
     __asm volatile("str r0,%0"
@@ -279,8 +280,7 @@ void volatile arm_vector_dab() {
     portRESTORE_CONTEXT();
 }
 
-void volatile arm_do_pab(uint32_t *context)
-{
+void volatile arm_do_pab(uint32_t *context) {
 
     pageFaultInfo_t FaultInfo;
     FaultInfo.FaultTask = xTaskGetCurrentTaskHandle();
@@ -311,7 +311,6 @@ void volatile arm_vector_pab() {
     portRESTORE_CONTEXT();
 }
 
-
 void volatile arm_vector_fiq() __attribute__((naked));
 void volatile arm_vector_fiq() {
 
@@ -327,7 +326,4 @@ void volatile arm_vector_fiq() {
     printf("ERROR: FIQ Mode Unsupported.\n");
     while (1)
         ;
-
-
-
 }

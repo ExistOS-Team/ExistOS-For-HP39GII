@@ -34,7 +34,11 @@
 
 #if VMRAM_USE_FTL
     #if USE_TINY_PAGE
-        #define NUM_CACHEPAGE             ( 226 ) // 273 * 1 = 273 KB
+        #ifdef ENABLE_AUIDIOOUT
+            #define NUM_CACHEPAGE             ( 200 ) // 273 * 1 = 273 KB
+        #else
+            #define NUM_CACHEPAGE             ( 256 ) // 273 * 1 = 273 KB
+        #endif
     #else
         #define NUM_CACHEPAGE             ( 79 ) // 79 * 4 = 316 KB
     #endif
