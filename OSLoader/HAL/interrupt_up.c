@@ -62,7 +62,7 @@ void up_isr( void )
         portPowerIRQ(IRQInfo);
         break;
     default:
-        PANNIC("Unknown IRQ:%d,%d\n", CurrentIRQNumber, IRQInfo);
+        PANIC("Unknown IRQ:%d,%d\n", CurrentIRQNumber, IRQInfo);
         break;
     }
 
