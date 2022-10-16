@@ -66,7 +66,7 @@ void up_isr(void) {
         break;
 #endif
     default:
-        PANNIC("Unknown IRQ:%d,%d\n", CurrentIRQNumber, IRQInfo);
+        PANIC("Unknown IRQ:%d,%d\n", CurrentIRQNumber, IRQInfo);
         break;
     }
 

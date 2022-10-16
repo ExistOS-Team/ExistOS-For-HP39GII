@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#define PANNIC(...)          \
+#define PANIC(...)          \
     do {                     \
         printf(__VA_ARGS__); \
         while (1)            \
