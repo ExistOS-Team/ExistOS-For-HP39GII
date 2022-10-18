@@ -43,27 +43,15 @@ void portAckTimerIRQ(void)
 
 bool portEnableTimerIRQ(int timer, bool enable)
 {
-    switch (timer)
-    {
-    case HW_IRQ_TIMER0:
+
         BF_CS1n(TIMROT_TIMCTRLn, 0, IRQ_EN, enable);
         portEnableIRQ(HW_IRQ_TIMER0, enable);
         return true;
-    case HW_IRQ_TIMER1:
-        BF_CS1n(TIMROT_TIMCTRLn, 1, IRQ_EN, enable);
-        portEnableIRQ(HW_IRQ_TIMER1, enable);
-        return true;    
-    
-    default:
-        return false;
-    }
 }
 
 bool portEnableTimer(int timer, bool enable)
 {
-    switch (timer)
-    {
-    case HW_IRQ_TIMER0:
+
         if(enable){
             BF_WRn(TIMROT_TIMCOUNTn, 0, FIXED_COUNT, timer0ReloadVal);          
         }else{
@@ -72,37 +60,15 @@ bool portEnableTimer(int timer, bool enable)
         BF_CS1n(TIMROT_TIMCTRLn, 0, RELOAD, enable);
         BF_CS1n(TIMROT_TIMCTRLn, 0, UPDATE, enable);
         return true;
-    case HW_IRQ_TIMER1:
-        if(enable){   
-            BF_CS1n(TIMROT_TIMCOUNTn, 1, FIXED_COUNT, timer1ReloadVal);
-        }else{
-            BF_CS1n(TIMROT_TIMCOUNTn, 1, FIXED_COUNT, 0);
-        }
-        BF_CS1n(TIMROT_TIMCTRLn, 1, RELOAD, enable);
-        BF_CS1n(TIMROT_TIMCTRLn, 1, UPDATE, enable);
-        return true;    
-    
-    default:
-        return false;
-    }
 }
 
 bool portSetTimerPeriod(int timer, unsigned int us)
 {
 
-    switch (timer)
-    {
-    case HW_IRQ_TIMER0:
+
         timer0ReloadVal = us/32;
         return true;
         
-    case HW_IRQ_TIMER1:
-        timer1ReloadVal = us/32;
-        return true;        
-    
-    default:
-        return false;
-    }
 
 }
 

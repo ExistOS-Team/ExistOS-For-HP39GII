@@ -535,9 +535,23 @@ void dcd_disconnect(uint8_t rhport)
     dcd_reg->USBCMD &= ~USBCMD_RUN_STOP;
 }
 
+void dcd_sof_enable(uint8_t rhport, bool en)
+{
+  (void) rhport;
+  (void) en;
+
+  // TODO implement later
+}
+
 //--------------------------------------------------------------------+
 // Endpoint API
 //--------------------------------------------------------------------+
+void dcd_edpt_close_all (uint8_t rhport)
+{
+  (void) rhport;
+  // TODO implement dcd_edpt_close_all()
+}
+
 
 // Configure endpoint's registers according to descriptor
 bool dcd_edpt_open (uint8_t rhport, tusb_desc_endpoint_t const * p_endpoint_desc)
@@ -557,7 +571,7 @@ bool dcd_edpt_open (uint8_t rhport, tusb_desc_endpoint_t const * p_endpoint_desc
     tu_memclr(p_qhd, sizeof(dcd_qhd_t));
 
     p_qhd->zero_length_termination = 1;
-    p_qhd->max_package_size = p_endpoint_desc->wMaxPacketSize.size;
+    p_qhd->max_package_size = p_endpoint_desc->wMaxPacketSize;
     p_qhd->qtd_overlay.next = QTD_NEXT_INVALID;
 
     //CleanInvalidateDCache_by_Addr((uint32_t*) &_dcd_data, sizeof(dcd_data_t));

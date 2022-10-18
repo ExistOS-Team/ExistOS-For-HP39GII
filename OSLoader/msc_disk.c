@@ -30,6 +30,8 @@
 
 #if CFG_TUD_MSC
 
+//#define RAW_FLASH_ACCESS
+
 // Some MCU doesn't have enough 8KB SRAM to store the whole disk
 // We will use Flash as read-only disk with board that has
 // CFG_EXAMPLE_MSC_READONLY defined
@@ -216,8 +218,14 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t *block_count, uint16_t *block_siz
         *block_size = 512;
         break;
     case MSC_CONF_SYS_DATA:
+    #ifndef RAW_FLASH_ACCESS
         *block_count = FTL_GetSectorCount() - FLASH_FTL_DATA_SECTOR;
         *block_size = FTL_GetSectorSize();
+        
+       #else
+        *block_count = 65536;
+        *block_size = 2048;
+    #endif
         break;
     default:
         *block_count = 0;
@@ -277,7 +285,7 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
     (void)lun;
 
     //
-
+    //printf("RD:lba%d, off:%d, len:%d\n",lba, offset, bufsize);
     switch (g_MSC_Configuration) {
     case MSC_CONF_OSLOADER_EDB:
 
@@ -315,12 +323,18 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
     case MSC_CONF_SYS_DATA:
         //printf("RD:lba%d, off:%d, len:%d\n",lba, offset, bufsize);
         {
-            //MTD_ReadPhyPage(lba, offset, bufsize, buffer);
+            //
             if(bufsize <= 2048)
-            {
+            {/*
             FTL_ReadSector(FLASH_FTL_DATA_SECTOR + lba, 1, MSCRBuffer);
             uint8_t const *addr = MSCRBuffer + offset;
-            memcpy(buffer, addr, bufsize);
+            memcpy(buffer, addr, bufsize);*/
+            
+            #ifndef RAW_FLASH_ACCESS
+            FTL_ReadSector(FLASH_FTL_DATA_SECTOR + lba, 1, buffer);
+            #else
+            MTD_ReadPhyPage(lba, offset, bufsize, buffer);
+            #endif
             }else{
                 printf("RD:lba=%ld, off:%ld, len:%ld\n",lba, offset, bufsize);
             }
@@ -360,7 +374,7 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *
     (void)lun;
     //
     //
-
+    //printf("WR:lba%d, off:%d, len:%d\n",lba, offset, bufsize);
     switch (g_MSC_Configuration) {
     case MSC_CONF_OSLOADER_EDB:
 
@@ -375,16 +389,16 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *
         if (binBuf != NULL) {
             // 104 - 167
             if ((lba >= 104) && (lba <= 167)) {
-                memcpy(&binBuf[bufsize * (lba - 104)], buffer, bufsize);
+                memcpy(&binBuf[512 * (lba - 104)], buffer, bufsize);
             }
         }
         break;
 
     case MSC_CONF_SYS_DATA:
         //printf("WR:lba%d, off:%d, len:%d\n",lba, offset, bufsize);
-        // FTL_WriteSector(FLASH_FTL_DATA_SECTOR + lba, 1, buffer);
-        if(bufsize <=  2048)
-        {
+        //FTL_WriteSector(FLASH_FTL_DATA_SECTOR + lba, 1, buffer);
+        if(bufsize ==  2048)
+        {/*
             if (last_lba != lba) {
                 FTL_ReadSector(FLASH_FTL_DATA_SECTOR + lba, 1, MSCWRBuf);
                 last_lba = lba;
@@ -393,7 +407,15 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *
             memcpy(addr, buffer, bufsize);
             if(offset == 1536)
                 FTL_WriteSector(FLASH_FTL_DATA_SECTOR + lba, 1, MSCWRBuf);
-
+                */
+            //MTD_WritePhyPage(lba, buffer);
+            
+            #ifndef RAW_FLASH_ACCESS
+            FTL_WriteSector(FLASH_FTL_DATA_SECTOR + lba, 1, buffer);
+            #else
+            MTD_WritePhyPage(lba, buffer);
+            #endif
+            
         }else{
             printf("RD:lba=%ld, off:%ld, len:%ld\n",lba, offset, bufsize);
         }

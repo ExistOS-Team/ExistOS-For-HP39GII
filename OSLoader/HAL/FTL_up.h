@@ -19,7 +19,7 @@
 #define GOOD_BLOCK          (0xFFFFFFFF)
 
 #define DATA_START_BLOCK    FLASH_DATA_BLOCK
-#define GC_RATIO        10
+#define GC_RATIO        6
 
 typedef enum {
     FTL_SECTOR_READ,

@@ -48,12 +48,12 @@
 #define configUSE_TICK_HOOK				0
 //#define configCPU_CLOCK_HZ				( ( unsigned long ) 24000000 )
 //#define configCPU_PERIPH_HZ				( ( unsigned long ) 12000000 )
-#define configTICK_RATE_HZ				( ( TickType_t ) 1000 )
+#define configTICK_RATE_HZ				( ( TickType_t ) 1500 )
 #define configMAX_PRIORITIES			( 10 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 260 )
 //#define configTOTAL_HEAP_SIZE			( ( size_t ) 52000 )
 #define configMAX_TASK_NAME_LEN			( 16 )
-#define configUSE_TRACE_FACILITY		1
+#define configUSE_TRACE_FACILITY		0
 #define configUSE_16_BIT_TICKS			0
 #define configIDLE_SHOULD_YIELD			1
 #define configUSE_MUTEXES				1
@@ -61,7 +61,7 @@
 
 #define configUSE_TIMERS				1
 #define configTIMER_TASK_PRIORITY       (configMAX_PRIORITIES - 1)
-#define configTIMER_QUEUE_LENGTH        16
+#define configTIMER_QUEUE_LENGTH        4
 #define configTIMER_TASK_STACK_DEPTH    configMINIMAL_STACK_SIZE
 
 #define configCHECK_FOR_STACK_OVERFLOW  0
@@ -108,7 +108,7 @@ to exclude the API function. */
 
 #define INCLUDE_vTaskPrioritySet                1
 #define INCLUDE_uxTaskPriorityGet               0
-#define INCLUDE_vTaskDelete                     1
+#define INCLUDE_vTaskDelete                     0
 #define INCLUDE_vTaskSuspend                    1
 #define INCLUDE_xResumeFromISR                  1
 #define INCLUDE_vTaskDelayUntil                 0
@@ -119,7 +119,7 @@ to exclude the API function. */
 #define INCLUDE_xTaskGetIdleTaskHandle          1
 #define INCLUDE_eTaskGetState                   0
 #define INCLUDE_xEventGroupSetBitFromISR        1
-#define INCLUDE_xTimerPendFunctionCall          1
+#define INCLUDE_xTimerPendFunctionCall          0
 #define INCLUDE_xTaskAbortDelay                 0
 #define INCLUDE_xTaskGetHandle                  1
 #define INCLUDE_xTaskResumeFromISR              1
@@ -129,6 +129,6 @@ to exclude the API function. */
 format the raw data provided by the uxTaskGetSystemState() function in to human
 readable ASCII form.  See the notes in the implementation of vTaskList() within 
 FreeRTOS/Source/tasks.c for limitations. */
-#define configUSE_STATS_FORMATTING_FUNCTIONS	1
+#define configUSE_STATS_FORMATTING_FUNCTIONS	0
 
 #endif /* FREERTOS_CONFIG_H */

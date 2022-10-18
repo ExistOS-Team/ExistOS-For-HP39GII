@@ -27,29 +27,50 @@ include_directories(./Component3rd/dhara)
 #include_directories(./Component3rd/FatFs)
 
 aux_source_directory(.                                  LOADER_SRCS)
-aux_source_directory(./Scheduler                        LOADER_SRCS)
+#aux_source_directory(./Scheduler                        LOADER_SRCS)
 aux_source_directory(./VmMgr                            LOADER_SRCS)
 aux_source_directory(./LowLevelAPI                      LOADER_SRCS)
-aux_source_directory(./Scheduler/porting                LOADER_SRCS)
-aux_source_directory(./HAL                              LOADER_SRCS)
-aux_source_directory(./HAL/Hardware                     LOADER_SRCS)
+#aux_source_directory(./Scheduler/porting                LOADER_SRCS)
+#aux_source_directory(./HAL                              LOADER_SRCS)
+#aux_source_directory(./HAL/Hardware                     LOADER_SRCS)
 
-aux_source_directory(./Component3rd                     LOADER_SRCS)
-aux_source_directory(./Component3rd/tinyusb             LOADER_SRCS)
-aux_source_directory(./Component3rd/tinyusb/device      LOADER_SRCS)
-aux_source_directory(./Component3rd/tinyusb/common      LOADER_SRCS)
-aux_source_directory(./Component3rd/tinyusb/class/cdc   LOADER_SRCS)
-aux_source_directory(./Component3rd/tinyusb/class/msc   LOADER_SRCS)
-aux_source_directory(./Component3rd/tinyusb/class/hid   LOADER_SRCS)
-aux_source_directory(./Component3rd/tinyusb/class/net   LOADER_SRCS)
-aux_source_directory(./Component3rd/tinyusb/class/vendor   LOADER_SRCS)
-aux_source_directory(./Component3rd/dhara               LOADER_SRCS)
+#aux_source_directory(./Component3rd                     LOADER_SRCS)
+#aux_source_directory(./Component3rd/tinyusb             LOADER_SRCS)
+#aux_source_directory(./Component3rd/tinyusb/device      LOADER_SRCS)
+#aux_source_directory(./Component3rd/tinyusb/common      LOADER_SRCS)
+#aux_source_directory(./Component3rd/tinyusb/class/cdc   LOADER_SRCS)
+#aux_source_directory(./Component3rd/tinyusb/class/msc   LOADER_SRCS)
+#aux_source_directory(./Component3rd/tinyusb/class/hid   LOADER_SRCS)
+#aux_source_directory(./Component3rd/tinyusb/class/net   LOADER_SRCS)
+#aux_source_directory(./Component3rd/tinyusb/class/vendor   LOADER_SRCS)
+#aux_source_directory(./Component3rd/dhara               LOADER_SRCS)
 #aux_source_directory(./Component3rd/FatFs               LOADER_SRCS)
 
+add_subdirectory(Component3rd)
+add_subdirectory(HAL)
+add_subdirectory(Scheduler)
 
 add_executable(rom.elf ${LOADER_SRCS})
 
-target_link_libraries(rom.elf PRIVATE -lc_nano -nostartfiles)
+target_compile_options(kernel PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm -Os)
+target_compile_options(hal PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm  -Os )
+target_compile_options(hal_hardware PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
+target_compile_options(tusb PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
+target_compile_options(dhara PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm -O2)
+
+target_link_libraries(
+rom.elf
+kernel
+tusb 
+hal hal_hardware
+dhara
+-lc_nano -nostartfiles)
+
+set_property(TARGET kernel PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+#set_property(TARGET tusb PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+#set_property(TARGET hal PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+#set_property(TARGET hal_hardware PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+#set_property(TARGET dhara PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 target_compile_options(rom.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -marm -Wall
 #-O2
@@ -61,72 +82,6 @@ target_compile_options(rom.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlitt
 -fcommon 
 -finline-functions 
 -finline-small-functions
-
--fauto-inc-dec 
--fcombine-stack-adjustments 
--fcompare-elim 
--fcprop-registers 
--fdce 
--fdefer-pop 
--fdse 
--fforward-propagate 
--fguess-branch-probability 
--fif-conversion 
--fif-conversion2 
--finline-functions-called-once 
--fmerge-constants 
--fmove-loop-invariants 
--fomit-frame-pointer 
--freorder-blocks 
--fshrink-wrap 
--fshrink-wrap-separate 
--fsplit-wide-types 
--fssa-backprop 
--fssa-phiopt 
--ftree-bit-ccp 
--ftree-ccp 
--ftree-ch 
--ftree-coalesce-vars 
--ftree-copy-prop 
--ftree-dce 
--ftree-dominator-opts 
--ftree-dse 
--ftree-forwprop 
--ftree-fre 
--ftree-phiprop 
--ftree-pta 
--ftree-scev-cprop 
--ftree-sink 
--ftree-slsr 
--ftree-sra 
--ftree-ter 
--funit-at-a-time
-
--fcaller-saves 
--fcode-hoisting 
--fcrossjumping 
--fcse-follow-jumps  -fcse-skip-blocks 
--fdelete-null-pointer-checks 
--fdevirtualize  -fdevirtualize-speculatively 
--fexpensive-optimizations 
--ffinite-loops 
-#-finline-functions 
-#-finline-small-functions 
-#-findirect-inlining 
--foptimize-sibling-calls 
--foptimize-strlen 
--fpartial-inlining 
--fpeephole2 
--frerun-cse-after-loop  
--fstore-merging 
--fstrict-aliasing 
--fthread-jumps 
--ftree-builtin-call-dce 
--ftree-loop-vectorize 
--ftree-pre 
--ftree-slp-vectorize 
--ftree-switch-conversion  -ftree-tail-merge 
--ftree-vrp 
 
 )
  

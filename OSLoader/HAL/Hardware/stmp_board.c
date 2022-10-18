@@ -12,9 +12,9 @@
 #include "regsrtc.h"
 #include "regslradc.h"
 
-uint32_t nsToCycles(uint64_t nstime, uint64_t period, uint64_t min) 
+uint64_t nsToCycles(uint64_t nstime, uint64_t period, uint64_t min) 
 {
-    uint32_t k;
+    uint64_t k;
     k = (nstime + period - 1) / period;
     return (k > min) ? k : min;
 }

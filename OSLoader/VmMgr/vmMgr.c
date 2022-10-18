@@ -9,6 +9,7 @@
 #include "../debug.h"
 
 #include "llapi.h"
+#include "llapi_code.h"
 #include "mapList.h"
 #include "mmu.h"
 #include "vmMgr.h"
@@ -332,7 +333,6 @@ void __attribute__((optimize("-O3"))) vmMgr_task() {
                         break;
 
                     case MAP_PART_SYS: {
-#include "llapi_code.h"
                         void vm_set_irq_num(uint32_t IRQNum, uint32_t r1, uint32_t r2, uint32_t r3);
                         void vm_jump_irq();
                         void vm_save_context();
@@ -349,12 +349,14 @@ void __attribute__((optimize("-O3"))) vmMgr_task() {
                     }
 
                     if (ret >= 0) {
+                        
                         mmu_map_page(
                             CachePageCur->mapToVirtAddr,
                             CachePageCur->PageOnPhyAddr,
                             AP_READONLY,
                             VM_CACHE_ENABLE,
                             VM_BUFFER_ENABLE);
+
                         if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_DAB)
                             mmu_clean_invalidated_dcache(CachePageCur->mapToVirtAddr, PAGE_SIZE);
                         if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_PAB)
@@ -431,8 +433,8 @@ void vmMgr_init() {
     // DisplayPutStr(0, 16 * 1, "Waiting for Flash GC...", 0, 255, 16);
     DisplayFillBox(48, 80, 208, 96, 200);
     DisplayFillBox(50, 82, 206, 94, 255);
-    //DisplayFillBox(32, 32, 224, 64, 128);
-    //DisplayPutStr(60, 42, "Wait for Flash GC ", 255, 128, 16);
+    // DisplayFillBox(32, 32, 224, 64, 128);
+    // DisplayPutStr(60, 42, "Wait for Flash GC ", 255, 128, 16);
 
     DisplayFillBox(48, 80, 208, 96, 200);
     DisplayFillBox(50, 82, 206, 94, 255);

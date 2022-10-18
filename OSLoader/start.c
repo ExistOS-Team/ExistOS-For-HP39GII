@@ -160,32 +160,6 @@ void System(void *par) {
     // DisplayPutStr(64, 16 * 2, "System Booting...", 255, 32, 16);
     // DisplayPutStr(64, 16 * 3, "Waiting for Flash GC...", 255, 32, 16);
 
-    if ((*bootAddr != 0xEF5AE0EF) && *(bootAddr + 1) != 0xFECDAFDE) {
-        slowDownEnable(false);
-        // DisplayClean();
-        // DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
-        // DisplayPutStr(0, 16 * 1, "Could not find the System!", 0, 255, 16);
-
-        DisplayFillBox(32, 32, 224, 64, 128);
-        DisplayFillBox(48, 80, 208, 96, 255);
-        DisplayPutStr(54, 42, "No System Installed ", 255, 128, 16);
-
-        for (int i = 16; i >= 0; --i) {
-            DisplayFillBox(115, 76, 141, 128, 255);
-            DisplayFillBox(123, 112 + i, 132, 128 + i, 128);
-            DisplayFillBox(120, 76 + i, 136, 80 + i, 192);
-            DisplayFillBox(115, 80 + i, 141, 112 + i, 0);
-            vTaskDelay(pdMS_TO_TICKS(4 * (16 - i)));
-        }
-
-        g_vm_status = VM_STATUS_SUSPEND;
-        vTaskSuspend(NULL);
-    }
-
-    vTaskPrioritySet(pDispTask, configMAX_PRIORITIES - 5);
-
-    for (int i = 120; i <= 150; ++i)
-        DisplayFillBox(i - 2, 84, i, 92, 72);
 
     vTaskDelay(pdMS_TO_TICKS(100));
     uint32_t k, kp;
@@ -224,6 +198,34 @@ void System(void *par) {
         }
     }
 
+    for (int i = 120; i <= 150; ++i)
+        DisplayFillBox(i - 2, 84, i, 92, 72);
+
+    if ((*bootAddr != 0xEF5AE0EF) && *(bootAddr + 1) != 0xFECDAFDE) {
+        slowDownEnable(false);
+        // DisplayClean();
+        // DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
+        // DisplayPutStr(0, 16 * 1, "Could not find the System!", 0, 255, 16);
+
+        DisplayFillBox(32, 32, 224, 64, 128);
+        DisplayFillBox(48, 80, 208, 96, 255);
+        DisplayPutStr(54, 42, "No System Installed ", 255, 128, 16);
+
+        for (int i = 16; i >= 0; --i) {
+            DisplayFillBox(115, 76, 141, 128, 255);
+            DisplayFillBox(123, 112 + i, 132, 128 + i, 128);
+            DisplayFillBox(120, 76 + i, 136, 80 + i, 192);
+            DisplayFillBox(115, 80 + i, 141, 112 + i, 0);
+            vTaskDelay(pdMS_TO_TICKS(4 * (16 - i)));
+        }
+
+        g_vm_status = VM_STATUS_SUSPEND;
+        vTaskSuspend(NULL);
+    }
+
+
+
+
     for (int i = 150; i <= 180; ++i)
         DisplayFillBox(i - 2, 84, i, 92, 72);
 
@@ -235,6 +237,9 @@ void System(void *par) {
 
     for (int i = 180; i <= 202; ++i)
         DisplayFillBox(i - 2, 84, i, 92, 72);
+
+
+    vTaskPrioritySet(pDispTask, configMAX_PRIORITIES - 5);
 
     __asm volatile("mrs r1,cpsr_all");
     __asm volatile("bic r1,r1,#0x1f");
@@ -274,6 +279,7 @@ void VMSuspend() {
         LLIRQ_ClearIRQs();
 
         g_vm_status = VM_STATUS_SUSPEND;
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
@@ -292,55 +298,7 @@ void VMResume() {
     }
 }
 
-void VMCheckStatus() {
 
-    uint32_t *pRegFram = (uint32_t *)(((uint32_t *)pSysTask)[1]);
-    pRegFram -= 16;
-
-    INFO("VM CPSR:%08lx\n", pRegFram[-1]);
-    for (int i = 0; i < 16; i++) {
-        INFO("VM REG[%d]:%08lx\n", i, pRegFram[i]);
-    }
-}
-
-uint32_t sys_intStack;
-
-extern bool g_llapi_fin;
-void VMReset() {
-    static bool in = false;
-
-    if (pSysTask && pLLAPITask && pLLIRQTask && (in == false)) {
-        in = true;
-
-        while (eTaskStateGet(pSysTask) != eReady) {
-            vTaskDelay(10);
-        }
-
-        vTaskSuspend(pSysTask);
-        LLIRQ_enable(false);
-        vTaskDelay(pdMS_TO_TICKS(100));
-
-        vmMgr_ReleaseAllPage();
-
-        taskENTER_CRITICAL();
-
-        uint32_t *pRegFram = (uint32_t *)(((uint32_t *)pSysTask)[1]);
-        pRegFram -= 16;
-
-        pRegFram[-1] = 0x1F;
-        pRegFram[13] = sys_intStack;
-        pRegFram[15] = ((uint32_t)System) + 4;
-
-        taskEXIT_CRITICAL();
-        LLIRQ_ClearIRQs();
-        vTaskDelay(pdMS_TO_TICKS(100));
-
-        vTaskResume(pSysTask);
-        vTaskResume(pLLIRQTask);
-        vTaskResume(pLLAPITask);
-        in = false;
-    }
-}
 
 void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
     char buf[64];
@@ -412,8 +370,6 @@ void parseCDCCommand(char *cmd) {
         printf("CDC PING\n");
         MscSetCmd("PONG\n");
 
-        tud_cdc_write_str("PONG\n");
-        tud_cdc_write_flush();
         return;
     }
 
@@ -427,8 +383,7 @@ void parseCDCCommand(char *cmd) {
         printf("REC DATA BUF.\n");
         memset(binBuf, 0xFF, CDC_BINMODE_BUFSIZE);
         MscSetCmd("READY\n");
-        tud_cdc_write_str("READY\n");
-        tud_cdc_write_flush();
+
         return;
     }
 
@@ -443,8 +398,7 @@ void parseCDCCommand(char *cmd) {
         // printf("CHKSUM:%02x\n", chk);
         sprintf(res, "CHKSUM:%02x\n", chk);
         MscSetCmd(res);
-        tud_cdc_write_str(res);
-        tud_cdc_write_flush();
+        
         return;
     }
 
@@ -456,8 +410,8 @@ void parseCDCCommand(char *cmd) {
         MTD_ErasePhyBlock(erase_blk);
 
         MscSetCmd("EROK\n");
-        tud_cdc_write_str("EROK\n");
-        tud_cdc_write_flush();
+        
+
         return;
     }
 
@@ -491,8 +445,7 @@ void parseCDCCommand(char *cmd) {
         }
 
         MscSetCmd("PGOK\n");
-        tud_cdc_write_str("PGOK\n");
-        tud_cdc_write_flush();
+        
         return;
     }
 
@@ -502,42 +455,11 @@ void parseCDCCommand(char *cmd) {
         printf("MKNCB:%ld,%ld\n", stblock, pages);
         mkSTMPNandStructure(stblock, pages);
         MscSetCmd("MKOK\n");
-        tud_cdc_write_str("MKOK\n");
-        tud_cdc_write_flush();
+        
         return;
     }
 
-    if (strcmp(cmd, "FINOPA") == 0) {
 
-        return;
-    }
-
-    if (strcmp(cmd, "VMSUSPEND") == 0) {
-        vTaskSuspend(pBattmon);
-        VMSuspend();
-        vTaskDelay(pdMS_TO_TICKS(30));
-        return;
-    }
-
-    if (strcmp(cmd, "VMRESUME") == 0) {
-        vTaskResume(pBattmon);
-        VMResume();
-        vTaskDelay(pdMS_TO_TICKS(30));
-        return;
-    }
-
-    if (strcmp(cmd, "VMRESET") == 0) {
-        vm_needto_reset = true;
-        // vTaskDelay(pdMS_TO_TICKS(30));
-        VMReset();
-        vTaskDelay(pdMS_TO_TICKS(30));
-        return;
-    }
-
-    if (strcmp(cmd, "VMCHKS") == 0) {
-        VMCheckStatus();
-        return;
-    }
 
     if (strcmp(cmd, "REBOOT") == 0) {
         portBoardReset();
@@ -588,11 +510,6 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
             // tud_cdc_write_flush();
         }
         break;
-    case 115200:
-        printf("CDC EDB PATH\n");
-        g_CDC_TransTo = CDC_PATH_EDB;
-        tud_cdc_write_flush();
-        break;
     case 9600:
         printf("CDC SYS PATH\n");
         g_CDC_TransTo = CDC_PATH_SYS;
@@ -619,7 +536,6 @@ char cdc_path_loader_buffer[64];
 // Invoked when CDC interface received data from host
 void tud_cdc_rx_cb(uint8_t itf) {
     (void)itf;
-    int32_t c = 0;
     int32_t nRead;
 
     if (g_CDC_TransTo == CDC_PATH_SYS) {
@@ -657,46 +573,6 @@ void tud_cdc_rx_cb(uint8_t itf) {
         tud_cdc_read_flush();
     }
 
-    if (g_CDC_TransTo == CDC_PATH_EDB) {
-        if (transBinMode && binBuf) {
-            if (cdcBlockCnt < CDC_BINMODE_BUFSIZE) {
-                nRead = tud_cdc_available();
-                // printf("nread:%d\n",nRead);
-                tud_cdc_read(&binBuf[cdcBlockCnt], CDC_BINMODE_BUFSIZE);
-                cdcBlockCnt += nRead;
-
-            } else {
-                tud_cdc_read_flush();
-            }
-        } else {
-            char bufline[32];
-            int bufcnt = 0;
-            memset(bufline, 0, 32);
-            nRead = tud_cdc_available();
-            while (nRead--) {
-                c = tud_cdc_read_char();
-                if (c != -1) {
-                    switch (c) {
-                    case '\n':
-                        bufline[bufcnt] = 0;
-                        printf("CMD:%s\n", bufline);
-                        parseCDCCommand(bufline);
-
-                        bufcnt = 0;
-                        break;
-
-                    default:
-                        if (bufcnt < 32) {
-                            bufline[bufcnt++] = c;
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-
-        tud_cdc_read_flush();
-    }
 }
 
 static bool eraseDataMenu = false;
@@ -707,7 +583,7 @@ void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters
 
     // vTaskDelay(pdMS_TO_TICKS(100));
     setHCLKDivider(2);
-    setCPUDivider(4);
+    setCPUDivider(2);
 
     // portLRADCEnable(1, 7);
     //  MTD_EraseAllBLock();
@@ -754,10 +630,6 @@ void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters
             portDispSetContrast(g_lcd_contrast);
         }
 
-        if (vm_needto_reset) {
-            vm_needto_reset = false;
-            VMReset();
-        }
 
         if (eraseDataMenu) {
 
@@ -1053,13 +925,13 @@ void TaskUSBLog(void *_) {
                         log_j += ava;
                     }
 
-                    vTaskDelay(pdMS_TO_TICKS(100));
+                    vTaskDelay(pdMS_TO_TICKS(200));
                     goto retest;
                 }
             }
         }
 
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(200));
     }
 }
 extern bool g_slowdown_enable;
@@ -1085,14 +957,14 @@ void vApplicationIdleHook(void) {
 extern int bootTimes;
 volatile void _startup() {
 
-    printf("Starting.(rebootTimes: %d)\n", bootTimes);
+    printf("OSLoader starting...\nreboot count: %d\n", bootTimes);
 
     get_cpu_info();
 
     boardInit();
     printf("booting .....\n");
-    xTaskCreate(vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
 
+    xTaskCreate(vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
     xTaskCreate(vMTDSvc, "MTD Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, NULL);
     xTaskCreate(vFTLSvc, "FTL Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 3, NULL);
     xTaskCreate(vDispSvc, "Display Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pDispTask);
@@ -1104,14 +976,13 @@ volatile void _startup() {
 
     xTaskCreate(vLLAPISvc, "LLAPI Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 5, &pLLAPITask);
     xTaskCreate(LLIRQ_task, "LLIRQ Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 6, &pLLIRQTask);
-    xTaskCreate(LLIO_ScanTask, "LLIO Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 6, &pLLIOTask);
+    //xTaskCreate(LLIO_ScanTask, "LLIO Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 6, &pLLIOTask);
 
     xTaskCreate(System, "System", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 7, &pSysTask);
 
     xTaskCreate(vBatteryMon, "Battery Mon", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pBattmon);
     xTaskCreate(vMainThread, "Main Thread", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
 
-    sys_intStack = (uint32_t)(((uint32_t *)pSysTask)[0]);
     // pSysTask = xTaskCreateStatic( (TaskFunction_t)0x00100000, "System", VM_RAM_SIZE, NULL, 1, VM_RAM_BASE, pvPortMalloc(sizeof(StaticTask_t)));
 
     // vTaskSuspend(pSysTask);

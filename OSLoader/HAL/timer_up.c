@@ -8,8 +8,6 @@
 
 //volatile unsigned long ulHighFrequencyTimerTicks;
 
-uint32_t g_tick_cnt = 0;
-
 int LFTimer = -1;
 
 
@@ -32,7 +30,6 @@ bool up_TimerSetup( void ){
 
 void up_TimerTick()
 {
-    g_tick_cnt++;
     
     if( xTaskIncrementTick() != pdFALSE )
 	{	

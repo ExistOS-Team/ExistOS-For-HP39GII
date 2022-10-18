@@ -148,7 +148,7 @@ void tickTimer(TimerHandle_t xTimer) {
         }
     }
 }
-
+/*
 void LLIO_ScanTask(void *pvParameters) {
     uint32_t val;
     LLIRQ_Info_t curIRQ;
@@ -168,7 +168,7 @@ void LLIO_ScanTask(void *pvParameters) {
         }
     }
 }
-
+*/
 void LLIO_NotifySerialRxAvailable() {
     LLIRQ_Info_t curIRQ;
     if (vm_serial_enable && vm_enable_irq) {
@@ -231,12 +231,12 @@ void LLIRQ_task(void *pvParameters) {
             }*/
 
             do{
-                vTaskDelay(10);
+                vTaskDelay(2);
             }while(
                 (g_vm_in_pagefault) ||
                 (vm_enable_irq == false) ||
-                vm_in_exception ||
-                (eTaskStateGet(vm_sys) != eReady)
+                vm_in_exception /*||
+                (eTaskStateGet(vm_sys) != eReady)*/
             );
 
             

@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 
-
+/*
 volatile uint32_t isIRQAllowed()
 {
     register uint32_t ret;
@@ -111,4 +111,4 @@ void dbg_printf(char *fmt, ...)
     va_end(args);
 }
 
-
+*/
