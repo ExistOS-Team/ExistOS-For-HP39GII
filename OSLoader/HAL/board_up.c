@@ -52,7 +52,7 @@ bool driverWaitFalseF(bool (*f)(), TickType_t timeout)
     return false;
 }
 
-volatile void boardInit(void)
+void boardInit(void)
 {
     INFO("portBoardInit\n");
     
@@ -74,8 +74,11 @@ volatile void boardInit(void)
 
     
     rtc_init();
-    
 
+    
+#ifdef ENABLE_AUIDIOOUT
+    stmp_audio_init();
+#endif
 }
 
  

@@ -74,6 +74,9 @@ DECDEF_LLSWI(uint32_t,     ll_rtc_get_sec,              (void)                  
 DECDEF_LLSWI(void,         ll_rtc_set_sec,              (uint32_t val)                          ,LL_FAST_SWI_RTC_SET_SEC                );
 
 
+DECDEF_LLSWI(uint32_t,     ll_pcm_buffer_idle,              (void)                                   ,LL_FAST_SWI_PCM_BUFFER_IS_IDLE            );
+DECDEF_LLSWI(void,         ll_pcm_buffer_load,              (uint32_t addr)                          ,LL_FAST_SWI_PCM_BUFFER_PLAY               );
+
 DECDEF_LLSWI(uint32_t,     ll_system_idle,              (void)                                  ,LL_FAST_SWI_SYSTEM_IDLE                );
 
 

@@ -74,6 +74,12 @@
 #define LL_SWI_SLOW_DOWN_ENABLE              (LL_SWI_BASE + 84)
 #define LL_SWI_SLOW_DOWN_MINFRAC              (LL_SWI_BASE + 85)
 
+
+
+#define LL_FAST_SWI_PCM_BUFFER_IS_IDLE        (LL_FAST_SWI_BASE + 90)
+#define LL_FAST_SWI_PCM_BUFFER_PLAY           (LL_FAST_SWI_BASE + 91)
+
+
 #define LL_IRQ_SERIAL                  (0)
 #define LL_IRQ_KEYBOARD                (1)
 #define LL_IRQ_TIMER                   (2)

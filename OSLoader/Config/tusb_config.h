@@ -38,7 +38,7 @@
 #ifndef CFG_TUSB_MCU
   #error CFG_TUSB_MCU must be defined
 #endif
-
+#define TUP_DCD_ENDPOINT_MAX 5
 // RHPort number used for device can be defined by board.mk, default to port 0
 #ifndef BOARD_DEVICE_RHPORT_NUM
   #define BOARD_DEVICE_RHPORT_NUM     0
@@ -101,17 +101,14 @@
 #define CFG_TUD_HID              0
 #define CFG_TUD_MIDI             0
 #define CFG_TUD_VENDOR           0
-#define CFG_TUD_NET              0
+#define CFG_TUD_ECM_RNDIS        0
 
 // CDC FIFO size of TX and RX
 #define CFG_TUD_CDC_RX_BUFSIZE   (TUD_OPT_HIGH_SPEED ? 512 : 64)
 #define CFG_TUD_CDC_TX_BUFSIZE   (TUD_OPT_HIGH_SPEED ? 512 : 64)
 
-#define CFG_TUD_VENDOR_RX_BUFSIZE 2048
-#define CFG_TUD_VENDOR_TX_BUFSIZE 2048
-
 // MSC Buffer size of Device Mass storage
-#define CFG_TUD_MSC_EP_BUFSIZE   512
+#define CFG_TUD_MSC_EP_BUFSIZE   2048
 
 #ifdef __cplusplus
  }

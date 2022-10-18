@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include "FreeRTOS.h"
 
-uint32_t nsToCycles(uint64_t nstime, uint64_t period, uint64_t min) ;
+uint64_t nsToCycles(uint64_t nstime, uint64_t period, uint64_t min) ;
 
 bool driverWaitTrueF(bool (*f)(), TickType_t timeout);
 bool driverWaitFalseF(bool (*f)(), TickType_t timeout);
@@ -43,5 +43,9 @@ void enterSlowDown();
 void exitSlowDown();
 void slowDownEnable(bool enable);
 void setSlowDownMinCpuFrac(uint8_t frac);
+
+void stmp_audio_init();
+void pcm_play();
+
 
 #endif

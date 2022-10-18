@@ -9,7 +9,7 @@
 
 static QueueHandle_t MTD_Operates_Queue;
 //static EventGroupHandle_t MTDLockEventGroup;
-static EventGroupHandle_t MTDDriverOpaDone;
+//static EventGroupHandle_t MTDDriverOpaDone;
 
 static mtdInfo_t mtdinfo;
 static MTD_Operates curOpa;
@@ -62,7 +62,7 @@ bool MTD_upOpaFin(uint32_t eccResult)
 }
 
 uint32_t retry_cnt;
-void __attribute__((optimize("-O3")))  MTD_Task()
+void MTD_Task()
 {
     //vTaskDelay(pdMS_TO_TICKS(1000));
     while(1){
@@ -336,7 +336,7 @@ int MTD_ReadPhyPage(uint32_t page, uint32_t offset, uint32_t len, uint8_t *buffe
     newOpa.task = xTaskGetCurrentTaskHandle();
 
 
-    if((offset != 0) || (len != mtdinfo.PageSize_B) || (((uint32_t)buffer % 4) != 0)){
+    if((offset != 0) || (len != mtdinfo.PageSize_B) || (((uint32_t)buffer & 3) != 0)){
         newOpa.needToMoveData = true;
     }
     if(buffer == NULL){
@@ -344,7 +344,7 @@ int MTD_ReadPhyPage(uint32_t page, uint32_t offset, uint32_t len, uint8_t *buffe
     }
     while (!deviceInited)
     {
-        portYIELD();
+        vTaskDelay(2);
     }
     MTD_INFO("POST READ CMD, queue num:%lx\n",uxQueueGetQueueNumber(MTD_Operates_Queue));
     
@@ -379,7 +379,7 @@ int MTD_WritePhyPage(uint32_t page,uint8_t *buffer)
         INFO("Data is not loaded in RAM.\n");
     }
     */
-    if(((uint32_t)buffer) % 4)
+    if(((uint32_t)buffer) & 0x3)
     {
         newOpa.needToMoveData = true;
     }
@@ -425,7 +425,7 @@ int MTD_ErasePhyBlock(uint32_t block)
     newOpa.task = xTaskGetCurrentTaskHandle();
     while (!deviceInited)
     {
-        portYIELD();
+        vTaskDelay(2);
     }
     
     g_mtd_erase_cnt++;
@@ -473,9 +473,10 @@ int MTD_ReadPhyPageMeta(uint32_t page, uint32_t len, uint8_t *buffer)
     newOpa.needToMoveData = false;
     newOpa.task = xTaskGetCurrentTaskHandle();
 
+    g_mtd_read_cnt++;
     while (!deviceInited)
     {
-        portYIELD();
+        vTaskDelay(2);
     }
     xTaskNotifyStateClear(NULL);
     xQueueSend(MTD_Operates_Queue, &newOpa, portMAX_DELAY);
@@ -505,7 +506,7 @@ int MTD_WritePhyPageMeta(uint32_t page, uint32_t len, uint8_t *buffer)
 
     while (!deviceInited)
     {
-        portYIELD();
+        vTaskDelay(2);
     }
     xQueueSend(MTD_Operates_Queue, &newOpa, portMAX_DELAY);
 
@@ -532,14 +533,16 @@ int MTD_WritePhyPageWithMeta(uint32_t page, uint32_t meta_len, uint8_t *buffer, 
     //newOpa.StatusBuf = MTD_GetStatusBuf();
     newOpa.task = xTaskGetCurrentTaskHandle();
 
-    if(((uint32_t)buffer) % 4)
+    if(((uint32_t)buffer) & 3)
     {
         newOpa.needToMoveData = true;
     }
 
+    g_mtd_write_cnt++;
+
     while (!deviceInited)
     {
-        portYIELD();
+        vTaskDelay(2);
     }
     xTaskNotifyStateClear(NULL);
     xQueueSend(MTD_Operates_Queue, &newOpa, portMAX_DELAY);
@@ -572,11 +575,14 @@ int MTD_CopyPhyPage(uint32_t srcPage, uint32_t dstPage)
 
     while (!deviceInited)
     {
-        portYIELD();
+        vTaskDelay(2);
     }
 
     xTaskNotifyStateClear(NULL);
     xQueueSend(MTD_Operates_Queue, &newOpa, portMAX_DELAY);
+
+    g_mtd_read_cnt++;
+    g_mtd_write_cnt++;
 /*
     xEventGroupWaitBits(MTDLockEventGroup, (1 << newOpa.BLock), pdTRUE, pdFALSE, portMAX_DELAY);
     retVal = *newOpa.StatusBuf;
@@ -596,7 +602,7 @@ void MTD_DeviceInit()
 
     
     //MTDLockEventGroup = xEventGroupCreate();
-    MTDDriverOpaDone = xEventGroupCreate();
+//    MTDDriverOpaDone = xEventGroupCreate();
 /*
     MTDLockBit = 0;
     for(int i=0; i<(sizeof(MTDStatusBuf) / sizeof(int32_t)); i++){

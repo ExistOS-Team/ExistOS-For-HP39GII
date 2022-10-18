@@ -254,12 +254,12 @@ void DisplayCircle(uint32_t x0, uint32_t y0, uint32_t r, uint8_t c, bool isFill)
     xQueueSend(DisplayOpaQueue, &opa, portMAX_DELAY);
 }
 */
-
+/*
 bool DisplayOperatesFin() {
     uint32_t len = uxQueueGetQueueNumber((QueueHandle_t)&DisplayOpaQueue);
     // printf("Qlen:%d\n",len);
     return len == 0;
-}
+}*/
 
 void DisplaySetIndicate(int Indicate, int batInd) {
     DispIndicatorBit = Indicate;

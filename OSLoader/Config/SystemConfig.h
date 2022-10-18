@@ -6,11 +6,10 @@
 #define MEMORY_BASE     (0)
 #define MEMORY_SIZE     (512*1024)
 
-#define SYS_LOG_BUFSIZE    (4096)
+#define SYS_LOG_BUFSIZE    (512)
 #define CDC_PATH_LOADER  0
 #define CDC_PATH_SYS     1
-#define CDC_PATH_EDB     2
-#define CDC_PATH_SCRCAP  3
+#define CDC_PATH_SCRCAP  2
 
 
 #define ABT_STACK_ADDR      (MEMORY_BASE + MEMORY_SIZE - 4)
@@ -23,8 +22,6 @@
 
 #define HEAP_END        (SYS_STACK_ADDR - 0x200)
 
-// DATA   SYS   SWAP
-//#define DISK_PARTITION      {80, 15, 5, 0}
 
 #define USE_TINY_PAGE       (1)
 #define VMRAM_USE_FTL       (1)
@@ -34,7 +31,11 @@
 
 #if VMRAM_USE_FTL
     #if USE_TINY_PAGE
-        #define NUM_CACHEPAGE             ( 256 ) // 273 * 1 = 273 KB
+        #ifdef ENABLE_AUIDIOOUT
+            #define NUM_CACHEPAGE             ( 200 ) // 273 * 1 = 273 KB
+        #else
+            #define NUM_CACHEPAGE             ( 260 ) // 273 * 1 = 273 KB
+        #endif
     #else
         #define NUM_CACHEPAGE             ( 79 ) // 79 * 4 = 316 KB
     #endif

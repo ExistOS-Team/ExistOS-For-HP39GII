@@ -134,14 +134,6 @@ typedef union
         unsigned CH5_CMDCMPLT_IRQ      :  1;
         unsigned CH6_CMDCMPLT_IRQ      :  1;
         unsigned CH7_CMDCMPLT_IRQ      :  1;
-        unsigned CH8_CMDCMPLT_IRQ      :  1;
-        unsigned CH9_CMDCMPLT_IRQ      :  1;
-        unsigned CH10_CMDCMPLT_IRQ     :  1;
-        unsigned CH11_CMDCMPLT_IRQ     :  1;
-        unsigned CH12_CMDCMPLT_IRQ     :  1;
-        unsigned CH13_CMDCMPLT_IRQ     :  1;
-        unsigned CH14_CMDCMPLT_IRQ     :  1;
-        unsigned CH15_CMDCMPLT_IRQ     :  1;
         unsigned CH0_CMDCMPLT_IRQ_EN   :  1;
         unsigned CH1_CMDCMPLT_IRQ_EN   :  1;
         unsigned CH2_CMDCMPLT_IRQ_EN   :  1;
@@ -150,14 +142,16 @@ typedef union
         unsigned CH5_CMDCMPLT_IRQ_EN   :  1;
         unsigned CH6_CMDCMPLT_IRQ_EN   :  1;
         unsigned CH7_CMDCMPLT_IRQ_EN   :  1;
-        unsigned CH8_CMDCMPLT_IRQ_EN   :  1;
-        unsigned CH9_CMDCMPLT_IRQ_EN   :  1;
-        unsigned CH10_CMDCMPLT_IRQ_EN  :  1;
-        unsigned CH11_CMDCMPLT_IRQ_EN  :  1;
-        unsigned CH12_CMDCMPLT_IRQ_EN  :  1;
-        unsigned CH13_CMDCMPLT_IRQ_EN  :  1;
-        unsigned CH14_CMDCMPLT_IRQ_EN  :  1;
-        unsigned CH15_CMDCMPLT_IRQ_EN  :  1;
+        
+        unsigned CH0_ERROR_IRQ      :  1;
+        unsigned CH1_ERROR_IRQ      :  1;
+        unsigned CH2_ERROR_IRQ      :  1;
+        unsigned CH3_ERROR_IRQ      :  1;
+        unsigned CH4_ERROR_IRQ      :  1;
+        unsigned CH5_ERROR_IRQ      :  1;
+        unsigned CH6_ERROR_IRQ      :  1;
+        unsigned CH7_ERROR_IRQ      :  1;
+
     } B;
 } hw_apbx_ctrl1_t;
 #endif
@@ -1252,7 +1246,7 @@ typedef union
 //
 
 #define HW_APBX_CHn_CURCMDAR_COUNT        16
-#define HW_APBX_CHn_CURCMDAR_ADDR(n)      (REGS_APBX_BASE + 0x00000100 + ((n) * 0x70))
+#define HW_APBX_CHn_CURCMDAR_ADDR(n)      (REGS_APBX_BASE + 0x00000040 + ((n) * 0x70))
 
 #ifndef __LANGUAGE_ASM__
 #define HW_APBX_CHn_CURCMDAR(n)           (*(volatile hw_apbx_chn_curcmdar_t *) HW_APBX_CHn_CURCMDAR_ADDR(n))
@@ -1297,7 +1291,7 @@ typedef union
 //
 
 #define HW_APBX_CHn_NXTCMDAR_COUNT        16
-#define HW_APBX_CHn_NXTCMDAR_ADDR(n)      (REGS_APBX_BASE + 0x00000110 + ((n) * 0x70))
+#define HW_APBX_CHn_NXTCMDAR_ADDR(n)      (REGS_APBX_BASE + 0x00000050 + ((n) * 0x70))
 
 #ifndef __LANGUAGE_ASM__
 #define HW_APBX_CHn_NXTCMDAR(n)           (*(volatile hw_apbx_chn_nxtcmdar_t *) HW_APBX_CHn_NXTCMDAR_ADDR(n))
@@ -1359,7 +1353,7 @@ typedef union
 //
 
 #define HW_APBX_CHn_CMD_COUNT        16
-#define HW_APBX_CHn_CMD_ADDR(n)      (REGS_APBX_BASE + 0x00000120 + ((n) * 0x70))
+#define HW_APBX_CHn_CMD_ADDR(n)      (REGS_APBX_BASE + 0x00000060 + ((n) * 0x70))
 
 #ifndef __LANGUAGE_ASM__
 #define HW_APBX_CHn_CMD(n)           (*(volatile hw_apbx_chn_cmd_t *) HW_APBX_CHn_CMD_ADDR(n))
@@ -1457,7 +1451,7 @@ typedef union
 //
 
 #define HW_APBX_CHn_BAR_COUNT        16
-#define HW_APBX_CHn_BAR_ADDR(n)      (REGS_APBX_BASE + 0x00000130 + ((n) * 0x70))
+#define HW_APBX_CHn_BAR_ADDR(n)      (REGS_APBX_BASE + 0x00000070 + ((n) * 0x70))
 
 #ifndef __LANGUAGE_ASM__
 #define HW_APBX_CHn_BAR(n)           (*(volatile hw_apbx_chn_bar_t *) HW_APBX_CHn_BAR_ADDR(n))
@@ -1505,7 +1499,7 @@ typedef union
 //
 
 #define HW_APBX_CHn_SEMA_COUNT        16
-#define HW_APBX_CHn_SEMA_ADDR(n)      (REGS_APBX_BASE + 0x00000140 + ((n) * 0x70))
+#define HW_APBX_CHn_SEMA_ADDR(n)      (REGS_APBX_BASE + 0x00000080 + ((n) * 0x70))
 
 #ifndef __LANGUAGE_ASM__
 #define HW_APBX_CHn_SEMA(n)           (*(volatile hw_apbx_chn_sema_t *) HW_APBX_CHn_SEMA_ADDR(n))
@@ -1572,7 +1566,7 @@ typedef union
 //
 
 #define HW_APBX_CHn_DEBUG1_COUNT        16
-#define HW_APBX_CHn_DEBUG1_ADDR(n)      (REGS_APBX_BASE + 0x00000150 + ((n) * 0x70))
+#define HW_APBX_CHn_DEBUG1_ADDR(n)      (REGS_APBX_BASE + 0x00000090 + ((n) * 0x70))
 
 #ifndef __LANGUAGE_ASM__
 #define HW_APBX_CHn_DEBUG1(n)           (*(volatile hw_apbx_chn_debug1_t *) HW_APBX_CHn_DEBUG1_ADDR(n))
@@ -1699,7 +1693,7 @@ typedef union
 //
 
 #define HW_APBX_CHn_DEBUG2_COUNT        16
-#define HW_APBX_CHn_DEBUG2_ADDR(n)      (REGS_APBX_BASE + 0x00000160 + ((n) * 0x70))
+#define HW_APBX_CHn_DEBUG2_ADDR(n)      (REGS_APBX_BASE + 0x000000A0 + ((n) * 0x70))
 
 #ifndef __LANGUAGE_ASM__
 #define HW_APBX_CHn_DEBUG2(n)           (*(volatile hw_apbx_chn_debug2_t *) HW_APBX_CHn_DEBUG2_ADDR(n))

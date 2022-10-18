@@ -9,6 +9,12 @@ static uint8_t CopyBuffer[2048] __attribute__((aligned(4)));
 
 static struct dhara_nand nandDevice;
 static struct dhara_map FTLmap;
+//#define PR_FTL_TIMING_STATUS
+#ifdef PR_FTL_TIMING_STATUS
+#include "regsdigctl.h"
+static uint32_t ftl_rdt;
+static uint32_t ftl_wrt;
+#endif
 
 PartitionInfo_t *PartitionInfo;
 
@@ -239,7 +245,13 @@ void FTL_task() {
             switch (curOpa.opa) {
             case FTL_SECTOR_READ:
                 for (int i = 0; i < curOpa.num; i++) {
+                    #ifdef PR_FTL_TIMING_STATUS
+                    ftl_rdt = HW_DIGCTL_MICROSECONDS_RD();
+                    #endif
                     ret = dhara_map_read(&FTLmap, curOpa.sector++, curOpa.buf, &err);
+                    #ifdef PR_FTL_TIMING_STATUS
+                    INFO("frd=%ld\n",HW_DIGCTL_MICROSECONDS_RD() - ftl_rdt);
+                    #endif
                     curOpa.buf += pMtdinfo->PageSize_B;
                     if (ret) {
                         FTL_WARN("FTL READ FAIL:%d,%s\n", ret, dhara_strerror(err));
@@ -252,7 +264,13 @@ void FTL_task() {
 
             case FTL_SECTOR_WRITE:
                 for (int i = 0; i < curOpa.num; i++) {
+                    #ifdef PR_FTL_TIMING_STATUS
+                    ftl_wrt = HW_DIGCTL_MICROSECONDS_RD();
+                    #endif
                     ret = dhara_map_write(&FTLmap, curOpa.sector++, curOpa.buf, &err);
+                    #ifdef PR_FTL_TIMING_STATUS
+                    INFO("fwr=%ld\n",HW_DIGCTL_MICROSECONDS_RD() - ftl_wrt);
+                    #endif
                     curOpa.buf += pMtdinfo->PageSize_B;
                     if (ret) {
                         FTL_WARN("FTL WRITE FAIL:%d,%s\n", ret, dhara_strerror(err));

@@ -58,10 +58,10 @@ typedef struct GPMI_Timing_t {
 
 static struct GPMI_Timing_t defaultTiming =
 {
-        .DataSetup_ns = 12 + 2,
+        .DataSetup_ns = 6 + 2,
         .DataHold_ns = 5 + 2,
-        .AddressSetup_ns = 12 + 2,
-        .SampleDelay_cyc = 0.0,
+        .AddressSetup_ns = 6 + 2,
+        .SampleDelay_cyc = 3.0,
         .tREAD_us = 7,
         .tPROG_us = 15,
         .tBERS_us = 2000
@@ -89,8 +89,8 @@ static uint32_t FlashSendParaBuffer[4];
 static uint32_t FlashRecCommandBuffer[4];
 static uint32_t  ECCResult;
 
-static uint32_t GPMI_AuxiliaryBuffer[ 512 / 4 ] __attribute__((aligned(4)));
 static uint32_t GPMI_DataBuffer[ 2048 / 4 ] __attribute__((aligned(4)));
+static uint32_t GPMI_AuxiliaryBuffer[ 512 / 4 ] __attribute__((aligned(4)));
 
 static uint32_t ReserveBlock[32];
 
@@ -105,7 +105,11 @@ static uint32_t LastProgTime = 0;
 static uint32_t LastEraseTime = 0;
 static uint32_t LastReadTime = 0;
 static uint32_t LastOpa = 0;
-
+//#define PR_NAND_WR_TIMING_STATUS
+#ifdef PR_NAND_WR_TIMING_STATUS
+static uint32_t pgwdt;
+static uint32_t pgrdt;
+#endif
 static void GPMI_EnableDMAChannel(bool enable)
 {
     if(enable){
@@ -123,14 +127,21 @@ static void GPMI_ResetDMAChannel()
 static void GPMI_SetAccessTiming(GPMI_Timing_t timing)
 {
 
-    DeviceTimeOutCycles = nsToCycles(80000000, 1000000000UL / (GPMIFreq / 4096UL), 0);  //80ms
+    uint32_t dh,ds,as;
+    DeviceTimeOutCycles = nsToCycles(80000000, 1000000000ULL / (GPMIFreq / 4096ULL), 0);  //80ms
     //DeviceTimeOutCycles = 0xFFFF;
-
+    ds = nsToCycles(timing.DataSetup_ns, 1000000000ULL / GPMIFreq, 1);
+    dh = nsToCycles(timing.DataHold_ns, 1000000000ULL / GPMIFreq, 1);
+    as = nsToCycles(timing.DataSetup_ns, 1000000000ULL / GPMIFreq, 0);
+    INFO("DATA_SETUP:%ld\n", ds);
+    INFO("DATA_HOLD:%ld\n", dh);
+    INFO("ADDRESS_SETUP:%ld\n", as);
+    
     BF_CS3(
         GPMI_TIMING0,
-        DATA_SETUP, nsToCycles(timing.DataSetup_ns, 1000000000UL / GPMIFreq, 1),
-        DATA_HOLD, nsToCycles(timing.DataHold_ns, 1000000000UL / GPMIFreq, 1),
-        ADDRESS_SETUP, nsToCycles(timing.DataSetup_ns, 1000000000UL / GPMIFreq, 0)
+        DATA_SETUP, ds,
+        DATA_HOLD, dh,
+        ADDRESS_SETUP, as
     );
         
     BF_CS1(
@@ -149,18 +160,18 @@ static void GPMI_ClockConfigure()
     BF_CLR(CLKCTRL_GPMI, CLKGATE);
     BF_CLR(CLKCTRL_FRAC, CLKGATEIO);
 
-    HW_CLKCTRL_GPMI_WR(BF_CLKCTRL_GPMI_DIV(4));    // 480 / 2 MHz
+    HW_CLKCTRL_GPMI_WR(BF_CLKCTRL_GPMI_DIV(2));    // 480 / 2 MHz
     INFO("GPMI CLK DIV:%d\n", BF_RD(CLKCTRL_GPMI, DIV));
     //BF_CS1(CLKCTRL_GPMI, DIV, 2);
 
     BF_CLR(CLKCTRL_CLKSEQ, BYPASS_GPMI);    //Set TO HF
 
-    GPMIFreq = 480000000UL / 4UL;
+    GPMIFreq = 480000000ULL / 2ULL;
 
 
 }
 
-static void __attribute__((target("thumb"))) GPMI_DMAChainsInit()
+static void GPMI_DMAChainsInit()
 {
     // ============================================Command Chains================================================
     //  Phase 1: Wait for ready;
@@ -853,7 +864,7 @@ static void __attribute__((target("thumb"))) GPMI_DMAChainsInit()
 
 }
 
-void __attribute__((target("thumb"))) GPMIConfigure()
+void GPMIConfigure()
 {
     GPMI_ClockConfigure();
     GPMI_EnableDMAChannel(true);
@@ -882,7 +893,7 @@ void __attribute__((target("thumb"))) GPMIConfigure()
 
 }
 
-static inline void __attribute__((target("thumb"))) waitLastOpa()
+static inline void waitLastOpa()
 {
     switch (LastOpa)
     {
@@ -924,7 +935,7 @@ static inline void __attribute__((target("thumb"))) waitLastOpa()
     }
 }
 
-static inline void  __attribute__((optimize("-O3")))  GPMI_sendCommand(uint32_t *cmd, uint32_t *para, uint16_t paraLen, uint32_t *buf, uint32_t RBlen, bool block)
+static inline void    GPMI_sendCommand(uint32_t *cmd, uint32_t *para, uint16_t paraLen, uint32_t *buf, uint32_t RBlen, bool block)
 {
     
     while (HW_APBH_CHn_SEMA(NAND_DMA_Channel).B.INCREMENT_SEMA)
@@ -960,7 +971,7 @@ static inline void  __attribute__((optimize("-O3")))  GPMI_sendCommand(uint32_t 
 
 }
 
-static inline void  __attribute__((optimize("-O3"))) GPMI_ReadPage(uint32_t ColumnAddress, uint32_t RowAddress, uint32_t *data, uint32_t *auxData, bool block)
+static inline void   GPMI_ReadPage(uint32_t ColumnAddress, uint32_t RowAddress, uint32_t *data, uint32_t *auxData, bool block)
 {
     volatile uint8_t *probe;
     waitLastOpa();
@@ -992,13 +1003,15 @@ static inline void  __attribute__((optimize("-O3"))) GPMI_ReadPage(uint32_t Colu
     MTD_INFO("WAIT MTD READ FIN\n");
 
     probe = (uint8_t *)chains_read[4].gpmi_aux_ptr;
-    probe[0] = 0x23;
+    probe[16] = 0x23;
 
     ECC_FIN = false;
     ECCResult = 0x0E0E0E0E;
 
     GPMI_curOpa = GPMI_OPA_READ;
-
+#ifdef PR_NAND_WR_TIMING_STATUS
+    pgrdt = HW_DIGCTL_MICROSECONDS_RD();
+#endif
     BF_WRn(APBH_CHn_NXTCMDAR, NAND_DMA_Channel, CMD_ADDR, (reg32_t)&chains_read[0]); 
     BW_APBH_CHn_SEMA_INCREMENT_SEMA(NAND_DMA_Channel, 1);  
 
@@ -1018,11 +1031,11 @@ static inline void  __attribute__((optimize("-O3"))) GPMI_ReadPage(uint32_t Colu
         while(HW_APBH_CHn_DEBUG2(NAND_DMA_Channel).B.APB_BYTES);
         //portDelayus(100);
 
-        while(probe[0] == 0x23)
+        while(probe[16] == 0x23)
             ;
 }
 
-static inline void  __attribute__((optimize("-O3")))  GPMI_EraseBlock(uint32_t blockAddress, bool block)
+static inline void    GPMI_EraseBlock(uint32_t blockAddress, bool block)
 {
     waitLastOpa();
 
@@ -1063,7 +1076,7 @@ static inline void  __attribute__((optimize("-O3")))  GPMI_EraseBlock(uint32_t b
         //portDelayms(4);
 }
 
-static inline void  __attribute__((optimize("-O3")))  GPMI_WritePage(uint32_t ColumnAddress, uint32_t RowAddress, uint32_t *data, uint32_t *auxData, bool block)
+static inline void    GPMI_WritePage(uint32_t ColumnAddress, uint32_t RowAddress, uint32_t *data, uint32_t *auxData, bool block)
 {
     waitLastOpa();
 
@@ -1100,7 +1113,9 @@ static inline void  __attribute__((optimize("-O3")))  GPMI_WritePage(uint32_t Co
 
 
     GPMI_curOpa = GPMI_OPA_WRITE;
-
+#ifdef PR_NAND_WR_TIMING_STATUS
+    pgwdt = HW_DIGCTL_MICROSECONDS_RD();
+#endif
     BF_WRn(APBH_CHn_NXTCMDAR, NAND_DMA_Channel, CMD_ADDR, (reg32_t)&chains_write[0]); 
     BW_APBH_CHn_SEMA_INCREMENT_SEMA(NAND_DMA_Channel, 1); 
 
@@ -1121,7 +1136,7 @@ static inline void  __attribute__((optimize("-O3")))  GPMI_WritePage(uint32_t Co
 }
 
 
-static inline void  __attribute__((optimize("-O3")))  GPMI_CopyPage(uint32_t srcPage, uint32_t dstPage)
+static inline void    GPMI_CopyPage(uint32_t srcPage, uint32_t dstPage)
 {
     waitLastOpa();
     
@@ -1256,12 +1271,18 @@ void portMTD_DMA_ISR()
     switch (GPMI_curOpa)
     {
     case GPMI_OPA_READ:
+#ifdef PR_NAND_WR_TIMING_STATUS
+        INFO("prd=%ld\n", HW_DIGCTL_MICROSECONDS_RD() - pgrdt);
+#endif
         if(BF_RDn(APBH_CHn_CURCMDAR, NAND_DMA_Channel, CMD_ADDR) == (uint32_t)&chains_read[8]){
             INFO("GPMI_OPA_READ psense compare ERROR\n");
         }
 
         break;
     case GPMI_OPA_WRITE:
+#ifdef PR_NAND_WR_TIMING_STATUS
+        INFO("pwr=%ld\n", HW_DIGCTL_MICROSECONDS_RD() - pgwdt);
+#endif
         if(BF_RDn(APBH_CHn_CURCMDAR, NAND_DMA_Channel, CMD_ADDR) == (uint32_t)&chains_read[8]){
             INFO("GPMI_OPA_WRITE psense compare ERROR\n");
             MTD_upOpaFin(1);

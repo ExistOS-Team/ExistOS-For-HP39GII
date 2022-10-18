@@ -22,16 +22,15 @@ void portIRQCtrlInit()
 
     HW_ICOLL_CTRL_SET(BM_ICOLL_CTRL_FIQ_FINAL_ENABLE |
                       BM_ICOLL_CTRL_IRQ_FINAL_ENABLE |
-                      /*BM_ICOLL_CTRL_ARM_RSE_MODE |*/
+                      BM_ICOLL_CTRL_ARM_RSE_MODE |
                       BM_ICOLL_CTRL_NO_NESTING);
 
     BF_CS1(ICOLL_VBASE, TABLE_ADDRESS, 0);
-    BW_ICOLL_CTRL_VECTOR_PITCH(BV_ICOLL_CTRL_VECTOR_PITCH__BY16);
+    BW_ICOLL_CTRL_VECTOR_PITCH(BV_ICOLL_CTRL_VECTOR_PITCH__DEFAULT_BY4);
 
-    HW_ICOLL_CTRL.B.RSRVD1 = 0x00;
 }
 
-
+/*
 bool portIRQDecode(IRQNumber* IRQNum, IRQTypes *IRQType, IRQInfo *IRQInfo)
 {
     *IRQNum = BF_RD(ICOLL_VECTOR, IRQVECTOR) / 4;
@@ -106,24 +105,27 @@ bool portIRQDecode(IRQNumber* IRQNum, IRQTypes *IRQType, IRQInfo *IRQInfo)
     case HW_IRQ_VDDIO_BRNOUT:
     case HW_IRQ_BATT_BRNOUT:
     case 63:
-
         *IRQInfo = *IRQNum;
         *IRQType = IRQType_PWR;
     break;
+    case HW_IRQ_DAC_DMA:
+    case HW_IRQ_DAC_ERROR:
+        *IRQInfo = *IRQNum;
+        *IRQType = IRQType_DAC;
+        break;
         
     default:
         PANIC("ERR IRQNum:%d\n", *IRQNum);
         return false;
     }
     return true;
-}
-
+}*/
 void portAckIRQ(IRQNumber IRQNum)
 {
-    BF_SETV(ICOLL_VECTOR, IRQVECTOR, IRQNum);
-    BF_SETV(ICOLL_LEVELACK, IRQLEVELACK, 
-        1 << ((*((volatile unsigned int *)HW_ICOLL_PRIORITYn_ADDR(HW_ICOLL_STAT.B.VECTOR_NUMBER / 4)) >> (8 * (HW_ICOLL_STAT.B.VECTOR_NUMBER % 4))) & 0x03)); 
-    
+//    BF_SETV(ICOLL_VECTOR, IRQVECTOR, IRQNum);
+    //BF_SETV(ICOLL_LEVELACK, IRQLEVELACK, 
+    //   1 << ((*((volatile unsigned int *)HW_ICOLL_PRIORITYn_ADDR(HW_ICOLL_STAT.B.VECTOR_NUMBER / 4)) >> (8 * (HW_ICOLL_STAT.B.VECTOR_NUMBER % 4))) & 0x03)); 
+    BF_SETV(ICOLL_LEVELACK, IRQLEVELACK, 1);
 }
 
 void portEnableIRQ(unsigned int IRQNum, unsigned int enable) 
