@@ -114,9 +114,9 @@
 
 当计算器上已有安装 ExistOS 时：
 1. 连接 USB 到电脑
-2. 运行 `edb -r -s -f OSLoader.sb b`
+2. 运行 `edb -r -s -f OSLoader.sb 1408 b`
   - 计算器将重新启动，此步骤会刷入 `OSLoader` 引导程序
-3. 运行 `edb -r -s -f ExistOS.sys`
+3. 运行 `edb -r -s -f ExistOS.sys 1984`
   - 计算器将重新启动，此步骤会刷入 `ExistOS` 主系统
 4. 享受 ExistOS 吧
   - 如果遇到问题，或者有意参与本项目，您可以加入 QQ 群（942419621）。
