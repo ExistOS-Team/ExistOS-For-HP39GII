@@ -92,12 +92,12 @@
 - 固件：从[此处](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/releases)下载
   - 请下载 `OSLoader.sb` 和 `ExistOS.sys`
 - sb_loader：用于将 OSLoader 载入计算器 RAM，若您的 HP39gii 上没有安装 ExistOS 则需要使用。
-  - Windows 用户请从[此处](../../raw/master/tools/sbtools_win/sb_loader.exe)下载二进制文件；
+  - Windows 用户请从[此处](../../raw/main/tools/sbtools_win/sb_loader.exe)下载二进制文件；
   - Linux 用户请从[此处](../../archive/refs/heads/main.zip)下载压缩包并解压，进入 `tools/sbtools/` 目录，用 `make` 编译（无需安装）。
     - 您会得到 `sb_loader` 可执行文件。
 - EDB（Exist Debug Bridge）：用于刷写固件。
-  - Windows 用户请从[此处](../../raw/master/tools/edb.exe)下载二进制文件；
-  - Linux 用户请从[此处](https://github.com/ExistOS-Team/edb-unix/archive/refs/heads/master.zip)下载压缩包并解压，使用如下命令编译：
+  - Windows 用户请从[此处](../../raw/main/tools/edb.exe)下载二进制文件；
+  - Linux 用户请从[此处](https://github.com/ExistOS-Team/edb-unix/archive/refs/heads/main.zip)下载压缩包并解压，使用如下命令编译：
     - `mkdir build`
     - `cmake -B build`
     - `cmake --build build`
@@ -623,4 +623,4 @@ https://github.com/ExistOS-Team/ExistOS-App-demo
 
 ## 许可协议
 
-[GPL-3.0](../../blob/master/LICENSE)
+[GPL-3.0](./LICENSE)

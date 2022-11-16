@@ -96,14 +96,14 @@ Requires:
 - Firmware: Download from [here](https://github.com/ExistOS-Team/ExistOS-For-HP39GII/releases).
   - Please download `OSLoader.sb` and `ExistOS.sys`.
 - sb_loader: Used to load OSLoader into calculator RAM, if you haven't installed ExistOS.
-  - Windows: Download binary file from [here](../../raw/master/tools/sbtools_win/sb_loader.exe).
-  - Linux: Download zip file from [here](../../archive/refs/heads/master.zip) and exract it. Then run commands follow:
+  - Windows: Download binary file from [here](../../raw/main/tools/sbtools_win/sb_loader.exe).
+  - Linux: Download zip file from [here](../../archive/refs/heads/main.zip) and exract it. Then run commands follow:
     - `cd tools/sbtools/`
     - `make`
     - Then you will get executable file `sb_loader`
 - EDB (Exist Debug Brige): Used to flash firmware.
-  - Windows: Download binary file from [here](../../raw/master/tools/edb.exe).
-  - Linux: Download zip file from [here](https://github.com/ExistOS-Team/edb-unix/archive/refs/heads/master.zip) and exract it. Then run commands follow:
+  - Windows: Download binary file from [here](../../raw/main/tools/edb.exe).
+  - Linux: Download zip file from [here](https://github.com/ExistOS-Team/edb-unix/archive/refs/heads/main.zip) and exract it. Then run commands follow:
     - `mkdir build`
     - `cmake -B build`
     - `cmake --build build`
@@ -566,4 +566,4 @@ For VSCode users, `clang-format` extension is available to format the code conve
 
 ## License
 
-[GPL-3.0](https://github.com/Repeerc/LibreCalc-For-HP39GII/blob/master/LICENSE)
+[GPL-3.0](./LICENSE)
