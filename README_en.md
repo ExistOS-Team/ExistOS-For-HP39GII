@@ -241,7 +241,7 @@ The OSLoader can boot ExistOS and provides low-level APIs and virtual memory ser
 
 Before flashing, power off your calculator completely by removing the batteries, and then plug in USB cable while holding down the `ON/C` key. Then your calculator will enter the flashing mode.
 
-An HID device named "USB Input Device" with the ID of 066F:3770 will show up in the Device Manager under the Windows.
+An HID device named "USB Input Device" with the ID of 066F:3770 will show up in the Device Manager under Windows.
 
 ![USBID](Image/0.png)
 
@@ -460,7 +460,7 @@ Final output:
 You need to erase the whole flash before flashing back to the HP Firmware, otherwise you'll get stuck at the formatting progress when using the official update tool.
 
 How to erase the whole flash:  
-After flashing OSLoader or while ExistOS is running, press `ON`+`F5` to enter the maintenance menu, and then press `F2` to erase the flash. ___This operation cannot be undone.___ When the screen shows "Flash Cleared", connect the calculator to a computer and launch the official update tool under Windows 7 / XP to flash your calculator back to the HP firmware.
+After flashing OSLoader or while ExistOS is running, press `ON`+`F5` to enter the maintenance menu, and then press `F2` to erase the flash. ___This operation cannot be undone.___ When the screen shows "Flash Cleared", connect the calculator to a computer and launch the official update tool under 7 / XP to flash your calculator back to the HP firmware.
 
 ## Code Submission Standard
 
