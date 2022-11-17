@@ -13,37 +13,29 @@ This firmware project is created by a group of calculator enthusiasts, using lib
 
 ## Contents
 
-- [ExistOS-For-HP39GII](#existos-for-hp39gii)
-  - [Project overview](#project-overview)
-  - [Contents](#contents)
-  - [Current development status](#current-development-status)
-	- [Experimental features](#experimental-features)
-  - [Compiling](#compiling)
-    - [Prerequisites](#prerequisites)
-      - [Windows](#windows)
-      - [Linux](#linux)
-        - [Add udev rules](#add-udev-rules)
-        - [Compiling sbtool](#compiling-sbtool)
-    - [Compiling ExistOS](#compiling-existos)
-  - [Installing firmware (Currently only works under Windows)](#installing-firmware-currently-only-works-under-windows)
-    - [Flashing OSLoader](#flashing-osloader)
-      - [Manual flashing](#manual-flashing)
-      - [Flashing with automated tools](#flashing-with-automated-tools)
-  - [Basic usage of firmware](#basic-usage-of-firmware)
-    - [Booting for the first time](#booting-for-the-first-time)
-    - [Accessing internal storage](#accessing-internal-storage)
-    - [Basic usage of KhiCAS](#basic-usage-of-khicas)
-      - [Basic calculations](#basic-calculations)
-      - [Example 1: Plotting](#example-1-plotting)
-      - [Example 2: Indefinite integrals](#example-2-indefinite-integrals)
-      - [Example 3: Definite integrals](#example-3-definite-integrals)
-      - [Example 4: Programming to draw Feigenbaum bifurcation diagrams mapped with Logistic equations](#example-4-programming-to-draw-feigenbaum-bifurcation-diagrams-mapped-with-logistic-equations)
-  - [Uninstalling ExistOS and flashing back to stock system](#uninstalling-existos-and-flashing-back-to-stock-system)
-  - [Code submision standard](#code-submission-standard)
-  - [Contributors](#contributors)
-  - [License](#license)
+| | User Guide | |
+| :---: | :---: | :---: |
+| [Current Development Status](#current-developping-status) | | [Experimental Fautures](#experimental-features) |
+| | **[Install Guide](#only-installing)** | |
+| For Win10/11 | [ExistOS Updater](#for-windows-10--11-existos-updater) | Automated tools for beginers |
+| Win/Linux | [OS Loader & EDB](#for-windows--linux) | |
+| Windows | [Emulator](#emulator) | |
+| | **[Usage](#basic-usage-of-the-firmware)** | |
+| [Setup](#booting-for-the-first-time) | [Shortcuts](#shortcuts) | [Accessing Internal Storage](#accessing-internal-storage) |
+| **[Basic Usage of KhiCAS](#basic-usage-of-khicas)** | [Basic Calculations](#basic-calculations) | [Example 1: Plotting](#example-1-plotting) |
+| | [Example 2: Indefinite Integrals](#example-2-indefinite-integrals) | [Example 3: Definite Integrals](#example-3-definite-integrals) | 
+| | [Example 4: Programming to draw Feigenbaum bifurcation diagrams mapped with Logistic equations](#example-4-programming-to-draw-feigenbaum-bifurcation-diagrams-mapped-with-logistic-equations) | |
+| **[Experimental Features](#about-experimental-features) | [Charging](#charging-untested) | [Emu48 39/48 Emulator](#emu48-3948-emulator) |
+| **[Uninstalling and Flashing Back](#uninstalling-existos-and-flashing-back-to-the-hp-firmware)** | **[Contributors](#contributors)** | **[License](#license)** |
 
-
+| | Developer Guide | |
+| :---: | :---: | :---: |
+| [Current Development Status](#current-developping-status) | | [Experimental Fautures](#experimental-features) |
+| | **[Comiling and Installing](#compiling-and-installing)** | |
+| [Preparations](#preparations) | [Compiling ExistOS](#compiling-existos) | [Flash firmware](#installing) |
+| | **Code contribution** | |
+| Documents (To do) | [Third-party App developing](#third-party-app-developing) | [Code submision standard](#code-submission-standard) |
+| **[Uninstalling and Flashing Back](#uninstalling-existos-and-flashing-back-to-the-hp-firmware)** | **[Contributors](#contributors)** | **[License](#license)** |
 
 ## Current Developping Status
 
@@ -455,12 +447,32 @@ Final output:
 
 ![Sys1](Image/35.png)
 
+## About Experimental Features
+
+### Charging (Untested)
+
+### Emu48 39/48 Emulator
+
+Put `rom.g39` (1MB size) to the root directory of calculator storage, then click `Emu48` from the menu of ExistOS.
+
+It is still unsupport to save data or escape from emulator unless reboot your calculator.
+
+![Sys1](Image/44.png)
+
+![Sys1](Image/45.png)
+
 ## Uninstalling ExistOS and Flashing Back to the HP Firmware
 
 You need to erase the whole flash before flashing back to the HP Firmware, otherwise you'll get stuck at the formatting progress when using the official update tool.
 
 How to erase the whole flash:  
 After flashing OSLoader or while ExistOS is running, press `ON`+`F5` to enter the maintenance menu, and then press `F2` to erase the flash. ___This operation cannot be undone.___ When the screen shows "Flash Cleared", connect the calculator to a computer and launch the official update tool under 7 / XP to flash your calculator back to the HP firmware.
+
+## Third-party App Developing
+
+ExistOS APP Demo Repo:
+
+https://github.com/ExistOS-Team/ExistOS-App-demo
 
 ## Code Submission Standard
 
