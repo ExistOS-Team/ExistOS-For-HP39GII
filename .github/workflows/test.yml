@@ -1,15 +1,15 @@
-name: Build
+name: Test
 
 on: 
   push:
-    branches:
+    branches-ignore:
       - main
 
 env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
   
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -44,14 +44,3 @@ jobs:
       run: |
         export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
         cmake --build .
-    - name: Create GitHub release
-      uses: marvinpinto/action-automatic-releases@latest
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag:  build-${{ github.run_number }}
-        title: build ${{ github.run_number }}
-        prerelease: false
-        files: |
-          ./System/ExistOS.sys
-          ./System/sys_symtab.txt
-          ./OSLoader/OSLoader.sb
