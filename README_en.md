@@ -201,6 +201,17 @@ Build `EDB`:
 ||`cp build/edb ../`|
 ||`cd ../../`|
 
+Build sys_signer:
+|System|Install|
+|----|----|
+|Windows|Binary executable in `tools/`|
+|Linux|`cd tools/sys_signer/`|
+||`mkdir build`|
+||`cmake -B build/`|
+||`cmake --build build/`|
+||`cp build/sys_signer ../`
+||`cd ../../`|
+
 ### Compiling ExistOS
 
 Create a new directory to store binary files and caches

@@ -205,6 +205,17 @@ _Tips：`pkg-config` 会根据 `/usr/lib/pkgconfig/` 中存放的 `*.pc`文件�
 ||`cp build/edb ../`|
 ||`cd ../../`|
 
+编译 sys_signer:
+|系统|安装|
+|----|----|
+|Windows|Binary executable in `tools/`|
+|Linux|`cd tools/sys_signer/`|
+||`mkdir build`|
+||`cmake -B build/`|
+||`cmake --build build/`|
+||`cp build/sys_signer ../`
+||`cd ../../`|
+
 ### 编译系统
 
 新建一个文件夹用于存放编译的二进制文件和缓存：
