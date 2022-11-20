@@ -107,22 +107,6 @@ add_custom_target(
   COMMAND ${CMAKE_SOURCE_DIR}/tools/sbtools_win/sb_loader -f ${CMAKE_CURRENT_BINARY_DIR}/OSLoader.sb 
   DEPENDS OSLoader.sb
   )
-
-add_custom_target(
-    edb_flash_loader 
-    COMMAND ${CMAKE_SOURCE_DIR}/tools/edb -r -s -f ${CMAKE_CURRENT_BINARY_DIR}/OSLoader.sb 1408 b
-    DEPENDS OSLoader.sb
-    )
-
-add_custom_target(
-      mscmode 
-      COMMAND ${CMAKE_SOURCE_DIR}/tools/edb -m
-      )
-
-add_custom_target(
-    reboot 
-    COMMAND ${CMAKE_SOURCE_DIR}/tools/edb -r
-    )
 else()
 if(EXISTS ${CMAKE_SOURCE_DIR}/tools/sbtools/  )
 add_custom_target(
@@ -140,3 +124,18 @@ message(FATAL_ERROR "Please build tools/sbtools first")
 endif(EXISTS ${CMAKE_SOURCE_DIR}/tools/sbtools/elftosb)
 endif()
 
+add_custom_target(
+    edb_flash_loader 
+    COMMAND ${CMAKE_SOURCE_DIR}/tools/edb -r -s -f ${CMAKE_CURRENT_BINARY_DIR}/OSLoader.sb 1408 b
+    DEPENDS OSLoader.sb
+    )
+
+add_custom_target(
+      mscmode 
+      COMMAND ${CMAKE_SOURCE_DIR}/tools/edb -m
+      )
+
+add_custom_target(
+    reboot 
+    COMMAND ${CMAKE_SOURCE_DIR}/tools/edb -r
+    )

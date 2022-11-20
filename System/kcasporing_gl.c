@@ -178,6 +178,7 @@ void vGL_putString(int x0, int y0, char *s, int fg, int bg, int fontSize) {
                 if (y > VIR_LCD_PIX_H) {
                     break;
                 }
+                break;
             }
         }
     }

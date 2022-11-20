@@ -154,8 +154,8 @@ static inline __attribute__((target("thumb"))) CachePageInfo_t *search_cache_pag
 }
 
 #if USE_TINY_PAGE
-static uint8_t page_save_wr_buf[2048] __attribute__((aligned(4096)));
-static uint8_t page_save_rd_buf[2048] __attribute__((aligned(4096)));
+static uint8_t page_save_wr_buf[2048]; // __attribute__((aligned(4096)));
+static uint8_t page_save_rd_buf[2048]; // __attribute__((aligned(4096)));
 static uint32_t pagebuf_last_rd = 0xFFFFFFFF;
 #endif
 

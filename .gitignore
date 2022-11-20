@@ -76,3 +76,5 @@ sbloader
 elftosb1
 rsrctool
 sbtoelf
+edb
+sysigner
