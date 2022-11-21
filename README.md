@@ -632,6 +632,9 @@ https://github.com/ExistOS-Team/ExistOS-App-demo
   <img src = "https://contrib.rocks/image?repo=ExistOS-Team/ExistOS-For-HP39GII"/>
 </a>
 
+特别感谢：
+- [parisseb](https://github.com/parisseb)
+
 ## 许可协议
 
 [GPL-3.0](./LICENSE)
