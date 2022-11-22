@@ -9,7 +9,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+  extern int khicas_1bpp;
 
 int vGL_Initialize() ;
 

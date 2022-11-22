@@ -1,0 +1,9 @@
+kmisc.cc: GetVRAMAddress
+kglobal.cc: HourGlass
+kprog.cc: write
+kgen.cc: aplatir_fois_plus
+kgasspol.cc: powpoly en dim 1 avec u>10 ne marche pas
+Impossible de faire normal sur ext algebrique de degre>=4 memoire?
+regroup(3+x) plante,
+suite a l'appel de aplatir_plus dans kprog.cc gen simplifier(..)
+reverse de la ustl ne marche pas si nombre pair d'elements

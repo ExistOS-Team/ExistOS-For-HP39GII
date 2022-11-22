@@ -303,7 +303,7 @@ namespace giac {
   void invalid_varname();
   gen select_var(GIAC_CONTEXT);
   const char * keytostring(int key,int keyflag,bool py,GIAC_CONTEXT);
-  
+  int chartab();
   void print_alpha_shift(int keyflag);
   int print_msg12(const char * msg1,const char * msg2,int textY=42);
   void insert(std::string & s,int pos,const char * add);  //std

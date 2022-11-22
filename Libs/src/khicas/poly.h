@@ -271,7 +271,7 @@ namespace giac {
   bool operator == (const tensor<T> & p,const tensor<T> & q){
     if (p.dim!=q.dim || p.coord.size()!=q.coord.size())
       return false;
-    typename std::vector< monomial<T> >::const_iterator it=p.coord.begin(),jt=q.coord.begin(),itend=p.coord.end(); 
+    typename std::vector< monomial<T> >::const_iterator it=p.coord.begin(),jt=q.coord.begin(),itend=p.coord.end(); //!! std::
     for (;it!=itend;++it,++jt){
       if (*it!=*jt)
 	return false;

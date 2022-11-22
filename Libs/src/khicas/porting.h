@@ -4,31 +4,36 @@
 
 #include "keyboard.h"
 
+#include <stdbool.h>
 
 typedef struct DISPBOX
 {
     int left;
-    int top;
     int right;
+    int top;
     int bottom;
 }DISPBOX;
 
 #define F_KEY_BAR_Y_START  114
-#define PRINT_ALPHA_SHIFT_STATUS_X_OFFSET   148
+#define PRINT_ALPHA_SHIFT_STATUS_X_OFFSET   162
 #define F_BAR_FONT_HEIGHT   12
 #define CLOCK_STATUS_BAR_OFFSET_X    70
 
-#define CONFIRM_BAR     "  F1  |      |      |      |      |  F6   "
-#define SPE_BAR         "      |      |      |      |      |       "
-#define EDITABLE_BAR    " tst  |loop  |misc  |cmds  |A<>a  |File   "
+#define CONFIRM_BAR                 "  F1  |      |      |      |      |  F6   "
+#define SPE_BAR                     "      |      |      |      |      |       "
+#define EDITABLE_BAR                " tst  |loop  |misc  |cmds  |A<>a  |File   "
 
-#define CONSOLE_BAR2               "  |view  |cmds  |A<>a  |File   "
+#define CONSOLE_BAR2                           "  |view  |cmds  |A<>a  |File   "
 #define F1_CHARS_LEN    6
 #define F2_CHARS_LEN    6
 
+#define CAT_CATEGORY_ALL_BAR        "input | ex1  | ex2  |      |      | help  "
+#define CAT_CATEGORY_BAR            "input | ex1  | ex2  |cmds  |      | help  "
+
+#define CAS_VIEW_BAR                           "  |edt+- |cmds  |A<>a  |eval>< "
 
 #define MINI_REV    1
-#define MINI_OVER   2
+#define MINI_OVER   0
 
 #define LCD_WIDTH_PX   256
 #define LCD_HEIGHT_PX  128
@@ -112,6 +117,10 @@ int Bfile_FindClose( int FindHandle );
 void sprint_double(char *ch, double d);
 
 void *memory_load(char *adresse);
+
+bool chkEsc(void);
+int SetTimer(int TimerID, int period, void (*callback)(void));
+void KillTimer(int TimerID);
 
 
 #endif

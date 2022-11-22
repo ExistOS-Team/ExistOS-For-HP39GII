@@ -1,0 +1,87 @@
+CXX	= arm-none-eabi-g++
+CC	= arm-none-eabi-gcc
+AR	= arm-none-eabi-ar
+RANLIB	= arm-none-eabi-gcc-ranlib
+OBJCOPY = arm-none-eabi-objcopy
+
+RM	= /bin/rm
+
+#CFLAGS = -Os -mb -m4a-nofpu -mhitachi -flto -fno-strict-aliasing  -fno-exceptions -DHAVE_CONFIG_H -DTIMEOUT -DRELEASE -I. -I../include -I../include/fx
+#CXXFLAGS = -Os -mb -m4a-nofpu -mhitachi -std=c++98 -fpermissive -flto -fno-use-cxa-atexit -fno-strict-aliasing -fno-rtti -fno-exceptions -DHAVE_CONFIG_H -DTIMEOUT -DRELEASE -I. -I../include -I../include/ustl -I../include/fx 
+#-DTIMEOUT -flto 
+CFLAGS = -O3 -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -fno-strict-aliasing -mthumb -fno-exceptions -DHAVE_CONFIG_H -I../libtommath-0.39 -I. -ffunction-sections -fdata-sections -fomit-frame-pointer 
+CXXFLAGS = -Os -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -std=c++11  -fpermissive -fno-use-cxa-atexit -fno-strict-aliasing -fno-rtti -fno-exceptions -DHAVE_CONFIG_H -I../libtommath-0.39 -I. -ffunction-sections -fdata-sections -Werror=reorder
+# -Werror=reorder
+
+LDFLAGS = -static -nostdlib -Taddin.ld  -Wl,--gc-sections
+
+STDLIBS =  -L. -L../lib  -ltommath -lustl -lm -lc -lfx -lgcc 
+
+LIBS = -L. -L../lib -Wl,--start-group -lgui -lcas -ltommath -lustl -lm -lc -lfx -lgcc -Wl,--end-group
+
+CAS_OBJS = ksym2poly.o kgausspol.o kthreaded.o kcsturm.o kmaple.o krpn.o kmoyal.o kmisc.o kpermu.o kdesolve.o input_parser.o ksymbolic.o index.o kmodpoly.o kmodfactor.o kezgcd.o kderive.o ksolve.o kintg.o kintgab.o klin.o kseries.o ksubst.o kvecteur.o kglobal.o kifactor.o kalg_ext.o kgauss.o khelp.o kti89.o kplot.o kprog.o kunary.o kusual.o kidentificateur.o kgen.o krisch.o input_lexer.o first.o softmath.o
+# memmgr.o mem.o 
+
+#  = dConsole.o fileGUI.o inputGUI.o menuGUI.o textGUI.o fileProvider.o graphicsProvider.o stringsProvider.o history.o kdisplay.o
+
+GUI_OBJS = main.o console.o memory.o kdisplay.o file.o textGUI.o menuen.o
+
+#.PRECIOUS: libcas.a libgui.a
+all: libcas.libcpp libkcasgui.libcpp
+#all: khicas.g1a khicasen.g1a # pour la version console, supprimer le lien iostream -> iostream.new
+	/bin/cp libcas.libcpp libkcasgui.libcpp ../../
+
+%.o: %.s
+	$(CC) $(CFLAGS) -c $<
+
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) -c $<
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $<
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $<
+
+libgui.a: $(GUI_OBJS)
+	$(RM) -f $@
+	$(AR) cru $@ $^
+	$(RANLIB) $@
+	$(OBJCOPY) --redefine-sym mp_init=mp_tm_init $@
+
+libcas.a: $(CAS_OBJS)
+	$(RM) -f $@
+	$(AR) cru $@ $^
+	$(RANLIB) $@
+	$(OBJCOPY) --redefine-sym mp_init=mp_tm_init $@
+
+libcas.libcpp: libcas.a
+	mv libcas.a libcas.libcpp
+
+libkcasgui.libcpp: libgui.a
+	mv libgui.a libkcasgui.libcpp 
+
+khicas.elf: libcas.a libgui.a crt0.o syscalls.o menufr.o #catalogfr.o main.o
+#	$(CXX) $(LDFLAGS) crt0.o syscalls.o $(CAS_OBJS) $(GUI_OBJS) $(STDLIBS) -o $@
+#	$(CXX)  -m3 -mhitachi  -mb -Os -nostdlib $(LDFLAGS) crt0.o syscalls.o  $(CAS_OBJS) $(GUI_OBJS) $(STDLIBS) -o $@
+	$(CXX) $(LDFLAGS) crt0.o syscalls.o menufr.o $(LIBS) -o $@
+
+khicas.g1a: khicas.elf
+	sh3eb-elf-objcopy -R .comment -R .bss -O binary khicas.elf khicas.bin
+	g1a-wrapper  khicas.bin -o khicas.g1a # -i khicas.bmp -v 1.5.1
+	sh3eb-elf-nm khicas.elf > testelf
+	sh3eb-elf-objdump -C -t khicas.elf | sort > dump
+
+khicasen.elf: libcas.a libgui.a crt0.o syscalls.o menuen.o #catalogfr.o main.o
+#	$(CXX) $(LDFLAGS) crt0.o syscalls.o $(CAS_OBJS) $(GUI_OBJS) $(STDLIBS) -o $@
+#	$(CXX)  -m3 -mhitachi  -mb -Os -nostdlib $(LDFLAGS) crt0.o syscalls.o  $(CAS_OBJS) $(GUI_OBJS) $(STDLIBS) -o $@
+	$(CXX) $(LDFLAGS) crt0.o syscalls.o menuen.o $(LIBS) -o $@
+
+khicasen.g1a: khicasen.elf
+	sh3eb-elf-objcopy -R .comment -R .bss -O binary khicasen.elf khicasen.bin
+	g1a-wrapper khicasen.bin -o khicasen.g1a # -i khicasen.bmp
+	sh3eb-elf-nm khicasen.elf > testelfen
+	sh3eb-elf-objdump -C -t khicasen.elf | sort > dumpen
+
+clean:
+	$(RM) -f *.o libcas.a libgui.a 

@@ -1,0 +1,4 @@
+#! /bin/bash
+make
+sh3eb-elf-g++ -std=c++98 -fno-use-cxa-atexit -Os -mb -m4a-nofpu -mhitachi -nostdlib  -ffreestanding -fno-strict-aliasing -DHAVE_CONFIG_H -I. -I/home/parisse/casiolocal/include/ustl -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -c giac.cc -o test.o && sh3eb-elf-g++ -s -nostdlib -fno-exceptions -Os -mb -m4a-nofpu -mhitachi  test.o -lgiac -Tprizm.ld  -Wl,-static -Wl,--gc-sections -L.  -ltommath -lustl -lm -lc -lgcc -o test.bin && mkg3a -n basic:Test -n internal:TEST -i uns:unselected.bmp -i sel:selected.bmp test.bin /shared/PrizmSDK-0.3/test.g3a # -fno-zero-initialized-in-bss
+

@@ -32,7 +32,7 @@ typedef struct
   int clipline,undoclipline;
   int clippos,undoclippos;
   int width=LCD_WIDTH_PX;
-  int lineHeight=12; // -2 if minimini is true //!!!!!
+  int lineHeight=16; // -2 if minimini is true //!!!!!
   ustl::vector<textElement> elements,undoelements;
   char* title = NULL;
   ustl::string filename;
@@ -42,6 +42,7 @@ typedef struct
   bool editable=false;
   bool changed=false;
   bool minimini=false; // global font setting
+  bool longlinescut=true;
   int python=0;
   int type=TEXTAREATYPE_NORMAL;
 } textArea;

@@ -4,7 +4,6 @@
 #include "config.h"
 #include "giacPCH.h"
 #include "misc.h"
-//#include "fx/fxlib.h"
 
 #define STATUS_AREA_PX 0
 
@@ -49,8 +48,17 @@ namespace xcas {
   public:
     double window_xmin,window_xmax,window_ymin,window_ymax,
       x_scale,y_scale,x_tick,y_tick;
-    giac::gen g;  
-    int display_mode,show_axes,show_names,labelsize;  
+    int display_mode,show_axes,show_names,labelsize;
+    int current_i,current_j;
+    int tracemode;
+    int tracemode_n; double tracemode_i; string tracemode_add; giac::vecteur tracemode_disp; double tracemode_mark;
+    giac::gen g;//,cache_parameq,cache_t,cache_x,cache_x1,cache_x2,cache_y0,cache_y,cache_y1,cache_y2;
+    giac::vecteur plot_instructions;
+    void invert_tracemode();
+    void tracemode_set(int operation=0); // operation==1 if user is setting the value of t on a parametric curve, operation==2 for root, operation==3 for extremum, operation==4 mark current position, operation=5 for area
+    void init_tracemode();
+    void draw_decorations();
+    void curve_infos();
     bool findij(const giac::gen & e0,double x_scale,double y_scale,double & i0,double & j0,const giac::context * ) const;
     void update();
     void zoomx(double d,bool round=false);

@@ -387,6 +387,8 @@ namespace giac {
   gen quote_read(const gen & args,GIAC_CONTEXT); // read in a file and return non evaled
   gen _read(const gen & args,GIAC_CONTEXT); // read in a file and return evaled
   extern const unary_function_ptr * const  at_read;
+  extern const unary_function_ptr * const  at_read32;
+  extern const unary_function_ptr * const  at_write32;
 
   gen _write(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_write;

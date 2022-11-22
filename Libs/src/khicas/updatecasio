@@ -1,0 +1,3 @@
+#! /bin/bash
+tar cvfz giac35.tgz k*.cc first.cc index.cc input_lexer.ll input_lexer.cc lexer.h.bak input_parser.yy input_parser.cc Makefile *.s *.c *.h *.ld *.bmp *.hpp main.cc console.cc memory.c kdisplay.cc menufr.cc menuen.cc file.cc textGUI.cc iostream.new iostream mkgiac mkxcas mkfr mken updatecasio fixme *.png
+#scp kupdate.tgz malherbe.ujf-grenoble.fr:tmp

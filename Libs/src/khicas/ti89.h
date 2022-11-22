@@ -24,6 +24,10 @@ namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
   typedef unsigned char octet;
   class gen;
+  extern const unary_function_ptr * const  at_evolute;
+  extern const unary_function_ptr * const  at_frenet;
+  extern const unary_function_ptr * const  at_osculating_circle;
+  extern const unary_function_ptr * const  at_curvature;
   extern const unary_function_ptr * const  at_entry;
   extern const unary_function_ptr * const  at_ans;
   gen _seq(const gen & g,GIAC_CONTEXT);

@@ -1,0 +1,9 @@
+#! /bin/bash
+#make khicas catalogen.o
+#make dConsole.o main.o *GUI*.o *Provider*.o 
+#sh3eb-elf-g++ -s -nostdlib -fno-exceptions -Os -mb -m4a-nofpu -mhitachi dConsole.o main.o history.o *GUI*.o catalogfr.o *Provider*.o  -lgiac -Tprizm.ld  -Wl,-static -Wl,--gc-sections -L.  -ltommath -lustl -lm -lc -lgcc -o test.bin && truncate -s +3 test.bin && mkg3a -n basic:Khicas -n internal:KHICAS -i uns:khicasiouns.bmp -i sel:khicasio.bmp test.bin /shared/PrizmSDK-0.3/khicas.g3a # -fno-zero-initialized-in-bss
+#sh3eb-elf-g++ -s -nostdlib -fno-exceptions -Os -mb -m4a-nofpu -mhitachi main.o history.o *GUI*.o catalogfr.o dConsole.o *Provider*.o kdisplay.o -lgiac -Tprizm.ld  -Wl,-static -Wl,--gc-sections -L.  -ltommath -lustl -lm -lc -lgcc -o test.bin && truncate -s +3 test.bin && mkg3a -n basic:Khicas -n internal:KHICAS -V 1.5.0 -i uns:khicasio.png -i sel:khicasio1.png test.bin /shared/PrizmSDK-0.3/khicas.g3a # -fno-zero-initialized-in-bss
+#sh3eb-elf-g++ -s -nostdlib -fno-exceptions -Os -mb -m4a-nofpu -mhitachi dConsole.o main.o history.o *GUI*.o catalogen.o *Provider*.o kdisplay.o -lgiac -Tprizm.ld  -Wl,-static -Wl,--gc-sections -L.  -ltommath -lustl -lm -lc -lgcc -o test.bin && truncate -s +3 test.bin && mkg3a -n basic:Khicasen -n internal:KHICASEN -V 1.5.0 -i uns:khicasio.png -i sel:khicasio1.png test.bin /shared/PrizmSDK-0.3/khicasen.g3a # -fno-zero-initialized-in-bss
+make
+#zip khicasio.zip khicas.g3a LICENSE.GPL2 khicasio.html giac.js giacwasm.js giacwasm.wasm
+zip khicasio.zip khicas.g3a khicasen.g3a LICENSE.GPL2 khicasio.html khicasioen.html

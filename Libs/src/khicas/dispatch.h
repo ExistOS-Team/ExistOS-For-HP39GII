@@ -473,7 +473,7 @@ namespace giac {
   };
 
   enum color_values {
-#if 1
+#if 0
     _BLACK=1,
     _BLUE=7,
     _GREEN=4,

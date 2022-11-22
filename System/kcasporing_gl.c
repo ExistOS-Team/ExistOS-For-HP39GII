@@ -19,9 +19,11 @@ extern const unsigned char orp_Ascii_6x12[];
 extern const unsigned char VGA_Ascii_8x16[];
 
 // extern "C" {
-char *virtual_screen;
+char *virtual_screen=0;
 
-char *scale_vir_screen;
+char *scale_vir_screen=0;
+
+char * screen_1bpp=0;
 
 #define X_OFFSET    (0)
 #define Y_OFFSET    (-10)
@@ -45,10 +47,36 @@ static bool concur_reverse = false;
 
 static bool ImmediateRefrush = false;
 extern bool khicasRunning;
+int khicas_1bpp=1; // assumes W is a multiple of 8
 
 void vGL_FlushVScreen()
 {
-
+  if (khicas_1bpp){
+    char *src=screen_1bpp;
+    for (int r=0;r<VIR_LCD_PIX_H;++r){
+      char tab[VIR_LCD_PIX_W];
+      char * dest=tab,*end=dest+VIR_LCD_PIX_W;
+      for (;dest<end;dest+=8,++src){
+        char cur=*src;
+        if (cur){
+          dest[0]=(cur&1)?0xff:0; 
+          dest[1]=(cur&2)?0xff:0; 
+          dest[2]=(cur&4)?0xff:0; 
+          dest[3]=(cur&8)?0xff:0; 
+          dest[4]=(cur&16)?0xff:0; 
+          dest[5]=(cur&32)?0xff:0; 
+          dest[6]=(cur&64)?0xff:0; 
+          dest[7]=(cur&128)?0xff:0; 
+        }
+        else {
+          *((unsigned *) dest)=0;
+          *((unsigned *) &dest[4])=0;
+        }
+      }
+      ll_disp_put_area(tab, 0, r, VIR_LCD_PIX_W - 1, r);      
+    }
+    return;
+  }
 #if SCALE_ENABLE
 
     float xsrc = 0, ysrc = 0;
@@ -71,7 +99,20 @@ void vGL_FlushVScreen()
 #else
     ll_disp_put_area(virtual_screen, 0, 1, VIR_LCD_PIX_W - 1, VIR_LCD_PIX_H - 1);
 #endif
-}  
+}
+
+void vGL_set_pixel(unsigned x,unsigned y,int c){
+  if (khicas_1bpp){
+    char shift = 1<<(x&7);
+    int pos=(x+VIR_LCD_PIX_W*y)>>3;
+    if (c)
+      screen_1bpp[pos] |= shift;
+    else
+      screen_1bpp[pos] &= ~shift;
+  }
+  else
+    virtual_screen[x + y * VIR_LCD_PIX_W] = c;
+}
 
 void vGL_SetPoint(unsigned int x, unsigned int y, int c)
 {
@@ -81,7 +122,7 @@ void vGL_SetPoint(unsigned int x, unsigned int y, int c)
     if ((y >= VIR_LCD_PIX_H)) {
         y = VIR_LCD_PIX_H - 1;
     }
-    virtual_screen[x + y * VIR_LCD_PIX_W] = c;
+    vGL_set_pixel(x,y,c);
 } 
 
 int vGL_GetPoint(unsigned int x,unsigned int y)
@@ -92,6 +133,11 @@ int vGL_GetPoint(unsigned int x,unsigned int y)
     if ((y >= VIR_LCD_PIX_H)) {
         y = VIR_LCD_PIX_H - 1;
     }
+    if (khicas_1bpp){
+      char shift = 1<<(x&7);
+      int pos=(x+VIR_LCD_PIX_W*y)>>3;
+      return (screen_1bpp[pos] & shift)?0xff:0;
+    }    
     return virtual_screen[x + y * VIR_LCD_PIX_W];
 }  
     
@@ -131,11 +177,8 @@ void vGL_putChar(int x0, int y0, char ch, int fg, int bg, int fontSize) {
     while (y < font_h) {
         while (x < font_w) {
             if (((x0 + x) < VIR_LCD_PIX_W) && ((y0 + y) < VIR_LCD_PIX_H))
-                if ((*pCh << x) & 0x80U) {
-                    virtual_screen[(x0 + x) + VIR_LCD_PIX_W * (y0 + y)] = fg;
-                } else {
-                    virtual_screen[(x0 + x) + VIR_LCD_PIX_W * (y0 + y)] = bg;
-                }
+              //virtual_screen[(x0 + x) + VIR_LCD_PIX_W * (y0 + y)] = ((*pCh << x) & 0x80U)?fg:bg;
+              vGL_set_pixel(x0+x,y0+y, ((*pCh << x) & 0x80U)?fg:bg);
             x++;
         }
         x = 0;
@@ -172,13 +215,12 @@ void vGL_putString(int x0, int y0, char *s, int fg, int bg, int fontSize) {
             vGL_putChar((x0 * STRING_X_SCALE) + x, (y0 * STRING_Y_SCALE) + y, *s, fg, bg, fontSize);
             s++;
             x += font_w;
-            if (x > VIR_LCD_PIX_W) {
+            if (x > VIR_LCD_PIX_W) { break;
                 x = 0;
                 y += font_h;
                 if (y > VIR_LCD_PIX_H) {
                     break;
                 }
-                break;
             }
         }
     }
@@ -200,13 +242,13 @@ void vGL_clearArea(unsigned int x0, unsigned int y0, unsigned int x1, unsigned i
         y1 = VIR_LCD_PIX_H - 1;
     }
 
-    for (int y = y0; y < y1; y++)
-        for (int x = x0; x < x1; x++) {
-            {
-                virtual_screen[x + y * VIR_LCD_PIX_W] = COLOR_WHITE;
-            }
-        }
-
+    // printf("clra:%d,%d,%d,%d\n", x0, x1, y0, y1);
+    for (int y = y0; y < y1; y++){
+      for (int x = x0; x < x1; x++) {
+        vGL_set_pixel(x,y,COLOR_WHITE); // virtual_screen[x + y * VIR_LCD_PIX_W] = COLOR_WHITE;
+      }
+    }
+    
     
     ImmediateRefrush = true;
 }
@@ -229,7 +271,7 @@ void vGL_setArea(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int
     for (int y = y0; y < y1; y++)
         for (int x = x0; x < x1; x++) {
             {
-                virtual_screen[x + y * VIR_LCD_PIX_W] = color;
+              vGL_set_pixel(x,y,color); // virtual_screen[x + y * VIR_LCD_PIX_W] = color;
             }
         }
 
@@ -263,14 +305,22 @@ void vGL_reverseArea(unsigned int x0, unsigned int y0, unsigned int x1, unsigned
     if ((y1 >= VIR_LCD_PIX_H)) {
         y1 = VIR_LCD_PIX_H - 1;
     }
-
-    for (int y = y0; y < y1; y++)
+    if (khicas_1bpp){
+      for (int y = y0; y < y1; y++){
         for (int x = x0; x < x1; x++) {
-            {
-                virtual_screen[x + y * VIR_LCD_PIX_W] = ~virtual_screen[x + y * VIR_LCD_PIX_W];
-            }
+          char shift = 1<<(x&7);
+          int pos=(x+VIR_LCD_PIX_W*y)>>3;
+          screen_1bpp[pos] ^= shift; 
         }
-
+      }
+    }
+    else {
+      for (int y = y0; y < y1; y++){
+        for (int x = x0; x < x1; x++) {
+          virtual_screen[x + y * VIR_LCD_PIX_W] = ~virtual_screen[x + y * VIR_LCD_PIX_W];
+        }
+      }
+    }
     ImmediateRefrush = true;
     //vGL_FlushVScreen();
 }
@@ -300,10 +350,12 @@ static void vGL_flushTask(void *arg)
     } 
 }
 
+extern int shell_fontw,shell_fonth;
+
 static void vGL_concur_reverse()
 {
     concur_reverse = !concur_reverse;
-    vGL_reverseArea((cursor_x + 1) * 6, (cursor_y + 1) * 12, (cursor_x + 1) * 6 + 1, (cursor_y + 1) * 12 + 12);
+    vGL_reverseArea((cursor_x + 1) * shell_fontw, (cursor_y + 1) * shell_fonth, (cursor_x + 1) * shell_fontw + 1, (cursor_y + 1) * shell_fonth + shell_fonth);
 }
 
 void vGL_locateConcur(int x, int y)
@@ -345,21 +397,33 @@ static void vGL_consoleTask(void *arg)
 }
 
 int vGL_Initialize() {
-    virtual_screen = pvPortMalloc(VIR_LCD_PIX_W * VIR_LCD_PIX_W);
-    if (!virtual_screen) {
-        printf("Failed to alloca virtual screen memory!\n");
-        return -1;
-    }
+  if (!screen_1bpp)
+    screen_1bpp=pvPortMalloc(VIR_LCD_PIX_H * VIR_LCD_PIX_W/8);
+  if (!screen_1bpp) 
+    return -1;
+  memset(screen_1bpp, COLOR_WHITE, VIR_LCD_PIX_H * VIR_LCD_PIX_W);
 
-    scale_vir_screen = pvPortMalloc(VIR_LCD_PIX_W * VIR_LCD_PIX_W);
-    if (!scale_vir_screen) {
-        printf("Failed to alloca virtual scale screen memory!\n");
-        vPortFree(virtual_screen);
-        return -1;
-    }
+  if (!virtual_screen)
+    virtual_screen = pvPortMalloc(VIR_LCD_PIX_H * VIR_LCD_PIX_W);
+  if (!virtual_screen) {
+    vPortFree(screen_1bpp);
+    printf("Failed to alloca virtual screen memory!\n");
+    return -1;
+  }
+  memset(virtual_screen, COLOR_WHITE, VIR_LCD_PIX_H * VIR_LCD_PIX_W);
 
-    memset(virtual_screen, COLOR_WHITE, VIR_LCD_PIX_H * VIR_LCD_PIX_W);
-    memset(scale_vir_screen, COLOR_WHITE, VIR_LCD_PIX_H * VIR_LCD_PIX_W);
+#if SCALE_ENABLE
+  scale_vir_screen = pvPortMalloc(VIR_LCD_PIX_W * VIR_LCD_PIX_W);
+  if (!scale_vir_screen) {
+    printf("Failed to alloca virtual scale screen memory!\n");
+    vPortFree(virtual_screen);
+    vPortFree(screen_1bpp);
+    virtual_screen=0;
+    return -1;
+  }
+  memset(scale_vir_screen, COLOR_WHITE, VIR_LCD_PIX_H * VIR_LCD_PIX_W);
+#endif
+
 
     xTaskCreate(vGL_flushTask, "vGLRefTsk", 1024, NULL, configMAX_PRIORITIES - 3, NULL);
     xTaskCreate(vGL_consoleTask, "vGLConsoleTsk", 1024, NULL, configMAX_PRIORITIES - 3, NULL);

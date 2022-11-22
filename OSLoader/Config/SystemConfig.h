@@ -34,14 +34,19 @@
         #ifdef ENABLE_AUIDIOOUT
             #define NUM_CACHEPAGE             ( 200 ) // 273 * 1 = 273 KB
         #else
-            #define NUM_CACHEPAGE             ( 260 ) // 273 * 1 = 273 KB
+            #define NUM_CACHEPAGE             ( 268 ) // 273 * 1 = 273 KB
         #endif
     #else
         #define NUM_CACHEPAGE             ( 79 ) // 79 * 4 = 316 KB
     #endif
 #else
-    #define NUM_CACHEPAGE             ( 32 )
-    #define VM_RAM_SIZE_NONE_FTL      ( 168 * 1024 )
+    #if USE_TINY_PAGE
+        #define NUM_CACHEPAGE             ( 256 )
+        #define VM_RAM_SIZE_NONE_FTL      ( 24 * 1024 )
+    #else
+        #define NUM_CACHEPAGE             ( 32 )
+        #define VM_RAM_SIZE_NONE_FTL      ( 168 * 1024 )
+    #endif
 #endif
 
 
@@ -56,12 +61,12 @@
 #define PAGES_SWAPFILE      (SIZE_SWAPFILE_MB * 1048576 / PAGE_SIZE)
 
 #define VM_ROM_BASE             (0x00100000)
-#define VM_ROM_SIZE             (1048576 * 4)
+#define VM_ROM_SIZE             (1048576 * 6)
 #define VM_ROM_SEG              (VM_ROM_BASE >> 20)
 #define VM_ROM_NUM_SEG          (VM_ROM_SIZE / SEG_SIZE)
 
 #define VM_RAM_BASE             (0x02000000)
-#define VM_RAM_SIZE             (1048576 * 6)
+#define VM_RAM_SIZE             (1048576 * 3)
 #define VM_RAM_SEG              (VM_ROM_BASE >> 20)
 #define VM_RAM_NUM_SEG          (VM_RAM_SIZE / SEG_SIZE)
 

@@ -74,6 +74,27 @@ namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
 
 
+  struct eight_int {
+    int i1,i2,i3,i4,i5,i6,i7,i8;
+  };
+  
+  struct twelve_int {
+    int i1,i2,i3,i4,i5,i6,i7,i8,i9,i10,i11,i12;
+  };
+  
+  struct six_int {
+    int i1,i2,i3,i4,i5,i6;
+  };
+  
+  struct four_int {
+    int i1,i2,i3,i4;
+  };
+
+  extern twelve_int * tab48;
+  extern four_int * tab16;
+  extern six_int * tab24;
+  size_t freeslotmem();
+
 #ifdef USE_GMP_REPLACEMENTS
 #undef HAVE_GMPXX_H
 #undef HAVE_LIBMPFR

@@ -1,0 +1,14 @@
+#! /bin/bash
+# suggested by Pavel Demin
+sh3eb-elf-g++ -Os -mb -m4a-nofpu -mhitachi -std=c++98 -nostdlib -flto -fpermissive -fno-use-cxa-atexit -fno-strict-aliasing -fno-rtti -fno-exceptions -DHAVE_CONFIG_H -DTIMEOUT -DRELEASE -I. -I/home/parisse/casiolocal/include/ustl history.cpp *GUI*.cpp catalogen.cpp dConsole.cpp *Provider*.cpp \
+first.cc         kezgcd.cc           kintg.cc       kprog.cc      kthreaded.cc \
+index.cc         kgauss.cc           klin.cc        krisch.cc     kti89.cc \
+input_lexer.cc   kgausspol.cc        kmaple.cc      krpn.cc       kunary.cc \
+input_parser.cc  kgen.cc             kmisc.cc       kseries.cc    kusual.cc \
+kalg_ext.cc      kglobal.cc          kmodfactor.cc  ksolve.cc     kvecteur.cc \
+kcsturm.cc       khelp.cc            kmodpoly.cc    ksubst.cc \
+kderive.cc       kidentificateur.cc  kmoyal.cc      ksym2poly.cc \
+kdesolve.cc      kifactor.cc         kpermu.cc      ksymbolic.cc \
+kdisplay.cc      kintgab.cc          kplot.cc       ktex.cc \
+ main.cpp -Tprizm.ld -L/opt/casio/lib -ltommath -lustl -lm -lc -lgcc -o test.bin
+mkg3a -n basic:Khicasen -n internal:KHICASEN -V 1.4.9 -i uns:khicasio.png -i sel:khicasio1.png test.bin /shared/PrizmSDK-0.3/khicasen.g3a 
