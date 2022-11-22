@@ -301,7 +301,8 @@ void VMResume() {
 
 
 void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
-    char buf[64];
+    char buf[19];
+    uint8_t i;
 
     // if ((task == pSysTask) && g_sysfault_auto_reboot)
     {
@@ -314,16 +315,26 @@ void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
         pRegFram -= 16;
 
         DisplayClean();
-        DisplayFillBox(4, 4, 252, 20, 0);
-        DisplayPutStr(16, 5, "System Panic! ", 255, 0, 16);
-        DisplayFillBox(8, 24, 248, 120, 208);
+        //DisplayFillBox(4, 4, 252, 20, 0);
+        //DisplayPutStr(16, 5, "System Panic! ", 255, 0, 16);
+        //DisplayFillBox(8, 24, 248, 120, 208);
 
         if (res != NULL) {
-            DisplayPutStr(240 - 8 * strlen(res), 5, strcat(res, " "), 208, 0, 16);
+            DisplayPutStr(56, 16, strcat(res, " "), 208, 0, 16);
         }
 
-        DisplayPutStr(24, 16 * 2 - 8, "[ON+F5] > Maintenance Menu", 96, 208, 16);
+        //DisplayPutStr(24, 16 * 2 - 8, "[ON+F5] > Maintenance Menu", 96, 208, 16);
 
+        for(i = 0; i < 4; i++){
+            memset(buf, 0, sizeof(buf));
+            sprintf(buf, "%08lx %08lx ", pRegFram[12 + i], pRegFram[i]);
+            DisplayPutStr(56, 16 * (i + 2), buf, 0, 208, 16);
+        }
+        memset(buf, 0, sizeof(buf));
+        sprintf(buf, "%08lx %08lx ", pRegFram[-1], address);
+        DisplayPutStr(56, 96, buf, 0, 208, 16);
+        
+        /*
         memset(buf, 0, sizeof(buf));
         sprintf(buf, "R12:%08lx  R0:%08lx ", pRegFram[12], pRegFram[0]);
         DisplayPutStr(24, 16 * 3 - 8, buf, 0, 208, 16);
@@ -343,6 +354,7 @@ void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
         memset(buf, 0, sizeof(buf));
         sprintf(buf, "CPSR:%08lx FAR:%08lx ", pRegFram[-1], address);
         DisplayPutStr(24, 16 * 7 - 8, buf, 0, 208, 16);
+        */
 
         g_vm_status = VM_STATUS_UNCONSCIOUS;
 
@@ -636,7 +648,7 @@ void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters
             VMSuspend();
             DisplayClean();
 
-            int key, op;
+            uint8_t key, op;
             op = 0;
             DisplayFillBox(4, 4, 252, 20, 0);
             DisplayPutStr(36, 5, "Device Maintenance Menu ", 255, 0, 16);
@@ -649,16 +661,17 @@ void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters
                 // DisplayFlushArea(20, 100, 39, 109, &logo, true);
                 //  DisplayCircle(128, 64, 48, 129, true);
 
-                vTaskDelay(pdMS_TO_TICKS(500));
+                vTaskDelay(pdMS_TO_TICKS(200));
                 key = waitAnyKey();
 
                 DisplayFillBox(8, 24, 248, 120, 208);
+                vTaskDelay(pdMS_TO_TICKS(200));
                 if (key == KEY_F1) {
                     DisplayPutStr(16, 32, "Clear System Data?", 32, 208, 16);
-                    DisplayPutStr(16, 48, "User data will be erased! ", 128, 208, 16);
+                    //DisplayPutStr(16, 48, "User data will be erased! ", 128, 208, 16);
                     DisplayPutStr(16, 104, "[Enter]: YES    [Else]: NO ", 32, 208, 16);
 
-                    vTaskDelay(pdMS_TO_TICKS(200));
+                    //vTaskDelay(pdMS_TO_TICKS(200));
                     key = waitAnyKey();
 
                     DisplayFillBox(8, 24, 248, 120, 208);
@@ -668,7 +681,7 @@ void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters
                         DisplayFillBox(48, 80, 208, 96, 200);
                         DisplayFillBox(50, 82, 206, 94, 255);
 
-                        vTaskDelay(pdMS_TO_TICKS(500));
+                        //vTaskDelay(pdMS_TO_TICKS(500));
                         for (int i = FLASH_DATA_BLOCK; i < 1024; i++) {
                             MTD_ErasePhyBlock(i);
                             DisplayFillBox(52, 84, 52 + i * 0.15, 92, 16);
@@ -678,11 +691,11 @@ void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters
 
                 } else if (key == KEY_F2) {
                     DisplayPutStr(16, 32, "Erase ALL Flash? ", 32, 208, 16);
-                    DisplayPutStr(16, 48, "You need to ", 128, 208, 16);
-                    DisplayPutStr(16, 64, "reinstall firmware! ", 128, 208, 16);
+                    //DisplayPutStr(16, 48, "You need to ", 128, 208, 16);
+                    //DisplayPutStr(16, 64, "reinstall firmware! ", 128, 208, 16);
                     DisplayPutStr(16, 104, "[Enter]: YES    [Else]: NO ", 32, 208, 16);
 
-                    vTaskDelay(pdMS_TO_TICKS(200));
+                    //vTaskDelay(pdMS_TO_TICKS(200));
                     key = waitAnyKey();
 
                     DisplayFillBox(8, 24, 248, 120, 208);
@@ -691,16 +704,16 @@ void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters
                         DisplayPutStr(60, 42, "Erasing All Flash", 255, 128, 16);
                         DisplayFillBox(48, 80, 208, 96, 200);
                         DisplayFillBox(50, 82, 206, 94, 255);
-                        vTaskDelay(pdMS_TO_TICKS(500));
 
+                        //vTaskDelay(pdMS_TO_TICKS(500));
                         for (int i = 0; i < 1024; i++) {
                             MTD_ErasePhyBlock(i);
                             DisplayFillBox(52, 84, 52 + i * 0.15, 92, 16);
                         }
 
-                        DisplayFillBox(8, 24, 248, 120, 208);
-                        DisplayPutStr(30, 48, "ALL FLASH HAS BEEN ERASED ", 32, 208, 16);
-                        vTaskDelay(pdMS_TO_TICKS(1000));
+                        //DisplayFillBox(8, 24, 248, 120, 208);
+                        //DisplayPutStr(30, 48, "ALL FLASH HAS BEEN ERASED ", 32, 208, 16);
+                        //vTaskDelay(pdMS_TO_TICKS(1000));
                         op = 2;
                     }
 
