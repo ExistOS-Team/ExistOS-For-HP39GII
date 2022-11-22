@@ -592,6 +592,9 @@ For VSCode users, `clang-format` extension is available to format the code conve
   <img src = "https://contrib.rocks/image?repo=ExistOS-Team/ExistOS-For-HP39GII"/>
 </a>
 
+Special thanks to:
+- [parisseb](https://github.com/parisseb)
+
 ## License
 
 [GPL-3.0](./LICENSE)

@@ -125,18 +125,23 @@ char *Setup_SetEntry(unsigned int index, char setting) {
     return NULL;
 }
 
-
-
-#define INPUT_TRANSLATE(_rawin, normal, shift_l, shift_r,  alpha_capital, alpha_small) \
-    case _rawin :    \
-        {   \
-          if(keyStatus & 1){*key = shift_l;}  \
-          else if(rshift)  {*key = shift_r;}  \
-          else if(keyStatus & 4)  {*key = alpha_small;}  \
-          else if(keyStatus & 8)  {*key = alpha_capital;}  \
-          else {*key = normal;}  \
-          break;\
-        }  \
+#define INPUT_TRANSLATE(_rawin, normal, shift_l, shift_r, alpha_capital, alpha_small) \
+    case _rawin: {                                                                    \
+        if (keyStatus & 1) {                                                          \
+            *key = shift_l;                                                           \
+            keyStatus = 0;                                                            \
+            flush_indBit();                                                           \
+        } else if (rshift) {                                                          \
+            *key = shift_r;                                                           \
+        } else if (keyStatus & 4) {                                                   \
+            *key = alpha_small;                                                       \
+        } else if (keyStatus & 8) {                                                   \
+            *key = alpha_capital;                                                     \
+        } else {                                                                      \
+            *key = normal;                                                            \
+        }                                                                             \
+        break;                                                                        \
+    }
 
 bool IsKeyDown(int test_key)
 {
@@ -167,7 +172,7 @@ bool IsKeyDown(int test_key)
 
         INPUT_TRANSLATE(KEY_NUM, KEY_CTRL_OPTN, KEY_SHIFT_OPTN, KEY_SHIFT_OPTN, KEY_CTRL_OPTN, KEY_CTRL_OPTN);
         INPUT_TRANSLATE(KEY_SYMB, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP);
-        INPUT_TRANSLATE(KEY_VARS, KEY_CTRL_VARS, KEY_CTRL_VARS, KEY_CTRL_VARS, 'a', 'A');
+        INPUT_TRANSLATE(KEY_VARS, KEY_CTRL_VARS, KEY_CTRL_INS, KEY_CTRL_VARS, 'a', 'A');
         INPUT_TRANSLATE(KEY_MATH, KEY_CTRL_MENU, 0000000000000, 0000000000000, 'b', 'B');
         INPUT_TRANSLATE(KEY_ABC, KEY_CTRL_FRACCNVRT, KEY_CTRL_MIXEDFRAC, 0000000000000, 'c', 'C');
         INPUT_TRANSLATE(KEY_XTPHIN, KEY_CTRL_XTT, KEY_CHAR_EXPN10, KEY_CHAR_EXPN10, 'd', 'D');
@@ -298,7 +303,7 @@ int GetKey(int *key) {
 
         INPUT_TRANSLATE(KEY_NUM, KEY_CTRL_OPTN, KEY_SHIFT_OPTN, KEY_SHIFT_OPTN, KEY_CTRL_OPTN, KEY_CTRL_OPTN);
         INPUT_TRANSLATE(KEY_SYMB, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP);
-        INPUT_TRANSLATE(KEY_VARS, KEY_CTRL_VARS, KEY_CTRL_VARS, KEY_CTRL_VARS, 'a', 'A');
+        INPUT_TRANSLATE(KEY_VARS, KEY_CTRL_VARS, KEY_CTRL_INS, KEY_CTRL_VARS, 'a', 'A');
         INPUT_TRANSLATE(KEY_MATH, KEY_CTRL_MENU, 0000000000000, 0000000000000, 'b', 'B');
         INPUT_TRANSLATE(KEY_ABC, KEY_CTRL_FRACCNVRT, KEY_CTRL_MIXEDFRAC, 0000000000000, 'c', 'C');
         INPUT_TRANSLATE(KEY_XTPHIN, KEY_CTRL_XTT, KEY_CHAR_EXPN10, KEY_CHAR_EXPN10, 'd', 'D');
