@@ -447,17 +447,6 @@ void PrintXY(int x, int y, unsigned char const *s, int rev) {
         vGL_putString(x, y, (char *)s, 0, 255, 12);
     }
 }
-
-void locate(int x, int y) {
-    vGL_ConsLocate(x, y);
-}
- 
-void PrintRev(unsigned char *s) {
-    vGL_ConsOut((char *)s, true);
-} 
-void Print(unsigned char *s) {
-    vGL_ConsOut((char *)s, false);
-}
  
 void PopUpWin(int win) {
     printf("PopUpWin:%d\n", win);
