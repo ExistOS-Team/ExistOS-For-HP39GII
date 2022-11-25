@@ -59,9 +59,6 @@ sector    item
 */
 
 
-uint8_t MSCRBuffer[2048] __aligned(4);
-uint8_t MSCWRBuf[2048] __aligned(4);
-
 uint8_t msc_rec_disk_root[] =
     {
         // first entry is volume label

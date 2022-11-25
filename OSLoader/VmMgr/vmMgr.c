@@ -264,7 +264,7 @@ void vmMgr_ReleaseAllPage() {
 
 void __attribute__((optimize("-O3"))) vmMgr_task() {
     pageFaultInfo_t currentFault;
-    MapList_t *mapinfo;
+    MapList_t *mapinfo; 
 
     for (;;) {
         while (xQueueReceive(PageFaultQueue, &currentFault, portMAX_DELAY) == pdTRUE) {
@@ -272,6 +272,14 @@ void __attribute__((optimize("-O3"))) vmMgr_task() {
 
             VM_INFO("REC FAULT TASK [%s] DAB. access %08x, FSR:%08x\n",
                     pcTaskGetName(currentFault.FaultTask), currentFault.FaultMemAddr, currentFault.FSR);
+            
+            #if USE_HARDWARE_DFLPT
+                if(reload_DFLPT_seg(currentFault.FaultMemAddr >> 20) == 2)
+                {
+                    vTaskResume(currentFault.FaultTask);
+                    continue;
+                }
+            #endif
 
             if (vmMgr_CheckAddrVaild(currentFault.FaultMemAddr) == false) {
                 taskAccessFaultAddr(&currentFault, "Area is not mapped.");

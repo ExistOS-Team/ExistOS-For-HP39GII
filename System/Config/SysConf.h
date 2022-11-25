@@ -10,15 +10,17 @@
 #define INDICATE_RX        (1 << 6)
 
 #define RAM_BASE    (0x02000000)
-#define RAM_SIZE    (3 * 1048576)
+#define RAM_SIZE    (270* 1024)
 
 #define FS_FATFS        0
 #define FS_LITTLEFS     1
 #define FS_TYPE         FS_FATFS
 
-#define NORMAL_STACK_ADDR   (RAM_BASE + RAM_SIZE - 8)
-#define IRQ_STACK_ADDR      (NORMAL_STACK_ADDR  - 100 * 4)
-#define SWI_STACK_ADDR      (IRQ_STACK_ADDR     - 100 * 4)
-#define KERNEL_HEAP_END     (SWI_STACK_ADDR - 100 * 4)
+
+#define IRQ_STACK_ADDR      (RAM_BASE + RAM_SIZE - 4)
+#define SWI_STACK_ADDR      (IRQ_STACK_ADDR  - 100 * 4)
+#define NORMAL_STACK_ADDR   (SWI_STACK_ADDR  - 100 * 4)
+
+#define KERNEL_HEAP_END     (NORMAL_STACK_ADDR - 100 * 4)
 
 #endif

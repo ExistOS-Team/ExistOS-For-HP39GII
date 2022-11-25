@@ -680,20 +680,27 @@ static void emu48_msgbox_event_cb(lv_event_t *e) {
 }
 
 void khicasTask(void *arg) {
-    lv_obj_t *win = lv_win_create(lv_scr_act(), 0);
-    lv_obj_t *cont = lv_win_get_content(win);
-    lv_obj_t *text = lv_label_create(cont);
+    if(arg == NULL)
+    {
+        lv_obj_t *win = lv_win_create(lv_scr_act(), 0);
+        lv_obj_t *cont = lv_win_get_content(win);
+        lv_obj_t *text = lv_label_create(cont);
 
-    lv_label_set_text(text, "Loading...");
-    vTaskDelay(pdMS_TO_TICKS(1000));
+        lv_label_set_text(text, "Loading...");
+        vTaskDelay(pdMS_TO_TICKS(1000));
 
-    lv_obj_del_async(win);
+        lv_obj_del_async(win);
 
-    SystemUISuspend();
+        SystemUISuspend();
+    }
+
     void testcpp();
     testcpp();
 
-    SystemUIResume();
+    if(arg == NULL)
+    {
+        SystemUIResume();
+    }
 
     vTaskDelete(NULL);
 }
@@ -705,7 +712,7 @@ static void app_btn_handler(lv_event_t *e) {
         lv_obj_t *label = lv_obj_get_child(obj, 0);
         if (label) {
             if (strcmp(lv_label_get_text(label), "KhiCAS") == 0) {
-                xTaskCreate(khicasTask, "KhiCAS", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
+                xTaskCreate(khicasTask, "KhiCAS", 2048, NULL, configMAX_PRIORITIES - 3, NULL);
             } else if (strcmp(lv_label_get_text(label), "Emu48") == 0) {
                 FIL *f = pvPortMalloc(sizeof(FIL));
                 FRESULT fr;
@@ -719,7 +726,7 @@ static void app_btn_handler(lv_event_t *e) {
                     lv_label_set_text(text, "Loading...");
                     // vTaskDelay(pdMS_TO_TICKS(1000));
                     void emu48_task(void *_);
-                    xTaskCreate(emu48_task, "emu48", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
+                    xTaskCreate(emu48_task, "emu48", 2048, NULL, configMAX_PRIORITIES - 3, NULL);
 
                 } else {
                     vPortFree(f);
@@ -1133,7 +1140,7 @@ void main() {
     ll_set_svc_vector(((uint32_t)SWI_ISR) + 4);
     ll_enable_irq(false);
     // ll_set_keyboard(true);
-    ll_cpu_slowdown_enable(false);
+    
 
     // memset(&__HEAP_START[0], 0xFF, 384 * 1024);
 
@@ -1141,12 +1148,35 @@ void main() {
 
     printf("System Booting...\n");
 
-    // xTaskCreate(vTask1, "Task1", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
-    // xTaskCreate(vTask2, "Task2", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
+    
+    xTaskCreate(vTask1, "print task", 100, NULL, configMAX_PRIORITIES - 3, NULL);
 
-    xTaskCreate(main_thread, "System", 16384, NULL, configMAX_PRIORITIES - 3, NULL);
-
+    //========================  Load total sys
+    /*
     ll_cpu_slowdown_enable(true);
+    xTaskCreate(main_thread, "System", 2000, NULL, configMAX_PRIORITIES - 3, NULL);
+*/
+
+    //========================  Load FS and khicas directly
+    
+    
+    ll_cpu_slowdown_enable(false);
+
+    FRESULT fres;
+    FATFS *fs = pvPortMalloc(sizeof(FATFS));
+
+    fres = f_mount(fs, FS_FLASH_PATH, 1);
+    if (fres != FR_OK) {
+            BYTE *work = pvPortMalloc(FF_MAX_SS);
+            fres = f_mkfs(FS_FLASH_PATH, 0, work, FF_MAX_SS);
+            printf("mkfs:%d\n", fres);
+            vPortFree(work);
+    }
+        //stack for task: 2048 (WORD) * 4 = 8KB 
+    xTaskCreate(khicasTask, "KhiCAS", 2048 , (void *)1, configMAX_PRIORITIES - 3, (NULL));
+    
+    //========================
+
 
     vTaskStartScheduler();
 

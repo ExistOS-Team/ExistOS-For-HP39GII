@@ -13,18 +13,20 @@
 
 
 #define ABT_STACK_ADDR      (MEMORY_BASE + MEMORY_SIZE - 4)
-#define UND_STACK_ADDR      (ABT_STACK_ADDR - 0x400)
-#define FIQ_STACK_ADDR      (UND_STACK_ADDR - 0x200)
-#define IRQ_STACK_ADDR      (FIQ_STACK_ADDR - 0x200)
-#define SVC_STACK_ADDR      (IRQ_STACK_ADDR - 0x400)
-#define SYS_STACK_ADDR      (SVC_STACK_ADDR - 0x400)
+#define UND_STACK_ADDR      (ABT_STACK_ADDR - 0x100)
+#define FIQ_STACK_ADDR      (UND_STACK_ADDR - 0x100)
+#define IRQ_STACK_ADDR      (FIQ_STACK_ADDR - 0x100)
+#define SVC_STACK_ADDR      (IRQ_STACK_ADDR - 0x100)
+#define SYS_STACK_ADDR      (SVC_STACK_ADDR - 0x100)
 
 
-#define HEAP_END        (SYS_STACK_ADDR - 0x200)
+#define HEAP_END        (SYS_STACK_ADDR - 0x100)
 
 
-#define USE_TINY_PAGE       (1)
-#define VMRAM_USE_FTL       (1)
+#define USE_TINY_PAGE        (1)
+#define VMRAM_USE_FTL        (0)
+
+#define USE_HARDWARE_DFLPT   (1)
 
 #define SEG_SIZE            1048576
 
@@ -34,15 +36,19 @@
         #ifdef ENABLE_AUIDIOOUT
             #define NUM_CACHEPAGE             ( 200 ) // 273 * 1 = 273 KB
         #else
-            #define NUM_CACHEPAGE             ( 268 ) // 273 * 1 = 273 KB
+            #if USE_HARDWARE_DFLPT
+                #define NUM_CACHEPAGE             ( 292 ) // 292 KB (Reserve 4KB for OSL)
+            #else
+                #define NUM_CACHEPAGE             ( 260 ) // (Reserve 4KB for OSL Driver)
+            #endif
         #endif
     #else
         #define NUM_CACHEPAGE             ( 79 ) // 79 * 4 = 316 KB
     #endif
 #else
     #if USE_TINY_PAGE
-        #define NUM_CACHEPAGE             ( 256 )
-        #define VM_RAM_SIZE_NONE_FTL      ( 24 * 1024 )
+        #define NUM_CACHEPAGE             ( 32 )
+        #define VM_RAM_SIZE_NONE_FTL      ( 270 * 1024 )
     #else
         #define NUM_CACHEPAGE             ( 32 )
         #define VM_RAM_SIZE_NONE_FTL      ( 168 * 1024 )

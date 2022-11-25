@@ -425,8 +425,8 @@ int vGL_Initialize() {
 #endif
 
 
-    xTaskCreate(vGL_flushTask, "vGLRefTsk", 1024, NULL, configMAX_PRIORITIES - 3, NULL);
-    xTaskCreate(vGL_consoleTask, "vGLConsoleTsk", 1024, NULL, configMAX_PRIORITIES - 3, NULL);
+    xTaskCreate(vGL_flushTask, "vGLRefTsk", 100, NULL, configMAX_PRIORITIES - 3, NULL);
+    xTaskCreate(vGL_consoleTask, "vGLConsoleTsk", 100, NULL, configMAX_PRIORITIES - 3, NULL);
 
     //vGL_FlushVScreen();
 

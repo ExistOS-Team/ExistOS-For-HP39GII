@@ -4,7 +4,7 @@
 
 static mtdInfo_t *pMtdinfo;
 
-static uint8_t PageBuffer[2048] __attribute__((aligned(2048)));
+static uint8_t PageBuffer[2048] __attribute__((aligned(4)));
 static uint8_t CopyBuffer[2048] __attribute__((aligned(4)));
 
 static struct dhara_nand nandDevice;
@@ -190,7 +190,7 @@ int FTL_MapInit() {
     dhara_map_init(&FTLmap, &nandDevice, PageBuffer, GC_RATIO);
     err = 0;
     ret = dhara_map_resume(&FTLmap, &err);
-    INFO("Resume FTL: %d,%s\n", ret, dhara_strerror(err));
+    INFO("Resume FTL: %d\n", ret);
 
     max_ftl_pages = dhara_map_capacity(&FTLmap);
     INFO("FTL capacity %ld/%ld (%ld K/ %ld K)\n", dhara_map_size(&FTLmap), max_ftl_pages, dhara_map_size(&FTLmap) * pMtdinfo->PageSize_B / 1024, dhara_map_capacity(&FTLmap) * pMtdinfo->PageSize_B / 1024);

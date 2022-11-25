@@ -61,7 +61,7 @@ extern uint32_t volatile g_latest_key_status;
 volatile uint32_t g_vm_status = VM_STATUS_SUSPEND;
 bool vm_needto_reset = false;
 
-char pcWriteBuffer[4096 + 1024];
+///char pcWriteBuffer[4096 + 1024];
 uint32_t HCLK_Freq;
 
 extern uint32_t g_page_vram_fault_cnt;
@@ -301,8 +301,7 @@ void VMResume() {
 
 
 void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
-    char buf[19];
-    uint8_t i;
+    char buf[32];
 
     // if ((task == pSysTask) && g_sysfault_auto_reboot)
     {
@@ -315,16 +314,17 @@ void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
         pRegFram -= 16;
 
         DisplayClean();
-        //DisplayFillBox(4, 4, 252, 20, 0);
-        //DisplayPutStr(16, 5, "System Panic! ", 255, 0, 16);
-        //DisplayFillBox(8, 24, 248, 120, 208);
+        DisplayFillBox(4, 4, 252, 20, 0);
+        DisplayPutStr(16, 5, "System Panic! ", 255, 0, 16);
+        DisplayFillBox(8, 24, 248, 120, 208);
+
 
         if (res != NULL) {
-            DisplayPutStr(56, 16, strcat(res, " "), 208, 0, 16);
+            DisplayPutStr(240 - 8 * strlen(res), 5, strcat(res, " "), 208, 0, 16);
         }
 
-        //DisplayPutStr(24, 16 * 2 - 8, "[ON+F5] > Maintenance Menu", 96, 208, 16);
-
+        DisplayPutStr(24, 16 * 2 - 8, "[ON+F5] > Maintenance Menu", 96, 208, 16);
+/*
         for(i = 0; i < 4; i++){
             memset(buf, 0, sizeof(buf));
             sprintf(buf, "%08lx %08lx ", pRegFram[12 + i], pRegFram[i]);
@@ -333,8 +333,8 @@ void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
         memset(buf, 0, sizeof(buf));
         sprintf(buf, "%08lx %08lx ", pRegFram[-1], address);
         DisplayPutStr(56, 96, buf, 0, 208, 16);
+*/  
         
-        /*
         memset(buf, 0, sizeof(buf));
         sprintf(buf, "R12:%08lx  R0:%08lx ", pRegFram[12], pRegFram[0]);
         DisplayPutStr(24, 16 * 3 - 8, buf, 0, 208, 16);
@@ -354,7 +354,7 @@ void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
         memset(buf, 0, sizeof(buf));
         sprintf(buf, "CPSR:%08lx FAR:%08lx ", pRegFram[-1], address);
         DisplayPutStr(24, 16 * 7 - 8, buf, 0, 208, 16);
-        */
+        
 
         g_vm_status = VM_STATUS_UNCONSCIOUS;
 
