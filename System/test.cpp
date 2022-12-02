@@ -281,7 +281,7 @@ void tstrun(const char *s)
 extern "C"{
 extern bool khicasRunning;
 #include "SystemFs.h"
-#include "lfs.h"
+//#include "lfs.h"
 #include "SysConf.h"
  
     void testcpp() 

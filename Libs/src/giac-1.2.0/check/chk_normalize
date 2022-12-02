@@ -1,3 +1,0 @@
-#! /bin/sh
-../src/icas testnormalize > normalize.tst
-diff normalize.tst normalize.out

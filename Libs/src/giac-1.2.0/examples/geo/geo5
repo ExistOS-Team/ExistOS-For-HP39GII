@@ -1,3 +1,0 @@
-segment(B,C);
-D:=perpendiculaire(A,droite(B,C));
-P:=perpendiculaire(A,D);

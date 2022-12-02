@@ -343,6 +343,8 @@ void mmu_unmap_page(uint32_t vaddr)
     #else
         L2PTE[(vaddr >> 12) & 0xFF] = 0;
     #endif
+
+    mmu_invalidate_tlb();
 }
 
 void mmu_map_page(uint32_t vaddr, uint32_t paddr,
@@ -412,6 +414,7 @@ void mmu_map_page(uint32_t vaddr, uint32_t paddr,
 #endif
     VM_INFO("map page L2PTE:VAL:%08x\n", val);
 
+    mmu_invalidate_tlb();
 }
 
 void dump_MPTE()

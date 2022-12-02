@@ -1,4 +1,10 @@
 /*
+ * usbtmc_device.h
+ *
+ *  Created on: Sep 10, 2019
+ *      Author: nconrad
+ */
+/*
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 N Conrad
@@ -34,6 +40,10 @@
 #if !defined(CFG_TUD_USBTMC_ENABLE_488)
 #define CFG_TUD_USBTMC_ENABLE_488 (1)
 #endif
+
+// USB spec says that full-speed must be 8,16,32, or 64.
+// However, this driver implementation requires it to be >=32
+#define USBTMCD_MAX_PACKET_SIZE (64u)
 
 /***********************************************
  *  Functions to be implemeted by the class implementation

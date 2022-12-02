@@ -11,10 +11,14 @@
 #include "llapi.h"
 #include "llapi_code.h"
 #include "mapList.h"
+//#include "mem_malloc.h"
+#include "cdmp.h"
 #include "mmu.h"
+#include "queue.h"
 #include "vmMgr.h"
 
-#include "queue.h"
+#include "minilzo.h"
+#include "quicklz.h"
 
 typedef struct CachePageInfo_t {
     struct CachePageInfo_t *prev;
@@ -27,19 +31,41 @@ typedef struct CachePageInfo_t {
     bool dirty;
     bool lock;
 } CachePageInfo_t;
+#if SEPARATE_VMM_CACHE
+uint8_t CachePageTotal[PAGE_SIZE * (NUM_CACHEPAGE_VROM + NUM_CACHEPAGE_VRAM)] __attribute__((aligned(PAGE_SIZE)));
+uint8_t *CachePageVROM = &CachePageTotal[0];
+uint8_t *CachePageVRAM = &CachePageTotal[PAGE_SIZE * NUM_CACHEPAGE_VROM];
+uint8_t ZRAM[ZRAM_SIZE];
 
+uint32_t ZRAMAddress_Tab[ZRAM_COMPRESSED_SIZE / 1024];
+static CachePageInfo_t CachePageInfoVROM[NUM_CACHEPAGE_VROM];
+static CachePageInfo_t CachePageInfoVRAM[NUM_CACHEPAGE_VRAM];
+
+static volatile CachePageInfo_t *CachePageVROMCur;
+static volatile CachePageInfo_t *CachePageVROMHead;
+static volatile CachePageInfo_t *CachePageVROMTail;
+
+static volatile CachePageInfo_t *CachePageVRAMCur;
+static volatile CachePageInfo_t *CachePageVRAMHead;
+static volatile CachePageInfo_t *CachePageVRAMTail;
+
+#define CACHEVROM_PAGEn_BASE(n) (uint32_t)(&CachePageVROM[n * PAGE_SIZE])
+#define CACHEVRAM_PAGEn_BASE(n) (uint32_t)(&CachePageVRAM[n * PAGE_SIZE])
+
+bool mem_swap_enable = 0; 
+
+#else
 uint8_t CachePage[PAGE_SIZE * NUM_CACHEPAGE] __attribute__((aligned(PAGE_SIZE)));
 static CachePageInfo_t CachePageInfo[NUM_CACHEPAGE];
+static volatile CachePageInfo_t *CachePageCur;
+static volatile CachePageInfo_t *CachePageHead;
+static volatile CachePageInfo_t *CachePageTail;
+#define CACHE_PAGEn_BASE(n) (uint32_t)(&CachePage[n * PAGE_SIZE])
+#endif
 
 #if (VMRAM_USE_FTL == 0)
 uint8_t vm_ram_none_ftl[VM_RAM_SIZE_NONE_FTL] __attribute__((aligned(PAGE_SIZE)));
 #endif
-
-static volatile CachePageInfo_t *CachePageCur;
-static volatile CachePageInfo_t *CachePageHead;
-static volatile CachePageInfo_t *CachePageTail;
-
-#define CACHE_PAGEn_BASE(n) (uint32_t)(&CachePage[n * PAGE_SIZE])
 
 static bool vmMgrInit = false;
 
@@ -52,9 +78,22 @@ uint32_t g_page_vrom_fault_cnt = 0;
 extern bool g_vm_in_pagefault;
 
 uint8_t *VMMGR_GetCacheAddress() {
+#if SEPARATE_VMM_CACHE
+    return CachePageTotal;
+#else
     return CachePage;
+#endif
 }
-
+/*
+uint8_t calc_chksum(uint8_t *buf, uint32_t size) {
+    uint8_t result = 0;
+    uint32_t i = 0;
+    while (size--) {
+        result ^= buf[i++];
+    }
+    return result;
+}
+*/
 QueueHandle_t PageFaultQueue;
 
 void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address);
@@ -92,6 +131,7 @@ static void taskAccessFaultAddr(pageFaultInfo_t *info, char *res) {
         VM_Unconscious(info->FaultTask, "[???]", info->FaultMemAddr);
         break;
     }
+    // cdmp_dump_layout();
 }
 
 extern volatile uint32_t swapping;
@@ -110,6 +150,199 @@ inline static bool vmMgr_CheckAddrVaild(uint32_t addr) {
 
     return true;
 }
+
+#if SEPARATE_VMM_CACHE
+static inline void get_vrom_page_and_move_to_tail() {
+
+    CachePageVROMCur = CachePageVROMHead;
+
+    CachePageVROMHead = CachePageVROMHead->next;
+    CachePageVROMHead->prev = NULL;
+
+    CachePageVROMTail->next = (CachePageInfo_t *)CachePageVROMCur;
+    CachePageVROMCur->prev = (CachePageInfo_t *)CachePageVROMTail;
+    CachePageVROMCur->next = NULL;
+
+    CachePageVROMTail = CachePageVROMCur;
+}
+static inline void get_vram_page_and_move_to_tail() {
+
+    CachePageVRAMCur = CachePageVRAMHead;
+
+    CachePageVRAMHead = CachePageVRAMHead->next;
+    CachePageVRAMHead->prev = NULL;
+
+    CachePageVRAMTail->next = (CachePageInfo_t *)CachePageVRAMCur;
+    CachePageVRAMCur->prev = (CachePageInfo_t *)CachePageVRAMTail;
+    CachePageVRAMCur->next = NULL;
+
+    CachePageVRAMTail = CachePageVRAMCur;
+}
+
+static inline void move_vrom_cache_page_to_tail(CachePageInfo_t *item) {
+    if ((!item->next) && (item->prev)) {
+        return;
+    }
+    if ((item->prev) && (item->next)) {
+        item->prev->next = item->next;
+        item->next->prev = item->prev;
+        item->prev = (CachePageInfo_t *)CachePageVROMTail;
+        CachePageVROMTail->next = item;
+        CachePageVROMTail = item;
+        return;
+    }
+    if ((item->next) && (!item->prev)) {
+        get_vrom_page_and_move_to_tail();
+    }
+}
+
+static inline void move_vram_cache_page_to_tail(CachePageInfo_t *item) {
+    if ((!item->next) && (item->prev)) {
+        return;
+    }
+    if ((item->prev) && (item->next)) {
+        item->prev->next = item->next;
+        item->next->prev = item->prev;
+        item->prev = (CachePageInfo_t *)CachePageVRAMTail;
+        CachePageVRAMTail->next = item;
+        CachePageVRAMTail = item;
+        return;
+    }
+    if ((item->next) && (!item->prev)) {
+        get_vram_page_and_move_to_tail();
+    }
+}
+
+static inline CachePageInfo_t *search_vrom_cache_page_by_vaddr(uint32_t vaddr) {
+    CachePageInfo_t *tmp = (CachePageInfo_t *)CachePageVROMTail;
+    do {
+        if (tmp->mapToVirtAddr == vaddr) {
+            return tmp;
+        }
+        tmp = tmp->prev;
+    } while (tmp);
+    return NULL;
+}
+
+static inline CachePageInfo_t *search_vram_cache_page_by_vaddr(uint32_t vaddr) {
+    CachePageInfo_t *tmp = (CachePageInfo_t *)CachePageVRAMTail;
+    do {
+        if (tmp->mapToVirtAddr == vaddr) {
+            return tmp;
+        }
+        tmp = tmp->prev;
+    } while (tmp);
+    return NULL;
+}
+
+// char compress_buffer[PAGE_SIZE + 42];
+uint32_t compress_buffer[2 * PAGE_SIZE / (sizeof(uint32_t)) + 12];
+// static qlz_state_compress comp_state;
+// static qlz_state_decompress decomp_state;
+uint32_t comp_wrkbuffer[2048 / 4];
+
+extern uint32_t g_mem_comp_rate[16];
+extern uint32_t g_mem_comp_rate_ptr;
+static inline int save_cache_page(CachePageInfo_t *cache_page) {
+    // sizeof(comp_state);
+    // sizeof(decomp_state);
+    int ret = 0;
+    uint32_t sz;
+    if (
+        (cache_page->dirty) &&
+        (cache_page->onPart == MAP_PART_FTL)) {
+        mmu_clean_invalidated_dcache(cache_page->mapToVirtAddr, PAGE_SIZE);
+        mmu_drain_buffer();
+        // printf("sector:%d,%d\n", cache_page->onSector, cache_page->sectorOffset);
+        // printf("ind:%d\n", (cache_page->onSector * 2048 + cache_page->sectorOffset) / PAGE_SIZE);
+        uint32_t ind = (cache_page->onSector * 2048 + cache_page->sectorOffset) / PAGE_SIZE;
+        if (ind < (ZRAM_COMPRESSED_SIZE / PAGE_SIZE)) {
+            //
+            // memcpy(mem_buffer(ZRAMAddress_Tab[ind]), (void *)cache_page->PageOnPhyAddr, PAGE_SIZE);
+            // memset(workbuf_comp, 0, sizeof(workbuf_comp));
+#if MEM_COMPRESSION_ALGORITHM == QUICKLZ
+            sz = qlz_compress((void *)cache_page->PageOnPhyAddr, compress_buffer, PAGE_SIZE, (qlz_state_compress *)&comp_state);
+            g_mem_comp_rate[g_mem_comp_rate_ptr++] = sz * 100 / PAGE_SIZE;
+            if (g_mem_comp_rate_ptr >= 16) {
+                g_mem_comp_rate_ptr = 0;
+            }
+            cdmp_free(ZRAMAddress_Tab[ind]);
+            ZRAMAddress_Tab[ind] = cdmp_alloc(sz);
+            cdmp_wrtie(ZRAMAddress_Tab[ind], 0, sz, (void *)compress_buffer);
+#endif
+#if MEM_COMPRESSION_ALGORITHM == MINILZO
+            int ret = lzo1x_1_compress((void *)cache_page->PageOnPhyAddr, PAGE_SIZE, (char *)compress_buffer, &sz, comp_wrkbuffer);
+            if (ret == LZO_E_OK) {
+                lzo_sizeof_dict_t;
+                // printf("comp:%d>%d\n", PAGE_SIZE, sz);
+            } else {
+                printf("COMPERR:%d\n", ret);
+                while (1)
+                    ;
+            }
+            g_mem_comp_rate[g_mem_comp_rate_ptr++] = sz * 100 / PAGE_SIZE;
+            if (g_mem_comp_rate_ptr >= 16) {
+                g_mem_comp_rate_ptr = 0;
+            }
+            cdmp_free(ZRAMAddress_Tab[ind]);
+            ZRAMAddress_Tab[ind] = cdmp_alloc(sz);
+            cdmp_wrtie(ZRAMAddress_Tab[ind], 0, sz, (void *)compress_buffer);
+#endif
+#if MEM_COMPRESSION_ALGORITHM == 0
+            g_mem_comp_rate[g_mem_comp_rate_ptr++] = PAGE_SIZE * 100 / PAGE_SIZE;
+            if (g_mem_comp_rate_ptr >= 16) {
+                g_mem_comp_rate_ptr = 0;
+            }
+
+            cdmp_free(ZRAMAddress_Tab[ind]);
+            ZRAMAddress_Tab[ind] = cdmp_alloc(PAGE_SIZE);
+            cdmp_wrtie(ZRAMAddress_Tab[ind], 0, sz, (void *)cache_page->PageOnPhyAddr);
+#endif
+
+            // printf("page comp:%d -> %ld\n", PAGE_SIZE, sz);
+
+            // cdmp_wrtie(ZRAMAddress_Tab[ind], 0, PAGE_SIZE, (void *)cache_page->PageOnPhyAddr);
+        } else {
+            // printf("TO SWAP AREA\n");
+            if (mem_swap_enable) {
+                FTL_ReadSector(cache_page->onSector, 1, (uint8_t *)compress_buffer);
+                memcpy((void *)((uint32_t)compress_buffer + cache_page->sectorOffset), (uint8_t *)cache_page->PageOnPhyAddr, PAGE_SIZE);
+                FTL_WriteSector(cache_page->onSector, 1, (uint8_t *)compress_buffer);
+
+            } else {
+                printf("TO SWAP AREA!!\n");
+            }
+        }
+        /*
+        if(cache_page->mapToVirtAddr - VM_RAM_BASE < ZRAM_SIZE)
+        {
+            uint32_t ind = (cache_page->mapToVirtAddr - VM_RAM_BASE) / PAGE_SIZE;
+
+            //printf("Save IND:%d\n", (cache_page->mapToVirtAddr - VM_RAM_BASE) / PAGE_SIZE );
+            ZRAMAddress_Tab[ind] = cdmp_alloc(PAGE_SIZE);
+            cdmp_wrtie(ZRAMAddress_Tab[ind], 0, PAGE_SIZE, (void *)cache_page->PageOnPhyAddr);
+            chksum[ind] = calc_chksum((uint8_t *)cache_page->PageOnPhyAddr, PAGE_SIZE);
+
+        }else{
+            printf("TO FTL1\n");
+        }
+        */
+
+        /*
+                FTL_ReadSector(cache_page->onSector, 1, page_save_wr_buf);
+                memcpy(&page_save_wr_buf[CachePageCur->sectorOffset], (uint8_t *)cache_page->PageOnPhyAddr, PAGE_SIZE);
+                ret = FTL_WriteSector(cache_page->onSector, 1, (uint8_t *)page_save_wr_buf);
+                if (pagebuf_last_rd == cache_page->onSector) {
+                    pagebuf_last_rd = 0xFFFFFFFF;
+                }
+                */
+
+        cache_page->dirty = false;
+    }
+    return ret;
+}
+
+#else
 
 static inline __attribute__((target("thumb"))) void get_page_and_move_to_tail() {
 
@@ -154,8 +387,8 @@ static inline __attribute__((target("thumb"))) CachePageInfo_t *search_cache_pag
 }
 
 #if USE_TINY_PAGE
-static uint8_t page_save_wr_buf[2048]; // __attribute__((aligned(4096)));
-static uint8_t page_save_rd_buf[2048]; // __attribute__((aligned(4096)));
+static uint8_t page_save_wr_buf[2048];
+static uint8_t page_save_rd_buf[2048];
 static uint32_t pagebuf_last_rd = 0xFFFFFFFF;
 #endif
 
@@ -181,6 +414,8 @@ static inline int save_cache_page(CachePageInfo_t *cache_page) {
     return ret;
 }
 
+#endif
+
 bool inline __attribute__((target("thumb"))) vmMgr_checkAddressValid(uint32_t address, uint32_t perm) {
     if (address < MEMORY_SIZE) {
         return true;
@@ -201,6 +436,7 @@ bool inline __attribute__((target("thumb"))) vmMgr_checkAddressValid(uint32_t ad
 }
 
 // volatile uint8_t m_test_read;
+/*
 uint32_t vmMgr_LoadPageGetPAddr(uint32_t vaddr) {
     if (!vmMgr_checkAddressValid(vaddr, PERM_R)) {
         return 0;
@@ -224,6 +460,65 @@ uint32_t vmMgr_LoadPageGetPAddr(uint32_t vaddr) {
 
     return 0;
 }
+*/
+#if SEPARATE_VMM_CACHE
+
+void vmMgr_ReleaseAllPage() {
+    memset(CachePageTotal, 0, sizeof(CachePageTotal));
+    memset(CachePageInfoVRAM, 0, sizeof(CachePageInfoVRAM));
+    memset(CachePageInfoVROM, 0, sizeof(CachePageInfoVROM));
+    for (int i = 0; i < NUM_CACHEPAGE_VROM; i++) {
+        CachePageInfoVROM[i].dirty = false;
+        CachePageInfoVROM[i].onPart = -1;
+        CachePageInfoVROM[i].onSector = 0;
+        CachePageInfoVROM[i].sectorOffset = 0;
+        CachePageInfoVROM[i].PageOnPhyAddr = CACHEVROM_PAGEn_BASE(i);
+        CachePageInfoVROM[i].mapToVirtAddr = 0;
+        CachePageInfoVROM[i].lock = false;
+        if (i > 0) {
+            CachePageInfoVROM[i - 1].next = &CachePageInfoVROM[i];
+            CachePageInfoVROM[i].prev = &CachePageInfoVROM[i - 1];
+        }
+    }
+
+    CachePageVROMCur = CachePageVROMHead = &CachePageInfoVROM[0];
+    CachePageVROMTail = &CachePageInfoVROM[NUM_CACHEPAGE_VROM - 1];
+
+    for (int i = 0; i < NUM_CACHEPAGE_VRAM; i++) {
+        CachePageInfoVRAM[i].dirty = false;
+        CachePageInfoVRAM[i].onPart = -1;
+        CachePageInfoVRAM[i].onSector = 0;
+        CachePageInfoVRAM[i].sectorOffset = 0;
+        CachePageInfoVRAM[i].PageOnPhyAddr = CACHEVRAM_PAGEn_BASE(i);
+        CachePageInfoVRAM[i].mapToVirtAddr = 0;
+        CachePageInfoVRAM[i].lock = false;
+        if (i > 0) {
+            CachePageInfoVRAM[i - 1].next = &CachePageInfoVRAM[i];
+            CachePageInfoVRAM[i].prev = &CachePageInfoVRAM[i - 1];
+        }
+    }
+
+    CachePageVRAMCur = CachePageVRAMHead = &CachePageInfoVRAM[0];
+    CachePageVRAMTail = &CachePageInfoVRAM[NUM_CACHEPAGE_VRAM - 1];
+
+    mmu_drain_buffer();
+
+    for (uint32_t i = VM_ROM_BASE; i < VM_ROM_BASE + VM_ROM_SIZE; i += PAGE_SIZE) {
+        mmu_unmap_page(i);
+        mmu_clean_invalidated_dcache(i, PAGE_SIZE);
+    }
+    for (uint32_t i = VM_RAM_BASE; i < VM_RAM_BASE + VM_RAM_SIZE; i += PAGE_SIZE) {
+        mmu_unmap_page(i);
+        mmu_clean_dcache(i, PAGE_SIZE);
+        mmu_clean_invalidated_dcache(i, PAGE_SIZE);
+    }
+
+    mmu_invalidate_tlb();
+    mmu_invalidate_icache();
+    mmu_invalidate_dcache_all();
+}
+
+#else
 
 void vmMgr_ReleaseAllPage() {
     memset(CachePage, 0, sizeof(CachePage));
@@ -262,27 +557,34 @@ void vmMgr_ReleaseAllPage() {
     mmu_invalidate_dcache_all();
 }
 
-void __attribute__((optimize("-O3"))) vmMgr_task() {
+#endif
+
+void __attribute__((optimize("-Os"))) vmMgr_task() {
     pageFaultInfo_t currentFault;
-    MapList_t *mapinfo; 
+    MapList_t *mapinfo;
 
     for (;;) {
         while (xQueueReceive(PageFaultQueue, &currentFault, portMAX_DELAY) == pdTRUE) {
             vTaskSuspend(currentFault.FaultTask);
 
-            VM_INFO("REC FAULT TASK [%s] DAB. access %08x, FSR:%08x\n",
+            VM_INFO("PAGE FAULT TASK [%s]. access %08x, FSR:%08x\n",
                     pcTaskGetName(currentFault.FaultTask), currentFault.FaultMemAddr, currentFault.FSR);
-            
-            #if USE_HARDWARE_DFLPT
-                if(reload_DFLPT_seg(currentFault.FaultMemAddr >> 20) == 2)
-                {
-                    vTaskResume(currentFault.FaultTask);
-                    continue;
-                }
-            #endif
+
+#if USE_HARDWARE_DFLPT
+            if (reload_DFLPT_seg(currentFault.FaultMemAddr >> 20) == 2) {
+                vTaskResume(currentFault.FaultTask);
+                continue;
+            }
+#endif
 
             if (vmMgr_CheckAddrVaild(currentFault.FaultMemAddr) == false) {
                 taskAccessFaultAddr(&currentFault, "Area is not mapped.");
+                if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_PAB) {
+                    printf("PAB\n");
+                }
+                if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_DAB) {
+                    printf("DAB\n");
+                }
                 continue;
             }
 
@@ -292,6 +594,122 @@ void __attribute__((optimize("-O3"))) vmMgr_task() {
                 VM_INFO("Catch UnMap Mem:%s,%08x\n", pcTaskGetName(currentFault.FaultTask), currentFault.FaultMemAddr);
                 mapinfo = mapList_findVirtAddrInWhichMap(currentFault.FaultMemAddr);
                 if (mapinfo) {
+#if SEPARATE_VMM_CACHE
+                    switch (mapinfo->part) {
+                    case MAP_PART_RAWFLASH:
+                        g_page_vrom_fault_cnt++;
+                        get_vrom_page_and_move_to_tail();
+                        if (CachePageVROMCur->mapToVirtAddr) {
+                            mmu_unmap_page(CachePageVROMCur->mapToVirtAddr);
+                        }
+                        CachePageVROMCur->mapToVirtAddr = currentFault.FaultMemAddr & ~(PAGE_SIZE - 1);
+                        CachePageVROMCur->onPart = mapinfo->part;
+                        CachePageVROMCur->onSector = mapinfo->PartStartSector + ((currentFault.FaultMemAddr - mapinfo->VMemStartAddr) & 0xFFFFFC00) / 2048;
+                        CachePageVROMCur->sectorOffset = (currentFault.FaultMemAddr / 1024) % 2 ? 1024 : 0;
+                        CachePageVROMCur->dirty = false;
+                        MTD_ReadPhyPage(CachePageVROMCur->onSector, CachePageVROMCur->sectorOffset, PAGE_SIZE, (uint8_t *)CachePageVROMCur->PageOnPhyAddr);
+
+                        mmu_map_page(
+                            CachePageVROMCur->mapToVirtAddr,
+                            CachePageVROMCur->PageOnPhyAddr,
+                            AP_READONLY,
+                            VM_CACHE_ENABLE,
+                            VM_BUFFER_ENABLE);
+
+                        // if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_DAB)
+                        mmu_clean_invalidated_dcache(CachePageVROMCur->mapToVirtAddr, PAGE_SIZE);
+                        // if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_PAB)
+                        mmu_invalidate_icache();
+                        mmu_invalidate_tlb();
+                        // LL_CheckIRQAndTrap();
+                        vTaskResume(currentFault.FaultTask);
+                        g_vm_in_pagefault = false;
+                        break;
+
+                    case MAP_PART_FTL: {
+                        g_page_vram_fault_cnt++;
+                        get_vram_page_and_move_to_tail();
+                        save_cache_page((CachePageInfo_t *)CachePageVRAMCur);
+                        if (CachePageVRAMCur->mapToVirtAddr) {
+                            mmu_unmap_page(CachePageVRAMCur->mapToVirtAddr);
+                        }
+                        CachePageVRAMCur->mapToVirtAddr = currentFault.FaultMemAddr & ~(PAGE_SIZE - 1);
+                        CachePageVRAMCur->onPart = mapinfo->part;
+                        CachePageVRAMCur->onSector = mapinfo->PartStartSector + ((currentFault.FaultMemAddr - mapinfo->VMemStartAddr) & 0xFFFFFC00) / 2048;
+                        CachePageVRAMCur->sectorOffset = (currentFault.FaultMemAddr / 1024) % 2 ? 1024 : 0;
+                        CachePageVRAMCur->dirty = false;
+                        uint32_t zram_ind = (CachePageVRAMCur->onSector * 2048 + CachePageVRAMCur->sectorOffset) / PAGE_SIZE;
+                        if ((zram_ind < (ZRAM_COMPRESSED_SIZE / PAGE_SIZE))) {
+                            if (ZRAMAddress_Tab[zram_ind]) {
+// memset((void *)CachePageVRAMCur->PageOnPhyAddr, 0, PAGE_SIZE);
+// printf("free:%d\n", zram_ind);
+// cdmp_read(ZRAMAddress_Tab[zram_ind], 0, PAGE_SIZE, (void *)CachePageVRAMCur->PageOnPhyAddr);
+// cdmp_read(ZRAMAddress_Tab[zram_ind], 0, PAGE_SIZE, (void *)compress_buffer);
+// qlz_decompress(compress_buffer, (void *)CachePageVRAMCur->PageOnPhyAddr, &decomp_state);
+// memset(workbuf_comp, 0xFF, sizeof(workbuf_comp));
+#if MEM_COMPRESSION_ALGORITHM == QUICKLZ
+                                qlz_decompress(cdmp_get_memblock(ZRAMAddress_Tab[zram_ind]), (void *)CachePageVRAMCur->PageOnPhyAddr, (qlz_state_decompress *)&decomp_state);
+#endif
+#if MEM_COMPRESSION_ALGORITHM == MINILZO
+                                uint32_t sz;
+                                int ret = lzo1x_decompress(cdmp_get_memblock(ZRAMAddress_Tab[zram_ind]),
+                                                           cdmp_memblock_size(ZRAMAddress_Tab[zram_ind]),
+                                                           (void *)CachePageVRAMCur->PageOnPhyAddr, &sz, NULL);
+                                if ((ret == LZO_E_OK) || (ret == LZO_E_INPUT_NOT_CONSUMED)) {
+
+                                } else {
+                                    printf("DECOMP ERR:%d\n", ret);
+                                    while (1)
+                                        ;
+                                }
+#endif
+#if MEM_COMPRESSION_ALGORITHM == NONE
+                                cdmp_read(ZRAMAddress_Tab[zram_ind], 0, PAGE_SIZE, (void *)CachePageVRAMCur->PageOnPhyAddr);
+#endif
+
+                                // cdmp_free(ZRAMAddress_Tab[zram_ind]);
+
+                                // memcpy((void *)CachePageVRAMCur->PageOnPhyAddr, mem_buffer(ZRAMAddress_Tab[zram_ind]), PAGE_SIZE);
+                                // mem_free(ZRAMAddress_Tab[zram_ind]);
+                                // ZRAMAddress_Tab[zram_ind] = 0;
+                            } else {
+                                // printf("new page:%ld\n", zram_ind);
+                            }
+                        } else {
+                            if (mem_swap_enable) {
+                                FTL_ReadSector(CachePageVRAMCur->onSector, 1, (uint8_t *)compress_buffer);
+                                memcpy((uint8_t *)CachePageVRAMCur->PageOnPhyAddr, (void *)((uint32_t)compress_buffer + CachePageVRAMCur->sectorOffset), PAGE_SIZE);
+
+                            } else {
+                                printf("FROM SWAP AREA!!\n");
+                            }
+                        }
+
+                        mmu_map_page(
+                            CachePageVRAMCur->mapToVirtAddr,
+                            CachePageVRAMCur->PageOnPhyAddr,
+                            AP_READONLY,
+                            VM_CACHE_ENABLE,
+                            VM_BUFFER_ENABLE);
+
+                        // if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_DAB)
+                        mmu_clean_invalidated_dcache(CachePageVRAMCur->mapToVirtAddr, PAGE_SIZE);
+                        // if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_PAB)
+                        mmu_invalidate_icache();
+                        mmu_invalidate_tlb();
+                        // LL_CheckIRQAndTrap();
+                        vTaskResume(currentFault.FaultTask);
+                        g_vm_in_pagefault = false;
+                        break;
+
+                    } break;
+                    default:
+                        printf("VMMGR: Unknown map!\n");
+                        break;
+                    }
+                    break;
+
+#else
                     get_page_and_move_to_tail();
                     save_cache_page((CachePageInfo_t *)CachePageCur);
                     if (CachePageCur->mapToVirtAddr) {
@@ -357,7 +775,7 @@ void __attribute__((optimize("-O3"))) vmMgr_task() {
                     }
 
                     if (ret >= 0) {
-                        
+
                         mmu_map_page(
                             CachePageCur->mapToVirtAddr,
                             CachePageCur->PageOnPhyAddr,
@@ -378,6 +796,7 @@ void __attribute__((optimize("-O3"))) vmMgr_task() {
                     }
                     taskAccessFaultAddr(&currentFault, "Remap Failed.");
                     break;
+#endif
                 }
                 taskAccessFaultAddr(&currentFault, "Unknown Map.");
                 break;
@@ -388,6 +807,30 @@ void __attribute__((optimize("-O3"))) vmMgr_task() {
                 mapinfo = mapList_findVirtAddrInWhichMap(currentFault.FaultMemAddr);
                 if (mapinfo) {
                     if (mapinfo->perm & PERM_W) {
+#if SEPARATE_VMM_CACHE
+                        CachePageInfo_t *gotCache = search_vram_cache_page_by_vaddr(currentFault.FaultMemAddr & 0xFFFFFC00);
+                        if (gotCache) {
+                            // INFO("Get:%08x\n", gotCache->mapToVirtAddr);
+                            gotCache->dirty = true;
+                            move_vram_cache_page_to_tail(gotCache);
+                            mmu_unmap_page(gotCache->mapToVirtAddr);
+                            mmu_map_page(gotCache->mapToVirtAddr,
+                                         gotCache->PageOnPhyAddr,
+                                         AP_SYSRW_USRRW, VM_CACHE_ENABLE, VM_BUFFER_ENABLE);
+
+                            mmu_clean_invalidated_dcache(gotCache->mapToVirtAddr, PAGE_SIZE);
+
+                            mmu_invalidate_tlb();
+
+                            // LL_CheckIRQAndTrap();
+                            g_page_vram_fault_cnt++;
+                            vTaskResume(currentFault.FaultTask);
+                            g_vm_in_pagefault = false;
+                        } else {
+                            printf("search_vram_cache_page_by_vaddr failed\n");
+                        }
+#else
+
 #if USE_TINY_PAGE
                         CachePageInfo_t *gotCache = search_cache_page_by_vaddr(currentFault.FaultMemAddr & 0xFFFFFC00);
 #else
@@ -411,6 +854,7 @@ void __attribute__((optimize("-O3"))) vmMgr_task() {
                             vTaskResume(currentFault.FaultTask);
                             g_vm_in_pagefault = false;
                         }
+#endif
                     } else {
                         taskAccessFaultAddr(&currentFault, "Memory can not be written.");
                         // INFO("Read Only Page!\n");
@@ -432,7 +876,10 @@ void __attribute__((optimize("-O3"))) vmMgr_task() {
 
 void vmMgr_init() {
     PageFaultQueue = xQueueCreate(32, sizeof(pageFaultInfo_t));
-
+#if SEPARATE_VMM_CACHE
+    cdmp_mem_init(ZRAM, sizeof(ZRAM));
+    memset(ZRAMAddress_Tab, 0, sizeof(ZRAMAddress_Tab));
+#endif
     mapListInit();
     mmu_init();
 
@@ -451,9 +898,8 @@ void vmMgr_init() {
     for (int i = 54; i <= 90; ++i)
         DisplayFillBox(i - 2, 84, i, 92, 72);
     for (int i = 0; i < FLASH_FTL_DATA_SECTOR; i++) {
-        FTL_TrimSector(i);
+        // FTL_TrimSector(i);
     }
-    memset(CachePage, 0xFF, sizeof(CachePage));
 
     mapList_AddPartitionMap(MAP_PART_RAWFLASH, PERM_R, VM_ROM_BASE, FLASH_SYSTEM_BLOCK * 64, VM_ROM_SIZE);
 
@@ -470,14 +916,20 @@ void vmMgr_init() {
 
 #endif
 
-    mapList_AddPartitionMap(MAP_PART_SYS, PERM_R | PERM_W, VM_SYS_ROM_BASE, 0, VM_SYS_ROM_SIZE);
+    // mapList_AddPartitionMap(MAP_PART_SYS, PERM_R | PERM_W, VM_SYS_ROM_BASE, 0, VM_SYS_ROM_SIZE);
 
     // xTaskCreate(vVmBlockTask, "VM Swap IO Waiting", 12, NULL, 6, &vmBlockTask);
     // vTaskSuspend(vmBlockTask);
+    /*
+        for (int i = 0; i < NUM_CACHEPAGE_VROM; i++) {
+            INFO("CACHEVROM_PAGEn_BASE:%d,%p\n", i, CACHEVROM_PAGEn_BASE(i));
+        }
 
-    for (int i = 0; i < NUM_CACHEPAGE; i++) {
-        VM_INFO("CACHE_PAGEn_BASE:%d,%08x\n", i, CACHE_PAGEn_BASE(i));
-    }
+        for (int i = 0; i < NUM_CACHEPAGE_VRAM; i++) {
+            INFO("CACHEVRAM_PAGEn_BASE:%d,%p\n", i, CACHEVRAM_PAGEn_BASE(i));
+        }
+        */
+
     INFO("Virtual Memory Enable.\n");
     vmMgrInit = true;
 }

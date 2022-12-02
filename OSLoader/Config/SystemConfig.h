@@ -3,6 +3,7 @@
 
 #define VERSION     "0.2.0"
 
+
 #define MEMORY_BASE     (0)
 #define MEMORY_SIZE     (512*1024)
 
@@ -24,22 +25,49 @@
 
 
 #define USE_TINY_PAGE        (1)
-#define VMRAM_USE_FTL        (0)
+#define VMRAM_USE_FTL        (1)
 
 #define USE_HARDWARE_DFLPT   (1)
+
+#define SEPARATE_VMM_CACHE   (1)
+
+
+#if SEPARATE_VMM_CACHE
+    #define NONE     0
+    #define MINILZO  1      // 2 KB Work Buffer
+    #define QUICKLZ  2      // 60 KB Work buffer
+    #define MEM_COMPRESSION_ALGORITHM     (MINILZO) //algorithm
+#endif
 
 #define SEG_SIZE            1048576
 
 
 #if VMRAM_USE_FTL
     #if USE_TINY_PAGE
-        #ifdef ENABLE_AUIDIOOUT
-            #define NUM_CACHEPAGE             ( 200 ) // 273 * 1 = 273 KB
-        #else
-            #if USE_HARDWARE_DFLPT
-                #define NUM_CACHEPAGE             ( 292 ) // 292 KB (Reserve 4KB for OSL)
+        #if USE_HARDWARE_DFLPT
+            #if SEPARATE_VMM_CACHE
+                #if MEM_COMPRESSION_ALGORITHM
+                    #define NUM_CACHEPAGE_VROM             ( 44 )  
+                    #define NUM_CACHEPAGE_VRAM             ( 44 ) 
+                    #define ZRAM_SIZE                      ( 200 * 1024 ) // 200 / 512 KB ~= 0.4 (Assume that the compression ratio is 0.4)
+                    #define ZRAM_COMPRESSED_SIZE           ( 512 * 1024 )
+                #else 
+                    #define NUM_CACHEPAGE_VROM             ( 20 )  
+                    #define NUM_CACHEPAGE_VRAM             ( 20 ) 
+                    #define ZRAM_SIZE                      ( 256 * 1024 ) // compression ratio = 1
+                    #define ZRAM_COMPRESSED_SIZE           ( 256 * 1024 )
+                #endif
             #else
-                #define NUM_CACHEPAGE             ( 260 ) // (Reserve 4KB for OSL Driver)
+                #define NUM_CACHEPAGE             ( 292 ) // 292 KB (Reserve 4KB for OSL)
+            #endif
+        #else
+        
+            #if SEPARATE_VMM_CACHE
+                #define NUM_CACHEPAGE_VROM             ( 64 )  
+                #define NUM_CACHEPAGE_VRAM             ( 32 ) 
+                #define ZRAM_SIZE                      ( 128 * 1024 )
+            #else
+                #define NUM_CACHEPAGE             ( 260 ) // 292 KB (Reserve 4KB for OSL)
             #endif
         #endif
     #else
@@ -47,8 +75,8 @@
     #endif
 #else
     #if USE_TINY_PAGE
-        #define NUM_CACHEPAGE             ( 32 )
-        #define VM_RAM_SIZE_NONE_FTL      ( 270 * 1024 )
+        #define NUM_CACHEPAGE             ( 128 )
+        #define VM_RAM_SIZE_NONE_FTL      ( 128 * 1024 )
     #else
         #define NUM_CACHEPAGE             ( 32 )
         #define VM_RAM_SIZE_NONE_FTL      ( 168 * 1024 )
@@ -59,9 +87,9 @@
 
 
 #if USE_TINY_PAGE
-    #define PAGE_SIZE           1024
+    #define PAGE_SIZE           (1024)
 #else
-    #define PAGE_SIZE           4096
+    #define PAGE_SIZE           (4096)
 #endif
 
 #define PAGES_SWAPFILE      (SIZE_SWAPFILE_MB * 1048576 / PAGE_SIZE)
@@ -88,8 +116,8 @@
 #define VM_SYS_RAM_NUM_SEG      (VM_RAM_SIZE / SEG_SIZE)
 */
 
-#define VM_CACHE_ENABLE     (true)
-#define VM_BUFFER_ENABLE    (true)
+#define VM_CACHE_ENABLE     (false)
+#define VM_BUFFER_ENABLE    (false)
 
 #define TOTAL_VM_SEG        ((VM_SYS_ROM_SIZE + VM_ROM_SIZE + VM_RAM_SIZE) / SEG_SIZE)
 

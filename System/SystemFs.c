@@ -13,17 +13,13 @@
 #endif
 
 
-#include "lvgl.h"
+//#include "lvgl.h"
 
 #include "debug.h"
 
 #include "SystemFs.h"
 #include "SystemUI.h"
 
-uint32_t SystemUIMsgBox(lv_obj_t *parent,char *msg, char *title, uint32_t button);
-
-#define SYSTEMUI_MSGBOX_BUTTON_OK       (0)
-#define SYSTEMUI_MSGBOX_BUTTON_CANCAL   (1 << 1)
 
 #if FS_TYPE == FS_FATFS
     FATFS *fs;
@@ -91,10 +87,6 @@ struct lfs_config lfs_cfg = {
 
 #endif
 
-
-static char textbuf[128];
-
-static lv_fs_dir_t dir;
  
 void *GetFsObj()
 {
@@ -114,8 +106,8 @@ void SystemFSInit() {
     FRESULT fres;
     fs = pvPortMalloc(sizeof(FATFS));
 
-mount_flash:
 
+/*
     fres = f_mount(fs, FS_FLASH_PATH, 1);
 
     printf("f_mount res:%d\n", fres);
@@ -145,24 +137,9 @@ mount_flash:
         goto mount_flash;
     }
 
-    lv_fs_res_t res;
-    res = lv_fs_dir_open(&dir, FS_LVGL_FLASH_PATH "/" FS_SYSTEM_PATH);
-    INFO("dir open:%d\n", res);
-    if (res != LV_FS_RES_OK) {
-        fres = f_mkdir(FS_SYSTEM_PATH);
-        INFO("mkdir " FS_SYSTEM_PATH ", %d\n", fres);
-    }
-    lv_fs_dir_close(&dir);
+    */
 
-    res = lv_fs_dir_open(&dir, FS_LVGL_FLASH_PATH "/" FS_SYSTEM_PATH "/" FS_FONTS_PATH);
-    INFO("dir open:%d\n", res);
-    if (res != LV_FS_RES_OK) {
-        fres = f_mkdir(FS_SYSTEM_PATH "/" FS_FONTS_PATH);
-        INFO("mkdir " FS_SYSTEM_PATH "/" FS_FONTS_PATH ", %d\n", fres);
-    }
-    
 
-    lv_fs_dir_close(&dir);
 #else
 
     lfs_cfg.block_size = ll_flash_get_page_size();

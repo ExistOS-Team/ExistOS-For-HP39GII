@@ -1,5 +1,3 @@
-
-
 MEMORY
 {
   vmRAM    (rwx) : ORIGIN = 0x02000000, LENGTH = 270K
@@ -8,6 +6,7 @@ MEMORY
 
 OUTPUT_ARCH(arm)
 ENTRY(_init)
+
 SECTIONS
 {
 
@@ -68,6 +67,9 @@ SECTIONS
 	{
 		. = ALIGN(4);
 		*(.rodata) 
+		fonts_hzk_start = .;
+		INCLUDE "../fonts/fonts_hzk16s.ld"
+		fonts_hzk_end = .;
 	} >vmROM
 
 	.ARM.extab :

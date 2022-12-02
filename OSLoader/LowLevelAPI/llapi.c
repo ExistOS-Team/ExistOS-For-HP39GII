@@ -462,12 +462,13 @@ void __attribute__((target("thumb"))) LLAPI_Task_thumb_entry() {
                 uint16_t y0 = currentCall.para2;
                 uint16_t x1 = currentCall.para3;
                 uint16_t y1 = ((uint32_t *)currentCall.sp)[0] - 0;
-
+/*
                 if((y0 >= 127) || (y1 >= 127)
                 || (x0 >= 256) || (x1 >= 256)
                 ){
-                    break;
+                    //break;
                 }
+                */
 
                 long bufSize = (y1 - y0 + 1) * (x1 - x0 + 1);
                 if ((bufSize <= 0) || (bufSize > 33 * 1024)) {
@@ -602,6 +603,15 @@ void __attribute__((target("thumb"))) LLAPI_Task_thumb_entry() {
                 
                 portBoardPowerOff();
             }break;
+
+            case LL_SWI_MEM_PHY_INFO:
+            {
+                #include "cdmp.h"
+
+                cdmp_meminfo((uint32_t *)currentCall.para0, (uint32_t *)currentCall.para1);
+                *currentCall.pRet = ZRAM_COMPRESSED_SIZE;
+                break;
+            }
 
             default: {
 

@@ -166,7 +166,7 @@ uint8_t msc_rec_disk_fat[] =
     {
         0xF8, 0xFF, 0xFF, /*Resv*/ 0xFF, 0xFF, 0xFF, 0x0F};
 
-uint8_t MscCmdBuf[16];
+uint8_t MscCmdBuf[32];
 
 // Invoked when received SCSI_CMD_INQUIRY
 // Application fill vendor id, product id and revision with string up to 8, 16, 4 characters respectively
@@ -285,7 +285,7 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
     //printf("RD:lba%d, off:%d, len:%d\n",lba, offset, bufsize);
     switch (g_MSC_Configuration) {
     case MSC_CONF_OSLOADER_EDB:
-
+        memset(buffer, 0, bufsize);
         switch (lba) {
         case 0:
             memcpy(buffer, msc_rec_disk_pbr, sizeof(msc_rec_disk_pbr));
@@ -293,6 +293,9 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
             ((char *)buffer)[510] = 0x55;
             break;
         case 4:
+            memcpy(buffer, msc_rec_disk_fat, sizeof(msc_rec_disk_fat));
+            memcpy(&(((char *)buffer)[512 * 2]), msc_rec_disk_fat, sizeof(msc_rec_disk_fat));
+            break;
         case 6:
             memcpy(buffer, msc_rec_disk_fat, sizeof(msc_rec_disk_fat));
             break;
@@ -303,12 +306,14 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
             memcpy(buffer, MscCmdBuf, sizeof(MscCmdBuf));
             break;
         default:
-            memset(buffer, 0, bufsize);
+            //memset(buffer, 0, bufsize);
             // 104 - 167
             if ((lba >= 104) && (lba <= 167)) {
-                if (bufsize == 2048) 
+                if (bufsize <= 2048) 
                 {
-                    memcpy(buffer, &binBuf[2048 * (lba - 104)], 2048);
+                    memcpy(buffer, &binBuf[512 * (lba - 104)], bufsize);
+                }else{
+                    printf("MSC ERR READ\n");
                 }
             }
 
@@ -361,7 +366,8 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
 void parseCDCCommand(char *cmd);
 void MscSetCmd(char *cmd) {
     memset(MscCmdBuf, 0, sizeof(MscCmdBuf));
-    strcpy((char *)MscCmdBuf, cmd);
+    memcpy(MscCmdBuf, cmd, sizeof(MscCmdBuf));
+    //strcpy((char *)MscCmdBuf, cmd);
 }
 
 // Callback invoked when received WRITE10 command.

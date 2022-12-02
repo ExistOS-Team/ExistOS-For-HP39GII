@@ -1,4 +1,0 @@
-#! /bin/sh
-unset LANG
-../src/icas TP17-sol.cas > TP17.tst
-diff TP17.tst TP17-sol.cas.out1

@@ -1,1 +1,0 @@
-EXTRA_DIST = README.debian fr_cas_help.1 xcas.1 icas.1 giac.1 cas_help.1 pgiac.1 control dirs info Makefile.am menu rules changelog copyright docs watch giac.mime giac.sharedmimeinfo

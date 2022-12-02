@@ -16,7 +16,7 @@
 #define DISPLAY_INVERSE (1)
 
 #define SCREEN_START_Y (8) // 0 - 126
-#define SCREEN_END_Y (134)
+#define SCREEN_END_Y (136)
 
 #define SCREEN_START_X (0)
 #define SCREEN_END_X (255 / 3) // 0 - 255
