@@ -21,12 +21,6 @@ extern unsigned int __init_data;
 extern unsigned int __data_start;
 extern unsigned int __data_end;
 
-void set_r13(uint32_t r13) __attribute__((naked));
-void set_r13(uint32_t r13)
-{
-    __asm volatile("mov r13,r0");
-    __asm volatile("mov pc,lr");
-}
 
 
 const char __attribute__((section(".sysinfo"))) system_build_time[] = _TIMEZ_;//__DATE__ " " __TIME__;
@@ -39,7 +33,9 @@ void volatile _init() {
     __asm volatile(".word 0x00000000");
     __asm volatile(".word 0x00000000");
 
-    set_r13((uint32_t)&SYSTEM_STACK);
+    asm ("mov r13, %0" : : "r"((uint32_t)&SYSTEM_STACK));
+
+    //set_r13((uint32_t)&SYSTEM_STACK);
 
     for (char *i = (char *)&_sbss; i < (char *)&_ebss; i++) {
         *i = 0; // clear bss
