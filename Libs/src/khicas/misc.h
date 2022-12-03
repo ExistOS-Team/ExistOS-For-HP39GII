@@ -58,6 +58,7 @@ namespace giac {
   extern const unary_function_ptr * const  at_float ;
   extern const unary_function_ptr * const  at_complex ;
   extern const unary_function_ptr * const  at_fmod ;
+  extern const unary_function_ptr * const  at_addr ;
 
   gen _tcoeff(const gen & args,GIAC_CONTEXT);
   gen _sqrfree(const gen & args,GIAC_CONTEXT);

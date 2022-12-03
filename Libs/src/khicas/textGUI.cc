@@ -1005,7 +1005,7 @@ bool change_mode(textArea *text, int flag)
 
 static void textarea_disp(textArea *text, int &isFirstDraw, int &totalTextY, int &scroll, int &textY, bool global_minimini)
 {
-  *logptr(contextptr) << text->lineHeight << '\n';
+  // *logptr(contextptr) << text->lineHeight << '\n';
   Cursor_SetFlashOff();
   bool editable = text->editable;
   int showtitle = !editable && (text->title != NULL);
@@ -1104,7 +1104,7 @@ static void textarea_disp(textArea *text, int &isFirstDraw, int &totalTextY, int
       textY = textY + text->lineHeight + v[cur].lineSpacing;
       if (minimini && cur)
         textY -= 4;
-      *logptr(contextptr) << cur << " " << minimini << " " << textY << '\n';
+      //*logptr(contextptr) << cur << " " << minimini << " " << textY << '\n';
     }
     if (editable)
     {

@@ -502,7 +502,7 @@ throw(std::runtime_error("Stopped by user interruption.")); \
     int radius; // 0 nothing, >0 -> draw a plain disk 
     // bit 0-8=radius, bit9-17 angle1, bit 18-26 angle2, bit 27=1 filled  or 0 
     // <0 fill a polygon from previous turtle positions
-    logo_turtle(): x(35),y(35),theta(0),visible(true),mark(true),direct(true),color(255),turtle_length(5),radius(0) {}
+    logo_turtle(): x(35),y(35),theta(0),visible(true),mark(true),direct(true),color(1),turtle_length(5),radius(0) {}
   };
 
   // a structure that should contain all global variables

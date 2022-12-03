@@ -265,8 +265,9 @@ void System(void *par) {
     __asm volatile("orr r1,r1,#0x10");
     __asm volatile("msr cpsr_all,r1");
 
-    __asm volatile("mov r13,#0x02300000");
-    __asm volatile("add r13,#0x000FA000");
+    __asm volatile("mov r13,#0x02000000");
+    __asm volatile("add r13,#0x00040000");  // VM_RAM_BASE + 256KB - 4
+    __asm volatile("sub r13,#0x00000040");  // VM_RAM_BASE + 256KB - 0x40
 
     __asm volatile("mov r0,#0");
 

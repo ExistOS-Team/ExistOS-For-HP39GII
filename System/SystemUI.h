@@ -19,7 +19,7 @@ extern "C" {
 
 
 
-
+void SystemUIRefresh() ;
 void SystemUISuspend();
 void SystemUIResume();
 

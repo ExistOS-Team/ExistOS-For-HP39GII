@@ -85,7 +85,7 @@
 #define LL_SWI_MEM_PHY_INFO                  (LL_SWI_BASE + 100)
 #define LL_FAST_SWI_MEM_COMPRATE             (LL_FAST_SWI_BASE + 101)
 #define LL_FAST_SWI_MEM_ENABLE_SWAP          (LL_FAST_SWI_BASE + 102)
-#define LL_FAST_SWI_MEM_SWAP_STATUS          (LL_FAST_SWI_BASE + 103)
+#define LL_FAST_SWI_MEM_SWAP_SIZE            (LL_FAST_SWI_BASE + 103)
 
 
 

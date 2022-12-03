@@ -1,7 +1,7 @@
 MEMORY
 {
-  vmRAM    (rwx) : ORIGIN = 0x02000000, LENGTH = 270K
-  vmROM    (rx ) : ORIGIN = 0x00100000, LENGTH = 4M
+  vmRAM    (rwx) : ORIGIN = 0x02002000, LENGTH = 256K
+  vmROM    (rx ) : ORIGIN = 0x00100000, LENGTH = 6M
 }
 
 OUTPUT_ARCH(arm)
@@ -22,6 +22,18 @@ SECTIONS
 
 	} >vmROM
 
+/*
+  	.dtors          :
+  	{
+    	KEEP (*(SORT(.dtors.*)))
+    	KEEP (*(.dtors))
+  	} >vmROM
+*/
+	.init.data :
+	{
+		*(.init.data)
+	} >vmROM
+	
  	.fini_array    :
  	{
  	  PROVIDE (__fini_array_start = .);
@@ -36,26 +48,10 @@ SECTIONS
 		
 		KEEP (*(SORT(.init_array.*)))
 		KEEP (*(.init_array))
-
-/*
-  		KEEP (*(SORT(.ctors.*)))
-  		KEEP (*(.ctors))
-*/
 		PROVIDE(__ctors_end__ = .);	
 		  
   	} >vmROM
-/*
-  	.dtors          :
-  	{
-    	KEEP (*(SORT(.dtors.*)))
-    	KEEP (*(.dtors))
-  	} >vmROM
-*/
-	.init.data :
-	{
-		*(.init.data)
-	} >vmROM
-	
+
 	. = ALIGN(4);
 	.text :	
 	{

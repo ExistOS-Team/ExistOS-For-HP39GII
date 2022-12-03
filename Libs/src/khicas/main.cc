@@ -1499,7 +1499,7 @@ void displaygraph(const giac::gen & ge){
     unsigned int key;
     int keyflag = (unsigned char)Setup_GetEntry(0x14);
     bool alph=keyflag==4||keyflag==0x84||keyflag==8||keyflag==0x88;
-    ck_getkey(&key);
+    ck_getkey((int*)&key);
     if (key==KEY_CTRL_F1 || key==KEY_CTRL_F6){
       char menu_xmin[32],menu_xmax[32],menu_ymin[32],menu_ymax[32];
       ustl::string s;
@@ -1875,11 +1875,17 @@ extern char sextra, eextra;
 #endif
 
 int kcas_main(int isAppli, unsigned short OptionNum)
-{
-
-  tab16=(four_int*) malloc(4096);    // ALLOC16*16=4096 ALLOC16=256
-  tab24=(six_int*) malloc(12*32*24);    // ALLOC24*24 ALLOC24=12*24
-  tab48=(twelve_int*) malloc(6144); // kgen.cc ALLOC48*48=1.5*4096, ALLOC48=128
+{ 
+  size_t rambase=0x02000000+4096; // 4096 for 1 bpp screen buf
+  tab16=(four_int*) rambase;     // ALLOC16*16=4096 ALLOC16=256
+#if 1
+  tab24=(six_int*) ((size_t) tab16 +4096);    // ALLOC24*24 ALLOC24=16*24
+  tab48=(twelve_int*) ((size_t) tab24+16*32*24); // kgen.cc ALLOC48*48=2*4096, ALLOC48=128
+#else  
+  // tab16=(four_int*) malloc(4096);    // ALLOC16=256, ALLOC16*16=4K
+  tab24=(six_int*) malloc(16*32*24);    // ALLOC24=16*32, ALLOC24*24 =12K
+  tab48=(twelve_int*) malloc(2*4096); // kgen.cc ALLOC48=8*32, ALLOC48*48=12K
+#endif
   unsigned int key;
   unsigned char *expr;
   unsigned char *user_functions;

@@ -21,11 +21,13 @@ extern unsigned int __init_data;
 extern unsigned int __data_start;
 extern unsigned int __data_end;
 
-void volatile set_r13(uint32_t r13) __attribute__((naked));
-void volatile set_r13(uint32_t r13)
+void set_r13(uint32_t r13) __attribute__((naked));
+void set_r13(uint32_t r13)
 {
     __asm volatile("mov r13,r0");
+    __asm volatile("mov pc,lr");
 }
+
 
 const char __attribute__((section(".sysinfo"))) system_build_time[] = _TIMEZ_;//__DATE__ " " __TIME__;
 

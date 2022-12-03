@@ -609,7 +609,11 @@ void __attribute__((target("thumb"))) LLAPI_Task_thumb_entry() {
                 #include "cdmp.h"
 
                 cdmp_meminfo((uint32_t *)currentCall.para0, (uint32_t *)currentCall.para1);
-                *currentCall.pRet = ZRAM_COMPRESSED_SIZE;
+                #if VMRAM_USE_FTL
+                    *currentCall.pRet = ZRAM_COMPRESSED_SIZE;
+                #else
+                    *currentCall.pRet = VM_RAM_SIZE_NONE_FTL;
+                #endif
                 break;
             }
 

@@ -107,20 +107,19 @@ namespace giac {
   // 32 bytes structure: 4096/32=128 slots of memory
   // ALLOCA  constants must be multiples of 2*32
   const int ALLOC16=8*32; // symbolic
-  const int ALLOC24=12*32; // complex, identificateur, mpz_t
+  const int ALLOC24=16*32; // complex, identificateur, mpz_t
   // #define ALLOC32 3*32 // not used
   // unsigned os_python_heap=0x88068000; // free memory area, used by Python heap
-  #define ALLOC48 4*32 // eqw, comment this line if memory crash in eqw
+  #define ALLOC48 8*32 // eqw, comment this line if memory crash in eqw
   static unsigned int freeslot24[ALLOC24/32]={
     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-    // 0xffffffff, 0xffffffff,0xffffffff, 0xffffffff, 
+    0xffffffff, 0xffffffff,0xffffffff, 0xffffffff, 
   };
   static unsigned int freeslot16[ALLOC16/32]={
     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-    0xffffffff, 0xffffffff,
-    0xffffffff, 0xffffffff,
+    0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
     //0xffffffff, 0xffffffff
   };
 #ifdef ALLOC32
@@ -135,7 +134,7 @@ namespace giac {
   static unsigned int freeslot48[ALLOC48/32]={
     0xffffffff, 0xffffffff,
     0xffffffff, 0xffffffff,
-    // 0xffffffff, 0xffffffff,0xffffffff, 0xffffffff,
+    0xffffffff, 0xffffffff,0xffffffff, 0xffffffff,
   };
   // static twelve_int tab48[ALLOC48];
   twelve_int * tab48=0;
@@ -176,19 +175,19 @@ namespace giac {
     int i,pos;
     if (tab24 && size==24){ 
       for (i=0;i<ALLOC24/32;){
-	if (!(freeslot24[i] || freeslot24[i+1])){
-	  i+=2;
-	  continue;
-	}
-	if (freeslot24[i]){
-	  pos=freeslotpos(freeslot24[i]);
-	  freeslot24[i] &= ~(1<<pos);
-	  return (void *) (tab24+i*32+pos);
-	}
-	i++;
-	pos=freeslotpos(freeslot24[i]);
-	freeslot24[i] &= ~(1<<pos);
-	return (void *) (tab24+i*32+pos);
+        if (!(freeslot24[i] || freeslot24[i+1])){
+          i+=2;
+          continue;
+        }
+        if (freeslot24[i]){
+          pos=freeslotpos(freeslot24[i]);
+          freeslot24[i] &= ~(1<<pos);
+          return (void *) (tab24+i*32+pos);
+        }
+        i++;
+        pos=freeslotpos(freeslot24[i]);
+        freeslot24[i] &= ~(1<<pos);
+        return (void *) (tab24+i*32+pos);
       }
     }
     if (tab16 && size==16){ 

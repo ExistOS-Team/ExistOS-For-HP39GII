@@ -299,6 +299,11 @@ void SystemUIInit() {
     xTaskCreate(UI_Task, "UICore", 2048, NULL, configMAX_CO_ROUTINE_PRIORITIES - 3, &pUITask);
 }
 
+void keyMsg(uint32_t key, int state);
+void SystemUIRefresh() 
+{
+    keyMsg(KEY_F1, 0);
+}
 
 void SystemUISuspend() {
     vTaskSuspend(pUITask);

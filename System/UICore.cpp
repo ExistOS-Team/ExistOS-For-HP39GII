@@ -41,7 +41,13 @@ static int appPage_select = 0;
 
 static int language = UI_LANG_EN;
 
-extern uint32_t AvailableMemorySize;
+void memtest(uint32_t testSize);
+
+extern uint32_t OnChipMemorySize;
+extern uint32_t TotalAllocatableSize;
+
+size_t getOnChipHeapAllocated();
+size_t getSwapMemHeapAllocated();
 
 void UI_keyScanner(void *_);
 void drawPage(int page);
@@ -80,8 +86,7 @@ int exf_getfree(uint8_t *drv, uint32_t *total, uint32_t *free) {
     return res;
 }
 
-uint32_t getMemAllocateSize()
-{
+uint32_t getHeapAllocateSize() {
     struct mallinfo info = mallinfo();
     return info.uordblks;
 }
@@ -105,9 +110,9 @@ void UI_SetLang(int lang) {
         UI_Seconds = UI_Seconds_EN;
         UI_Storage_Space = UI_Storage_Space_EN;
         UI_ONF5Format = UI_ONF5Format_EN;
-        UI_PhyMem           = UI_PhyMem_EN;     
-        UI_Allocate_Mem           = UI_Allocate_Mem_EN;   
-        UI_Compression_rate   = UI_Compression_rate_EN;   
+        UI_PhyMem = UI_PhyMem_EN;
+        UI_Allocate_Mem = UI_Allocate_Mem_EN;
+        UI_Compression_rate = UI_Compression_rate_EN;
         break;
     case UI_LANG_CN:
         MAIN_WIN_TITLE = MAIN_WIN_TITLE_CN;
@@ -126,9 +131,9 @@ void UI_SetLang(int lang) {
         UI_Seconds = UI_Seconds_CN;
         UI_Storage_Space = UI_Storage_Space_CN;
         UI_ONF5Format = UI_ONF5Format_CN;
-        UI_PhyMem           = UI_PhyMem_CN;     
-        UI_Allocate_Mem           = UI_Allocate_Mem_CN;   
-        UI_Compression_rate   = UI_Compression_rate_CN;   
+        UI_PhyMem = UI_PhyMem_CN;
+        UI_Allocate_Mem = UI_Allocate_Mem_CN;
+        UI_Compression_rate = UI_Compression_rate_CN;
         break;
     default:
         break;
@@ -165,7 +170,7 @@ void pageUpdate() {
             uint32_t Charging = ll_get_charge_status();
 
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "CPU:%3d/%d MHz, %s:%d `C", ll_get_cur_freq(), 480 * 18 / cur_cpu_div / cur_cpu_frac, UI_TEMPERRATURE, ll_get_core_temp());
-            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s: %d/%d KB", UI_MEMUSE, getMemAllocateSize() / 1024, AvailableMemorySize / 1024);
+            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s: %d/%d KB", UI_MEMUSE, getHeapAllocateSize() / 1024, TotalAllocatableSize / 1024);
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s: %d mv, %s: %s  ", UI_BATTERY, ll_get_bat_voltage(), UI_CHARGING, Charging ? "Yes" : "NO");
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s: %s", UI_TIME, timeStr);
 
@@ -187,18 +192,19 @@ void pageUpdate() {
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s: %d/%d KB", UI_Storage_Space, total - free, total);
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s", UI_ONF5Format);
         }
-        if(page3Subpage == 2)
-        {
+        if (page3Subpage == 2) {
             uint32_t free, total;
             float mem_cmpr = ll_mem_comprate();
             uint32_t total_phy_mem = ll_mem_phy_info(&free, &total);
             total_phy_mem /= 1024;
             free /= 1024;
             total /= 1024;
-            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s:%d/%d KB", UI_Allocate_Mem, getMemAllocateSize() / 1024, AvailableMemorySize / 1024);
-            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s:%d/%d KB", UI_PhyMem, total - free , total);
-            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s:%.2f", UI_Compression_rate,  mem_cmpr);
-
+            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s:%d/%d KB   ", UI_Allocate_Mem, getHeapAllocateSize() / 1024, TotalAllocatableSize / 1024);
+            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s:%d/%d KB   ", UI_PhyMem, total - free, total);
+            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s:%.2f", UI_Compression_rate, mem_cmpr);
+            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "SRAM Heap Pre-allocated: %d KB   ", getOnChipHeapAllocated() / 1024);
+            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "Swap Heap Pre-allocated: %d KB   ", getSwapMemHeapAllocated() / 1024);
+            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "[%c] Enable Memory Swap (1)", ll_mem_swap_size() ? 'X' : ' ');
         }
     }
 }
@@ -358,10 +364,20 @@ void keyMsg(uint32_t key, int state) {
                     pageUpdate();
                 } break;
 
+                case 2: {
+                    printf("enableMemSwap\n");
+                    void enableMemSwap(bool enable);
+                    if (ll_mem_swap_size()) {
+                        enableMemSwap( false);
+                    } else {
+                        enableMemSwap(true);
+                    }
+                } break;
+
                 default:
                     break;
                 }
-                pageUpdate();
+                drawPage(curPage);
             }
             break;
         case KEY_2:
@@ -380,7 +396,7 @@ void keyMsg(uint32_t key, int state) {
                     UI_SetLang(UI_LANG_CN);
                     mainw->setFuncKeys(MAIN_WIN_FKEY_BAR2);
                     mainw->refreshWindow();
-                    pageUpdate();
+                    drawPage(curPage);
 
                 } break;
 
@@ -390,8 +406,32 @@ void keyMsg(uint32_t key, int state) {
                 pageUpdate();
             }
             break;
+            /* 
         case KEY_3:
+            if((curPage == 3) && (page3Subpage == 2))
+            {
+                memtest(32 * 1024);
+            }
             break;
+        case KEY_4:
+            if((curPage == 3) && (page3Subpage == 2))
+            {
+                memtest(128 * 1024);
+            }
+            break;
+        case KEY_5:
+            if((curPage == 3) && (page3Subpage == 2))
+            {
+                memtest(256 * 1024);
+            }
+            break;
+        case KEY_6:
+            if((curPage == 3) && (page3Subpage == 2))
+            {
+                memtest(768 * 1024);
+            }
+            break;
+            */
 
         default:
             break;

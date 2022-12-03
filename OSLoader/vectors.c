@@ -142,22 +142,33 @@ void volatile arm_do_swi(uint32_t SWINum, uint32_t *pRegFram) {
 
         case LL_FAST_SWI_MEM_COMPRATE: {
             extern float mem_cr;
-            //pRegFram[0 + 2] = *((uint32_t *)&mem_cr);
-            memcpy(&pRegFram[0 + 2], &mem_cr, 4 );
+            // pRegFram[0 + 2] = *((uint32_t *)&mem_cr);
+            memcpy(&pRegFram[0 + 2], &mem_cr, 4);
             break;
         }
 
-        case LL_FAST_SWI_MEM_SWAP_STATUS:
-        {
+        case LL_FAST_SWI_MEM_SWAP_SIZE: {
+#if SEPARATE_VMM_CACHE
             extern bool mem_swap_enable;
-            pRegFram[0 + 2] = mem_swap_enable;
+            if (mem_swap_enable) {
+                pRegFram[0 + 2] = VM_RAM_SIZE;
+            } else {
+                pRegFram[0 + 2] = 0;
+            }
+
+#else
+
+            pRegFram[0 + 2] = VM_RAM_SIZE;
+#endif
+
             break;
         }
 
-        case LL_FAST_SWI_MEM_ENABLE_SWAP:
-        {
+        case LL_FAST_SWI_MEM_ENABLE_SWAP: {
+#if SEPARATE_VMM_CACHE
             extern bool mem_swap_enable;
-            mem_swap_enable =  pRegFram[0 + 2];
+            mem_swap_enable = pRegFram[0 + 2];
+#endif
             break;
         }
 

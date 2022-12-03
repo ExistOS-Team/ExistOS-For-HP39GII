@@ -320,8 +320,11 @@ extern bool khicasRunning;
 			if(fr != LFS_ERR_EXIST)
 				std::cout << "Failed to create dir /xcas, " << fr <<endl;
 		}
-		
+		 
 	#endif
+		uint32_t getCurStackAdr();
+		printf("KhiCAS STACK ADDR:%08x\n", getCurStackAdr() );
+
 		kcas_main(0,0);
 
         /*

@@ -24,13 +24,18 @@
 #define HEAP_END        (SYS_STACK_ADDR - 0x100)
 
 
+
 #define USE_TINY_PAGE        (1)
 #define VMRAM_USE_FTL        (1)
-
 #define USE_HARDWARE_DFLPT   (1)
 
-#define SEPARATE_VMM_CACHE   (1)
 
+
+#if VMRAM_USE_FTL
+    #define SEPARATE_VMM_CACHE   (1)
+#else
+    #define SEPARATE_VMM_CACHE   (0)
+#endif
 
 #if SEPARATE_VMM_CACHE
     #define NONE     0
@@ -49,13 +54,13 @@
                 #if MEM_COMPRESSION_ALGORITHM
                     #define NUM_CACHEPAGE_VROM             ( 44 )  
                     #define NUM_CACHEPAGE_VRAM             ( 44 ) 
-                    #define ZRAM_SIZE                      ( 200 * 1024 ) // 200 / 512 KB ~= 0.4 (Assume that the compression ratio is 0.4)
+                    #define ZRAM_SIZE                      ( 200 * 1024 ) // 200KB / 512 KB ~= 0.4 (Assume that the compression ratio is 0.4)
                     #define ZRAM_COMPRESSED_SIZE           ( 512 * 1024 )
                 #else 
                     #define NUM_CACHEPAGE_VROM             ( 20 )  
                     #define NUM_CACHEPAGE_VRAM             ( 20 ) 
                     #define ZRAM_SIZE                      ( 256 * 1024 ) // compression ratio = 1
-                    #define ZRAM_COMPRESSED_SIZE           ( 256 * 1024 )
+                    #define ZRAM_COMPRESSED_SIZE           ( 256 * 1024 ) // 1:1
                 #endif
             #else
                 #define NUM_CACHEPAGE             ( 292 ) // 292 KB (Reserve 4KB for OSL)
@@ -75,8 +80,8 @@
     #endif
 #else
     #if USE_TINY_PAGE
-        #define NUM_CACHEPAGE             ( 128 )
-        #define VM_RAM_SIZE_NONE_FTL      ( 128 * 1024 )
+        #define NUM_CACHEPAGE             ( 32 )
+        #define VM_RAM_SIZE_NONE_FTL      ( 256 * 1024 )
     #else
         #define NUM_CACHEPAGE             ( 32 )
         #define VM_RAM_SIZE_NONE_FTL      ( 168 * 1024 )

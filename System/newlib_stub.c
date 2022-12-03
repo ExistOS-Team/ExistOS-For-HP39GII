@@ -17,16 +17,15 @@
 #undef errno
 extern int errno;
 
-//#define HEAP_END    (BASIC_HEAP_END)
-
-// extern unsigned int __HEAP_START;
-static void *heap = NULL;
 extern char __HEAP_START asm("__HEAP_START");
-// void __sync_synchronize()  __attribute__((naked));
+
 void __sync_synchronize() {
-    // asm volatile("" : : : "memory");
 }
-extern uint32_t AvailableMemorySize ;
+
+static void *heap = NULL;
+extern uint32_t SwapMemorySize;
+extern bool MemorySwapEnable;
+extern uint32_t OnChipMemorySize;
 int cur_heap_loc = 0;
 caddr_t _sbrk(uint32_t incr) {
 
@@ -40,25 +39,64 @@ caddr_t _sbrk(uint32_t incr) {
         if (((uint32_t)heap + incr) > BASIC_HEAP_END) {
             // dbg_printf("MEMORY OVER FLOW\n");
             // return (caddr_t) -1;
+            ll_put_str("EXT HEAP 1\n");
             heap = (void *)(RAM_BASE + BASIC_RAM_SIZE);
             cur_heap_loc = 1;
             prev_heap = heap;
             heap += incr;
             return prev_heap;
-        }else{
+        } else {
             heap += incr;
         }
-    } else {
-        if (((uint32_t)heap + incr) > RAM_BASE + AvailableMemorySize) {
-            //dbg_printf("MEMORY OVER FLOW\n");
-            return (caddr_t) -1;
+    } else if (cur_heap_loc == 1) {
+        if (((uint32_t)heap + incr) > RAM_BASE + OnChipMemorySize) {
+            if (MemorySwapEnable) {
+
+                ll_put_str("EXT HEAP 2\n");
+                heap = (void *)(RAM_BASE + OnChipMemorySize);
+                cur_heap_loc = 2;
+                prev_heap = heap;
+                heap += incr;
+                return prev_heap;
+            } else {
+
+                ll_put_str("EXT HEAP NOMEM !\n");
+                errno = ENOMEM;
+                return (caddr_t)-1;
+            }
+        } else {
+            heap += incr;
+        }
+    } else if (cur_heap_loc == 2) {
+
+        if (((uint32_t)heap + incr) > RAM_BASE + OnChipMemorySize + SwapMemorySize) {
+            ll_put_str("SWAP HEAP NOMEM !\n");
+            errno = ENOMEM;
+            return (caddr_t)-1;
+        } else {
+            heap += incr;
         }
     }
 
-    
-
     // dbg_printf("heap:%x, incr:%d\n", heap, incr);
     return (caddr_t)prev_heap;
+}
+
+size_t getOnChipHeapAllocated() {
+    if ((uint32_t)heap > RAM_BASE + OnChipMemorySize) {
+        return OnChipMemorySize;
+    } else {
+        return (uint32_t)heap - (RAM_BASE);
+    }
+}
+
+size_t getSwapMemHeapAllocated() {
+    if ((uint32_t)heap > RAM_BASE + OnChipMemorySize) {
+        return (uint32_t)heap - (RAM_BASE + OnChipMemorySize);
+
+    } else {
+        return 0;
+    }
 }
 
 /*

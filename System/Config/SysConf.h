@@ -47,13 +47,13 @@ malloc() priority:
 */
 
 
-#define KhiCAS_STACK_SIZE   (8 * 1024)         //(Store in HEAP)
+#define KhiCAS_STACK_SIZE   (24 * 1024)         //(Store in HEAP)
 
 
 #define IRQ_STACK_ADDR      (RAM_BASE + BASIC_RAM_SIZE - 4)   //For RTOS
 #define SWI_STACK_ADDR      (IRQ_STACK_ADDR  - 100 * 4)       //For RTOS
 #define NORMAL_STACK_ADDR   (SWI_STACK_ADDR  - 100 * 4)       //For RTOS
 
-#define BASIC_HEAP_END     (NORMAL_STACK_ADDR - 100 * 4)
+#define BASIC_HEAP_END      (NORMAL_STACK_ADDR - 256 * 4)
 
 #endif

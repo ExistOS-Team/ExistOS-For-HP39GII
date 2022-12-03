@@ -1,0 +1,29 @@
+Changes for KhiCAS in ExistOS https://github.com/ExistOS-Team
+  
+The files of this archive should be copied to
+      https://github.com/ExistOS-Team/giac_xcas-for-39gii
+  
+The file changes.tgz should be unarchived at the top level of the
+ExistOS directory
+      https://github.com/ExistOS-Team/ExistOS-For-HP39GII
+and OSLoader/VmMgr/vmMgr.c should be erased.
+  1/ kcasporing_gl.h kcasporing_gl.c khicas_stub.cpp 
+  includes changes for shell font (16 instead of 12) and 1 bit per pixel storage
+  2/ SystemConfig.h to OSLoader/Config
+  changes: rom size 6Mo, ram size 3M (loader script also set 6M of ROM)
+  this in order to be able to run the full KhiCAS with all CAS commands, spreadsheet, geometry, finance.
+  3/ SysConf.h to System/Config: ram size 3M
+  4/ start.c : added F3 check at startup, so that one can flash System
+  without expecting that System is running in RAM
+  changed printing order for USB MSC mode (otherwise USB does
+  not work, no idea why)
+  5/ various memory load optimizations (reordering object files) to avoid
+  some gaps in memory. Total fee memory available 288K = 32K non swappable
+  and 256K swappable.
+  6/ mixed RAM config: 32K at 0x20000000 never swapped (in giac used for
+  1 bit per pixel display, and for fast allocations of 16 bits gen, 32 bits
+  gen and 48 bits gen).
+
+There is a potential improvement
+  https://github.com/ExistOS-Team/ExistOS-For-HP39GII/issues/88#issuecomment-1326956970
+but currently I'm unable to boot the calculator with this configuration.

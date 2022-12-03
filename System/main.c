@@ -28,8 +28,25 @@
 
 #include "Fatfs/ff.h"
 //#include "mpy_port.h"
+void check_emulator_status();
 
-uint32_t AvailableMemorySize = BASIC_RAM_SIZE;
+uint32_t OnChipMemorySize = BASIC_RAM_SIZE;
+uint32_t SwapMemorySize = 0;
+uint32_t TotalAllocatableSize = BASIC_RAM_SIZE;
+bool MemorySwapEnable = false;
+
+void enableMemSwap(bool enable)
+{
+    MemorySwapEnable = enable; 
+    ll_mem_swap_enable(enable);
+    if(enable)
+    {
+        SwapMemorySize = ll_mem_swap_size();
+    }else{
+        SwapMemorySize = 0;
+    }
+    TotalAllocatableSize = OnChipMemorySize + SwapMemorySize;
+}
 
 volatile unsigned long ulHighFrequencyTimerTicks;
 
@@ -85,6 +102,106 @@ static bool time_lable_refresh = true;
 #define EMU_DATA_PORT ((volatile uint8_t *)0x20000000)
 extern bool g_system_in_emulator;
 
+
+void khicasTask(void *_) {
+
+    SystemUISuspend();
+
+    void testcpp();
+    testcpp();
+
+    
+    SystemUIResume();
+    vTaskDelay(pdMS_TO_TICKS(400));
+    SystemUIRefresh();
+
+    vTaskDelete(NULL);
+}
+
+
+void main_thread() {
+
+    // printf("R13:%08x\n", get_stack());
+
+    void SystemUIInit();
+    SystemUIInit();
+    SystemFSInit();
+
+    for (;;) {
+
+        vTaskDelay(pdMS_TO_TICKS(3000));
+    }
+}
+
+uint32_t __attribute__((naked)) getCurStackAdr()
+{
+    __asm volatile("mov r0,r13");
+    __asm volatile("mov pc,lr");
+}
+
+void main() {
+
+    void IRQ_ISR();
+    void SWI_ISR();
+    ll_set_irq_stack(IRQ_STACK_ADDR);
+    ll_set_irq_vector(((uint32_t)IRQ_ISR) + 4);
+    ll_set_svc_stack(SWI_STACK_ADDR);
+    ll_set_svc_vector(((uint32_t)SWI_ISR) + 4);
+    ll_enable_irq(false);
+    
+    uint32_t memsz, phy_total, phy_free;
+    memsz = ll_mem_phy_info(&phy_free, &phy_total);
+    if(memsz > OnChipMemorySize)
+    {
+        OnChipMemorySize = memsz;
+    }
+
+    VROMLoader_Initialize();
+
+    printf("System Booting...\n");
+
+    printf("SP:%08x\n", getCurStackAdr());
+    //xTaskCreate(vTask1, "print task", 100, NULL, configMAX_PRIORITIES - 3, NULL);
+
+    uint32_t free, total, total_comp;
+    total_comp = ll_mem_phy_info(&free, &total);
+    if(total_comp > OnChipMemorySize)
+    {
+        OnChipMemorySize = total_comp;
+    }
+    SwapMemorySize = ll_mem_swap_size();
+    TotalAllocatableSize = OnChipMemorySize + SwapMemorySize;
+
+    xTaskCreate(main_thread, "System", 2048, NULL, configMAX_PRIORITIES - 3, NULL);
+
+    vTaskStartScheduler();
+
+    for (;;) {
+        void symtab_def();
+        symtab_def();
+    }
+}
+
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
+    PANIC("SYS StackOverflowHook:%s\n", pcTaskName);
+}
+
+void vAssertCalled(char *file, int line) {
+    PANIC("SYS ASSERTION FAILED AT %s:%d\n", file, line);
+}
+
+void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
+                                    StackType_t **ppxTimerTaskStackBuffer,
+                                    uint32_t *pulTimerTaskStackSize) {
+    *ppxTimerTaskTCBBuffer = (StaticTask_t *)pvPortMalloc(sizeof(StaticTask_t));
+    *ppxTimerTaskStackBuffer = (StackType_t *)pvPortMalloc(configMINIMAL_STACK_SIZE * 4);
+    *pulTimerTaskStackSize = configMINIMAL_STACK_SIZE;
+}
+
+void vApplicationMallocFailedHook() {
+    PANIC("SYS ASSERT: Out of Memory.\n");
+}
+
 void check_emulator_status() {
 
     if (g_system_in_emulator) {
@@ -125,103 +242,4 @@ void check_emulator_status() {
             EMU_DATA_PORT[0] = 0;
         }
     }
-}
-
-
-static DIR dp;
-static FILINFO finfo;
-
-
-void khicasTask(void *_) {
-
-    SystemUISuspend();
-
-    void testcpp();
-    testcpp();
-
-
-    SystemUIResume();
-    
-    vTaskDelete(NULL);
-}
-
-
-void main_thread() {
-
-    // printf("R13:%08x\n", get_stack());
-
-    void SystemUIInit();
-    SystemUIInit();
-    SystemFSInit();
-
-    for (;;) {
-
-        vTaskDelay(pdMS_TO_TICKS(3000));
-    }
-}
-
-void main() {
-
-    // SYS STACK      0x023FA000
-    // IRQ STACK      0x023FFFF0
-    void IRQ_ISR();
-    void SWI_ISR();
-    ll_set_irq_stack(IRQ_STACK_ADDR);
-    ll_set_irq_vector(((uint32_t)IRQ_ISR) + 4);
-    ll_set_svc_stack(SWI_STACK_ADDR);
-    ll_set_svc_vector(((uint32_t)SWI_ISR) + 4);
-    ll_enable_irq(false);
-    // ll_set_keyboard(true);
-    
-
-    // memset(&__HEAP_START[0], 0xFF, 384 * 1024);
-
-    VROMLoader_Initialize();
-
-    printf("System Booting...\n");
-
-    
-    //xTaskCreate(vTask1, "print task", 100, NULL, configMAX_PRIORITIES - 3, NULL);
-
-
-
-    uint32_t free, total, total_comp;
-    //AvailableMemorySize
-    total_comp = ll_mem_phy_info(&free, &total);
-    if(total_comp > AvailableMemorySize)
-    {
-        AvailableMemorySize = total_comp;
-    }
-
-    xTaskCreate(main_thread, "System", 2048, NULL, configMAX_PRIORITIES - 3, NULL);
-
-
-
-    vTaskStartScheduler();
-
-    for (;;) {
-        *((double *)0x45678901) = 114514.1919810f;
-        void symtab_def();
-        symtab_def();
-    }
-}
-
-void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
-    PANIC("StackOverflowHook:%s\n", pcTaskName);
-}
-
-void vAssertCalled(char *file, int line) {
-    PANIC("ASSERTION FAILED AT %s:%d\n", file, line);
-}
-
-void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
-                                    StackType_t **ppxTimerTaskStackBuffer,
-                                    uint32_t *pulTimerTaskStackSize) {
-    *ppxTimerTaskTCBBuffer = (StaticTask_t *)pvPortMalloc(sizeof(StaticTask_t));
-    *ppxTimerTaskStackBuffer = (StackType_t *)pvPortMalloc(configMINIMAL_STACK_SIZE * 4);
-    *pulTimerTaskStackSize = configMINIMAL_STACK_SIZE;
-}
-
-void vApplicationMallocFailedHook() {
-    PANIC("ASSERT: Out of Memory.\n");
 }
