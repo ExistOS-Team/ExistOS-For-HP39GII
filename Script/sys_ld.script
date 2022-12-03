@@ -101,6 +101,11 @@ SECTIONS
         _ebss = .;
     } > vmRAM
 	. = ALIGN(4);
+	.sys_stack : {
+		. = . + 0x1000;
+		. = ALIGN(4);
+		SYSTEM_STACK = .;
+	} > vmRAM
 	.heap : {
 		. = ALIGN(16);
 		__HEAP_START = .;

@@ -24,18 +24,13 @@
 #define HEAP_END        (SYS_STACK_ADDR - 0x100)
 
 
+#define SEG_SIZE            1048576
 
 #define USE_TINY_PAGE        (1)
 #define VMRAM_USE_FTL        (1)
 #define USE_HARDWARE_DFLPT   (1)
 
-
-
-#if VMRAM_USE_FTL
-    #define SEPARATE_VMM_CACHE   (1)
-#else
-    #define SEPARATE_VMM_CACHE   (0)
-#endif
+#define SEPARATE_VMM_CACHE  VMRAM_USE_FTL
 
 #if SEPARATE_VMM_CACHE
     #define NONE     0
@@ -44,7 +39,6 @@
     #define MEM_COMPRESSION_ALGORITHM     (MINILZO) //algorithm
 #endif
 
-#define SEG_SIZE            1048576
 
 
 #if VMRAM_USE_FTL

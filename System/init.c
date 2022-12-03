@@ -30,7 +30,7 @@ void set_r13(uint32_t r13)
 
 
 const char __attribute__((section(".sysinfo"))) system_build_time[] = _TIMEZ_;//__DATE__ " " __TIME__;
-
+extern uint32_t SYSTEM_STACK;
 void volatile _init() __attribute__((section(".init"))) __attribute__((naked));
 void volatile _init() {
 
@@ -39,7 +39,7 @@ void volatile _init() {
     __asm volatile(".word 0x00000000");
     __asm volatile(".word 0x00000000");
 
-    set_r13(NORMAL_STACK_ADDR);
+    set_r13((uint32_t)&SYSTEM_STACK);
 
     for (char *i = (char *)&_sbss; i < (char *)&_ebss; i++) {
         *i = 0; // clear bss

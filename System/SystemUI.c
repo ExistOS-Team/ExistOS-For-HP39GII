@@ -296,7 +296,7 @@ static TaskHandle_t pUITask;
 void SystemUIInit() {
 
     //UI_Init();
-    xTaskCreate(UI_Task, "UICore", 2048, NULL, configMAX_CO_ROUTINE_PRIORITIES - 3, &pUITask);
+    xTaskCreate(UI_Task, "UICore", 800, NULL, configMAX_CO_ROUTINE_PRIORITIES - 3, &pUITask);
 }
 
 extern bool UIForceRefresh ;

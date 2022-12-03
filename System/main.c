@@ -143,14 +143,14 @@ uint32_t __attribute__((naked)) getCurStackAdr()
     __asm volatile("mov r0,r13");
     __asm volatile("mov pc,lr");
 }
-
+extern uint32_t SYSTEM_STACK; //in ld script
 void main() {
 
     void IRQ_ISR();
     void SWI_ISR();
-    ll_set_irq_stack(IRQ_STACK_ADDR);
+    ll_set_irq_stack((uint32_t)&SYSTEM_STACK);
     ll_set_irq_vector(((uint32_t)IRQ_ISR) + 4);
-    ll_set_svc_stack(SWI_STACK_ADDR);
+    ll_set_svc_stack(((uint32_t)&SYSTEM_STACK) - 0x500);
     ll_set_svc_vector(((uint32_t)SWI_ISR) + 4);
     ll_enable_irq(false);
 
@@ -178,7 +178,8 @@ void main() {
     SwapMemorySize = ll_mem_swap_size();
     TotalAllocatableSize = OnChipMemorySize + SwapMemorySize;
 
-    xTaskCreate(main_thread, "System", 2048, NULL, configMAX_PRIORITIES - 3, NULL);
+    xTaskCreate(vTask1, "PrintTask", 400, NULL, configMAX_PRIORITIES - 4, NULL);
+    xTaskCreate(main_thread, "System", 400, NULL, configMAX_PRIORITIES - 3, NULL);
 
     vTaskStartScheduler();
 
