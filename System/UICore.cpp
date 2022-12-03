@@ -292,30 +292,27 @@ void UI_Refrush() {
     drawPage(curPage);
 }
 
-void refreshIndicator()
-{
+void refreshIndicator() {
     uint32_t ind = 0;
-    switch (alpha)
-    {
+    switch (alpha) {
     case 1:
         ind |= INDICATE_A__Z;
-    break;
+        break;
     case 2:
         ind |= INDICATE_a__z;
-    break;
+        break;
     default:
         ind &= ~INDICATE_a__z;
         ind &= ~INDICATE_A__Z;
         break;
     }
-    switch (shift)
-    {
+    switch (shift) {
     case 1:
         ind |= INDICATE_LEFT;
-    break;
+        break;
     case 2:
         ind |= INDICATE_RIGHT;
-    break;
+        break;
     default:
         ind &= ~INDICATE_LEFT;
         ind &= ~INDICATE_RIGHT;
@@ -398,14 +395,12 @@ void keyMsg(uint32_t key, int state) {
             refreshIndicator();
             break;
 
-        case KEY_ON:
-            {
-                if(shift == 1)
-                {
-                    ll_power_off();
-                }
-                break;
+        case KEY_ON: {
+            if (shift == 1) {
+                ll_power_off();
             }
+            break;
+        }
 
         case KEY_F1:
             curPage = 0;
@@ -560,7 +555,7 @@ void keyMsg(uint32_t key, int state) {
         case KEY_ENTER:
             if (curPage == 0) {
                 if (appPage_select == 0) {
-                    
+
                     void StartKhiCAS();
                     StartKhiCAS();
                 }
@@ -580,18 +575,22 @@ void keyMsg(uint32_t key, int state) {
             break;
 
         case KEY_PLUS:
-            if (*pageNow < *pageAll) {
-                (*pageNow)++;
-                *selectedItem = 1;
-                drawPage(curPage);
+            if (curPage == 2) {
+                if (*pageNow < *pageAll) {
+                    (*pageNow)++;
+                    *selectedItem = 1;
+                    drawPage(curPage);
+                }
             }
             break;
 
         case KEY_SUBTRACTION:
-            if (*pageNow > 1) {
-                (*pageNow)--;
-                *selectedItem = 1;
-                drawPage(curPage);
+            if (curPage == 2) {
+                if (*pageNow > 1) {
+                    (*pageNow)--;
+                    *selectedItem = 1;
+                    drawPage(curPage);
+                }
             }
             break;
 
@@ -891,8 +890,7 @@ void UI_keyScanner(void *_) {
         if (cnt % 45 == 0) {
             pageUpdate();
 
-            if(UIForceRefresh)
-            {
+            if (UIForceRefresh) {
                 mainw->refreshWindow();
                 drawPage(curPage);
                 UIForceRefresh = false;
