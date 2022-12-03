@@ -24,18 +24,13 @@
 #define HEAP_END        (SYS_STACK_ADDR - 0x100)
 
 
+#define SEG_SIZE            1048576
 
 #define USE_TINY_PAGE        (1)
 #define VMRAM_USE_FTL        (1)
 #define USE_HARDWARE_DFLPT   (1)
 
-
-
-#if VMRAM_USE_FTL
-    #define SEPARATE_VMM_CACHE   (1)
-#else
-    #define SEPARATE_VMM_CACHE   (0)
-#endif
+#define SEPARATE_VMM_CACHE  VMRAM_USE_FTL
 
 #if SEPARATE_VMM_CACHE
     #define NONE     0
@@ -44,7 +39,6 @@
     #define MEM_COMPRESSION_ALGORITHM     (MINILZO) //algorithm
 #endif
 
-#define SEG_SIZE            1048576
 
 
 #if VMRAM_USE_FTL
@@ -52,15 +46,15 @@
         #if USE_HARDWARE_DFLPT
             #if SEPARATE_VMM_CACHE
                 #if MEM_COMPRESSION_ALGORITHM
-                    #define NUM_CACHEPAGE_VROM             ( 44 )  
-                    #define NUM_CACHEPAGE_VRAM             ( 44 ) 
-                    #define ZRAM_SIZE                      ( 200 * 1024 ) // 200KB / 512 KB ~= 0.4 (Assume that the compression ratio is 0.4)
-                    #define ZRAM_COMPRESSED_SIZE           ( 512 * 1024 )
+                    #define NUM_CACHEPAGE_VROM             ( 60 )  
+                    #define NUM_CACHEPAGE_VRAM             ( 60 ) 
+                    #define ZRAM_SIZE                      ( 170 * 1024 ) // 160KB / 400 KB ~= 0.4 (Assume that the compression ratio is 0.4)
+                    #define ZRAM_COMPRESSED_SIZE           ( 400 * 1024 )
                 #else 
-                    #define NUM_CACHEPAGE_VROM             ( 20 )  
-                    #define NUM_CACHEPAGE_VRAM             ( 20 ) 
-                    #define ZRAM_SIZE                      ( 256 * 1024 ) // compression ratio = 1
-                    #define ZRAM_COMPRESSED_SIZE           ( 256 * 1024 ) // 1:1
+                    #define NUM_CACHEPAGE_VROM             ( 64 )  
+                    #define NUM_CACHEPAGE_VRAM             ( 64 ) 
+                    #define ZRAM_SIZE                      ( 170 * 1024 ) // compression ratio = 1
+                    #define ZRAM_COMPRESSED_SIZE           ( ZRAM_SIZE ) // 1:1
                 #endif
             #else
                 #define NUM_CACHEPAGE             ( 292 ) // 292 KB (Reserve 4KB for OSL)

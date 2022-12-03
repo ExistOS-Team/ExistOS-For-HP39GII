@@ -24,7 +24,7 @@ char *virtual_screen=0;
 
 char *scale_vir_screen=0;
 
-char * screen_1bpp = NULL;//=(char *)0x02000000;
+char * screen_1bpp =(char *)0x02000000;
 
 #define X_OFFSET    (0)
 #define Y_OFFSET    (-10)
@@ -56,7 +56,7 @@ void vGL_FlushVScreen()
     char *src=screen_1bpp;
     for (int r=0;r<VIR_LCD_PIX_H;++r){
       char tab[VIR_LCD_PIX_W];
-      char * dest=tab,*end=dest+VIR_LCD_PIX_W;
+      char *dest=tab,*end=dest+VIR_LCD_PIX_W;
       for (;dest<end;dest+=8,++src){
         char cur=*src;
         if (cur){
@@ -414,7 +414,7 @@ int vGL_Initialize() {
     screen_1bpp=pvPortMalloc(VIR_LCD_PIX_H * VIR_LCD_PIX_W/8);
   if (!screen_1bpp) 
     return -1;
-  memset(screen_1bpp, COLOR_WHITE, VIR_LCD_PIX_H * VIR_LCD_PIX_W);
+  memset(screen_1bpp, COLOR_WHITE, VIR_LCD_PIX_H * VIR_LCD_PIX_W / 8);
 
   if (!virtual_screen)
     virtual_screen = pvPortMalloc(VIR_LCD_PIX_H * VIR_LCD_PIX_W);
@@ -439,8 +439,8 @@ int vGL_Initialize() {
 #endif
 
 
-    xTaskCreate(vGL_flushTask, "vGLRefTsk", 1024, NULL, configMAX_PRIORITIES - 3, NULL);
-    xTaskCreate(vGL_consoleTask, "vGLConsoleTsk", 1024, NULL, configMAX_PRIORITIES - 3, NULL);
+    xTaskCreate(vGL_flushTask, "vGLRefTsk", 512, NULL, configMAX_PRIORITIES - 3, NULL);
+    xTaskCreate(vGL_consoleTask, "vGLConsoleTsk", 512, NULL, configMAX_PRIORITIES - 3, NULL);
 
     //vGL_FlushVScreen();
 

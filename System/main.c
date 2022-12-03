@@ -112,10 +112,13 @@ void khicasTask(void *_) {
 
     
     SystemUIResume();
-    vTaskDelay(pdMS_TO_TICKS(400));
-    SystemUIRefresh();
 
     vTaskDelete(NULL);
+}
+
+void StartKhiCAS()
+{
+    xTaskCreate(khicasTask, "KhiCAS", KhiCAS_STACK_SIZE / 4, NULL, configMAX_PRIORITIES - 3, (NULL));
 }
 
 
@@ -126,6 +129,8 @@ void main_thread() {
     void SystemUIInit();
     SystemUIInit();
     SystemFSInit();
+
+    //StartKhiCAS();
 
     for (;;) {
 
@@ -138,16 +143,18 @@ uint32_t __attribute__((naked)) getCurStackAdr()
     __asm volatile("mov r0,r13");
     __asm volatile("mov pc,lr");
 }
-
+extern uint32_t SYSTEM_STACK; //in ld script
 void main() {
 
     void IRQ_ISR();
     void SWI_ISR();
-    ll_set_irq_stack(IRQ_STACK_ADDR);
+    ll_set_irq_stack((uint32_t)&SYSTEM_STACK);
     ll_set_irq_vector(((uint32_t)IRQ_ISR) + 4);
-    ll_set_svc_stack(SWI_STACK_ADDR);
+    ll_set_svc_stack(((uint32_t)&SYSTEM_STACK) - 0x500);
     ll_set_svc_vector(((uint32_t)SWI_ISR) + 4);
     ll_enable_irq(false);
+
+    ll_cpu_slowdown_enable(false);
     
     uint32_t memsz, phy_total, phy_free;
     memsz = ll_mem_phy_info(&phy_free, &phy_total);
@@ -161,7 +168,6 @@ void main() {
     printf("System Booting...\n");
 
     printf("SP:%08x\n", getCurStackAdr());
-    //xTaskCreate(vTask1, "print task", 100, NULL, configMAX_PRIORITIES - 3, NULL);
 
     uint32_t free, total, total_comp;
     total_comp = ll_mem_phy_info(&free, &total);
@@ -172,7 +178,8 @@ void main() {
     SwapMemorySize = ll_mem_swap_size();
     TotalAllocatableSize = OnChipMemorySize + SwapMemorySize;
 
-    xTaskCreate(main_thread, "System", 2048, NULL, configMAX_PRIORITIES - 3, NULL);
+    xTaskCreate(vTask1, "PrintTask", 400, NULL, configMAX_PRIORITIES - 4, NULL);
+    xTaskCreate(main_thread, "System", 400, NULL, configMAX_PRIORITIES - 3, NULL);
 
     vTaskStartScheduler();
 
@@ -199,7 +206,11 @@ void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
 }
 
 void vApplicationMallocFailedHook() {
+
+    void UI_OOM();
+    UI_OOM();
     PANIC("SYS ASSERT: Out of Memory.\n");
+
 }
 
 void check_emulator_status() {

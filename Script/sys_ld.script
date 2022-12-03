@@ -1,6 +1,6 @@
 MEMORY
 {
-  vmRAM    (rwx) : ORIGIN = 0x02002000, LENGTH = 256K
+  vmRAM    (rwx) : ORIGIN = 0x02004000, LENGTH = 200K
   vmROM    (rx ) : ORIGIN = 0x00100000, LENGTH = 6M
 }
 
@@ -101,6 +101,11 @@ SECTIONS
         _ebss = .;
     } > vmRAM
 	. = ALIGN(4);
+	.sys_stack : {
+		. = . + 0x1000;
+		. = ALIGN(4);
+		SYSTEM_STACK = .;
+	} > vmRAM
 	.heap : {
 		. = ALIGN(16);
 		__HEAP_START = .;
