@@ -220,7 +220,7 @@ void System(void *par) {
     for (int i = 120; i <= 150; ++i)
         DisplayFillBox(i - 2, 84, i, 92, 72);
 
-    if ((*bootAddr != 0xEF5AE0EF) && *(bootAddr + 1) != 0xFECDAFDE) {
+    if ((*bootAddr != 0xEF5AE0EF) && *(bootAddr + 1) != 0xFECDAFDE || portIsKeyDown(KEY_F3)) {
         slowDownEnable(false);
         // DisplayClean();
         // DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);

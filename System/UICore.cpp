@@ -50,6 +50,19 @@ void memtest(uint32_t testSize);
 extern uint32_t OnChipMemorySize;
 extern uint32_t TotalAllocatableSize;
 
+TCHAR *pathNow, *pathBefore;
+TCHAR **dirItemNames;
+bool *dirItemInfos; // ture:file false:folder
+unsigned long *filesCount;
+unsigned char *openStatus;
+unsigned int *pageNow, *pageAll;
+unsigned char *selectedItem;
+static DIR fileManagerDir;
+static FILINFO fileInfo;
+unsigned long getFileCounts(TCHAR *path);
+void refreshFileNames(TCHAR *path, TCHAR **names, bool *info, unsigned long *counts);
+void refreshDir();
+
 size_t getOnChipHeapAllocated();
 size_t getSwapMemHeapAllocated();
 
@@ -101,6 +114,8 @@ void UI_SetLang(int lang) {
         MAIN_WIN_TITLE = MAIN_WIN_TITLE_EN;
         MAIN_WIN_FKEY_BAR = MAIN_WIN_FKEY_BAR_EN;
         MAIN_WIN_FKEY_BAR2 = MAIN_WIN_FKEY_BAR2_EN;
+        MAIN_WIN_FKEY_BARFILE = MAIN_WIN_FKEY_BARFILE_EN;
+
         UI_TEMPERRATURE = UI_TEMPERRATURE_EN;
         UI_MEMUSE = UI_MEMUSED_EN;
         UI_BATTERY = UI_BATTERY_EN;
@@ -122,6 +137,8 @@ void UI_SetLang(int lang) {
         MAIN_WIN_TITLE = MAIN_WIN_TITLE_CN;
         MAIN_WIN_FKEY_BAR = MAIN_WIN_FKEY_BAR_CN;
         MAIN_WIN_FKEY_BAR2 = MAIN_WIN_FKEY_BAR2_CN;
+        MAIN_WIN_FKEY_BARFILE = MAIN_WIN_FKEY_BARFILE_CN;
+
         UI_TEMPERRATURE = UI_TEMPERRATURE_CN;
         UI_MEMUSE = UI_MEMUSED_CN;
         UI_BATTERY = UI_BATTERY_CN;
@@ -176,6 +193,16 @@ void pageUpdate() {
     if (curPage <= 2) {
         uidisp->draw_box(180, 0, 255, 11, -1, 0);
         uidisp->draw_printf(180, 0, 16, 255, -1, "%s", timeStr);
+    }
+
+    if (curPage == 2) {
+        uidisp->draw_box(180, 0, 255, 11, -1, 0);
+        uidisp->draw_printf(180, 0, 16, 255, -1, "%s", timeStr);
+        uidisp->draw_box(DISPX, DISPY + 16, 255, DISPY + 16, -1, 0);
+        uidisp->draw_printf(DISPX, DISPY, 16, 0, 255, "%d item(s) [%s] (%d/%d)", *filesCount, pathNow, *pageNow, *pageAll);
+        for (int i = 1; i <= 5 && ((*pageNow - 1) * 5 + i) <= *filesCount; i++) {
+            uidisp->draw_printf(DISPX, DISPY + i * 16 + 1, 16, (i == *selectedItem ? 255 : 0), (i == *selectedItem ? 0 : 255), "%s%s", (dirItemInfos[(*pageNow - 1) * 5 + i - 1] == false ? "/" : ""), dirItemNames[(*pageNow - 1) * 5 + i - 1]);
+        }
     }
 
     if (curPage == 3) {
@@ -333,12 +360,29 @@ void keyMsg(uint32_t key, int state) {
                 timeChange(0, 0, 1);
             }
             break;
+
         default:
             break;
         }
     }
 
     if (state == KEY_TRIG) {
+        if (curPage == 2 && (key == KEY_F1 || key == KEY_F6)) {
+            f_closedir(&fileManagerDir);
+            free(pathNow);
+            for (int i = 0; i < *filesCount; i++) {
+                free(dirItemNames[i]);
+            }
+            free(dirItemNames);
+            free(dirItemInfos);
+            free(filesCount);
+            free(openStatus);
+            free(pageNow);
+            free(pageAll);
+            free(selectedItem);
+            free(pathBefore);
+        }
+
         switch (key) {
         case KEY_SHIFT:
             shift++;
@@ -368,6 +412,78 @@ void keyMsg(uint32_t key, int state) {
             drawPage(curPage);
 
             mainw->setFuncKeys(MAIN_WIN_FKEY_BAR);
+            break;
+
+        case KEY_F5:
+            if (curPage == 2)
+                break;
+
+            filesCount = (unsigned long *)malloc(sizeof(unsigned long));
+            pathNow = (TCHAR *)calloc(255, sizeof(TCHAR));
+            pathBefore = (TCHAR *)calloc(255, sizeof(TCHAR));
+            openStatus = (unsigned char *)malloc(sizeof(unsigned char));
+            pageNow = (unsigned int *)malloc(sizeof(unsigned int));
+            pageAll = (unsigned int *)malloc(sizeof(unsigned int));
+            selectedItem = (unsigned char *)malloc(sizeof(unsigned char)); // 1 to 5
+
+            if (pathNow != NULL && pathBefore != NULL && filesCount != NULL && openStatus != NULL && pageNow != NULL && pageAll != NULL) {
+                strcpy(pathNow, "/");
+                strcpy(pathBefore, "/");
+                if (f_opendir(&fileManagerDir, pathNow) == FR_OK) {
+                    if (f_readdir(&fileManagerDir, &fileInfo) == FR_OK) {
+                        f_closedir(&fileManagerDir);
+
+                        *filesCount = getFileCounts(pathNow);
+                        *pageNow = 1;
+                        *selectedItem = 1;
+                        *pageAll = *filesCount / 5 + (*filesCount % 5 == 0 ? 0 : 1);
+
+                        dirItemNames = (TCHAR **)calloc(*filesCount, sizeof(TCHAR *));
+                        dirItemInfos = (bool *)calloc(*filesCount, sizeof(bool));
+                        for (int i = 0; i < *filesCount; i++) {
+                            dirItemNames[i] = (TCHAR *)calloc(255, sizeof(TCHAR));
+                        }
+
+                        refreshFileNames(pathNow, dirItemNames, dirItemInfos, filesCount);
+                        if (dirItemNames != NULL) {
+                            curPage = 2;
+                            drawPage(curPage);
+                            mainw->setFuncKeys(MAIN_WIN_FKEY_BARFILE);
+                        } else {
+                            *openStatus = 2;
+                        }
+
+                    } else {
+                        *openStatus = 1;
+                    }
+                } else {
+                    *openStatus = 1;
+                }
+            } else {
+                *openStatus = 1;
+            }
+
+            switch (*openStatus) {
+            case 2:
+                for (int i = 0; i < *filesCount; i++) {
+                    free(dirItemNames[i]);
+                }
+                free(dirItemNames);
+                free(dirItemInfos);
+                // NO "break;" here. :P
+            case 1:
+                free(filesCount);
+                free(openStatus);
+                free(pathNow);
+                free(pageNow);
+                free(pageAll);
+                free(selectedItem);
+                free(pathBefore);
+                break;
+
+            default:
+                break;
+            }
             break;
 
         case KEY_F4: {
@@ -401,17 +517,43 @@ void keyMsg(uint32_t key, int state) {
 
         case KEY_LEFT:
             if (curPage == 0) {
-                if (appPage_select > 0)
+                if (appPage_select > 0) {
                     appPage_select--;
-                drawPage(curPage);
+                    drawPage(curPage);
+                }
+            } else if (curPage == 2) {
+                if (strcmp(pathNow, "/")) {
+                    strcpy(pathNow, pathBefore);
+                    refreshDir();
+                    drawPage(curPage);
+                }
             }
             break;
 
         case KEY_RIGHT:
             if (curPage == 0) {
-                if (appPage_select < 1)
+                if (appPage_select < 1) {
                     appPage_select++;
-                drawPage(curPage);
+                    drawPage(curPage);
+                }
+            }
+            break;
+
+        case KEY_UP:
+            if (curPage == 2) {
+                if (*selectedItem != 1) {
+                    (*selectedItem)--;
+                    drawPage(curPage);
+                }
+            }
+            break;
+
+        case KEY_DOWN:
+            if (curPage == 2) {
+                if (*selectedItem != 5 && (*pageNow - 1) * 5 + *selectedItem != *filesCount) {
+                    (*selectedItem)++;
+                    drawPage(curPage);
+                }
             }
             break;
 
@@ -422,8 +564,37 @@ void keyMsg(uint32_t key, int state) {
                     void StartKhiCAS();
                     StartKhiCAS();
                 }
+            } else if (curPage == 2) {
+                if (dirItemInfos[(*pageNow - 1) * 5 + *selectedItem - 1] == false) {
+                    // open a folder
+                    strcpy(pathBefore, pathNow);
+                    strcat(pathNow, dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1]);
+                    strcat(pathNow, "/");
+
+                    refreshDir();
+                    drawPage(curPage);
+                } else {
+                    // do something with the file here...
+                }
             }
             break;
+
+        case KEY_PLUS:
+            if (*pageNow < *pageAll) {
+                (*pageNow)++;
+                *selectedItem = 1;
+                drawPage(curPage);
+            }
+            break;
+
+        case KEY_SUBTRACTION:
+            if (*pageNow > 1) {
+                (*pageNow)--;
+                *selectedItem = 1;
+                drawPage(curPage);
+            }
+            break;
+
         case KEY_1:
             if (curPage == 3) {
                 switch (page3Subpage) {
@@ -549,6 +720,71 @@ static void checkFS() {
         fres = f_mkfs(FS_FLASH_PATH, 0, work, FF_MAX_SS);
         // printf("mkfs:%d\n", fres);
         vPortFree(work);
+    }
+}
+
+unsigned long getFileCounts(TCHAR *path) {
+    unsigned long count = 0;
+    DIR dir;
+    FILINFO fno;
+    f_opendir(&dir, path);
+    for (;;) {
+        if (f_readdir(&dir, &fno) == FR_OK) {
+            if (fno.fname[0] != 0) {
+                count++;
+            } else {
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+    f_closedir(&dir);
+    return count;
+}
+
+void refreshFileNames(TCHAR *path, TCHAR **names, bool *info, unsigned long *counts) {
+    DIR dir;
+    FILINFO fno;
+    f_opendir(&dir, path);
+    for (int i = 0; i < *counts; i++) {
+        if (f_readdir(&dir, &fno) == FR_OK) {
+            strcat(names[i], fno.fname);
+            if (fno.fattrib & AM_DIR) {
+                info[i] = false;
+            } else {
+                info[i] = true;
+            }
+        } else {
+            break;
+        }
+    }
+    f_closedir(&dir);
+}
+
+void refreshDir() {
+    for (int i = 0; i < *filesCount; i++) {
+        free(dirItemNames[i]);
+    }
+    free(dirItemNames);
+    free(dirItemInfos);
+    if (f_opendir(&fileManagerDir, pathNow) == FR_OK) {
+        if (f_readdir(&fileManagerDir, &fileInfo) == FR_OK) {
+            f_closedir(&fileManagerDir);
+
+            *filesCount = getFileCounts(pathNow);
+            *pageNow = 1;
+            *selectedItem = 1;
+            *pageAll = *filesCount / 5 + (*filesCount % 5 == 0 ? 0 : 1);
+
+            dirItemNames = (TCHAR **)calloc(*filesCount, sizeof(TCHAR *));
+            dirItemInfos = (bool *)calloc(*filesCount, sizeof(bool));
+            for (int i = 0; i < *filesCount; i++) {
+                dirItemNames[i] = (TCHAR *)calloc(255, sizeof(TCHAR));
+            }
+
+            refreshFileNames(pathNow, dirItemNames, dirItemInfos, filesCount);
+        }
     }
 }
 
