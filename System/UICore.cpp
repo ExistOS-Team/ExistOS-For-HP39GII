@@ -580,7 +580,7 @@ void keyMsg(uint32_t key, int state) {
             break;
 
         case KEY_PLUS:
-            if (*pageNow != *pageAll) {
+            if (*pageNow < *pageAll) {
                 (*pageNow)++;
                 *selectedItem = 1;
                 drawPage(curPage);
@@ -588,7 +588,7 @@ void keyMsg(uint32_t key, int state) {
             break;
 
         case KEY_SUBTRACTION:
-            if (*pageNow != 1) {
+            if (*pageNow > 1) {
                 (*pageNow)--;
                 *selectedItem = 1;
                 drawPage(curPage);
