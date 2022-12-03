@@ -14,7 +14,7 @@
 #define FS_TYPE         FS_FATFS
 
 #define RAM_BASE            (0x02000000)
-#define BASIC_RAM_SIZE      (256 * 1024)
+#define BASIC_RAM_SIZE      (160 * 1024)
 
 //RAM_BASE
 

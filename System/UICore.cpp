@@ -30,7 +30,7 @@ extern "C" {
 
 extern const unsigned char gImage_khicas_ico[48 * 48];
 
-static char power_save = 'X';
+static char power_save = ' ';
 
 UI_Display *uidisp;
 UI_Window *mainw;
@@ -38,6 +38,8 @@ UI_Window *mainw;
 static int curPage = 0;
 static int page3Subpage = 0;
 static int appPage_select = 0;
+
+static int alpha = 0, shift = 0;
 
 static int language = UI_LANG_EN;
 
@@ -145,6 +147,23 @@ void UI_SetLang(int lang) {
 #define DISPH (mainw->content_height)
 #define DISPW (mainw->content_width)
 
+static inline void __puts(char *s, int len, int line) {
+    for (int i = 0; i < len - 1; i++) {
+        uidisp->draw_char_ascii(32 + i * 8, 16 + line * 16, s[i], 16, 255, 0);
+    }
+}
+
+static char msg1[] = "!!Out of Memory!!";
+static char msg2[] = "Enable Mem Swap or use";
+static char msg3[] = "memory Compression.";
+static char msg4[] = "[ON]+[F6] Reboot";
+void UI_OOM() {
+    __puts(msg1, sizeof(msg1), 1);
+    __puts(msg2, sizeof(msg2), 2);
+    __puts(msg3, sizeof(msg3), 3);
+    __puts(msg4, sizeof(msg4), 4);
+}
+
 void pageUpdate() {
     uint32_t clk_div[3];
     char timeStr[16];
@@ -239,6 +258,43 @@ void drawPage(int page) {
     }
 }
 
+void UI_Refrush() {
+    mainw->refreshWindow();
+    drawPage(curPage);
+}
+
+void refreshIndicator()
+{
+    uint32_t ind = 0;
+    switch (alpha)
+    {
+    case 1:
+        ind |= INDICATE_A__Z;
+    break;
+    case 2:
+        ind |= INDICATE_a__z;
+    break;
+    default:
+        ind &= ~INDICATE_a__z;
+        ind &= ~INDICATE_A__Z;
+        break;
+    }
+    switch (shift)
+    {
+    case 1:
+        ind |= INDICATE_LEFT;
+    break;
+    case 2:
+        ind |= INDICATE_RIGHT;
+    break;
+    default:
+        ind &= ~INDICATE_LEFT;
+        ind &= ~INDICATE_RIGHT;
+        break;
+    }
+    ll_disp_set_indicator(ind, -1);
+}
+
 void keyMsg(uint32_t key, int state) {
 
     if ((state == KEY_TRIG) || (state == KEY_LONG_PRESS)) {
@@ -282,6 +338,29 @@ void keyMsg(uint32_t key, int state) {
 
     if (state == KEY_TRIG) {
         switch (key) {
+        case KEY_SHIFT:
+            shift++;
+            if (shift > 2)
+                shift = 0;
+            refreshIndicator();
+            break;
+
+        case KEY_ALPHA:
+            alpha++;
+            if (alpha > 2)
+                alpha = 0;
+            refreshIndicator();
+            break;
+
+        case KEY_ON:
+            {
+                if(shift == 1)
+                {
+                    ll_power_off();
+                }
+                break;
+            }
+
         case KEY_F1:
             curPage = 0;
             drawPage(curPage);
@@ -337,9 +416,9 @@ void keyMsg(uint32_t key, int state) {
         case KEY_ENTER:
             if (curPage == 0) {
                 if (appPage_select == 0) {
-
-                    void khicasTask(void *_);
-                    xTaskCreate(khicasTask, "KhiCAS", KhiCAS_STACK_SIZE / 4, NULL, configMAX_PRIORITIES - 3, (NULL));
+                    
+                    void StartKhiCAS();
+                    StartKhiCAS();
                 }
             }
             break;
@@ -368,7 +447,7 @@ void keyMsg(uint32_t key, int state) {
                     printf("enableMemSwap\n");
                     void enableMemSwap(bool enable);
                     if (ll_mem_swap_size()) {
-                        enableMemSwap( false);
+                        enableMemSwap(false);
                     } else {
                         enableMemSwap(true);
                     }
@@ -406,7 +485,7 @@ void keyMsg(uint32_t key, int state) {
                 pageUpdate();
             }
             break;
-            /* 
+            /*
         case KEY_3:
             if((curPage == 3) && (page3Subpage == 2))
             {
@@ -434,6 +513,8 @@ void keyMsg(uint32_t key, int state) {
             */
 
         default:
+            mainw->refreshWindow();
+            drawPage(curPage);
             break;
         }
     }

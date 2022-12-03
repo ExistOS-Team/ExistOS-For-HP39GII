@@ -302,7 +302,7 @@ void SystemUIInit() {
 void keyMsg(uint32_t key, int state);
 void SystemUIRefresh() 
 {
-    keyMsg(KEY_F1, 0);
+    keyMsg(0, -1);
 }
 
 void SystemUISuspend() {
@@ -311,4 +311,6 @@ void SystemUISuspend() {
 
 void SystemUIResume() {
     vTaskResume(pUITask);
+    ll_disp_set_indicator(0, -1);
+    SystemUIRefresh();
 }
