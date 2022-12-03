@@ -35,6 +35,8 @@ static char power_save = ' ';
 UI_Display *uidisp;
 UI_Window *mainw;
 
+bool UIForceRefresh = false;
+
 static int curPage = 0;
 static int page3Subpage = 0;
 static int appPage_select = 0;
@@ -652,6 +654,13 @@ void UI_keyScanner(void *_) {
         cnt++;
         if (cnt % 45 == 0) {
             pageUpdate();
+
+            if(UIForceRefresh)
+            {
+                mainw->refreshWindow();
+                drawPage(curPage);
+                UIForceRefresh = false;
+            }
         }
     }
 }

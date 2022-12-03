@@ -299,10 +299,13 @@ void SystemUIInit() {
     xTaskCreate(UI_Task, "UICore", 2048, NULL, configMAX_CO_ROUTINE_PRIORITIES - 3, &pUITask);
 }
 
-void keyMsg(uint32_t key, int state);
+extern bool UIForceRefresh ;
+//void keyMsg(uint32_t key, int state);
 void SystemUIRefresh() 
 {
-    keyMsg(0, -1);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    UIForceRefresh= true;
+    //keyMsg(0, -1);
 }
 
 void SystemUISuspend() {
