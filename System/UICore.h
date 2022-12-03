@@ -210,7 +210,7 @@ public:
                     break;
                 }
             } else {
-                draw_char_GBK16(x, y0, buffer[i + 1] | (buffer[i] << 8), fg, -1);
+                draw_char_GBK16(x, y0, buffer[i + 1] | (buffer[i] << 8), fg, bg);
                 x += 16;
                 if (x > disp_w) {
                     break;
