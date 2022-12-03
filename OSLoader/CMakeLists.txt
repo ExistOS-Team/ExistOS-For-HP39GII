@@ -28,7 +28,7 @@ include_directories(./Component3rd/dhara)
 
 aux_source_directory(.                                  LOADER_SRCS)
 #aux_source_directory(./Scheduler                        LOADER_SRCS)
-aux_source_directory(./VmMgr                            LOADER_SRCS)
+#aux_source_directory(./VmMgr                            LOADER_SRCS)
 aux_source_directory(./LowLevelAPI                      LOADER_SRCS)
 #aux_source_directory(./Scheduler/porting                LOADER_SRCS)
 #aux_source_directory(./HAL                              LOADER_SRCS)
@@ -49,6 +49,7 @@ aux_source_directory(./LowLevelAPI                      LOADER_SRCS)
 add_subdirectory(Component3rd)
 add_subdirectory(HAL)
 add_subdirectory(Scheduler)
+add_subdirectory(VmMgr)
 
 add_executable(rom.elf ${LOADER_SRCS})
 
@@ -56,7 +57,11 @@ target_compile_options(kernel PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittl
 target_compile_options(hal PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm  -Os )
 target_compile_options(hal_hardware PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
 target_compile_options(tusb PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
-target_compile_options(dhara PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm -O2)
+target_compile_options(dhara PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm -Os)
+target_compile_options(vmmgr PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
+target_compile_options(vmmgr_mmu PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm -Os)
+#target_compile_options(quicklz PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm -O3)
+target_compile_options(minilzo PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm -O3)
 
 target_link_libraries(
 rom.elf
@@ -64,6 +69,10 @@ kernel
 tusb 
 hal hal_hardware
 dhara
+#quicklz
+minilzo
+vmmgr
+vmmgr_mmu
 -lc_nano -nostartfiles)
 
 set_property(TARGET kernel PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)

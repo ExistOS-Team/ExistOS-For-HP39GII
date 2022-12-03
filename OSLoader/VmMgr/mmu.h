@@ -48,6 +48,7 @@ void mmu_drain_buffer(void);
 
 void mmu_dumpMapInfo(void);
 
+int reload_DFLPT_seg(uint32_t vseg);
 
 #endif
 

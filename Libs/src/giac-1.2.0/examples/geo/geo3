@@ -1,5 +1,0 @@
-segment(B,C);
-C1:=cercle(B,A-B);
-C2:=cercle(C,A-C);
-droite(inter(C1,C2)); 
-

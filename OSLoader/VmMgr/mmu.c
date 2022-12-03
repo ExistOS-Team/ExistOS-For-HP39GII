@@ -8,21 +8,37 @@
 #include "mmu.h"
 #include <stdbool.h>
 
-#include "../debug.h"
+#include "../debug.h"  
 
-//#define DFLPT_BASE  0x800C0000
-
-#define L1PTE_NUM       (2049)
-
-uint32_t L1PTE[L1PTE_NUM] __attribute__((aligned(16384)));  //Must 16KB aligned
-uint32_t DFLPT_BASE = (uint32_t)L1PTE;
-
+  
 #if USE_TINY_PAGE
     uint32_t L2PTE[TOTAL_VM_SEG * 1024]  __attribute__((aligned(4096)));
     #define SEGn_L2TAB_BASE(x)    ((uint32_t)(&L2PTE[(x) * 1024]))
 #else
     uint32_t L2PTE[TOTAL_VM_SEG * 256]  __attribute__((aligned(1024)));
     #define SEGn_L2TAB_BASE(x)    ((uint32_t)(&L2PTE[(x) * 256]))
+#endif
+
+#define L1PTE_NUM       (2049)  
+ 
+#if USE_HARDWARE_DFLPT
+    #define DFLPT_BASE  (0x800C0000)
+    #define MAX_SEG_SUPPORTED (15U)
+    #define INC_HW_MPTE_Ptr()  do{HW_MPTE_Ptr++;if(HW_MPTE_Ptr > 7)HW_MPTE_Ptr = 1;}while(0)
+    uint32_t *L1PTE = (uint32_t *)DFLPT_BASE;
+
+    uint32_t HW_MPTE_Ptr = 1;
+    //uint32_t MPTE_Table[MAX_SEG_SUPPORTED][2]; //ind, [0]for_seg  [1]val(L2PTE ptr)
+    struct MPTE_Table
+    {
+        uint16_t seg;
+        uint32_t val;
+    }MPTE_Table[MAX_SEG_SUPPORTED];
+    
+
+#else
+    uint32_t L1PTE[L1PTE_NUM] __attribute__((aligned(16384))); ;  //Must 16KB aligned
+    uint32_t DFLPT_BASE = (uint32_t)L1PTE;
 #endif
 
 #define VADDR_TO_L1SEGn(addr)   ((addr) >> 20)
@@ -142,7 +158,6 @@ void mmu_SetDomainPermCheck(uint32_t domain, bool check)
 void mmu_enable(uint32_t base)
 {
     __asm volatile("mcr p15, 0, R0, c2, c0, 0");    // Write L1 Trans-table base addr;
-    __asm volatile("PUSH {R1-R3}");
 
     mmu_invalidate_dcache_all();
     mmu_invalidate_icache();
@@ -156,18 +171,47 @@ void mmu_enable(uint32_t base)
 
     __asm volatile("mov r0,r0"); 
     __asm volatile("mov r0,r0");
-    __asm volatile("POP {R1-R3}");
 }
 
 static inline void SetMPTELoc(uint32_t mpte, uint32_t seg)
 {
-    BF_CS1n(DIGCTL_MPTEn_LOC, mpte, LOC, seg);
+    VM_INFO("mv mpte %d to seg %d\n", mpte, seg);
+    BF_WRn(DIGCTL_MPTEn_LOC, mpte, LOC, seg);
+    
+}
+
+static inline uint32_t GetMPTELoc(uint32_t mpte)
+{
+    return BF_RDn(DIGCTL_MPTEn_LOC, mpte, LOC);
 }
 
 static inline void SetL1PTE(uint32_t pte, uint32_t interpret, uint32_t targetAddr, uint32_t domain, 
     uint32_t AP, bool cache, bool buffer)
 {
-    //volatile uint32_t *PTE_LOC = (uint32_t *)DFLPT_BASE;
+    
+#if USE_HARDWARE_DFLPT
+    int i = 0;
+    bool add = false;
+    if((pte != 0x800) && (pte))
+    {
+        VM_INFO("ADD L1PTE:%08x\n", pte);
+        for(i = 0; i < MAX_SEG_SUPPORTED; i++)
+        {
+            if((MPTE_Table[i].seg == 0xFFFFU) || (MPTE_Table[i].seg == pte))
+            {
+                MPTE_Table[i].seg = pte;
+                add = true;
+                break;
+            }
+        }
+        if(add)
+        {
+            SetMPTELoc(HW_MPTE_Ptr, pte);
+            INC_HW_MPTE_Ptr();
+        }
+    }
+#endif
+
     volatile uint32_t *PTE_LOC = (uint32_t *)L1PTE;
     PTE_LOC[pte] = 0;
     switch (interpret)
@@ -203,7 +247,13 @@ static inline void SetL1PTE(uint32_t pte, uint32_t interpret, uint32_t targetAdd
         break;
     }
 
-    VM_INFO("WR PTE:%08x\n",PTE_LOC[pte]);
+#if USE_HARDWARE_DFLPT
+    if(add){
+        MPTE_Table[i].val = PTE_LOC[pte];
+    }
+#endif
+
+    VM_INFO("WR PTE,:seg:%d, %08x\n",pte, PTE_LOC[pte]);
 }
 
 void mmu_dumpMapInfo()
@@ -248,31 +298,96 @@ void mmu_dumpMapInfo()
 
 void mmu_unmap_page(uint32_t vaddr)
 {
-    if(vaddr >> 20 == 0)
+    
+    uint32_t *L1PTE = (uint32_t *)DFLPT_BASE;
+    uint32_t seg = vaddr >> 20;
+    if(seg == 0)
     {
         INFO("Can not ummap seg 0!\n");
         return;
     }
-    uint32_t *L1PTE = (uint32_t *)DFLPT_BASE;
-    uint32_t *L2PTE = ((uint32_t *)(L1PTE[  vaddr >> 20 ] & ~0x3FF));
+
+    //VM_INFO("unmap_vaddr:%08x, seg:%d\n",vaddr, seg);
+
+#if USE_HARDWARE_DFLPT
+    bool found = false;
+    for(int i = 1; i < 8; i++)
+    {
+        if(GetMPTELoc(i) == seg)
+        {
+            found = true;
+            break;
+        }
+    }
+    if(!found)
+    {
+        for(int i = 0; i < MAX_SEG_SUPPORTED; i++)
+        {
+            if((MPTE_Table[i].seg == seg))
+            {
+                SetMPTELoc(HW_MPTE_Ptr, seg);
+                INC_HW_MPTE_Ptr();
+                L1PTE[seg] = MPTE_Table[i].val;
+                //mmu_invalidate_tlb();
+                break;
+            }
+        }
+    }
+#endif
+
+
+    uint32_t *L2PTE = ((uint32_t *)(L1PTE[  seg ] & ~0x3FF));
 
     #if USE_TINY_PAGE
-    L2PTE[(vaddr >> 10) & 0x3FF] = 0;
+        L2PTE[(vaddr >> 10) & 0x3FF] = 0;
     #else
-    L2PTE[(vaddr >> 12) & 0xFF] = 0;
+        L2PTE[(vaddr >> 12) & 0xFF] = 0;
     #endif
+
+    mmu_invalidate_tlb();
 }
 
 void mmu_map_page(uint32_t vaddr, uint32_t paddr,
     uint32_t AP, bool cache, bool buffer)
 {
-    if(vaddr >> 20 == 0)
+    
+    uint32_t seg = vaddr >> 20;
+    uint32_t *L1PTE = (uint32_t *)DFLPT_BASE;
+    uint32_t *L2PTE;
+
+    if(seg == 0)
     {
         INFO("Can not remap seg 0!\n");
         return;
     }
-    uint32_t *L1PTE = (uint32_t *)DFLPT_BASE;
-    uint32_t *L2PTE = ((uint32_t *)(L1PTE[  vaddr >> 20 ] & ~0x3FF)); // check which seg (0~4095)
+
+#if USE_HARDWARE_DFLPT
+    bool found = false;
+    for(int i = 1; i < 8; i++)
+    {
+        if(GetMPTELoc(i) == seg)
+        {
+            found = true;
+            break;
+        }
+    }
+    if(!found)
+    {
+        for(int i = 0; i < MAX_SEG_SUPPORTED; i++)
+        {
+            if((MPTE_Table[i].seg == seg))
+            {
+                SetMPTELoc(HW_MPTE_Ptr, seg);
+                INC_HW_MPTE_Ptr();
+                L1PTE[seg] = MPTE_Table[i].val;
+                //mmu_invalidate_tlb();
+                break;
+            }
+        }
+    }
+#endif
+
+    L2PTE = ((uint32_t *)(L1PTE[ seg  ] & ~0x3FF)); // check which seg (0~4095)
 
     uint32_t val = 0;
 
@@ -297,16 +412,65 @@ void mmu_map_page(uint32_t vaddr, uint32_t paddr,
     L2PTE[(vaddr >> 12) & 0xFF] = val;
 
 #endif
-    //INFO("SET VAL:%08x\n", val);
+    VM_INFO("map page L2PTE:VAL:%08x\n", val);
 
+    mmu_invalidate_tlb();
 }
+
+void dump_MPTE()
+{
+    for(int i = 0; i < 8; i++)
+    {
+        printf("MPTE %d, at seg:%ld\n", i, GetMPTELoc(i));
+    }
+}
+
+
+#if USE_HARDWARE_DFLPT
+void dump_DFLPT_rec()
+{
+    for(int j = 0; j < MAX_SEG_SUPPORTED; j++)
+    {
+        printf("ind:%d, seg:%d, val:%08lx\n", j, MPTE_Table[j].seg, MPTE_Table[j].val);
+    }
+}
+
+int reload_DFLPT_seg(uint32_t vseg)
+{
+    for(int i = 1; i <8; i++)
+    {
+        if(vseg == GetMPTELoc(i))
+        {
+            return 1;
+        }
+    }
+    for(int j = 0; j < MAX_SEG_SUPPORTED; j++)
+    {
+        if(MPTE_Table[j].seg == vseg)
+        {
+            SetMPTELoc(HW_MPTE_Ptr, vseg);
+            INC_HW_MPTE_Ptr();
+            L1PTE[vseg] = MPTE_Table[j].val;
+            mmu_invalidate_tlb();
+            return 2;
+        }
+    }
+    return 0;
+}
+
+#endif
 
 void mmu_init()
 {
     memset(L2PTE, 0, sizeof(L2PTE));
-    memset(L1PTE, 0, sizeof(L1PTE));
 
-    //SetMPTELoc(0, 0);
+#if USE_HARDWARE_DFLPT
+    SetMPTELoc(0, 0);
+    memset(MPTE_Table, 0xFF, sizeof(MPTE_Table));
+#else
+    memset(L1PTE, 0, sizeof(L1PTE));
+#endif
+
     SetL1PTE(0      , L1PTE_INTERPRET_SECTION, 0         , OSLOADER_MEMORY_DOMAIN, AP_SYSRW_USROR, false, false);
     SetL1PTE(0x800  , L1PTE_INTERPRET_SECTION, 0x80000000, HARDWARE_MEMORY_DOMAIN, AP_SYSRW_USRNONE, false, false);
     
@@ -365,8 +529,12 @@ void mmu_init()
 
     mmu_enable(DFLPT_BASE);
 
-
     VM_INFO("L2 PTE Size:%d\n",sizeof(L2PTE));
-    //mmu_dumpMapInfo();
+
+#if USE_HARDWARE_DFLPT
+    dump_DFLPT_rec();
+    dump_MPTE();
+#endif
+
 }
 

@@ -19,7 +19,7 @@ extern "C"
 //#define POPUP_PRETTY 1
 #define POPUP_PRETTY_STR "Pretty print"
 
-  int shell_x=0,shell_y=0,shell_fontw=8,shell_fonth=16;
+  int shell_x=0,shell_y=0,shell_fontw=7,shell_fonth=14;
 struct line *Line;
 char menu_f1[8] = {0}, menu_f2[8] = {0}, menu_f3[8] = {0}, menu_f4[8] = {0}, menu_f5[8] = {0}, menu_f6[8];
 char session_filename[MAX_FILENAME_SIZE + 1] = "session";
@@ -2336,7 +2336,7 @@ int Console_Disp()
       }
       else
       {
-        locate(COL_DISP_MAX - curline.disp_len + 1, i + 1);
+        locate(COL_DISP_MAX - curline.disp_len + 1, i + 1); 
 
         if (curline.readonly)
         {
@@ -2382,12 +2382,12 @@ int Console_Disp()
           if (curline.disp_len - curline.start_col != COL_DISP_MAX)
           {
             Cursor_SetFlashMode(0);
-            Print((unsigned char *)">"); 
+            Print((unsigned char *)"> "); 
           }
         }
         else if (Cursor.x < COL_DISP_MAX - 1)
         {
-          PrintRev((unsigned char *)">");
+          PrintRev((unsigned char *)"> ");
         }
       }
 
@@ -2446,13 +2446,13 @@ int Console_Disp()
       if (curline.start_col > 0)
       {
         locate(1, i + 1);
-        Print((unsigned char *)"\xE6\xAF");
+        Print((unsigned char *)"<");
       }
 
       if (curline.disp_len - curline.start_col > COL_DISP_MAX)
       {
         locate(COL_DISP_MAX, i + 1);
-        Print((unsigned char *)"\xE6\x9F");
+        Print((unsigned char *)"> ");
       }
     }
   }

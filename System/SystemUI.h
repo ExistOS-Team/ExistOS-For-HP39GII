@@ -1,5 +1,9 @@
 #pragma once
-#include "lvgl.h"
+//#include "lvgl.h"
+
+#define LCD_PIX_W   256
+#define LCD_PIX_H   127
+
 #define INDICATE_LEFT      (1 << 0)
 #define INDICATE_RIGHT     (1 << 1)
 #define INDICATE_A__Z      (1 << 2)
@@ -15,11 +19,11 @@ extern "C" {
 
 
 
-
+void SystemUIRefresh() ;
 void SystemUISuspend();
 void SystemUIResume();
-lv_indev_t *SystemGetInKeypad();
-void SystemUISetBusy(bool enable);
+
+void UI_Task(void *_);
 
 
 #ifdef __cplusplus

@@ -41,11 +41,15 @@ void vLLAPISvc(void *pvParameters);
 void vDispSvc(void *pvParameters);
 
 TaskHandle_t pDispTask = NULL;
+TaskHandle_t pStatusPrintTask = NULL;
 TaskHandle_t pSysTask = NULL;
 TaskHandle_t pLLAPITask = NULL;
+TaskHandle_t pKevSvcTask = NULL;
+TaskHandle_t pUSBLOGTask = NULL;
 TaskHandle_t pLLIRQTask = NULL;
 TaskHandle_t pLLIOTask = NULL;
 TaskHandle_t pBattmon = NULL;
+TaskHandle_t pMainThread = NULL;
 
 extern uint32_t g_mtd_write_cnt;
 extern uint32_t g_mtd_read_cnt;
@@ -61,7 +65,7 @@ extern uint32_t volatile g_latest_key_status;
 volatile uint32_t g_vm_status = VM_STATUS_SUSPEND;
 bool vm_needto_reset = false;
 
-char pcWriteBuffer[4096 + 1024];
+///char pcWriteBuffer[4096 + 1024];
 uint32_t HCLK_Freq;
 
 extern uint32_t g_page_vram_fault_cnt;
@@ -77,6 +81,10 @@ uint32_t check_frequency() {
     s1 = *((volatile uint32_t *)0x8001C020);
     return (s1 - s0) / 1;
 }
+
+float mem_cr = 0;
+uint32_t g_mem_comp_rate[16];
+uint32_t g_mem_comp_rate_ptr = 0;
 void printTaskList() {
     /*
     vTaskList((char *)&pcWriteBuffer);
@@ -103,7 +111,18 @@ void printTaskList() {
     printf("Batt Charge:%d\n", HW_POWER_STS.B.CHRGSTS);
     printf("PWD_BATTCHRG:%d\n", HW_POWER_CHARGE.B.PWD_BATTCHRG);
     printf("RTC:%ld\n", rtc_get_seconds());
+    
+    for(int i = 0; i<16; i++)
+    {
+        mem_cr += g_mem_comp_rate[i];
+    }
+    mem_cr /= 16.0f;
+    mem_cr /= 100.0f;
+    printf("Memory Compression Rate:%d.%02d\n", (int)mem_cr, (int)(mem_cr * 100.0f));
     printf("=============================================\r\n\n");
+
+    #include "cdmp.h"
+    cdmp_dump_layout();
 }
 
 void vTask1(void *pvParameters) {
@@ -246,8 +265,9 @@ void System(void *par) {
     __asm volatile("orr r1,r1,#0x10");
     __asm volatile("msr cpsr_all,r1");
 
-    __asm volatile("mov r13,#0x02300000");
-    __asm volatile("add r13,#0x000FA000");
+    __asm volatile("mov r13,#0x02000000");
+    __asm volatile("add r13,#0x00040000");  // VM_RAM_BASE + 256KB - 4
+    __asm volatile("sub r13,#0x00000040");  // VM_RAM_BASE + 256KB - 0x40
 
     __asm volatile("mov r0,#0");
 
@@ -260,6 +280,7 @@ void System(void *par) {
     __asm volatile("ldr r4,=bootAddr");
     __asm volatile("ldr r4,[r4]");
     __asm volatile("mov pc,r4");
+    
 
     while (1)
         ;
@@ -279,7 +300,7 @@ void VMSuspend() {
         LLIRQ_ClearIRQs();
 
         g_vm_status = VM_STATUS_SUSPEND;
-        vTaskDelay(pdMS_TO_TICKS(100));
+        //vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
@@ -301,8 +322,7 @@ void VMResume() {
 
 
 void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
-    char buf[19];
-    uint8_t i;
+    char buf[32];
 
     // if ((task == pSysTask) && g_sysfault_auto_reboot)
     {
@@ -315,16 +335,17 @@ void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
         pRegFram -= 16;
 
         DisplayClean();
-        //DisplayFillBox(4, 4, 252, 20, 0);
-        //DisplayPutStr(16, 5, "System Panic! ", 255, 0, 16);
-        //DisplayFillBox(8, 24, 248, 120, 208);
+        DisplayFillBox(4, 4, 252, 20, 0);
+        DisplayPutStr(16, 5, "System Panic! ", 255, 0, 16);
+        DisplayFillBox(8, 24, 248, 120, 208);
+
 
         if (res != NULL) {
-            DisplayPutStr(56, 16, strcat(res, " "), 208, 0, 16);
+            DisplayPutStr(240 - 8 * strlen(res), 5, strcat(res, " "), 208, 0, 16);
         }
 
-        //DisplayPutStr(24, 16 * 2 - 8, "[ON+F5] > Maintenance Menu", 96, 208, 16);
-
+        DisplayPutStr(24, 16 * 2 - 8, "[ON+F5] > Maintenance Menu", 96, 208, 16);
+/*
         for(i = 0; i < 4; i++){
             memset(buf, 0, sizeof(buf));
             sprintf(buf, "%08lx %08lx ", pRegFram[12 + i], pRegFram[i]);
@@ -333,8 +354,8 @@ void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
         memset(buf, 0, sizeof(buf));
         sprintf(buf, "%08lx %08lx ", pRegFram[-1], address);
         DisplayPutStr(56, 96, buf, 0, 208, 16);
+*/  
         
-        /*
         memset(buf, 0, sizeof(buf));
         sprintf(buf, "R12:%08lx  R0:%08lx ", pRegFram[12], pRegFram[0]);
         DisplayPutStr(24, 16 * 3 - 8, buf, 0, 208, 16);
@@ -354,7 +375,7 @@ void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
         memset(buf, 0, sizeof(buf));
         sprintf(buf, "CPSR:%08lx FAR:%08lx ", pRegFram[-1], address);
         DisplayPutStr(24, 16 * 7 - 8, buf, 0, 208, 16);
-        */
+        
 
         g_vm_status = VM_STATUS_UNCONSCIOUS;
 
@@ -379,15 +400,23 @@ void mkSTMPNandStructure(uint32_t OLStartBlock, uint32_t OLPages);
 void parseCDCCommand(char *cmd) {
     if (strcmp(cmd, "PING") == 0) {
         slowDownEnable(false);
+
+        vTaskSuspend(pMainThread);
+        vTaskSuspend(pUSBLOGTask);
+        vTaskSuspend(pDispTask);
+        vTaskSuspend(pStatusPrintTask);
+        vTaskSuspend(pKevSvcTask);
+        vTaskSuspend(pBattmon);
+
         printf("CDC PING\n");
         MscSetCmd("PONG\n");
 
+        VMSuspend();
         return;
     }
 
     if (strcmp(cmd, "RESETDBUF") == 0) {
-        slowDownEnable(false);
-        VMSuspend();
+        
 
         if (binBuf == NULL) {
             binBuf = (char *)VMMGR_GetCacheAddress();
@@ -430,13 +459,13 @@ void parseCDCCommand(char *cmd) {
     if (memcmp(cmd, "PROGP", 5) == 0) {
         uint32_t prog_page = 1111;
         uint32_t wrMeta;
-        uint8_t *mtbuff = NULL;
+        uint8_t mtbuff[32];
         sscanf(cmd, "PROGP:%ld,%ld", &prog_page, &wrMeta);
         printf("PROGP:%ld,%ld\n", prog_page, wrMeta);
 
         if (wrMeta) {
-            mtbuff = pvPortMalloc(19);
-            memset(mtbuff, 0xFF, 19);
+            //mtbuff = pvPortMalloc(19);
+            memset(mtbuff, 0xFF, sizeof(mtbuff));
             mtbuff[1] = 0x00;
             mtbuff[2] = 0x53; // S
             mtbuff[3] = 0x54; // T
@@ -453,11 +482,10 @@ void parseCDCCommand(char *cmd) {
         }
 
         if (wrMeta) {
-            vPortFree(mtbuff);
+            //vPortFree(mtbuff);
         }
 
         MscSetCmd("PGOK\n");
-        
         return;
     }
 
@@ -607,7 +635,7 @@ void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters
 
     portLRADCConvCh(7, 1);
 
-    g_CDC_TransTo = CDC_PATH_LOADER;
+    //g_CDC_TransTo = CDC_PATH_LOADER;
     // vTaskDelay(pdMS_TO_TICKS(1000));
     /*
     printf("Batt. voltage:%d mv, adc:%d\n", portGetBatterVoltage_mv(), portLRADCConvCh(7, 5));
@@ -820,7 +848,7 @@ int __attribute__((target("thumb"))) capt_ON_Key(int ck, int cp) {
 
     return 0;
 }
-
+/*
 void get_cpu_info() {
     register uint32_t val;
     __asm volatile("mrc p15,0,%0,c0,c0,0"
@@ -841,6 +869,7 @@ void get_cpu_info() {
                    : "=r"(val));
     printf("Cache LOCK:%08lx\n", val);
 }
+*/
 
 void vBatteryMon(void *__n) {
 
@@ -972,20 +1001,22 @@ volatile void _startup() {
 
     printf("OSLoader starting...\nreboot count: %d\n", bootTimes);
 
-    get_cpu_info();
+    //get_cpu_info();
 
     boardInit();
     printf("booting .....\n");
 
-    xTaskCreate(vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
+    xTaskCreate(vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pStatusPrintTask);
     xTaskCreate(vMTDSvc, "MTD Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, NULL);
     xTaskCreate(vFTLSvc, "FTL Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 3, NULL);
     xTaskCreate(vDispSvc, "Display Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pDispTask);
-    xTaskCreate(TaskUSBLog, "USB Log", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 3, NULL);
+
+    xTaskCreate(TaskUSBLog, "USB Log", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 7, &pUSBLOGTask);
     xTaskCreate(vTaskTinyUSB, "TinyUSB", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 4, NULL);
+
     xTaskCreate(vVMMgrSvc, "VM Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 4, NULL);
 
-    xTaskCreate(vKeysSvc, "Keys Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
+    xTaskCreate(vKeysSvc, "Keys Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pKevSvcTask);
 
     xTaskCreate(vLLAPISvc, "LLAPI Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 5, &pLLAPITask);
     xTaskCreate(LLIRQ_task, "LLIRQ Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 6, &pLLIRQTask);
@@ -994,7 +1025,7 @@ volatile void _startup() {
     xTaskCreate(System, "System", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 7, &pSysTask);
 
     xTaskCreate(vBatteryMon, "Battery Mon", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pBattmon);
-    xTaskCreate(vMainThread, "Main Thread", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
+    xTaskCreate(vMainThread, "Main Thread", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pMainThread);
 
     // pSysTask = xTaskCreateStatic( (TaskFunction_t)0x00100000, "System", VM_RAM_SIZE, NULL, 1, VM_RAM_BASE, pvPortMalloc(sizeof(StaticTask_t)));
 

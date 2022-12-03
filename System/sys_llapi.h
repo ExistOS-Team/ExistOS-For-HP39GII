@@ -81,6 +81,12 @@ DECDEF_LLSWI(uint32_t,     ll_system_idle,              (void)                  
 
 
 
+DECDEF_LLSWI(uint32_t,     ll_mem_phy_info,             (uint32_t *free, uint32_t *total)        ,LL_SWI_MEM_PHY_INFO                );
+DECDEF_LLSWI(float,        ll_mem_comprate,             (void)                                  ,LL_FAST_SWI_MEM_COMPRATE               );
+DECDEF_LLSWI(void,         ll_mem_swap_enable,          (uint32_t enable)                       ,LL_FAST_SWI_MEM_ENABLE_SWAP                );
+DECDEF_LLSWI(uint32_t,     ll_mem_swap_size,          (void)                                  ,LL_FAST_SWI_MEM_SWAP_SIZE                );
+
+
 #ifdef __cplusplus          
     }          
 #endif

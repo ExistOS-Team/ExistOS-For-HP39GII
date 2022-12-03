@@ -1,2 +1,0 @@
-#! /bin/bash
-export PATH=/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin:$PATH

@@ -7,20 +7,15 @@ include_directories(./Core/porting)
 
 include_directories(./Fs)
 include_directories(./Fs/Fatfs)
-include_directories(./Fs/littlefs) 
+#include_directories(./Fs/littlefs) 
 
 include_directories(./Config)
-include_directories(./CoremarkTest)
 
-include_directories(./KLib/lvgl)
+#include_directories(./KLib/lvgl)
 
-include_directories(${CMAKE_SOURCE_DIR}/Libs/src/micropython-master/)
-include_directories(${CMAKE_SOURCE_DIR}/Libs/src/micropython-master/ports/eoslib)
-include_directories(${CMAKE_SOURCE_DIR}/Libs/src/micropython-master/ports/eoslib/build)
-#include_directories(${CMAKE_SOURCE_DIR}/Libs/src/)
-#include_directories(${CMAKE_SOURCE_DIR}/Libs/src/giac-1.4.9/)
-#include_directories(${CMAKE_SOURCE_DIR}/Libs/src/giac-1.2.0/src)
-#include_directories(${CMAKE_SOURCE_DIR}/Libs/src/gmp/include)
+#include_directories(${CMAKE_SOURCE_DIR}/Libs/src/micropython-master/)
+#include_directories(${CMAKE_SOURCE_DIR}/Libs/src/micropython-master/ports/eoslib)
+#include_directories(${CMAKE_SOURCE_DIR}/Libs/src/micropython-master/ports/eoslib/build)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/libtommath-0.39/)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/khicas/)
 
@@ -28,15 +23,14 @@ include_directories(${CMAKE_SOURCE_DIR}/Libs/src/khicas/)
 aux_source_directory(.                                         SYS_SRCS)
 aux_source_directory(./Core                                    SYS_SRCS)
 aux_source_directory(./Core/porting                            SYS_SRCS)
-aux_source_directory(./CoremarkTest                            SYS_SRCS)
 aux_source_directory(./Fs                                      SYS_SRCS)
 aux_source_directory(./Fs/Fatfs                                SYS_SRCS)
-aux_source_directory(./Fs/littlefs                             SYS_SRCS)
+#aux_source_directory(./Fs/littlefs                             SYS_SRCS)
 
 #add_subdirectory(gb)
-add_subdirectory(KLib)
+#add_subdirectory(KLib)
 add_subdirectory(KLib/tjpgdec)
-add_subdirectory(emu48)
+#add_subdirectory(emu48)
 
 add_executable(sys.elf ${SYS_SRCS})
 
@@ -49,8 +43,8 @@ target_link_options(sys.elf PRIVATE ${LINKER_FLAGS})
 
  
 #target_compile_options(gb PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Ofast)
-target_compile_options(emu48 PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
-target_compile_options(lvgl PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
+#target_compile_options(emu48 PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
+#target_compile_options(lvgl PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
 target_compile_options(tjpgd PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb-interwork -mthumb -Os)
 
 
@@ -69,8 +63,8 @@ target_compile_options(sys.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlitt
 target_link_libraries(sys.elf -lm -lc -lrdimon -lgcc -lstdc++ -nostartfiles
 tjpgd
 #gb 
-emu48
-lvgl
+#emu48
+#lvgl
 ${CMAKE_SOURCE_DIR}/Libs/libkcasgui.libcpp
 #${CMAKE_SOURCE_DIR}/Libs/libmpy.libc
 ${CMAKE_SOURCE_DIR}/Libs/libcas.libcpp
@@ -94,6 +88,10 @@ ADD_CUSTOM_TARGET (
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_dependencies(sys.elf timestamp)
+
+add_custom_command(TARGET sys.elf  POST_BUILD
+    COMMAND arm-none-eabi-size ${CMAKE_CURRENT_BINARY_DIR}/sys.elf 
+    )
 
 add_custom_target(
   ExistOS.sys ALL

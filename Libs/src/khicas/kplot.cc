@@ -3433,7 +3433,6 @@ namespace giac {
   logo_turtle & turtle(){
     if (!turtleptr){
       turtleptr=new logo_turtle;
-      turtleptr->color=255;
     }
     return * turtleptr;
   }

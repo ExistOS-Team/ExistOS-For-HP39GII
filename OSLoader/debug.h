@@ -33,7 +33,7 @@ void dbg_printf(char *fmt, ...);
 
 
 
-//define VM_INFO(...) do{printf(__VA_ARGS__);}while(0)
+//#define VM_INFO(...) do{printf(__VA_ARGS__);}while(0)
 #define VM_INFO(...) 
 #define FAULT_INFO(...) 
 //#define FAULT_INFO(...) do{printf(__VA_ARGS__);}while(0)

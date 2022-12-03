@@ -1,4 +1,4 @@
-/*
+/* 
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Ha Thach (tinyusb.org)
@@ -38,13 +38,11 @@
 #include "osal/osal.h"
 #include "common/tusb_fifo.h"
 
-#include "class/hid/hid.h"
-
 //------------- HOST -------------//
-#if CFG_TUH_ENABLED
+#if TUSB_OPT_HOST_ENABLED
   #include "host/usbh.h"
 
-  #if CFG_TUH_HID
+  #if HOST_CLASS_HID
     #include "class/hid/hid_host.h"
   #endif
 
@@ -63,7 +61,7 @@
 #endif
 
 //------------- DEVICE -------------//
-#if CFG_TUD_ENABLED
+#if TUSB_OPT_DEVICE_ENABLED
   #include "device/usbd.h"
 
   #if CFG_TUD_HID
@@ -78,13 +76,9 @@
     #include "class/msc/msc_device.h"
   #endif
 
-  #if CFG_TUD_AUDIO
-    #include "class/audio/audio_device.h"
-  #endif
-
-  #if CFG_TUD_VIDEO
-    #include "class/video/video_device.h"
-  #endif
+#if CFG_TUD_AUDIO
+  #include "class/audio/audio_device.h"
+#endif
 
   #if CFG_TUD_MIDI
     #include "class/midi/midi_device.h"
@@ -98,15 +92,11 @@
     #include "class/usbtmc/usbtmc_device.h"
   #endif
 
-  #if CFG_TUD_DFU_RUNTIME
+  #if CFG_TUD_DFU_RT
     #include "class/dfu/dfu_rt_device.h"
   #endif
 
-  #if CFG_TUD_DFU
-    #include "class/dfu/dfu_device.h"
-  #endif
-
-  #if CFG_TUD_ECM_RNDIS || CFG_TUD_NCM
+  #if CFG_TUD_NET
     #include "class/net/net_device.h"
   #endif
 
@@ -119,6 +109,8 @@
 //--------------------------------------------------------------------+
 // APPLICATION API
 //--------------------------------------------------------------------+
+/** \ingroup group_application_api
+ *  @{ */
 
 // Initialize device/host stack
 // Note: when using with RTOS, this should be called after scheduler/kernel is started.
@@ -130,6 +122,8 @@ bool tusb_inited(void);
 
 // TODO
 // bool tusb_teardown(void);
+
+/** @} */
 
 #ifdef __cplusplus
  }

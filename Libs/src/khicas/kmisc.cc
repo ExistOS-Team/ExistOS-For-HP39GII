@@ -56,6 +56,19 @@ namespace giac
 {
 #endif // ndef NO_NAMESPACE_GIAC
 
+  gen _addr(const gen & g,GIAC_CONTEXT){
+    if (g.type==_VECT && g.subtype==_SEQ__VECT && g._VECTptr->size()==2){
+      gen & obj=g._VECTptr->front();
+      vecteur & ptr=*obj._VECTptr;
+      return makevecteur((longlong) (unsigned) (&ptr),(int) taille(obj,RAND_MAX),tailles(obj));
+    }
+    vecteur & ptr=*g._VECTptr;
+    return (longlong) (unsigned) (&ptr);
+  }
+  static const char _addr_s []="addr";
+  static define_unary_function_eval (__addr,&_addr,_addr_s);
+  define_unary_function_ptr5( at_addr ,alias_at_addr,&__addr,0,true);
+
   static vecteur listplot(const gen &g, vecteur &attributs, GIAC_CONTEXT)
   {
     if (g.type != _VECT || g._VECTptr->empty())
@@ -6956,7 +6969,7 @@ int step_param(const gen &f, const gen &g, const gen &t, gen &tmin, gen &tmax, v
         return 1; // do not process the key, because otherwise we will leave alpha status
       }
     }
-    if (keyflag == 0)
+    if (1 || keyflag == 0)
     {
       SetSetupSetting((unsigned int)0x14, (char)0x88);
     }

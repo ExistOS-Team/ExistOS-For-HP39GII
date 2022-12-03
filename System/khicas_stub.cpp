@@ -367,7 +367,7 @@ int GetKey(int *key) {
                     keyStatus = 0;
                     vTaskDelay(pdMS_TO_TICKS(1000));
 
-                    lv_obj_invalidate(lv_scr_act());
+                    //lv_obj_invalidate(lv_scr_act());
                     SystemUIResume();
 
                     vTaskDelete(NULL);

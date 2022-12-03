@@ -1,4 +1,4 @@
-/*
+/* 
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Ha Thach (tinyusb.org)
@@ -37,6 +37,7 @@
 #define _TUSB_HUB_H_
 
 #include "common/tusb_common.h"
+#include "usbh.h"
 
 #ifdef __cplusplus
  extern "C" {
@@ -162,7 +163,7 @@ typedef struct {
       uint16_t high_speed             : 1;
       uint16_t port_test_mode         : 1;
       uint16_t port_indicator_control : 1;
-      uint16_t TU_RESERVED            : 3;
+      uint16_t : 0;
     };
 
     uint16_t value;
@@ -171,44 +172,19 @@ typedef struct {
 
 TU_VERIFY_STATIC( sizeof(hub_port_status_response_t) == 4, "size is not correct");
 
-// Clear feature
-bool hub_port_clear_feature (uint8_t hub_addr, uint8_t hub_port, uint8_t feature,
-                             tuh_xfer_cb_t complete_cb, uintptr_t user_data);
-
-// Set feature
-bool hub_port_set_feature   (uint8_t hub_addr, uint8_t hub_port, uint8_t feature,
-                             tuh_xfer_cb_t complete_cb, uintptr_t user_data);
-
-// Get port status
-bool hub_port_get_status    (uint8_t hub_addr, uint8_t hub_port, void* resp,
-                             tuh_xfer_cb_t complete_cb, uintptr_t user_data);
-
-// Get status from Interrupt endpoint
-bool hub_edpt_status_xfer(uint8_t dev_addr);
-
-// Reset a port
-static inline bool hub_port_reset(uint8_t hub_addr, uint8_t hub_port,
-                                  tuh_xfer_cb_t complete_cb, uintptr_t user_data)
-{
-  return hub_port_set_feature(hub_addr, hub_port, HUB_FEATURE_PORT_RESET, complete_cb, user_data);
-}
-
-// Clear Reset Change
-static inline bool hub_port_clear_reset_change(uint8_t hub_addr, uint8_t hub_port,
-                                               tuh_xfer_cb_t complete_cb, uintptr_t user_data)
-{
-  return hub_port_clear_feature(hub_addr, hub_port, HUB_FEATURE_PORT_RESET_CHANGE, complete_cb, user_data);
-}
-
+bool hub_port_reset(uint8_t hub_addr, uint8_t hub_port, tuh_control_complete_cb_t complete_cb);
+bool hub_port_get_status(uint8_t hub_addr, uint8_t hub_port, void* resp, tuh_control_complete_cb_t complete_cb);
+bool hub_port_clear_feature(uint8_t hub_addr, uint8_t hub_port, uint8_t feature, tuh_control_complete_cb_t complete_cb);
+bool hub_status_pipe_queue(uint8_t dev_addr);
 
 //--------------------------------------------------------------------+
 // Internal Class Driver API
 //--------------------------------------------------------------------+
-void hub_init       (void);
-bool hub_open       (uint8_t rhport, uint8_t dev_addr, tusb_desc_interface_t const *itf_desc, uint16_t max_len);
-bool hub_set_config (uint8_t dev_addr, uint8_t itf_num);
-bool hub_xfer_cb    (uint8_t dev_addr, uint8_t ep_addr, xfer_result_t event, uint32_t xferred_bytes);
-void hub_close      (uint8_t dev_addr);
+void hub_init(void);
+bool hub_open(uint8_t rhport, uint8_t dev_addr, tusb_desc_interface_t const *itf_desc, uint16_t *p_length);
+bool hub_set_config(uint8_t dev_addr, uint8_t itf_num);
+bool hub_xfer_cb(uint8_t dev_addr, uint8_t ep_addr, xfer_result_t event, uint32_t xferred_bytes);
+void hub_close(uint8_t dev_addr);
 
 #ifdef __cplusplus
  }

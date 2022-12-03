@@ -69,6 +69,7 @@
 #define LL_FAST_SWI_SYSTEM_IDLE             (LL_FAST_SWI_BASE + 80)
 #define LL_FAST_SWI_CORE_CUR_FREQ           (LL_FAST_SWI_BASE + 81)
 
+
 #define LL_FAST_SWI_GET_CHARGE_STATUS     (LL_FAST_SWI_BASE + 82)
 #define LL_SWI_CHARGE_ENABLE              (LL_SWI_BASE + 83)
 #define LL_SWI_SLOW_DOWN_ENABLE              (LL_SWI_BASE + 84)
@@ -78,6 +79,14 @@
 
 #define LL_FAST_SWI_PCM_BUFFER_IS_IDLE        (LL_FAST_SWI_BASE + 90)
 #define LL_FAST_SWI_PCM_BUFFER_PLAY           (LL_FAST_SWI_BASE + 91)
+
+
+
+#define LL_SWI_MEM_PHY_INFO                  (LL_SWI_BASE + 100)
+#define LL_FAST_SWI_MEM_COMPRATE             (LL_FAST_SWI_BASE + 101)
+#define LL_FAST_SWI_MEM_ENABLE_SWAP          (LL_FAST_SWI_BASE + 102)
+#define LL_FAST_SWI_MEM_SWAP_SIZE            (LL_FAST_SWI_BASE + 103)
+
 
 
 #define LL_IRQ_SERIAL                  (0)

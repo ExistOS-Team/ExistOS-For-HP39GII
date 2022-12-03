@@ -64,6 +64,11 @@ void *pvReturn;
 		pvReturn = malloc( xWantedSize );
 		traceMALLOC( pvReturn, xWantedSize );
 	}
+
+	if( pvReturn == NULL ){
+		pvReturn = malloc( xWantedSize );
+	}
+
 	( void ) xTaskResumeAll();
 
 	#if( configUSE_MALLOC_FAILED_HOOK == 1 )

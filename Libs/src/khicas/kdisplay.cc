@@ -3191,7 +3191,7 @@ int select_item(const char ** ptr,const char * title,bool askfor1){
 
   void Turtle::draw()
   {
-    const int deltax = 0, deltay = 0;
+    const int deltax = 0, deltay = 0,noir=0,prec_noir=noir,noir_t=noir;
     int horizontal_pixels = LCD_WIDTH_PX - 2 * giac::COORD_SIZE;
     // Check for fast redraw
     // Then redraw the background
@@ -3303,7 +3303,7 @@ int select_item(const char ** ptr,const char * title,bool askfor1){
           { // Write a string
             // cout << current.radius << " " << current.s << endl;
             if (current.s < ecristab().size())
-              text_print(current.radius, ecristab()[current.s].c_str(), int(deltax + turtlezoom * (current.x - turtlex)), int(deltay + LCD_HEIGHT_PX - turtlezoom * (current.y - turtley)), current.color);
+              text_print(current.radius, ecristab()[current.s].c_str(), int(deltax + turtlezoom * (current.x - turtlex)), int(deltay + LCD_HEIGHT_PX - turtlezoom * (current.y - turtley)), noir);
           }
           else
           {
@@ -3340,24 +3340,24 @@ int select_item(const char ** ptr,const char * title,bool askfor1){
               if (current.direct)
               {
                 if (rempli)
-                  fl_pie(deltax + x, deltay + LCD_HEIGHT_PX - y, R, R, theta1 - 90, theta2 - 90, current.color, seg);
+                  fl_pie(deltax + x, deltay + LCD_HEIGHT_PX - y, R, R, theta1 - 90, theta2 - 90, noir, seg);
                 else
-                  fl_arc(deltax + x, deltay + LCD_HEIGHT_PX - y, R, R, theta1 - 90, theta2 - 90, current.color);
+                  fl_arc(deltax + x, deltay + LCD_HEIGHT_PX - y, R, R, theta1 - 90, theta2 - 90, noir);
               }
               else
               {
                 if (rempli)
-                  fl_pie(deltax + x, deltay + LCD_HEIGHT_PX - y, R, R, 90 + theta2, 90 + theta1, current.color, seg);
+                  fl_pie(deltax + x, deltay + LCD_HEIGHT_PX - y, R, R, 90 + theta2, 90 + theta1, noir, seg);
                 else
-                  fl_arc(deltax + x, deltay + LCD_HEIGHT_PX - y, R, R, 90 + theta2, 90 + theta1, current.color);
+                  fl_arc(deltax + x, deltay + LCD_HEIGHT_PX - y, R, R, 90 + theta2, 90 + theta1, noir);
               }
             } // end radius>0
             else
             {
               if (prec.mark)
               {
-                // CERR << deltax + int(turtlezoom * (prec.x - turtlex) + .5) << " " << deltay + int(LCD_HEIGHT_PX + turtlezoom * (turtley - prec.y) + .5)<< " "<< deltax + int(turtlezoom * (current.x - turtlex) + .5) << " "<< deltay + int(LCD_HEIGHT_PX + turtlezoom * (turtley - current.y) + .5) << " "<<int(prec.color) << "\n";
-                fl_line(deltax + int(turtlezoom * (prec.x - turtlex) + .5), deltay + int(LCD_HEIGHT_PX + turtlezoom * (turtley - prec.y) + .5), deltax + int(turtlezoom * (current.x - turtlex) + .5), deltay + int(LCD_HEIGHT_PX + turtlezoom * (turtley - current.y) + .5), prec.color);
+                // CERR << deltax + int(turtlezoom * (prec.x - turtlex) + .5) << " " << deltay + int(LCD_HEIGHT_PX + turtlezoom * (turtley - prec.y) + .5)<< " "<< deltax + int(turtlezoom * (current.x - turtlex) + .5) << " "<< deltay + int(LCD_HEIGHT_PX + turtlezoom * (turtley - current.y) + .5) << " "<<int(prec_noir) << "\n";
+                fl_line(deltax + int(turtlezoom * (prec.x - turtlex) + .5), deltay + int(LCD_HEIGHT_PX + turtlezoom * (turtley - prec.y) + .5), deltax + int(turtlezoom * (current.x - turtlex) + .5), deltay + int(LCD_HEIGHT_PX + turtlezoom * (turtley - current.y) + .5), prec_noir);
               }
             }
             if (current.radius < -1 && k + current.radius >= 0)
@@ -3376,7 +3376,7 @@ int select_item(const char ** ptr,const char * title,bool askfor1){
                 //*logptr(contextptr) << i << " " << vi[-i][0] << " " << vi[-i][1] << endl;
               }
               // vi.back()=vi.front();
-              draw_filled_polygon(vi, 0, LCD_WIDTH_PX, 0, LCD_HEIGHT_PX, current.color);
+              draw_filled_polygon(vi, 0, LCD_WIDTH_PX, 0, LCD_HEIGHT_PX, noir);
             }
           } // end else (non-string turtle record)
           prec = current;
@@ -3394,12 +3394,12 @@ int select_item(const char ** ptr,const char * title,bool askfor1){
         int Dy = int(turtlezoom * t.turtle_length * sint / 2 + .5);
         if (t.visible)
         {
-          fl_line(deltax + x + Dy, deltay + LCD_HEIGHT_PX - (y - Dx), deltax + x - Dy, deltay + LCD_HEIGHT_PX - (y + Dx), t.color);
+          fl_line(deltax + x + Dy, deltay + LCD_HEIGHT_PX - (y - Dx), deltax + x - Dy, deltay + LCD_HEIGHT_PX - (y + Dx), noir_t);
           int c = t.color;
           if (!t.mark)
             c = t.color ^ 0x7777;
-          fl_line(deltax + x + Dy, deltay + LCD_HEIGHT_PX - (y - Dx), deltax + x + 3 * Dx, deltay + LCD_HEIGHT_PX - (y + 3 * Dy), 1); // always display turtle
-          fl_line(deltax + x - Dy, deltay + LCD_HEIGHT_PX - (y + Dx), deltax + x + 3 * Dx, deltay + LCD_HEIGHT_PX - (y + 3 * Dy), 1);
+          fl_line(deltax + x + Dy, deltay + LCD_HEIGHT_PX - (y - Dx), deltax + x + 3 * Dx, deltay + LCD_HEIGHT_PX - (y + 3 * Dy), noir_t); // always display turtle
+          fl_line(deltax + x - Dy, deltay + LCD_HEIGHT_PX - (y + Dx), deltax + x + 3 * Dx, deltay + LCD_HEIGHT_PX - (y + 3 * Dy), noir_t);
         }
       }
       return;

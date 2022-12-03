@@ -9,7 +9,7 @@ RM	= /bin/rm
 #CFLAGS = -Os -mb -m4a-nofpu -mhitachi -flto -fno-strict-aliasing  -fno-exceptions -DHAVE_CONFIG_H -DTIMEOUT -DRELEASE -I. -I../include -I../include/fx
 #CXXFLAGS = -Os -mb -m4a-nofpu -mhitachi -std=c++98 -fpermissive -flto -fno-use-cxa-atexit -fno-strict-aliasing -fno-rtti -fno-exceptions -DHAVE_CONFIG_H -DTIMEOUT -DRELEASE -I. -I../include -I../include/ustl -I../include/fx 
 #-DTIMEOUT -flto 
-CFLAGS = -O3 -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -fno-strict-aliasing -mthumb -fno-exceptions -DHAVE_CONFIG_H -I../libtommath-0.39 -I. -ffunction-sections -fdata-sections -fomit-frame-pointer 
+CFLAGS = -Os -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -fno-strict-aliasing -mthumb -fno-exceptions -DHAVE_CONFIG_H -I../libtommath-0.39 -I. -ffunction-sections -fdata-sections -fomit-frame-pointer 
 CXXFLAGS = -Os -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -std=c++11  -fpermissive -fno-use-cxa-atexit -fno-strict-aliasing -fno-rtti -fno-exceptions -DHAVE_CONFIG_H -I../libtommath-0.39 -I. -ffunction-sections -fdata-sections -Werror=reorder
 # -Werror=reorder
 
@@ -29,7 +29,7 @@ GUI_OBJS = main.o console.o memory.o kdisplay.o file.o textGUI.o menuen.o
 #.PRECIOUS: libcas.a libgui.a
 all: libcas.libcpp libkcasgui.libcpp
 #all: khicas.g1a khicasen.g1a # pour la version console, supprimer le lien iostream -> iostream.new
-	/bin/cp libcas.libcpp libkcasgui.libcpp ../../
+	/bin/cp libcas.libcpp libkcasgui.libcpp ../../os/Libs
 
 %.o: %.s
 	$(CC) $(CFLAGS) -c $<

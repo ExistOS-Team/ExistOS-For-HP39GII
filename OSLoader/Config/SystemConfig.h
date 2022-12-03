@@ -3,6 +3,7 @@
 
 #define VERSION     "0.2.0"
 
+
 #define MEMORY_BASE     (0)
 #define MEMORY_SIZE     (512*1024)
 
@@ -13,36 +14,68 @@
 
 
 #define ABT_STACK_ADDR      (MEMORY_BASE + MEMORY_SIZE - 4)
-#define UND_STACK_ADDR      (ABT_STACK_ADDR - 0x400)
-#define FIQ_STACK_ADDR      (UND_STACK_ADDR - 0x200)
-#define IRQ_STACK_ADDR      (FIQ_STACK_ADDR - 0x200)
-#define SVC_STACK_ADDR      (IRQ_STACK_ADDR - 0x400)
-#define SYS_STACK_ADDR      (SVC_STACK_ADDR - 0x400)
+#define UND_STACK_ADDR      (ABT_STACK_ADDR - 0x100)
+#define FIQ_STACK_ADDR      (UND_STACK_ADDR - 0x100)
+#define IRQ_STACK_ADDR      (FIQ_STACK_ADDR - 0x100)
+#define SVC_STACK_ADDR      (IRQ_STACK_ADDR - 0x100)
+#define SYS_STACK_ADDR      (SVC_STACK_ADDR - 0x100)
 
 
-#define HEAP_END        (SYS_STACK_ADDR - 0x200)
+#define HEAP_END        (SYS_STACK_ADDR - 0x100)
 
-
-#define USE_TINY_PAGE       (1)
-#define VMRAM_USE_FTL       (1)
 
 #define SEG_SIZE            1048576
+
+#define USE_TINY_PAGE        (1)
+#define VMRAM_USE_FTL        (1)
+#define USE_HARDWARE_DFLPT   (1)
+
+#define SEPARATE_VMM_CACHE  VMRAM_USE_FTL
+
+#if SEPARATE_VMM_CACHE
+    #define NONE     0
+    #define MINILZO  1      // 2 KB Work Buffer
+    #define QUICKLZ  2      // 60 KB Work buffer
+    #define MEM_COMPRESSION_ALGORITHM     (MINILZO) //algorithm
+#endif
+
 
 
 #if VMRAM_USE_FTL
     #if USE_TINY_PAGE
-        #ifdef ENABLE_AUIDIOOUT
-            #define NUM_CACHEPAGE             ( 200 ) // 273 * 1 = 273 KB
+        #if USE_HARDWARE_DFLPT
+            #if SEPARATE_VMM_CACHE
+                #if MEM_COMPRESSION_ALGORITHM
+                    #define NUM_CACHEPAGE_VROM             ( 60 )  
+                    #define NUM_CACHEPAGE_VRAM             ( 60 ) 
+                    #define ZRAM_SIZE                      ( 170 * 1024 ) // 160KB / 400 KB ~= 0.4 (Assume that the compression ratio is 0.4)
+                    #define ZRAM_COMPRESSED_SIZE           ( 400 * 1024 )
+                #else 
+                    #define NUM_CACHEPAGE_VROM             ( 64 )  
+                    #define NUM_CACHEPAGE_VRAM             ( 64 ) 
+                    #define ZRAM_SIZE                      ( 170 * 1024 ) // compression ratio = 1
+                    #define ZRAM_COMPRESSED_SIZE           ( ZRAM_SIZE ) // 1:1
+                #endif
+            #else
+                #define NUM_CACHEPAGE             ( 292 ) // 292 KB (Reserve 4KB for OSL)
+            #endif
         #else
-            #define NUM_CACHEPAGE             ( 268 ) // 273 * 1 = 273 KB
+        
+            #if SEPARATE_VMM_CACHE
+                #define NUM_CACHEPAGE_VROM             ( 64 )  
+                #define NUM_CACHEPAGE_VRAM             ( 32 ) 
+                #define ZRAM_SIZE                      ( 128 * 1024 )
+            #else
+                #define NUM_CACHEPAGE             ( 260 ) // 292 KB (Reserve 4KB for OSL)
+            #endif
         #endif
     #else
         #define NUM_CACHEPAGE             ( 79 ) // 79 * 4 = 316 KB
     #endif
 #else
     #if USE_TINY_PAGE
-        #define NUM_CACHEPAGE             ( 256 )
-        #define VM_RAM_SIZE_NONE_FTL      ( 24 * 1024 )
+        #define NUM_CACHEPAGE             ( 32 )
+        #define VM_RAM_SIZE_NONE_FTL      ( 256 * 1024 )
     #else
         #define NUM_CACHEPAGE             ( 32 )
         #define VM_RAM_SIZE_NONE_FTL      ( 168 * 1024 )
@@ -53,9 +86,9 @@
 
 
 #if USE_TINY_PAGE
-    #define PAGE_SIZE           1024
+    #define PAGE_SIZE           (1024)
 #else
-    #define PAGE_SIZE           4096
+    #define PAGE_SIZE           (4096)
 #endif
 
 #define PAGES_SWAPFILE      (SIZE_SWAPFILE_MB * 1048576 / PAGE_SIZE)
@@ -82,8 +115,8 @@
 #define VM_SYS_RAM_NUM_SEG      (VM_RAM_SIZE / SEG_SIZE)
 */
 
-#define VM_CACHE_ENABLE     (true)
-#define VM_BUFFER_ENABLE    (true)
+#define VM_CACHE_ENABLE     (false)
+#define VM_BUFFER_ENABLE    (false)
 
 #define TOTAL_VM_SEG        ((VM_SYS_ROM_SIZE + VM_ROM_SIZE + VM_RAM_SIZE) / SEG_SIZE)
 

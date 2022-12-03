@@ -1,7 +1,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "lvgl.h"
 
 #include "SystemUI.h"
 
@@ -61,39 +60,24 @@ static char *msgbox_button[] = {"OK", "Cancel", ""};
 
 static uint8_t indicator = 0;
 
-#define DISP_HOR_RES 256
-#define VBUFFER_LINE 127
+//#define DISP_HOR_RES 256
+//#define VBUFFER_LINE 127
 
-uint8_t g_ShiftStatus = 0;
-uint8_t g_AlphaStatus = 0; //2; // 0:normal  1:A..Z  2:a..Z
+//uint8_t g_ShiftStatus = 0;
+//uint8_t g_AlphaStatus = 0; //2; // 0:normal  1:A..Z  2:a..Z
 
 
 extern bool OS_UISuspend;
 
-static TaskHandle_t lvgl_svc_task;
-static TaskHandle_t lvgl_tick_task;
+//static TaskHandle_t lvgl_svc_task;
+//static TaskHandle_t lvgl_tick_task;
 
 uint32_t g_key;
 uint32_t g_ket_press;
 
-static lv_disp_draw_buf_t draw_buf_dsc_1;
-static lv_color_t disp_buf_1[DISP_HOR_RES * VBUFFER_LINE];
-static lv_disp_drv_t disp_1_drv;
-static lv_indev_drv_t indev_drv;
-static lv_indev_t *indev_keypad;
 
-static lv_group_t *group;
 
-static void disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p) {
-    // printf("vaddr:%08x\n", color_p);
-
-    ll_disp_put_area((uint8_t *)color_p, area->x1, area->y1, area->x2, area->y2);
-    ll_disp_set_indicator(indicator, -1);
-    
-    lv_disp_flush_ready(disp_drv);
-    
-}
-
+/*
 static void keypad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data) {
 
     uint32_t keys, key, kpress;
@@ -305,149 +289,31 @@ static void keypad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data) {
     last_press = kpress;
 }
 
-void lvgl_tick() {
-    for (;;) {
-        lv_tick_inc(51);
-        vTaskDelay(pdMS_TO_TICKS(52));
-    }
-}
+*/
 
-void lvgl_svc() {
-    vTaskDelay(pdMS_TO_TICKS(400));
-    for (;;) {
-        lv_timer_handler();
-        vTaskDelay(pdMS_TO_TICKS(62));
-    }
-}
-
-lv_indev_t *SystemGetInKeypad()
-{
-    return indev_keypad;
-}
+static TaskHandle_t pUITask;
 
 void SystemUIInit() {
 
-    lv_init();
-
-    lv_disp_draw_buf_init(&draw_buf_dsc_1, disp_buf_1, NULL, DISP_HOR_RES * VBUFFER_LINE);
-    lv_disp_drv_init(&disp_1_drv);
-    disp_1_drv.hor_res = 256;
-    disp_1_drv.ver_res = 127;
-    disp_1_drv.flush_cb = disp_flush;
-    disp_1_drv.draw_buf = &draw_buf_dsc_1;
-    lv_disp_drv_register(&disp_1_drv);
-
-    /*Register a button input device*/
-    lv_indev_drv_init(&indev_drv);
-    indev_drv.type = LV_INDEV_TYPE_KEYPAD;
-    indev_drv.read_cb = keypad_read;
-    indev_keypad = lv_indev_drv_register(&indev_drv);
-    
-    xTaskCreate(lvgl_svc, "lvgl svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, &lvgl_svc_task);
-    xTaskCreate(lvgl_tick, "lvgl tick", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, &lvgl_tick_task);
-
-    vTaskDelay(pdMS_TO_TICKS(100));
-    
-    group = lv_group_create();
-    lv_group_set_default(group);
-
-    lv_indev_t *cur_drv = NULL;
-    for (;;) {
-        cur_drv = lv_indev_get_next(cur_drv);
-        if (!cur_drv) {
-            break;
-        }
-
-        if (cur_drv->driver->type == LV_INDEV_TYPE_KEYPAD) {
-            lv_indev_set_group(cur_drv, group);
-        }
-
-        // if (cur_drv->driver->type == LV_INDEV_TYPE_ENCODER) {
-        //     lv_indev_set_group(cur_drv, group);
-        // }
-    }
-
-    lv_group_set_refocus_policy(group, LV_GROUP_REFOCUS_POLICY_NEXT);
-
-    indicator &= ~(INDICATE_LEFT | INDICATE_RIGHT);
-    if (g_ShiftStatus == 1)
-        indicator |= INDICATE_LEFT;
-    if (g_ShiftStatus == 2)
-        indicator |= INDICATE_RIGHT;
-    ll_disp_set_indicator(indicator, -1);
-
-    indicator &= ~(INDICATE_A__Z | INDICATE_a__z);
-    if (g_AlphaStatus == 1)
-        indicator |= INDICATE_A__Z;
-    if (g_AlphaStatus == 2)
-        indicator |= INDICATE_a__z;
-    ll_disp_set_indicator(indicator, -1);
+    //UI_Init();
+    xTaskCreate(UI_Task, "UICore", 800, NULL, configMAX_CO_ROUTINE_PRIORITIES - 3, &pUITask);
 }
 
-void SystemUIEditing(bool edit) {
-    lv_group_set_editing(group, edit);
-}
-
-void SystemUISetBusy(bool enable)
+extern bool UIForceRefresh ;
+//void keyMsg(uint32_t key, int state);
+void SystemUIRefresh() 
 {
-    indicator &= ~INDICATE_BUSY;
-    if(enable)
-        indicator |= INDICATE_BUSY;
-    ll_disp_set_indicator(indicator, -1);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    UIForceRefresh= true;
+    //keyMsg(0, -1);
 }
-
-static void systemui_msgbox_event_cb(lv_event_t *e) {
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t *msgbox = lv_event_get_current_target(e);
-    uint32_t *retval = lv_event_get_user_data(e);
-
-    if (code == LV_EVENT_VALUE_CHANGED) {
-        const char *txt = lv_msgbox_get_active_btn_text(msgbox);
-        if (txt) {
-            uint16_t select_btn = lv_msgbox_get_active_btn(msgbox);
-            *retval = select_btn & 0xFFFF;
-            *retval |= (1 << 16);
-
-            lv_msgbox_close(msgbox);
-            lv_group_focus_freeze(group, false);
-        }
-    }
-}
-
-uint32_t SystemUIMsgBox(lv_obj_t *parent,char *msg, char *title, uint32_t button) {
-    char *btns[sizeof(msgbox_button) / sizeof(void *)];
-    volatile uint32_t retval = 0;
-    uint32_t ind = 0;
-
-    btns[ind++] = msgbox_button[0];
-    if (button & SYSTEMUI_MSGBOX_BUTTON_CANCAL) {
-        btns[ind++] = msgbox_button[1];
-    }
-
-    btns[ind] = "";
-
-    lv_obj_t *mbox = lv_msgbox_create( parent, title, msg, (const char **)btns, false);
-    lv_obj_add_event_cb(mbox, systemui_msgbox_event_cb, LV_EVENT_ALL, (uint32_t *)&retval);
-    lv_obj_align(mbox, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_center(mbox);
-    lv_group_focus_freeze(group, true);
-
-    while (!(retval >> 16)) {
-        vTaskDelay(pdMS_TO_TICKS(30));
-    }
-
-    return retval & 0xFFFF;
-}
-
 
 void SystemUISuspend() {
-    OS_UISuspend = true;
-    vTaskSuspend(lvgl_svc_task);
-    vTaskSuspend(lvgl_tick_task);
+    vTaskSuspend(pUITask);
 }
 
 void SystemUIResume() {
-    vTaskResume(lvgl_svc_task);
-    vTaskResume(lvgl_tick_task);
-    OS_UISuspend = false;
+    vTaskResume(pUITask);
+    ll_disp_set_indicator(0, -1);
+    SystemUIRefresh();
 }

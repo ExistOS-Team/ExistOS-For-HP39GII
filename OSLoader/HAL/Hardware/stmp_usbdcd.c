@@ -307,6 +307,7 @@ static void bus_reset(uint8_t rhport) {
     dcd_reg->ENDPTSETUPSTAT = dcd_reg->ENDPTSETUPSTAT;
     dcd_reg->ENDPTCOMPLETE = dcd_reg->ENDPTCOMPLETE;
 
+    dcd_reg->ENDPTPRIME = 0;
     while (dcd_reg->ENDPTPRIME) {
     }
     dcd_reg->ENDPTFLUSH = 0xFFFFFFFF;
@@ -571,7 +572,7 @@ bool dcd_edpt_open (uint8_t rhport, tusb_desc_endpoint_t const * p_endpoint_desc
     tu_memclr(p_qhd, sizeof(dcd_qhd_t));
 
     p_qhd->zero_length_termination = 1;
-    p_qhd->max_package_size = p_endpoint_desc->wMaxPacketSize;
+    p_qhd->max_package_size = p_endpoint_desc->wMaxPacketSize.size;
     p_qhd->qtd_overlay.next = QTD_NEXT_INVALID;
 
     //CleanInvalidateDCache_by_Addr((uint32_t*) &_dcd_data, sizeof(dcd_data_t));
@@ -590,11 +591,18 @@ bool dcd_edpt_xfer (uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t 
     uint8_t const epnum = tu_edpt_number(ep_addr);
     uint8_t const dir = tu_edpt_dir(ep_addr);
     uint8_t const ep_idx = 2 * epnum + dir;
-
+    #include "board_up.h"
     if (epnum == 0) {
         // follows UM 24.10.8.1.1 Setup packet handling using setup lockout mechanism
         // wait until ENDPTSETUPSTAT before priming data/status in response TODO add time out
+        uint32_t start = portBoardGetTime_s();
         while (dcd_reg->ENDPTSETUPSTAT & TU_BIT(0)) {
+            if(portBoardGetTime_s() - start > 3)
+            {
+                printf("USB TIME OUT!!\n");
+                break;
+            }
+            
         }
     }
 
