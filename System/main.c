@@ -18,7 +18,6 @@
 
 //#include "ff.h"
 
-
 #include "debug.h"
 
 #include "SystemFs.h"
@@ -35,14 +34,12 @@ uint32_t SwapMemorySize = 0;
 uint32_t TotalAllocatableSize = BASIC_RAM_SIZE;
 bool MemorySwapEnable = false;
 
-void enableMemSwap(bool enable)
-{
-    MemorySwapEnable = enable; 
+void enableMemSwap(bool enable) {
+    MemorySwapEnable = enable;
     ll_mem_swap_enable(enable);
-    if(enable)
-    {
+    if (enable) {
         SwapMemorySize = ll_mem_swap_size();
-    }else{
+    } else {
         SwapMemorySize = 0;
     }
     TotalAllocatableSize = OnChipMemorySize + SwapMemorySize;
@@ -52,6 +49,11 @@ volatile unsigned long ulHighFrequencyTimerTicks;
 
 char pcWriteBuffer[4096];
 void printTaskList() {
+
+    size_t getOnChipHeapAllocated();
+    size_t getSwapMemHeapAllocated();
+    uint32_t getHeapAllocateSize();
+
     vTaskList((char *)&pcWriteBuffer);
     printf("=============SYSTEM STATUS=================\r\n");
     printf("Task Name         Task Status   Priority   Stack   ID\n");
@@ -60,13 +62,26 @@ void printTaskList() {
     vTaskGetRunTimeStats((char *)&pcWriteBuffer);
     printf("%s\n", pcWriteBuffer);
     printf("Status:  X-Running  R-Ready  B-Block  S-Suspend  D-Delete\n");
-//    printf("Free memory:   %d Bytes\n", (unsigned int)xPortGetFreeHeapSize());
+
+    uint32_t free, total;
+    float mem_cmpr = ll_mem_comprate();
+    uint32_t total_phy_mem = ll_mem_phy_info(&free, &total);
+    total_phy_mem /= 1024;
+    free /= 1024;
+    total /= 1024;
+
+    printf("Allocate MEM:%d/%d KB\n", getHeapAllocateSize() / 1024, TotalAllocatableSize / 1024);
+    printf("ZRAM:%d/%d KB\n", total - free, total);
+    printf("Compression_rate: %.2f\n", mem_cmpr);
+    printf("SRAM Heap Pre-allocated: %d KB\n", getOnChipHeapAllocated() / 1024);
+    printf("Swap Heap Pre-allocated: %d KB\n", getSwapMemHeapAllocated() / 1024);
+    //    printf("Free memory:   %d Bytes\n", (unsigned int)xPortGetFreeHeapSize());
 }
 
 void vTask1(void *par1) {
     while (1) {
         printTaskList();
-        vTaskDelay(pdMS_TO_TICKS(5678));
+        vTaskDelay(pdMS_TO_TICKS(10000));
     }
 }
 
@@ -77,9 +92,7 @@ void softDelayMs(uint32_t ms) {
     }
 }
 
-
-void delay_ms(uint32_t ms)
-{
+void delay_ms(uint32_t ms) {
     vTaskDelay(pdMS_TO_TICKS(ms));
 }
 
@@ -102,7 +115,6 @@ static bool time_lable_refresh = true;
 #define EMU_DATA_PORT ((volatile uint8_t *)0x20000000)
 extern bool g_system_in_emulator;
 
-
 void khicasTask(void *_) {
 
     SystemUISuspend();
@@ -110,17 +122,14 @@ void khicasTask(void *_) {
     void testcpp();
     testcpp();
 
-    
     SystemUIResume();
 
     vTaskDelete(NULL);
 }
 
-void StartKhiCAS()
-{
+void StartKhiCAS() {
     xTaskCreate(khicasTask, "KhiCAS", KhiCAS_STACK_SIZE / 4, NULL, configMAX_PRIORITIES - 3, (NULL));
 }
-
 
 void main_thread() {
 
@@ -130,7 +139,7 @@ void main_thread() {
     SystemUIInit();
     SystemFSInit();
 
-    //StartKhiCAS();
+    // StartKhiCAS();
 
     for (;;) {
 
@@ -138,12 +147,11 @@ void main_thread() {
     }
 }
 
-uint32_t __attribute__((naked)) getCurStackAdr()
-{
+uint32_t __attribute__((naked)) getCurStackAdr() {
     __asm volatile("mov r0,r13");
     __asm volatile("mov pc,lr");
 }
-extern uint32_t SYSTEM_STACK; //in ld script
+extern uint32_t SYSTEM_STACK; // in ld script
 void main() {
 
     void IRQ_ISR();
@@ -155,11 +163,10 @@ void main() {
     ll_enable_irq(false);
 
     ll_cpu_slowdown_enable(false);
-    
+
     uint32_t memsz, phy_total, phy_free;
     memsz = ll_mem_phy_info(&phy_free, &phy_total);
-    if(memsz > OnChipMemorySize)
-    {
+    if (memsz > OnChipMemorySize) {
         OnChipMemorySize = memsz;
     }
 
@@ -171,14 +178,13 @@ void main() {
 
     uint32_t free, total, total_comp;
     total_comp = ll_mem_phy_info(&free, &total);
-    if(total_comp > OnChipMemorySize)
-    {
+    if (total_comp > OnChipMemorySize) {
         OnChipMemorySize = total_comp;
     }
     SwapMemorySize = ll_mem_swap_size();
     TotalAllocatableSize = OnChipMemorySize + SwapMemorySize;
 
-    xTaskCreate(vTask1, "PrintTask", 400, NULL, configMAX_PRIORITIES - 4, NULL);
+    xTaskCreate(vTask1, "PrintTask", 400, NULL, configMAX_PRIORITIES - 1, NULL);
     xTaskCreate(main_thread, "System", 400, NULL, configMAX_PRIORITIES - 3, NULL);
 
     vTaskStartScheduler();
@@ -210,7 +216,6 @@ void vApplicationMallocFailedHook() {
     void UI_OOM();
     UI_OOM();
     PANIC("SYS ASSERT: Out of Memory.\n");
-
 }
 
 void check_emulator_status() {
@@ -244,7 +249,7 @@ void check_emulator_status() {
                         (testname[2] == 'x') &&
                         (testname[3] == 'p') &&
                         (testname[4] == 0)) {
-                        //xTaskCreate(exp_exec, fname + 1, configMINIMAL_STACK_SIZE, fname, configMAX_PRIORITIES - 3, NULL);
+                        // xTaskCreate(exp_exec, fname + 1, configMINIMAL_STACK_SIZE, fname, configMAX_PRIORITIES - 3, NULL);
                     }
                     testname++;
                 }

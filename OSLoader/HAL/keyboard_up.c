@@ -91,6 +91,10 @@ void key_task_capt()
     }
 }
 
+void __attribute__((target("arm"))) key_task_capt_arm()
+{
+    key_task_capt();
+}
 
 void key_task() {
     Keys_t k;
@@ -104,7 +108,7 @@ void key_task() {
 
     keyQueue = xQueueCreate(32, sizeof(int));
 
-    xTaskCreate(key_task_capt, "keyCapt", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, NULL);
+    xTaskCreate(key_task_capt_arm, "keyCapt", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, NULL);
 
     for (;;) {
 

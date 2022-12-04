@@ -606,9 +606,9 @@ void __attribute__((target("thumb"))) LLAPI_Task_thumb_entry() {
 
             case LL_SWI_MEM_PHY_INFO:
             {
-                #include "cdmp.h"
+                //#include "cdmp.h"
 
-                cdmp_meminfo((uint32_t *)currentCall.para0, (uint32_t *)currentCall.para1);
+                zram_info((uint32_t *)currentCall.para0, (uint32_t *)currentCall.para1);
                 #if VMRAM_USE_FTL
                     *currentCall.pRet = ZRAM_COMPRESSED_SIZE;
                 #else

@@ -299,6 +299,9 @@ void SystemUIInit() {
     xTaskCreate(UI_Task, "UICore", 800, NULL, configMAX_CO_ROUTINE_PRIORITIES - 3, &pUITask);
 }
 
+void UI_Resume();
+void UI_Suspend();
+
 extern bool UIForceRefresh ;
 //void keyMsg(uint32_t key, int state);
 void SystemUIRefresh() 
@@ -310,9 +313,12 @@ void SystemUIRefresh()
 
 void SystemUISuspend() {
     vTaskSuspend(pUITask);
+    UI_Suspend();
+
 }
 
 void SystemUIResume() {
+    UI_Resume();
     vTaskResume(pUITask);
     ll_disp_set_indicator(0, -1);
     SystemUIRefresh();
