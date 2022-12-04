@@ -195,16 +195,6 @@ void pageUpdate() {
         uidisp->draw_printf(180, 0, 16, 255, -1, "%s", timeStr);
     }
 
-    if (curPage == 2) {
-        uidisp->draw_box(180, 0, 255, 11, -1, 0);
-        uidisp->draw_printf(180, 0, 16, 255, -1, "%s", timeStr);
-        uidisp->draw_box(DISPX, DISPY + 16, 255, DISPY + 16, -1, 0);
-        uidisp->draw_printf(DISPX, DISPY, 16, 0, 255, "%d item(s) [%s] (%d/%d)", *filesCount, pathNow, *pageNow, *pageAll);
-        for (int i = 1; i <= 5 && ((*pageNow - 1) * 5 + i) <= *filesCount; i++) {
-            uidisp->draw_printf(DISPX, DISPY + i * 16 + 1, 16, (i == *selectedItem ? 255 : 0), (i == *selectedItem ? 0 : 255), "%s%s", (dirItemInfos[(*pageNow - 1) * 5 + i - 1] == false ? "/" : ""), dirItemNames[(*pageNow - 1) * 5 + i - 1]);
-        }
-    }
-
     if (curPage == 3) {
         uidisp->draw_box(180, 0, 255, 11, -1, 0);
         uidisp->draw_printf(200, 0, 16, 255, -1, "%d/%d", page3Subpage + 1, CONF_SUBPAGES);
@@ -277,6 +267,14 @@ void drawPage(int page) {
                          mainw->content_y0 + 12 + 48,
                          0,
                          -1);
+        break;
+
+    case 2:
+        uidisp->draw_box(DISPX, DISPY + 16, 255, DISPY + 16, -1, 0);
+        uidisp->draw_printf(DISPX, DISPY, 16, 0, 255, "%d item(s) [%s] (%d/%d)", *filesCount, pathNow, *pageNow, *pageAll);
+        for (int i = 1; i <= 5 && ((*pageNow - 1) * 5 + i) <= *filesCount; i++) {
+            uidisp->draw_printf(DISPX, DISPY + i * 16 + 1, 16, (i == *selectedItem ? 255 : 0), (i == *selectedItem ? 0 : 255), "%s%s", (dirItemInfos[(*pageNow - 1) * 5 + i - 1] == false ? "/" : ""), dirItemNames[(*pageNow - 1) * 5 + i - 1]);
+        }
         break;
 
     case 3:
