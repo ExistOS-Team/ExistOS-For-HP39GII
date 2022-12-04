@@ -596,7 +596,7 @@ int MTD_CopyPhyPage(uint32_t srcPage, uint32_t dstPage)
 
 void MTD_DeviceInit()
 {
-    MTD_Operates_Queue = xQueueCreate(16, sizeof(MTD_Operates));
+    MTD_Operates_Queue = xQueueCreate(4, sizeof(MTD_Operates));
     printf("MTD_Operates_Queue:%p\n", MTD_Operates_Queue);
     portMTDDeviceInit(&mtdinfo);
 

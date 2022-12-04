@@ -54,14 +54,15 @@ add_subdirectory(VmMgr)
 add_executable(rom.elf ${LOADER_SRCS})
 
 target_compile_options(kernel PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm -Os)
-target_compile_options(hal PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm  -Os )
+target_compile_options(hal PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb  -Os )
 target_compile_options(hal_hardware PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
 target_compile_options(tusb PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
-target_compile_options(dhara PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm -Os)
+target_compile_options(dhara PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
 target_compile_options(vmmgr PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
 target_compile_options(vmmgr_mmu PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm -Os)
 #target_compile_options(quicklz PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm -O3)
-target_compile_options(minilzo PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm -O3)
+target_compile_options(minilzo PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -O3)
+target_compile_options(tlsf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
 
 target_link_libraries(
 rom.elf
@@ -70,9 +71,10 @@ tusb
 hal hal_hardware
 dhara
 #quicklz
+tlsf
 minilzo
-vmmgr
 vmmgr_mmu
+vmmgr
 -lc_nano -nostartfiles)
 
 set_property(TARGET kernel PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)

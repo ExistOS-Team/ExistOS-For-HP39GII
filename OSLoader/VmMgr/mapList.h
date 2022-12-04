@@ -17,9 +17,10 @@ typedef struct MapList_t
 
 }MapList_t;
 
+/*
 void mapListInit(void);
 MapList_t *mapList_findVirtAddrInWhichMap(uint32_t Addr);
 uint32_t mapList_AddPartitionMap(int part, uint32_t perm, uint32_t VMemStartAddr, uint32_t PartStartSector, uint32_t memSize);
-
+*/
 
 #endif

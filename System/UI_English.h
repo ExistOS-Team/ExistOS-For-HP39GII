@@ -30,5 +30,5 @@
 #define UI_ONF5Format_EN             "[ON]+[F5] enter format menu"
 
 #define UI_Allocate_Mem_EN           "Allocate MEM"
-#define UI_PhyMem_EN                 "Phy MEM"
+#define UI_PhyMem_EN                 "Allocate zRAM"
 #define UI_Compression_rate_EN       "Compression rate"

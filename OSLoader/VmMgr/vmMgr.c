@@ -12,13 +12,13 @@
 #include "llapi_code.h"
 #include "mapList.h"
 //#include "mem_malloc.h"
-#include "cdmp.h"
 #include "mmu.h"
 #include "queue.h"
 #include "vmMgr.h"
 
 #include "minilzo.h"
 #include "quicklz.h"
+#include "tlsf/tlsf.h"
 
 typedef struct CachePageInfo_t {
     struct CachePageInfo_t *prev;
@@ -31,6 +31,63 @@ typedef struct CachePageInfo_t {
     bool dirty;
     bool lock;
 } CachePageInfo_t;
+
+
+
+
+static MapList_t *maplist;
+
+
+static inline void mapListInit()
+{
+    maplist = pvPortMalloc(sizeof(MapList_t));
+    memset(maplist, 0, sizeof(MapList_t));
+}
+
+
+static inline uint32_t mapList_AddPartitionMap(int part, uint32_t perm, uint32_t VMemStartAddr, uint32_t PartStartSector, uint32_t memSize)
+{
+    MapList_t *tmp = pvPortMalloc(sizeof(MapList_t));
+    MapList_t *chain = maplist;
+    if(tmp == NULL){
+        return 1;
+    }
+
+    tmp->next = NULL;
+    tmp->memSize = memSize;
+    tmp->part = part;
+    tmp->PartStartSector = PartStartSector;
+    tmp->perm = perm;
+    tmp->VMemStartAddr = VMemStartAddr;
+
+    while(chain->next != NULL){
+        chain = chain->next;
+    }
+    chain->next = tmp;
+    return 0;
+}
+
+static inline MapList_t *mapList_findVirtAddrInWhichMap(uint32_t Addr)
+{
+    MapList_t *chain = maplist;
+
+    if(  (Addr >= chain->VMemStartAddr) && (Addr < (chain->VMemStartAddr + chain->memSize))  ){
+         return chain;
+    }
+    chain = chain->next;
+
+    while(chain != NULL){
+        if(  (Addr >= chain->VMemStartAddr) && (Addr < (chain->VMemStartAddr + chain->memSize))  ){
+         return chain;
+        }
+        chain = chain->next;
+    }
+    
+    return NULL;
+}
+
+
+
 #if SEPARATE_VMM_CACHE
 uint8_t CachePageTotal[PAGE_SIZE * (NUM_CACHEPAGE_VROM + NUM_CACHEPAGE_VRAM)] __attribute__((aligned(PAGE_SIZE)));
 uint8_t *CachePageVROM = &CachePageTotal[0];
@@ -52,7 +109,7 @@ static volatile CachePageInfo_t *CachePageVRAMTail;
 #define CACHEVROM_PAGEn_BASE(n) (uint32_t)(&CachePageVROM[n * PAGE_SIZE])
 #define CACHEVRAM_PAGEn_BASE(n) (uint32_t)(&CachePageVRAM[n * PAGE_SIZE])
 
-bool mem_swap_enable = 0; 
+bool mem_swap_enable = 0;
 
 #else
 uint8_t CachePage[PAGE_SIZE * NUM_CACHEPAGE] __attribute__((aligned(PAGE_SIZE)));
@@ -76,6 +133,8 @@ uint32_t g_page_vram_fault_cnt = 0;
 uint32_t g_page_vrom_fault_cnt = 0;
 
 extern bool g_vm_in_pagefault;
+
+//tlsf_t tlsf_pool;
 
 uint8_t *VMMGR_GetCacheAddress() {
 #if SEPARATE_VMM_CACHE
@@ -127,6 +186,12 @@ static void taskAccessFaultAddr(pageFaultInfo_t *info, char *res) {
     case FSR_DATA_ACCESS_UNMAP_PAB:
         VM_Unconscious(info->FaultTask, "[MEMORY UNMAP]", info->FaultMemAddr);
         break;
+    case FSR_ZRAM_OOM:
+        VM_Unconscious(info->FaultTask, "[ZRAM OOM]", info->FaultMemAddr);
+        break;
+    case FSR_SWAP_NOTENABLE:
+        VM_Unconscious(info->FaultTask, "[SWAP NOT ENABLE]", info->FaultMemAddr);
+        break;    
     default:
         VM_Unconscious(info->FaultTask, "[???]", info->FaultMemAddr);
         break;
@@ -152,6 +217,33 @@ inline static bool vmMgr_CheckAddrVaild(uint32_t addr) {
 }
 
 #if SEPARATE_VMM_CACHE
+
+static uint32_t zram_free, zram_used, zram_total;
+
+/*
+static void zram_tlsf_walker(void* ptr, size_t size, int used, void* user)
+{
+    if(!used)
+    {
+        zram_free += size;
+    }else{
+        zram_used += size;
+    }
+}
+*/
+
+void zram_info(uint32_t *free, uint32_t *total)
+{
+    zram_used = get_used_size(ZRAM);
+    //zram_free = get_max_size(ZRAM) - zram_used;
+ //   tlsf_walk_pool(tlsf_get_pool(tlsf_pool), zram_tlsf_walker, NULL);
+    
+    zram_total = ZRAM_SIZE;
+    *free = ZRAM_SIZE - zram_used;
+    *total = zram_total;
+
+}
+
 static inline void get_vrom_page_and_move_to_tail() {
 
     CachePageVROMCur = CachePageVROMHead;
@@ -284,19 +376,36 @@ static inline int save_cache_page(CachePageInfo_t *cache_page) {
             if (g_mem_comp_rate_ptr >= 16) {
                 g_mem_comp_rate_ptr = 0;
             }
-            cdmp_free(ZRAMAddress_Tab[ind]);
-            ZRAMAddress_Tab[ind] = cdmp_alloc(sz);
-            cdmp_wrtie(ZRAMAddress_Tab[ind], 0, sz, (void *)compress_buffer);
+
+            ZRAMAddress_Tab[ind] = (uint32_t)tlsf_realloc((void *)ZRAMAddress_Tab[ind], sz);
+            if(ZRAMAddress_Tab[ind])
+            {
+                memcpy((void *)ZRAMAddress_Tab[ind], (void *)compress_buffer, sz );
+            }else{
+                printf("ZRAM OOM!\n");
+                return -2;
+            }
+            
+            //cdmp_free(ZRAMAddress_Tab[ind]);
+            //ZRAMAddress_Tab[ind] = cdmp_alloc(sz);
+            //cdmp_wrtie(ZRAMAddress_Tab[ind], 0, sz, (void *)compress_buffer);
 #endif
 #if MEM_COMPRESSION_ALGORITHM == 0
             g_mem_comp_rate[g_mem_comp_rate_ptr++] = PAGE_SIZE * 100 / PAGE_SIZE;
             if (g_mem_comp_rate_ptr >= 16) {
                 g_mem_comp_rate_ptr = 0;
             }
-
-            cdmp_free(ZRAMAddress_Tab[ind]);
-            ZRAMAddress_Tab[ind] = cdmp_alloc(PAGE_SIZE);
-            cdmp_wrtie(ZRAMAddress_Tab[ind], 0, sz, (void *)cache_page->PageOnPhyAddr);
+            ZRAMAddress_Tab[ind] = (uint32_t)tlsf_realloc(tlsf_pool, (void *)ZRAMAddress_Tab[ind], PAGE_SIZE);
+            if(ZRAMAddress_Tab[ind])
+            {
+                memcpy((void *)ZRAMAddress_Tab[ind], (void *)compress_buffer, sz );
+            }else{
+                printf("ZRAM OOM!\n");
+                return -2;
+            }
+            //cdmp_free(ZRAMAddress_Tab[ind]);
+            //ZRAMAddress_Tab[ind] = cdmp_alloc(PAGE_SIZE);
+            //cdmp_wrtie(ZRAMAddress_Tab[ind], 0, sz, (void *)cache_page->PageOnPhyAddr);
 #endif
 
             // printf("page comp:%d -> %ld\n", PAGE_SIZE, sz);
@@ -310,7 +419,8 @@ static inline int save_cache_page(CachePageInfo_t *cache_page) {
                 FTL_WriteSector(cache_page->onSector, 1, (uint8_t *)compress_buffer);
 
             } else {
-                printf("TO SWAP AREA!!\n");
+                printf("SWAP IS NOT ENABLE!!\n");
+                return -3;
             }
         }
         /*
@@ -616,10 +726,10 @@ void __attribute__((optimize("-Os"))) vmMgr_task() {
                             VM_CACHE_ENABLE,
                             VM_BUFFER_ENABLE);
 
-                        // if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_DAB)
-                        mmu_clean_invalidated_dcache(CachePageVROMCur->mapToVirtAddr, PAGE_SIZE);
-                        // if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_PAB)
-                        mmu_invalidate_icache();
+                        if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_DAB)
+                            mmu_clean_invalidated_dcache(CachePageVROMCur->mapToVirtAddr, PAGE_SIZE);
+                        if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_PAB)
+                            mmu_invalidate_icache();
                         mmu_invalidate_tlb();
                         // LL_CheckIRQAndTrap();
                         vTaskResume(currentFault.FaultTask);
@@ -629,7 +739,18 @@ void __attribute__((optimize("-Os"))) vmMgr_task() {
                     case MAP_PART_FTL: {
                         g_page_vram_fault_cnt++;
                         get_vram_page_and_move_to_tail();
-                        save_cache_page((CachePageInfo_t *)CachePageVRAMCur);
+                        int ret = save_cache_page((CachePageInfo_t *)CachePageVRAMCur);
+                        if(ret == -2)
+                        {
+                            currentFault.FSR = FSR_ZRAM_OOM;
+                            taskAccessFaultAddr(&currentFault, "ZRAM OUT OF MEMORY");
+                            break;
+                        }else if(ret == -3)
+                        {
+                            currentFault.FSR = FSR_SWAP_NOTENABLE;
+                            taskAccessFaultAddr(&currentFault, "SWAP NOT ENABLE");
+                            break;
+                        }
                         if (CachePageVRAMCur->mapToVirtAddr) {
                             mmu_unmap_page(CachePageVRAMCur->mapToVirtAddr);
                         }
@@ -652,10 +773,13 @@ void __attribute__((optimize("-Os"))) vmMgr_task() {
 #endif
 #if MEM_COMPRESSION_ALGORITHM == MINILZO
                                 uint32_t sz;
-                                int ret = lzo1x_decompress(cdmp_get_memblock(ZRAMAddress_Tab[zram_ind]),
-                                                           cdmp_memblock_size(ZRAMAddress_Tab[zram_ind]),
+                                //int ret = lzo1x_decompress(cdmp_get_memblock(ZRAMAddress_Tab[zram_ind]),
+                                //                           cdmp_memblock_size(ZRAMAddress_Tab[zram_ind]),
+                                //                           (void *)CachePageVRAMCur->PageOnPhyAddr, &sz, NULL);
+                                int ret = lzo1x_decompress(((void *)ZRAMAddress_Tab[zram_ind]),
+                                                           PAGE_SIZE,
                                                            (void *)CachePageVRAMCur->PageOnPhyAddr, &sz, NULL);
-                                if ((ret == LZO_E_OK) || (ret == LZO_E_INPUT_NOT_CONSUMED)) {
+                                if ((ret == LZO_E_OK) || (ret == LZO_E_INPUT_NOT_CONSUMED) || (ret == LZO_E_INPUT_OVERRUN)) {
 
                                 } else {
                                     printf("DECOMP ERR:%d\n", ret);
@@ -692,10 +816,10 @@ void __attribute__((optimize("-Os"))) vmMgr_task() {
                             VM_CACHE_ENABLE,
                             VM_BUFFER_ENABLE);
 
-                        // if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_DAB)
-                        mmu_clean_invalidated_dcache(CachePageVRAMCur->mapToVirtAddr, PAGE_SIZE);
-                        // if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_PAB)
-                        mmu_invalidate_icache();
+                        if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_DAB)
+                            mmu_clean_invalidated_dcache(CachePageVRAMCur->mapToVirtAddr, PAGE_SIZE);
+                        if (currentFault.FSR == FSR_DATA_ACCESS_UNMAP_PAB)
+                            mmu_invalidate_icache();
                         mmu_invalidate_tlb();
                         // LL_CheckIRQAndTrap();
                         vTaskResume(currentFault.FaultTask);
@@ -877,7 +1001,9 @@ void __attribute__((optimize("-Os"))) vmMgr_task() {
 void vmMgr_init() {
     PageFaultQueue = xQueueCreate(32, sizeof(pageFaultInfo_t));
 #if SEPARATE_VMM_CACHE
-    cdmp_mem_init(ZRAM, sizeof(ZRAM));
+    //cdmp_mem_init(ZRAM, sizeof(ZRAM));
+    //tlsf_pool = tlsf_create_with_pool(ZRAM, sizeof(ZRAM));
+    init_memory_pool(sizeof(ZRAM), ZRAM);
     memset(ZRAMAddress_Tab, 0, sizeof(ZRAMAddress_Tab));
 #endif
     mapListInit();

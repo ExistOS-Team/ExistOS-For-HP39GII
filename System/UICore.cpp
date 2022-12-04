@@ -65,6 +65,7 @@ void refreshDir();
 
 size_t getOnChipHeapAllocated();
 size_t getSwapMemHeapAllocated();
+uint32_t getHeapAllocateSize();
 
 void UI_keyScanner(void *_);
 void drawPage(int page);
@@ -103,10 +104,6 @@ int exf_getfree(uint8_t *drv, uint32_t *total, uint32_t *free) {
     return res;
 }
 
-uint32_t getHeapAllocateSize() {
-    struct mallinfo info = mallinfo();
-    return info.uordblks;
-}
 
 void UI_SetLang(int lang) {
     switch (lang) {
@@ -177,6 +174,8 @@ static char msg2[] = "Enable Mem Swap or use";
 static char msg3[] = "memory Compression.";
 static char msg4[] = "[ON]+[F6] Reboot";
 void UI_OOM() {
+    uidisp->emergencyBuffer();
+    
     __puts(msg1, sizeof(msg1), 1);
     __puts(msg2, sizeof(msg2), 2);
     __puts(msg3, sizeof(msg3), 3);
@@ -292,7 +291,19 @@ void UI_Refrush() {
     drawPage(curPage);
 }
 
-void refreshIndicator() {
+
+void UI_Suspend()
+{
+    uidisp->releaseBuffer();
+}
+
+void UI_Resume()
+{
+    uidisp->restoreBuffer();
+}
+
+void refreshIndicator()
+{
     uint32_t ind = 0;
     switch (alpha) {
     case 1:
@@ -685,8 +696,8 @@ void keyMsg(uint32_t key, int state) {
             */
 
         default:
-            mainw->refreshWindow();
-            drawPage(curPage);
+            //mainw->refreshWindow();
+            //drawPage(curPage);
             break;
         }
     }

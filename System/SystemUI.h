@@ -18,7 +18,6 @@ extern "C" {
 #endif
 
 
-
 void SystemUIRefresh() ;
 void SystemUISuspend();
 void SystemUIResume();
