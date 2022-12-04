@@ -7,6 +7,7 @@
 #include <sys/times.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <malloc.h>
 
 #include "sys_llapi.h"
 
@@ -85,6 +86,11 @@ size_t getSwapMemHeapAllocated() {
     } else {
         return 0;
     }
+}
+
+uint32_t getHeapAllocateSize() {
+    struct mallinfo info = mallinfo();
+    return info.uordblks;
 }
 
 /*

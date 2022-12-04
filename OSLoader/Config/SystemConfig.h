@@ -39,17 +39,17 @@
     #define MEM_COMPRESSION_ALGORITHM     (MINILZO) //algorithm
 #endif
 
-
+#define TOTAL_MEM_PAGE  (300)
 
 #if VMRAM_USE_FTL
     #if USE_TINY_PAGE
         #if USE_HARDWARE_DFLPT
             #if SEPARATE_VMM_CACHE
                 #if MEM_COMPRESSION_ALGORITHM
-                    #define NUM_CACHEPAGE_VROM             ( 60 )  
-                    #define NUM_CACHEPAGE_VRAM             ( 60 ) 
-                    #define ZRAM_SIZE                      ( 170 * 1024 ) // 160KB / 400 KB ~= 0.4 (Assume that the compression ratio is 0.4)
-                    #define ZRAM_COMPRESSED_SIZE           ( 400 * 1024 )
+                    #define NUM_CACHEPAGE_VROM             ( 160 )  
+                    #define NUM_CACHEPAGE_VRAM             ( 40 ) 
+                    #define ZRAM_SIZE                      ( (TOTAL_MEM_PAGE - NUM_CACHEPAGE_VROM - NUM_CACHEPAGE_VRAM) * 1024 ) 
+                    #define ZRAM_COMPRESSED_SIZE           ( ZRAM_SIZE * 3 ) // (Assume that the compression ratio is 0.33)
                 #else 
                     #define NUM_CACHEPAGE_VROM             ( 64 )  
                     #define NUM_CACHEPAGE_VRAM             ( 64 ) 
@@ -115,8 +115,8 @@
 #define VM_SYS_RAM_NUM_SEG      (VM_RAM_SIZE / SEG_SIZE)
 */
 
-#define VM_CACHE_ENABLE     (false)
-#define VM_BUFFER_ENABLE    (false)
+#define VM_CACHE_ENABLE     (true)
+#define VM_BUFFER_ENABLE    (true)
 
 #define TOTAL_VM_SEG        ((VM_SYS_ROM_SIZE + VM_ROM_SIZE + VM_RAM_SIZE) / SEG_SIZE)
 

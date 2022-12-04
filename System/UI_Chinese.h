@@ -36,7 +36,7 @@
 
 
 
-#define UI_Allocate_Mem_CN          "分配内存"
-#define UI_PhyMem_CN                "物理内存"
+#define UI_Allocate_Mem_CN          "已分配系统内存"
+#define UI_PhyMem_CN                "已分配压缩内存"
 #define UI_Compression_rate_CN      "压缩率"
 

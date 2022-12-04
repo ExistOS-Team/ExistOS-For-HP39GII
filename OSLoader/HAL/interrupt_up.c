@@ -15,7 +15,7 @@
 
 IRQNumber CurrentIRQNumber;
 
-IRQList IRQLists[MAX_IRQ_NUM];
+//IRQList IRQLists[MAX_IRQ_NUM];
 
 /*
 void up_register_ISR(IRQNumber ISRNum, IRQTypes IRQType, IRQCallback cb)

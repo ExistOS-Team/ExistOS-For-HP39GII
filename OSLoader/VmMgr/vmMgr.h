@@ -26,6 +26,8 @@
 #define    FSR_DATA_ACCESS_UNMAP_PAB    3
 #define    FSR_DATA_WR_RDONLY           4
 #define    FSR_INST_FETCH               5
+#define    FSR_ZRAM_OOM                 6
+#define    FSR_SWAP_NOTENABLE           7
 #define    FSR_UNKNOWN                  0xF
 
 typedef struct pageFaultInfo_t
@@ -49,7 +51,7 @@ uint8_t *VMMGR_GetCacheAddress(void);
 bool vmMgr_checkAddressValid(uint32_t address, uint32_t perm);
 void vmMgr_ReleaseAllPage();
 
-
+void zram_info(uint32_t *free, uint32_t *total);
 //uint32_t vmMgr_getMountPhyAddressAndLock(uint32_t vaddr, uint32_t perm);
 
 

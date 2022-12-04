@@ -5,7 +5,7 @@
 static mtdInfo_t *pMtdinfo;
 
 static uint8_t PageBuffer[2048] __attribute__((aligned(4)));
-static uint8_t CopyBuffer[2048] __attribute__((aligned(4)));
+//static uint8_t CopyBuffer[2048] __attribute__((aligned(4)));
 
 static struct dhara_nand nandDevice;
 static struct dhara_map FTLmap;
@@ -140,6 +140,8 @@ int dhara_nand_copy(const struct dhara_nand *n,
     ret = MTD_CopyPhyPage(src + (DATA_START_BLOCK *  pMtdinfo->PagesPerBlock),
                           dst + (DATA_START_BLOCK *  pMtdinfo->PagesPerBlock));*/
 
+    uint8_t *CopyBuffer = pvPortMalloc(2048);
+
     *err = DHARA_E_NONE;
 
     ret = MTD_ReadPhyPage(src + (DATA_START_BLOCK * pMtdinfo->PagesPerBlock), 0, pMtdinfo->PageSize_B, (uint8_t *)CopyBuffer);
@@ -154,6 +156,8 @@ int dhara_nand_copy(const struct dhara_nand *n,
         *err = DHARA_E_BAD_BLOCK;
         printf("COPY WR ERR\n");
     }
+
+    vPortFree(CopyBuffer);
 
     return ret;
 }

@@ -10,14 +10,7 @@
 
 #include "../debug.h"  
 
-  
-#if USE_TINY_PAGE
-    uint32_t L2PTE[TOTAL_VM_SEG * 1024]  __attribute__((aligned(4096)));
-    #define SEGn_L2TAB_BASE(x)    ((uint32_t)(&L2PTE[(x) * 1024]))
-#else
-    uint32_t L2PTE[TOTAL_VM_SEG * 256]  __attribute__((aligned(1024)));
-    #define SEGn_L2TAB_BASE(x)    ((uint32_t)(&L2PTE[(x) * 256]))
-#endif
+
 
 #define L1PTE_NUM       (2049)  
  
@@ -29,16 +22,35 @@
 
     uint32_t HW_MPTE_Ptr = 1;
     //uint32_t MPTE_Table[MAX_SEG_SUPPORTED][2]; //ind, [0]for_seg  [1]val(L2PTE ptr)
-    struct MPTE_Table
+
+struct MPTE_Table_t
     {
-        uint16_t seg;
+        uint32_t seg;
         uint32_t val;
-    }MPTE_Table[MAX_SEG_SUPPORTED];
+    };
+  
+
+//struct MPTE_Table_t MPTE_Table[15];
     
 
 #else
     uint32_t L1PTE[L1PTE_NUM] __attribute__((aligned(16384))); ;  //Must 16KB aligned
     uint32_t DFLPT_BASE = (uint32_t)L1PTE;
+#endif
+
+#if USE_TINY_PAGE
+
+#if USE_HARDWARE_DFLPT
+    uint32_t L2PTE_BLOCK[TOTAL_VM_SEG * 1024  + (sizeof(struct MPTE_Table_t) * MAX_SEG_SUPPORTED) / 4 + 1] __attribute__((aligned(4096)));
+    uint32_t *L2PTE = L2PTE_BLOCK;
+    struct MPTE_Table_t *MPTE_Table = (struct MPTE_Table_t *) (&L2PTE_BLOCK[TOTAL_VM_SEG * 1024]);
+#else
+    uint32_t L2PTE[TOTAL_VM_SEG * 1024   + (sizeof(struct MPTE_Table_t) * MAX_SEG_SUPPORTED) / 4  ]  __attribute__((aligned(4096)));
+#endif
+    #define SEGn_L2TAB_BASE(x)    ((uint32_t)(&L2PTE[(x) * 1024]))
+#else
+    uint32_t L2PTE[TOTAL_VM_SEG * 256]  __attribute__((aligned(1024)));
+    #define SEGn_L2TAB_BASE(x)    ((uint32_t)(&L2PTE[(x) * 256]))
 #endif
 
 #define VADDR_TO_L1SEGn(addr)   ((addr) >> 20)
@@ -197,7 +209,7 @@ static inline void SetL1PTE(uint32_t pte, uint32_t interpret, uint32_t targetAdd
         VM_INFO("ADD L1PTE:%08x\n", pte);
         for(i = 0; i < MAX_SEG_SUPPORTED; i++)
         {
-            if((MPTE_Table[i].seg == 0xFFFFU) || (MPTE_Table[i].seg == pte))
+            if((MPTE_Table[i].seg == 0xFFFFFFFFUL) || (MPTE_Table[i].seg == pte))
             {
                 MPTE_Table[i].seg = pte;
                 add = true;
@@ -462,11 +474,11 @@ int reload_DFLPT_seg(uint32_t vseg)
 
 void mmu_init()
 {
-    memset(L2PTE, 0, sizeof(L2PTE));
+    //memset(L2PTE_BLOCK, 0, sizeof(L2PTE_BLOCK));
 
 #if USE_HARDWARE_DFLPT
     SetMPTELoc(0, 0);
-    memset(MPTE_Table, 0xFF, sizeof(MPTE_Table));
+    memset(MPTE_Table, 0xFF, sizeof(struct MPTE_Table_t) * MAX_SEG_SUPPORTED);
 #else
     memset(L1PTE, 0, sizeof(L1PTE));
 #endif

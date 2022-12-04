@@ -15,6 +15,9 @@
 
 #include "tusb.h"
 
+
+#include "board_up.h"
+
 #undef errno
 extern int errno;
 // extern int  __HEAP_START;
@@ -61,7 +64,9 @@ caddr_t _sbrk(int incr) {
     }
     prev_heap = heap;
     if (((uint32_t)heap + incr) > HEAP_END) {
-        printf("heap:%p, incr:%d\n", heap, incr);
+        //printf("heap:%p, incr:%d\n", heap, incr);
+        printf("!!!!OOM!!!\n");
+        portBoardReset();
         return 0;
     }
     heap += incr;

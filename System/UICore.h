@@ -22,8 +22,10 @@ private:
     int disp_w, disp_h;
     void (*drawf)(uint8_t *buf, uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1);
     inline void buf_set(uint32_t x, uint32_t y, uint8_t c) {
-        if ((x < this->disp_w) && (y < this->disp_h))
-            this->disp_buf[x + y * this->disp_w] = c;
+        if (disp_buf) {
+            if ((x < this->disp_w) && (y < this->disp_h))
+                this->disp_buf[x + y * this->disp_w] = c;
+        }
     }
 
 public:
@@ -36,6 +38,29 @@ public:
         memset(this->disp_buf, 0xff, display_width * display_height);
         this->drawf(this->disp_buf, 0, 0, this->disp_w - 1, this->disp_h - 1);
     }
+
+    void emergencyBuffer()
+    {
+        disp_buf = (uint8_t *)(RAM_BASE + BASIC_RAM_SIZE - 33 * 1024);
+    }
+
+    void releaseBuffer()
+    {
+        if(disp_buf)
+        {
+            vPortFree(disp_buf);
+            disp_buf = NULL;
+        }
+    }
+
+    void restoreBuffer()
+    {
+        if(!disp_buf)
+        {
+            this->disp_buf = (uint8_t *)pvPortMalloc(disp_w * disp_h);
+        }
+    }
+
     void draw_point(uint32_t x, uint32_t y, uint8_t c) {
         buf_set(x, y, c);
         this->drawf(&this->disp_buf[y * this->disp_w], 0, y, this->disp_w - 1, y);
@@ -363,7 +388,6 @@ public:
 
 #endif
 
-
 class UI_Window {
 private:
     /* data */
@@ -378,7 +402,7 @@ private:
     UI_Window *parent = NULL;
     UI_Window *child = NULL;
 
-//    class UI_Widget *widget_chains = NULL;
+    //    class UI_Widget *widget_chains = NULL;
 
     bool funcKey_enable;
     char funcKey[6][FUNCKEY_ITEM_MAX_CHAR + 1];
@@ -421,9 +445,9 @@ public:
     };
 
     void refreshTitle() {
-        disp->draw_box(x0 + 1, y0 , x0 + width, y0 + WIN_DEFAULT_FONTSIZE - 3, WIN_DEFAULT_BORDER_COLOR, WIN_DEFAULT_TITLE_BG_COLOR);
+        disp->draw_box(x0 + 1, y0, x0 + width, y0 + WIN_DEFAULT_FONTSIZE - 3, WIN_DEFAULT_BORDER_COLOR, WIN_DEFAULT_TITLE_BG_COLOR);
         disp->draw_printf(x0 + 1, y0, WIN_DEFAULT_FONTSIZE, WIN_DEFAULT_TITLE_FONT_COLOR, WIN_DEFAULT_TITLE_BG_COLOR, this->title);
-        //disp->draw_line(x0, WIN_DEFAULT_FONTSIZE, x0 + width, WIN_DEFAULT_FONTSIZE, WIN_DEFAULT_BORDER_COLOR);
+        // disp->draw_line(x0, WIN_DEFAULT_FONTSIZE, x0 + width, WIN_DEFAULT_FONTSIZE, WIN_DEFAULT_BORDER_COLOR);
     }
 
     void refreshFuncKeyBar() {
@@ -446,20 +470,19 @@ public:
         }
     }
 
-    void refreshWindow()
-    {
+    void refreshWindow() {
         disp->draw_box(0, 0, width - 2, height - 1, WIN_DEFAULT_BORDER_COLOR, WIN_DEFAULT_BG_COLOR);
         refreshTitle();
         refreshFuncKeyBar();
     }
 
-/*
-    virtual int winSelfKeyMessage(uint32_t key, int state) {
-        return 0;
-    }
+    /*
+        virtual int winSelfKeyMessage(uint32_t key, int state) {
+            return 0;
+        }
 
-    int winKeyMessage(uint32_t key, int state);
-    */
+        int winKeyMessage(uint32_t key, int state);
+        */
 
     void enableFuncKey(bool enable) {
         if (this->content_y0 + this->content_height >= FUNCKEY_BAR_Y) {
@@ -501,16 +524,15 @@ public:
         // }
     }
 
-    //void addWidget(class UI_Widget *widget);
-    //void setFocusWidget(class UI_Widget *widget);
-    // void widgetFocusNext();
-    // void widgetFocusPrev();
+    // void addWidget(class UI_Widget *widget);
+    // void setFocusWidget(class UI_Widget *widget);
+    //  void widgetFocusNext();
+    //  void widgetFocusPrev();
 
     ~UI_Window() {
         vPortFree(this->title);
     };
 };
-
 
 /*
 void UI_Window::addWidget(UI_Widget *widget) {
@@ -578,9 +600,6 @@ int UI_Window::winKeyMessage(uint32_t key, int state) {
     return 0;
 }
 */
-
-
-
 
 #if 0
 

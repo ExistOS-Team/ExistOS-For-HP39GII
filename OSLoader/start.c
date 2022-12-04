@@ -121,8 +121,8 @@ void printTaskList() {
     printf("Memory Compression Rate:%d.%02d\n", (int)mem_cr, (int)(mem_cr * 100.0f));
     printf("=============================================\r\n\n");
 
-    #include "cdmp.h"
-    cdmp_dump_layout();
+    //#include "cdmp.h"
+    //cdmp_dump_layout();
 }
 
 void vTask1(void *pvParameters) {
@@ -170,7 +170,7 @@ void System(void *par) {
     // DisplayClean();
 
     // DisplayFillBox(32, 32, 224, 64, 128);
-    DisplayFlushArea(103, 32, 152, 56, &logo, false);
+    DisplayFlushArea(103, 32, 152, 56, (uint8_t *)&logo, false);
     // DisplayPutStr(64, 42, "System Booting...", 255, 128, 16);
 
     for (int i = 90; i <= 120; ++i)
@@ -206,7 +206,7 @@ void System(void *par) {
 
                 DisplayFillBox(42, 8, 210, 24, 255);
                 DisplayFillBox(32, 32, 224, 64, 255);
-                DisplayFlushArea(103, 32, 152, 56, &logo, false);
+                DisplayFlushArea(103, 32, 152, 56, (uint8_t *)&logo, false);
                 // DisplayPutStr(64, 42, "System Booting...", 255, 128, 16);
 
                 g_MSC_Configuration = MSC_CONF_OSLOADER_EDB;
@@ -220,7 +220,7 @@ void System(void *par) {
     for (int i = 120; i <= 150; ++i)
         DisplayFillBox(i - 2, 84, i, 92, 72);
 
-    if ((*bootAddr != 0xEF5AE0EF) && *(bootAddr + 1) != 0xFECDAFDE || portIsKeyDown(KEY_F3)) {
+    if ((*bootAddr != 0xEF5AE0EF) && (*(bootAddr + 1) != 0xFECDAFDE) || portIsKeyDown(KEY_F3)) {
         slowDownEnable(false);
         // DisplayClean();
         // DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
