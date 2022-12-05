@@ -104,7 +104,6 @@ int exf_getfree(uint8_t *drv, uint32_t *total, uint32_t *free) {
     return res;
 }
 
-
 void UI_SetLang(int lang) {
     switch (lang) {
     case UI_LANG_EN:
@@ -175,7 +174,7 @@ static char msg3[] = "memory Compression.";
 static char msg4[] = "[ON]+[F6] Reboot";
 void UI_OOM() {
     uidisp->emergencyBuffer();
-    
+
     __puts(msg1, sizeof(msg1), 1);
     __puts(msg2, sizeof(msg2), 2);
     __puts(msg3, sizeof(msg3), 3);
@@ -291,19 +290,15 @@ void UI_Refrush() {
     drawPage(curPage);
 }
 
-
-void UI_Suspend()
-{
+void UI_Suspend() {
     uidisp->releaseBuffer();
 }
 
-void UI_Resume()
-{
+void UI_Resume() {
     uidisp->restoreBuffer();
 }
 
-void refreshIndicator()
-{
+void refreshIndicator() {
     uint32_t ind = 0;
     switch (alpha) {
     case 1:
@@ -369,6 +364,19 @@ void keyMsg(uint32_t key, int state) {
             }
             break;
 
+        case KEY_ON: {
+            if (shift == 1) {
+                uidisp->draw_printf(50, 48, 16, 255, 0, "  Shutting down...  ");
+                printf("Trig Power Off\n");
+                vTaskDelay(pdMS_TO_TICKS(500));
+                ll_power_off();
+                ll_power_off();
+                vTaskDelay(pdMS_TO_TICKS(500));
+                ll_power_off();
+            }
+            break;
+        }
+
         default:
             break;
         }
@@ -405,13 +413,6 @@ void keyMsg(uint32_t key, int state) {
                 alpha = 0;
             refreshIndicator();
             break;
-
-        case KEY_ON: {
-            if (shift == 1) {
-                ll_power_off();
-            }
-            break;
-        }
 
         case KEY_F1:
             curPage = 0;
@@ -696,11 +697,13 @@ void keyMsg(uint32_t key, int state) {
             */
 
         default:
-            //mainw->refreshWindow();
-            //drawPage(curPage);
+            // mainw->refreshWindow();
+            // drawPage(curPage);
             break;
         }
     }
+
+    refreshIndicator();
 }
 // static UI_Window *main_win;
 
