@@ -39,24 +39,19 @@ public:
         this->drawf(this->disp_buf, 0, 0, this->disp_w - 1, this->disp_h - 1);
     }
 
-    void emergencyBuffer()
-    {
+    void emergencyBuffer() {
         disp_buf = (uint8_t *)(RAM_BASE + BASIC_RAM_SIZE - 33 * 1024);
     }
 
-    void releaseBuffer()
-    {
-        if(disp_buf)
-        {
+    void releaseBuffer() {
+        if (disp_buf) {
             vPortFree(disp_buf);
             disp_buf = NULL;
         }
     }
 
-    void restoreBuffer()
-    {
-        if(!disp_buf)
-        {
+    void restoreBuffer() {
+        if (!disp_buf) {
             this->disp_buf = (uint8_t *)pvPortMalloc(disp_w * disp_h);
         }
     }
@@ -532,6 +527,73 @@ public:
     ~UI_Window() {
         vPortFree(this->title);
     };
+};
+
+class UI_Msgbox {
+private:
+    uint32_t x0;
+    uint32_t y0;
+    uint32_t width;
+    uint32_t height;
+    uint32_t text_x0;
+    uint32_t text_y0;
+
+    char *title;
+    char *text;
+
+    UI_Display *disp;
+
+public:
+    UI_Msgbox(UI_Display *_disp, uint32_t _x0, uint32_t _y0, uint32_t _width, uint32_t _height, char *_title, char *_text) {
+        this->disp = _disp;
+
+        this->x0 = _x0;
+        this->y0 = _y0;
+        this->width = _width;
+        this->height = _height;
+
+        this->title = (char *)calloc(strlen(_title) + 1, sizeof(char));
+        strcpy(this->title, _title);
+        this->text = (char *)calloc(strlen(_text) + 1, sizeof(char));
+        strcpy(this->text, _text);
+
+        this->text_x0 = this->x0 + (this->width - (strlen(this->text) * 8)) / 2;
+        this->text_y0 = this->y0 + this->height / 2;
+    }
+
+    ~UI_Msgbox() {
+        free(this->title);
+        free(this->text);
+    }
+
+    void refresh() {
+        disp->draw_box(this->x0, this->y0, this->x0 + this->width, this->y0 + this->height, 0, 224);
+        disp->draw_line(this->x0, this->y0 + 16, this->x0 + this->width, this->y0 + 16, 0);
+        disp->draw_printf(this->x0 + 4, this->y0 + 4, 12, 0, 224, "%s", this->title);
+        disp->draw_printf(this->text_x0, this->text_y0, 12, 0, 224, "%s", this->text);
+    }
+
+    bool show() {
+        uint32_t key;
+        uint32_t keyVal = 0;
+        uint32_t press = 0;
+        vTaskDelay(200);
+        do {
+            key = ll_vm_check_key();
+            press = key >> 16;
+            keyVal = key & 0xFFFF;
+        } while (!press);
+        if (keyVal == KEY_ENTER)
+            return true;
+
+        return false;
+    }
+
+    void setText(char *_text) {
+        strcpy(this->text, _text);
+        this->text_x0 = this->x0 + (this->width - (strlen(this->text) * 8)) / 2;
+        this->text_y0 = this->y0 + this->height / 2;
+    }
 };
 
 /*
