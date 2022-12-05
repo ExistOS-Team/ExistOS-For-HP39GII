@@ -373,6 +373,19 @@ void keyMsg(uint32_t key, int state) {
             }
             break;
 
+        case KEY_ON: {
+            if (shift == 1) {
+                uidisp->draw_printf(50, 48, 16, 255, 0, "  Shutting down...  ");
+                printf("Trig Power Off\n");
+                vTaskDelay(pdMS_TO_TICKS(500));
+                ll_power_off();
+                ll_power_off();
+                vTaskDelay(pdMS_TO_TICKS(500));
+                ll_power_off();
+            }
+            break;
+        }
+
         default:
             break;
         }
@@ -425,13 +438,6 @@ void keyMsg(uint32_t key, int state) {
                 alpha = 0;
             refreshIndicator();
             break;
-
-        case KEY_ON: {
-            if (shift == 1) {
-                ll_power_off();
-            }
-            break;
-        }
 
         case KEY_F1:
             curPage = 0;
@@ -739,6 +745,8 @@ void keyMsg(uint32_t key, int state) {
             break;
         }
     }
+
+    refreshIndicator();
 }
 // static UI_Window *main_win;
 
