@@ -7,7 +7,7 @@
 #define MAIN_WIN_TITLE_CN            "Exist OS"
 #define MAIN_WIN_FKEY_BAR_CN         "应用|终端| | |文件|设置|"
 #define MAIN_WIN_FKEY_BAR2_CN        "应用|终端|<|>|文件|设置|"
-#define MAIN_WIN_FKEY_BARFILE_CN     "应用|终端|属性|复制|删除|设置|"
+#define MAIN_WIN_FKEY_BARFILE_CN     "应用|终端|||删除|设置|"
 
 #define UI_TEMPERRATURE_CN           "温度"
 #define UI_MEMUSED_CN                "内存使用"

@@ -50,18 +50,26 @@ void memtest(uint32_t testSize);
 extern uint32_t OnChipMemorySize;
 extern uint32_t TotalAllocatableSize;
 
-TCHAR *pathNow, *pathBefore;
+struct strNode {
+    TCHAR *str;
+    struct strNode *prev;
+    struct strNode *next;
+};
+
+TCHAR *pathNow;
 TCHAR **dirItemNames;
 bool *dirItemInfos; // ture:file false:folder
 unsigned long *filesCount;
-unsigned char *openStatus;
 unsigned int *pageNow, *pageAll;
 unsigned char *selectedItem;
+struct strNode *pathList;
+struct strNode *pathList_firstNode;
 static DIR fileManagerDir;
 static FILINFO fileInfo;
 unsigned long getFileCounts(TCHAR *path);
 void refreshFileNames(TCHAR *path, TCHAR **names, bool *info, unsigned long *counts);
 void refreshDir();
+void getWholePath(TCHAR *ans);
 
 size_t getOnChipHeapAllocated();
 size_t getSwapMemHeapAllocated();
@@ -193,16 +201,6 @@ void pageUpdate() {
         uidisp->draw_printf(180, 0, 16, 255, -1, "%s", timeStr);
     }
 
-    if (curPage == 2) {
-        uidisp->draw_box(180, 0, 255, 11, -1, 0);
-        uidisp->draw_printf(180, 0, 16, 255, -1, "%s", timeStr);
-        uidisp->draw_box(DISPX, DISPY + 16, 255, DISPY + 16, -1, 0);
-        uidisp->draw_printf(DISPX, DISPY, 16, 0, 255, "%d item(s) [%s] (%d/%d)", *filesCount, pathNow, *pageNow, *pageAll);
-        for (int i = 1; i <= 5 && ((*pageNow - 1) * 5 + i) <= *filesCount; i++) {
-            uidisp->draw_printf(DISPX, DISPY + i * 16 + 1, 16, (i == *selectedItem ? 255 : 0), (i == *selectedItem ? 0 : 255), "%s%s", (dirItemInfos[(*pageNow - 1) * 5 + i - 1] == false ? "/" : ""), dirItemNames[(*pageNow - 1) * 5 + i - 1]);
-        }
-    }
-
     if (curPage == 3) {
         uidisp->draw_box(180, 0, 255, 11, -1, 0);
         uidisp->draw_printf(200, 0, 16, 255, -1, "%d/%d", page3Subpage + 1, CONF_SUBPAGES);
@@ -275,6 +273,17 @@ void drawPage(int page) {
                          mainw->content_y0 + 12 + 48,
                          0,
                          -1);
+        break;
+
+    case 2:
+        uidisp->draw_box(DISPX, DISPY + 16, 255, DISPY + 16, -1, 0);
+        uidisp->draw_printf(DISPX, DISPY, 16, 0, 255, "%d item(s) [%s] (%d/%d)", *filesCount, pathNow, (*filesCount == 0 ? 0 : *pageNow), *pageAll);
+        for (int i = 1; i <= 5 && ((*pageNow - 1) * 5 + i) <= *filesCount; i++) {
+            uidisp->draw_printf(DISPX, DISPY + i * 16 + 1, 12, (i == *selectedItem ? 255 : 0), (i == *selectedItem ? 0 : 255), "%s%s", (dirItemInfos[(*pageNow - 1) * 5 + i - 1] == false ? "/" : ""), dirItemNames[(*pageNow - 1) * 5 + i - 1]);
+        }
+        if (*filesCount == 0) {
+            uidisp->draw_printf(DISPX + 64, DISPY + 48, 8, 0, 255, "Nothing here...");
+        }
         break;
 
     case 3:
@@ -385,18 +394,34 @@ void keyMsg(uint32_t key, int state) {
     if (state == KEY_TRIG) {
         if (curPage == 2 && (key == KEY_F1 || key == KEY_F6)) {
             f_closedir(&fileManagerDir);
-            free(pathNow);
+
             for (int i = 0; i < *filesCount; i++) {
                 free(dirItemNames[i]);
             }
             free(dirItemNames);
+
             free(dirItemInfos);
             free(filesCount);
-            free(openStatus);
             free(pageNow);
             free(pageAll);
             free(selectedItem);
-            free(pathBefore);
+            free(pathNow);
+
+            while (pathList != pathList_firstNode) {
+                pathList = pathList->prev; // switch to prev node.
+
+                free(pathList->next->str);
+                pathList->next->str = nullptr;
+                free(pathList->next);
+                pathList->next = nullptr;
+            }
+
+            free(pathList->str);
+            pathList->str = nullptr;
+            free(pathList);
+            pathList = nullptr;
+
+            pathList_firstNode = nullptr;
         }
 
         switch (key) {
@@ -422,20 +447,35 @@ void keyMsg(uint32_t key, int state) {
             break;
 
         case KEY_F5:
-            if (curPage == 2)
-                break;
+            if (curPage == 2) {
+                if (filesCount > 0) {
+                    if (dirItemInfos[(*pageNow - 1) * 5 + *selectedItem - 1] == true) {
+                        strcat(pathNow, dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1]);
+                        f_unlink(pathNow);
+                        getWholePath(pathNow);
+                        refreshDir();
 
-            filesCount = (unsigned long *)malloc(sizeof(unsigned long));
-            pathNow = (TCHAR *)calloc(255, sizeof(TCHAR));
-            pathBefore = (TCHAR *)calloc(255, sizeof(TCHAR));
-            openStatus = (unsigned char *)malloc(sizeof(unsigned char));
-            pageNow = (unsigned int *)malloc(sizeof(unsigned int));
-            pageAll = (unsigned int *)malloc(sizeof(unsigned int));
-            selectedItem = (unsigned char *)malloc(sizeof(unsigned char)); // 1 to 5
+                        drawPage(curPage);
+                    }
+                }
+            } else {
 
-            if (pathNow != NULL && pathBefore != NULL && filesCount != NULL && openStatus != NULL && pageNow != NULL && pageAll != NULL) {
-                strcpy(pathNow, "/");
-                strcpy(pathBefore, "/");
+                filesCount = (unsigned long *)malloc(sizeof(unsigned long));
+                pageNow = (unsigned int *)malloc(sizeof(unsigned int));
+                pageAll = (unsigned int *)malloc(sizeof(unsigned int));
+                selectedItem = (unsigned char *)malloc(sizeof(unsigned char)); // 1 to 5
+
+                pathList = (struct strNode *)malloc(sizeof(struct strNode)); // head node.
+                pathList->str = (TCHAR *)calloc(2, sizeof(TCHAR));
+                pathNow = (TCHAR *)calloc(512, sizeof(TCHAR));
+                pathList->next = nullptr;
+                pathList->prev = nullptr;
+                pathList_firstNode = pathList; // record head node.
+
+                strcpy(pathList->str, "/"); // set to root path.
+
+                getWholePath(pathNow);
+
                 if (f_opendir(&fileManagerDir, pathNow) == FR_OK) {
                     if (f_readdir(&fileManagerDir, &fileInfo) == FR_OK) {
                         f_closedir(&fileManagerDir);
@@ -456,41 +496,11 @@ void keyMsg(uint32_t key, int state) {
                             curPage = 2;
                             drawPage(curPage);
                             mainw->setFuncKeys(MAIN_WIN_FKEY_BARFILE);
-                        } else {
-                            *openStatus = 2;
                         }
-
-                    } else {
-                        *openStatus = 1;
                     }
-                } else {
-                    *openStatus = 1;
                 }
-            } else {
-                *openStatus = 1;
             }
 
-            switch (*openStatus) {
-            case 2:
-                for (int i = 0; i < *filesCount; i++) {
-                    free(dirItemNames[i]);
-                }
-                free(dirItemNames);
-                free(dirItemInfos);
-                // NO "break;" here. :P
-            case 1:
-                free(filesCount);
-                free(openStatus);
-                free(pathNow);
-                free(pageNow);
-                free(pageAll);
-                free(selectedItem);
-                free(pathBefore);
-                break;
-
-            default:
-                break;
-            }
             break;
 
         case KEY_F4: {
@@ -529,8 +539,17 @@ void keyMsg(uint32_t key, int state) {
                     drawPage(curPage);
                 }
             } else if (curPage == 2) {
-                if (strcmp(pathNow, "/")) {
-                    strcpy(pathNow, pathBefore);
+                if (pathList->prev != nullptr) {
+                    pathList = pathList->prev; // switch to prev node.
+
+                    free(pathList->next->str); // free str.
+                    pathList->next->str = nullptr;
+                    pathList->next->prev = nullptr;
+                    free(pathList->next); // free next node.
+                    pathList->next = nullptr;
+
+                    getWholePath(pathNow);
+
                     refreshDir();
                     drawPage(curPage);
                 }
@@ -551,6 +570,12 @@ void keyMsg(uint32_t key, int state) {
                 if (*selectedItem != 1) {
                     (*selectedItem)--;
                     drawPage(curPage);
+                } else {
+                    if (*pageNow > 1) {
+                        (*pageNow)--;
+                        *selectedItem = 5;
+                        drawPage(curPage);
+                    }
                 }
             }
             break;
@@ -560,6 +585,12 @@ void keyMsg(uint32_t key, int state) {
                 if (*selectedItem != 5 && (*pageNow - 1) * 5 + *selectedItem != *filesCount) {
                     (*selectedItem)++;
                     drawPage(curPage);
+                } else {
+                    if (*pageNow < *pageAll) {
+                        (*pageNow)++;
+                        *selectedItem = 1;
+                        drawPage(curPage);
+                    }
                 }
             }
             break;
@@ -572,16 +603,28 @@ void keyMsg(uint32_t key, int state) {
                     StartKhiCAS();
                 }
             } else if (curPage == 2) {
-                if (dirItemInfos[(*pageNow - 1) * 5 + *selectedItem - 1] == false) {
-                    // open a folder
-                    strcpy(pathBefore, pathNow);
-                    strcat(pathNow, dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1]);
-                    strcat(pathNow, "/");
+                if (*filesCount > 0) {
+                    if (dirItemInfos[(*pageNow - 1) * 5 + *selectedItem - 1] == false) {
+                        // open a folder
 
-                    refreshDir();
-                    drawPage(curPage);
-                } else {
-                    // do something with the file here...
+                        pathList->next = (struct strNode *)malloc(sizeof(struct strNode)); // new node.
+                        (pathList->next)->prev = pathList;                                 // set prev node.
+                        (pathList->next)->next = nullptr;
+
+                        pathList = pathList->next; // switch to next node.
+
+                        pathList->str = (TCHAR *)calloc(strlen(dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1]) + 1, sizeof(TCHAR)); // new str.
+
+                        strcpy(pathList->str, dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1]);
+                        strcat(pathList->str, "/");
+
+                        getWholePath(pathNow);
+
+                        refreshDir();
+                        drawPage(curPage);
+                    } else {
+                        // do something with the file here...
+                    }
                 }
             }
             break;
@@ -781,6 +824,7 @@ void refreshDir() {
     }
     free(dirItemNames);
     free(dirItemInfos);
+
     if (f_opendir(&fileManagerDir, pathNow) == FR_OK) {
         if (f_readdir(&fileManagerDir, &fileInfo) == FR_OK) {
             f_closedir(&fileManagerDir);
@@ -797,6 +841,20 @@ void refreshDir() {
             }
 
             refreshFileNames(pathNow, dirItemNames, dirItemInfos, filesCount);
+        }
+    }
+}
+
+void getWholePath(TCHAR *ans) {
+    memset(ans, 0, 512);
+    struct strNode *nodeNow = pathList_firstNode;
+
+    for (;;) {
+        strcat(ans, nodeNow->str);
+        if (nodeNow->next == nullptr) {
+            break;
+        } else {
+            nodeNow = nodeNow->next;
         }
     }
 }
