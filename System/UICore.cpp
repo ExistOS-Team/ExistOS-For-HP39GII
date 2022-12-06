@@ -59,6 +59,7 @@ struct strNode {
     struct strNode *next;
 };
 
+TCHAR *suffix;
 TCHAR *pathNow;
 TCHAR **dirItemNames;
 bool *dirItemInfos; // ture:file false:folder
@@ -73,6 +74,7 @@ unsigned long getFileCounts(TCHAR *path);
 void refreshFileNames(TCHAR *path, TCHAR **names, bool *info, unsigned long *counts);
 void refreshDir();
 void getWholePath(TCHAR *ans);
+void getSuffix(TCHAR *ret, TCHAR *filename); // get suffix without a dot.
 
 size_t getOnChipHeapAllocated();
 size_t getSwapMemHeapAllocated();
@@ -415,6 +417,7 @@ void keyMsg(uint32_t key, int state) {
             free(pageAll);
             free(selectedItem);
             free(pathNow);
+            free(suffix);
 
             while (pathList != pathList_firstNode) {
                 pathList = pathList->prev; // switch to prev node.
@@ -458,26 +461,41 @@ void keyMsg(uint32_t key, int state) {
         case KEY_F5:
             if (curPage == 2) {
                 if (filesCount > 0) {
-                    if (dirItemInfos[(*pageNow - 1) * 5 + *selectedItem - 1] == true) {
-                        msgbox = new UI_Msgbox(uidisp, 16, 32, 256 - 32, 64, "Delete File?", "Press ENTER to confirm.");
-                        isMsgBoxShow = true;
-                        drawPage(curPage);
-                        if (msgbox->show()) {
-                            msgbox->setText("Please wait...");
-                            drawPage(curPage);
-                            
-                            strcat(pathNow, dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1]);
-                            f_unlink(pathNow);
-                            getWholePath(pathNow);
-                            refreshDir();
-                        }
-                        isMsgBoxShow = false;
-                        delete msgbox;
-                        drawPage(curPage);
+                    if (dirItemInfos[(*pageNow - 1) * 5 + *selectedItem - 1]) {
+                        msgbox = new UI_Msgbox(uidisp, 16, 32, 256 - 32, 64, "Delete File", "Press ENTER to confirm.");
+                    } else {
+                        msgbox = new UI_Msgbox(uidisp, 16, 32, 256 - 32, 64, "Delete Folder", "Press ENTER to confirm.");
                     }
+
+                    isMsgBoxShow = true;
+                    drawPage(curPage);
+
+                    if (msgbox->show()) {
+                        msgbox->setText("Please wait...");
+                        drawPage(curPage);
+
+                        strcat(pathNow, dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1]);
+
+                        // if (dirItemInfos[(*pageNow - 1) * 5 + *selectedItem - 1]) {
+                        //     f_unlink(pathNow);
+                        // } else {
+                        //     // strcat(pathNow, "/");
+                        //     deleteFiles(pathNow);
+                        // }
+                        
+                        FS_DeleteFolderOrFile(pathNow);
+
+                        getWholePath(pathNow);
+                        refreshDir();
+                    }
+                    isMsgBoxShow = false;
+                    delete msgbox;
+                    drawPage(curPage);
                 }
+
             } else {
 
+                suffix = (TCHAR *)calloc(64, sizeof(TCHAR));
                 filesCount = (unsigned long *)malloc(sizeof(unsigned long));
                 pageNow = (unsigned int *)malloc(sizeof(unsigned int));
                 pageAll = (unsigned int *)malloc(sizeof(unsigned int));
@@ -485,7 +503,7 @@ void keyMsg(uint32_t key, int state) {
 
                 pathList = (struct strNode *)malloc(sizeof(struct strNode)); // head node.
                 pathList->str = (TCHAR *)calloc(2, sizeof(TCHAR));
-                pathNow = (TCHAR *)calloc(512, sizeof(TCHAR));
+                pathNow = (TCHAR *)calloc(2048, sizeof(TCHAR));
                 pathList->next = nullptr;
                 pathList->prev = nullptr;
                 pathList_firstNode = pathList; // record head node.
@@ -642,6 +660,14 @@ void keyMsg(uint32_t key, int state) {
                         drawPage(curPage);
                     } else {
                         // do something with the file here...
+                        // strcat(pathNow, dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1]);
+                        // getSuffix(suffix, pathNow);
+
+                        // if (strcmp(suffix, "jpg")) {
+                        // }
+
+                        // refreshDir();
+                        // getWholePath(pathNow);
                     }
                 }
             }
@@ -874,6 +900,21 @@ void getWholePath(TCHAR *ans) {
         } else {
             nodeNow = nodeNow->next;
         }
+    }
+}
+
+void getSuffix(TCHAR *ret, TCHAR *filename) {
+    uint16_t dot = 0;
+    uint16_t len = strlen(filename);
+    if (filename != nullptr && len != 0) {
+        for (uint16_t i = 0; i < strlen(filename); i++) {
+            if (filename[i] == '.')
+                dot = i;
+        }
+        dot++;
+        strncpy(ret, filename + dot, len - dot);
+    } else {
+        strcpy(ret, "");
     }
 }
 
