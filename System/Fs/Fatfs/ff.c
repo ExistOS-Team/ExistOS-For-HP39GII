@@ -3643,7 +3643,66 @@ FRESULT f_mount (
 	LEAVE_FF(fs, res);
 }
 
+FRESULT FS_DeleteIntFile(TCHAR *path) {
+    UINT i, j;
+    FRESULT res;
+    DIR dir;
+    FILINFO fno;
 
+#if _USE_LFN
+    fno.lfname = 0;
+#endif
+
+    res = f_opendir(&dir, path);
+
+    if (res == FR_OK) {
+        for (i = 0; path[i]; i++)
+            ;
+
+        path[i++] = '/';
+
+        for (;;) {
+            res = f_readdir(&dir, &fno);
+            if (res != FR_OK || !fno.fname[0])
+                break;
+            if (!strcmp(fno.fname, ".") && !strcmp(fno.fname, ".."))
+                continue;
+            j = 0;
+            do {
+                path[i + j] = fno.fname[j];
+			} while (fno.fname[j++]);
+
+            if (fno.fattrib & AM_DIR) {
+                res = FS_DeleteIntFile(path);
+
+                if (res != FR_OK)
+                    break;
+            }
+
+            res = f_unlink(path);
+            if ((res != FR_OK) && (res != FR_DENIED))
+                break;
+        }
+
+        path[--i] = '\0';
+    }
+    return res;
+}
+
+FRESULT FS_DeleteFolderOrFile(TCHAR *path) {
+    FRESULT res;
+    res = FS_DeleteIntFile(path);
+
+    if (res == FR_OK) {
+        res = f_unlink(path);
+
+    } else if (FR_NO_PATH == res) {
+        res = f_unlink(path);
+
+    }
+
+    return res;
+}
 
 
 /*-----------------------------------------------------------------------*/
@@ -6979,4 +7038,3 @@ FRESULT f_setcp (
 	return FR_OK;
 }
 #endif	/* FF_CODE_PAGE == 0 */
-
