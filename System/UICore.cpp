@@ -34,8 +34,11 @@ static char power_save = ' ';
 
 UI_Display *uidisp;
 UI_Window *mainw;
+UI_Msgbox *msgbox;
 
 bool UIForceRefresh = false;
+
+bool isMsgBoxShow = false;
 
 static int curPage = 0;
 static int page3Subpage = 0;
@@ -251,6 +254,8 @@ void pageUpdate() {
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "[%c] Enable Memory Swap (1)", ll_mem_swap_size() ? 'X' : ' ');
         }
     }
+    if (isMsgBoxShow)
+        msgbox->refresh();
 }
 
 void drawPage(int page) {
@@ -260,6 +265,7 @@ void drawPage(int page) {
                      mainw->content_x0 + mainw->content_width - 0,
                      mainw->content_y0 + mainw->content_height - 0,
                      -1, 0xFF);
+
     switch (page) {
     case 0:
         uidisp->draw_bmp((char *)gImage_khicas_ico, mainw->content_x0 + 12, mainw->content_y0 + 12, 48, 48);
@@ -292,6 +298,9 @@ void drawPage(int page) {
     default:
         break;
     }
+
+    if (isMsgBoxShow)
+        msgbox->refresh();
 }
 
 void UI_Refrush() {
@@ -450,11 +459,20 @@ void keyMsg(uint32_t key, int state) {
             if (curPage == 2) {
                 if (filesCount > 0) {
                     if (dirItemInfos[(*pageNow - 1) * 5 + *selectedItem - 1] == true) {
-                        strcat(pathNow, dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1]);
-                        f_unlink(pathNow);
-                        getWholePath(pathNow);
-                        refreshDir();
-
+                        msgbox = new UI_Msgbox(uidisp, 16, 32, 256 - 32, 64, "Delete File?", "Press ENTER to confirm.");
+                        isMsgBoxShow = true;
+                        drawPage(curPage);
+                        if (msgbox->show()) {
+                            msgbox->setText("Please wait...");
+                            drawPage(curPage);
+                            
+                            strcat(pathNow, dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1]);
+                            f_unlink(pathNow);
+                            getWholePath(pathNow);
+                            refreshDir();
+                        }
+                        isMsgBoxShow = false;
+                        delete msgbox;
                         drawPage(curPage);
                     }
                 }
@@ -863,6 +881,7 @@ void UI_Task(void *_) {
 
     uidisp = new UI_Display(LCD_PIX_W, LCD_PIX_H, ll_disp_put_area);
     mainw = new UI_Window(NULL, NULL, MAIN_WIN_TITLE, uidisp, 0, 0, LCD_PIX_W, LCD_PIX_H);
+
     UI_SetLang(UI_LANG_EN);
 
     checkFS();
