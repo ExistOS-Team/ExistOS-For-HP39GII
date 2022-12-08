@@ -544,7 +544,7 @@ private:
     UI_Display *disp;
 
 public:
-    UI_Msgbox(UI_Display *_disp, uint32_t _x0, uint32_t _y0, uint32_t _width, uint32_t _height, char *_title, char *_text) {
+    UI_Msgbox(UI_Display *_disp, uint32_t _x0, uint32_t _y0, uint32_t _width, uint32_t _height, const char *_title, const char *_text) {
         this->disp = _disp;
 
         this->x0 = _x0;
@@ -577,7 +577,7 @@ public:
         uint32_t key;
         uint32_t keyVal = 0;
         uint32_t press = 0;
-        vTaskDelay(200);
+        vTaskDelay(20);
         do {
             key = ll_vm_check_key();
             press = key >> 16;
@@ -589,7 +589,7 @@ public:
         return false;
     }
 
-    void setText(char *_text) {
+    void setText(const char *_text) {
         strcpy(this->text, _text);
         this->text_x0 = this->x0 + (this->width - (strlen(this->text) * 8)) / 2;
         this->text_y0 = this->y0 + this->height / 2;
