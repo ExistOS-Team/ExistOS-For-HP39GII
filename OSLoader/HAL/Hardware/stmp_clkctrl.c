@@ -11,7 +11,7 @@
 
 #define PLL_FREQ_HZ (480000000UL)
 
-bool g_slowdown_enable = true;
+int g_slowdown_enable = 0;
 static uint8_t min_cpu_frac_sd = CPU_DIVIDE_IDLE_INTIAL;
 
 static void PLLEnable(bool enable) {
@@ -50,20 +50,27 @@ void enterSlowDown()
 
 void exitSlowDown()
 {
-    if(g_slowdown_enable)
+    if(g_slowdown_enable == 1)
     {
+        setCPUDivider(CPU_DIVIDE_NORMAL);
+    }else if(g_slowdown_enable == 2){
+        setCPUDivider(CPU_DIVIDE_PWRSAVE);
+    }else{
         setCPUDivider(CPU_DIVIDE_NORMAL);
     }
     
 }
 
 
-void slowDownEnable(bool enable)
+void slowDownEnable(int mode)
 {
-    g_slowdown_enable = enable;
-    if(!g_slowdown_enable)
+    g_slowdown_enable = mode;
+    if(g_slowdown_enable == 0)
     {
         setCPUDivider(CPU_DIVIDE_NORMAL);
+    }else if(g_slowdown_enable == 2)
+    {
+        setCPUDivider(CPU_DIVIDE_PWRSAVE);
     }
 }
 

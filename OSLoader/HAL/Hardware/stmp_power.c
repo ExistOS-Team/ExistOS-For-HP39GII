@@ -16,9 +16,11 @@ void portChargeEnable(bool enable)
     {
         HW_POWER_CHARGE.B.PWD_BATTCHRG = 0;
         HW_POWER_VDDDCTRL.B.DISABLE_FET = 0;
+        HW_POWER_5VCTRL.B.ENABLE_DCDC = 1;
     }else{
         HW_POWER_CHARGE.B.PWD_BATTCHRG = 1;
         HW_POWER_VDDDCTRL.B.DISABLE_FET = 1;
+        HW_POWER_5VCTRL.B.ENABLE_DCDC = 0;
     }
 }
 
@@ -157,14 +159,16 @@ void portPowerInit()
 */
 
 
-/*
-    BF_WR(POWER_DCLIMITS, POSLIMIT_BUCK, 0x60);
-    BF_WR(POWER_DCLIMITS, POSLIMIT_BOOST, 0x60);
-    BF_WR(POWER_DCLIMITS, NEGLIMIT, 0x6F);
-*/
-    BF_WR(POWER_DCLIMITS, POSLIMIT_BUCK, 0xF);
+
     BF_WR(POWER_DCLIMITS, POSLIMIT_BOOST, 0xF);
+    BF_WR(POWER_DCLIMITS, POSLIMIT_BUCK, 0xF);
     BF_WR(POWER_DCLIMITS, NEGLIMIT, 0x6F);
+
+
+    //BF_WR(POWER_DCLIMITS, POSLIMIT_BUCK, 0xF);
+    //BF_WR(POWER_DCLIMITS, POSLIMIT_BOOST, 0xF);
+    //BF_WR(POWER_DCLIMITS, NEGLIMIT, 0x6F);
+    
 
 
 	//BF_SET(POWER_LOOPCTRL, RCSCALE_THRESH);
@@ -190,18 +194,18 @@ void portPowerInit()
     HW_POWER_LOOPCTRL.B.DC_C = 0; 
 
 
-    HW_POWER_5VCTRL.B.OTG_PWRUP_CMPS = 1; //VBUSVALID comparators are enabled
+    HW_POWER_5VCTRL.B.OTG_PWRUP_CMPS = 1; //VBUSVALID comparators are enabled !
     HW_POWER_5VCTRL.B.VBUSVALID_5VDETECT = 1;
     HW_POWER_5VCTRL.B.ILIMIT_EQ_ZERO = 0;   //short
     
     HW_POWER_5VCTRL.B.PWDN_5VBRNOUT = 0;
     
-    HW_POWER_5VCTRL.B.ENABLE_DCDC = 0;
+    HW_POWER_5VCTRL.B.ENABLE_DCDC = 0;  //Enable DC_DC later
 
     portDelayus(100);
 
     HW_POWER_BATTMONITOR.B.BRWNOUT_LVL = 0; // 0.79 V
-    HW_POWER_BATTMONITOR.B.BRWNOUT_PWD = 1;
+    HW_POWER_BATTMONITOR.B.BRWNOUT_PWD = 0;
     HW_POWER_BATTMONITOR.B.EN_BATADJ = 1;
     HW_POWER_BATTMONITOR.B.PWDN_BATTBRNOUT = 1;
 
@@ -243,9 +247,9 @@ void portPowerInit()
    
     //HW_POWER_5VCTRL.B.EN_BATT_PULLDN = 1;
 
-    BF_WR(POWER_VDDDCTRL, TRG,  (uint8_t)((1.43 - 0.8)/0.025) );  // val = (TAG_v - 0.8v)/0.025v, 0.8~1.45, 1.2
+    BF_WR(POWER_VDDDCTRL, TRG,  (uint8_t)((1.44 - 0.8)/0.025) );  // val = (TAG_v - 0.8v)/0.025v, 0.8~1.45, 1.2
     portDelayus(200);
-    BF_WR(POWER_VDDACTRL, TRG,  (uint8_t)((1.75 - 1.5)/0.025) );  // val = (TAG_v - 1.5v)/0.025v, 1.5~1.95, 1.75
+    BF_WR(POWER_VDDACTRL, TRG,  (uint8_t)((1.8 - 1.5)/0.025) );  // val = (TAG_v - 1.5v)/0.025v, 1.5~1.95, 1.75
     portDelayus(200);
     BF_WR(POWER_VDDIOCTRL, TRG, (uint8_t)((3.3 - 2.8)/0.025));  // val = (TAG_v - 2.8v)/0.025v, 2.8~3.575, 3.1
     portDelayus(100);
