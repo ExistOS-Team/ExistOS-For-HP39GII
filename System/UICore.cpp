@@ -17,6 +17,8 @@
 #include "UI_Config.h"
 #include "UI_Language.h"
 
+#include "ExistOSlogo.h"
+
 #include "Fatfs/ff.h"
 #include "SystemFs.h"
 
@@ -386,7 +388,10 @@ void keyMsg(uint32_t key, int state) {
 
         case KEY_ON: {
             if (shift == 1) {
-                uidisp->draw_printf(50, 48, 16, 255, 0, "  Shutting down...  ");
+                uidisp->draw_box(0, 0, 255, 126, 255, 255);
+                uidisp->draw_bmp((char *)logo, 103, 32, 50, 25);
+                uidisp->draw_printf(74, 74, 12, 0, 255, "Shutting down");
+
                 printf("Trig Power Off\n");
                 vTaskDelay(pdMS_TO_TICKS(500));
                 ll_power_off();
@@ -460,7 +465,7 @@ void keyMsg(uint32_t key, int state) {
 
         case KEY_F5:
             if (curPage == 2) {
-                if (filesCount > 0) {
+                if (*filesCount > 0) {
                     if (dirItemInfos[(*pageNow - 1) * 5 + *selectedItem - 1]) {
                         msgbox = new UI_Msgbox(uidisp, 16, 32, 256 - 32, 64, "Delete File", "Press ENTER to confirm.");
                     } else {
