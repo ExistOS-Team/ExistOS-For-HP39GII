@@ -161,6 +161,7 @@ static uint32_t waitAnyKey() {
 extern bool g_vm_inited;
 uint32_t *bootAddr;
 uint32_t *atagsAddr;
+bool isInterrupted = false;
 void System(void *par) {
     bootAddr = (uint32_t *)VM_ROM_BASE;
 
@@ -218,7 +219,7 @@ void System(void *par) {
     for (int i = 120; i <= 150; ++i)
         DisplayFillBox(i - 2, 84, i, 92, 72);
 
-    if ((*bootAddr != 0xEF5AE0EF) && (*(bootAddr + 1) != 0xFECDAFDE) || portIsKeyDown(KEY_F3)) {
+    if (((*bootAddr != 0xEF5AE0EF) && (*(bootAddr + 1) != 0xFECDAFDE)) || (isInterrupted = portIsKeyDown(KEY_F3))) {
         slowDownEnable(false);
         // DisplayClean();
         // DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
@@ -226,7 +227,13 @@ void System(void *par) {
 
         DisplayFillBox(32, 32, 224, 64, 128);
         DisplayFillBox(48, 80, 208, 96, 255);
-        DisplayPutStr(54, 42, "No System Installed ", 255, 128, 16);
+        DisplayPutStr(54, 42, isInterrupted ? " Boot  Interrupted  " : "No System Installed ", 255, 128, 16);
+
+        // DisplayFillBox(0, 0, 255, 126, 255);
+
+        // DisplayFillBox(103, 16, 153, 66, 32);
+
+        // DisplayFillBox(128, 16, 153, 41, 128);
 
         for (int i = 16; i >= 0; --i) {
             DisplayFillBox(115, 76, 141, 128, 255);

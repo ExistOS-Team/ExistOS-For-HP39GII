@@ -11,13 +11,17 @@ An open source HP39GII firmware project
 
 This firmware project is created by a group of calculator enthusiasts, using libraries such as [FreeRTOS kernel](https://github.com/FreeRTOS/FreeRTOS), [TinyUSB](https://github.com/hathach/tinyusb), [FatFs](http://elm-chan.org/fsw/ff/00index_e.html), [dhara](https://github.com/dlbeer/dhara), [giac](http://www-fourier.ujf-grenoble.fr/~parisse/giac.html), etc. Like-minded friends are more than welcome to try out and improve the code of this project. We'd love to hear your voices!
 
+Refer to the [Install Guide](#only-installing) for installing procedures.
+
+# Note: The following features mainly applies to Build 70 and older versions.
+
 ## Contents
 
 | | User Guide | |
 | :---: | :---: | :---: |
 | [Current Development Status](#current-developping-status) | | [Experimental Fautures](#experimental-features) |
 | | **[Install Guide](#only-installing)** | |
-| For Win10/11 | [ExistOS Updater](#for-windows-10--11-existos-updater) | Automated tools for beginers |
+| For Windows 10/11 | [ExistOS Updater](#for-windows-10--11-existos-updater) | Automated tools for beginers |
 | Win/Linux | [OS Loader & EDB](#for-windows--linux) | |
 | Windows | [Emulator](#emulator) | |
 | | **[Usage](#basic-usage-of-the-firmware)** | |
@@ -25,14 +29,14 @@ This firmware project is created by a group of calculator enthusiasts, using lib
 | **[Basic Usage of KhiCAS](#basic-usage-of-khicas)** | [Basic Calculations](#basic-calculations) | [Example 1: Plotting](#example-1-plotting) |
 | | [Example 2: Indefinite Integrals](#example-2-indefinite-integrals) | [Example 3: Definite Integrals](#example-3-definite-integrals) | 
 | | [Example 4: Programming to draw Feigenbaum bifurcation diagrams mapped with Logistic equations](#example-4-programming-to-draw-feigenbaum-bifurcation-diagrams-mapped-with-logistic-equations) | |
-| **[Experimental Features](#about-experimental-features) | [Charging](#charging-untested) | [Emu48 39/48 Emulator](#emu48-3948-emulator) |
+| **[Experimental Features](#about-experimental-features) | [Charging](#charging-not-fully-tested) | [Emu48 39/48 Emulator](#emu48-3948-saturn-emulator) |
 | **[Uninstalling and Flashing Back](#uninstalling-existos-and-flashing-back-to-the-hp-firmware)** | **[Contributors](#contributors)** | **[License](#license)** |
 
 | | Developer Guide | |
 | :---: | :---: | :---: |
 | [Current Development Status](#current-developping-status) | | [Experimental Fautures](#experimental-features) |
 | | **[Comiling and Installing](#compiling-and-installing)** | |
-| [Preparations](#preparations) | [Compiling ExistOS](#compiling-existos) | [Flash firmware](#installing) |
+| [Prerequisites](#prerequisites) | [Compiling ExistOS](#compiling-existos) | [Flash firmware](#installing) |
 | | **Code contribution** | |
 | Documents (To do) | [Third-party App developing](#third-party-app-developing) | [Code submision standard](#code-submission-standard) |
 | **[Uninstalling and Flashing Back](#uninstalling-existos-and-flashing-back-to-the-hp-firmware)** | **[Contributors](#contributors)** | **[License](#license)** |
@@ -81,6 +85,8 @@ Requires:
 - ExistOS Updater: Download from [here](https://github.com/ExistOS-Team/ExistOS_Updater_v2/releases).
   - Only supports Windows 10 / 11.
 
+Then follow the [instructions](https://github.com/ExistOS-Team/ExistOS_Updater_v2#readme) to flash the firmware.
+
 ### For Windows / Linux
 
 Requires:
@@ -89,10 +95,10 @@ Requires:
   - Download `OSLoader.sb` and `ExistOS.sys`.
 - sb_loader: Used to send OSLoader to the RAM of your calculator if you haven't installed it before.
   - Windows: Download binary file from [here](../../raw/main/tools/sbtools_win/sb_loader.exe).
-  - Linux: Download zip file from [here](../../archive/refs/heads/main.zip) and  extract it. Then run the following commands:
+  - Linux: Download zip file from [here](../../archive/refs/heads/main.zip) and extract it. Then run the following commands:
     - `cd tools/sbtools/`
     - `make`
-    - Then you will get executable file `sb_loader`
+    - Then you will get the executable file `sb_loader`
 - EDB (ExistOS Debug Brige): Used to flash firmwares.
   - Windows: Download binary file from [here](../../raw/main/tools/edb.exe).
   - Linux: Download zip file from [here](https://github.com/ExistOS-Team/edb-unix/archive/refs/heads/main.zip) and extract it. Then run the following commands:
@@ -103,25 +109,25 @@ Requires:
 
 Put the mentioned files to a directory.
 
-If you haven't installed ExistOS on your calculotor, please get through the to-do list below first:
+If you haven't installed ExistOS on your calculator, please go through this to-do list first:
 1. Remove all batteries from your calculator.
 2. Hold `ON/C` key and connect your calculator to computer via USB cable.
 3. Run command `sbloader -f OSLoader.sb`
-  - Normally your calculator will boot into the OSLoader, and then a message will be shown on the screen. There is no need to unplug the USB cable now. Just continue to do the following steps.
+  - Normally your calculator will boot into the OSLoader, and then a message will show up on the screen. There is no need to unplug the USB cable now. Just continue to do the following steps.
   - ![OSL Boot](Image/1.png)
 
-The ExistOS had been installed on your device:
+If ExistOS has already been installed on your device:
 1. Connect your calculator to computer via USB cable.
 2. Run command `edb -r -s -f OSLoader.sb 1408 b` to flash the OSLoader.
   - Your calculator will reboot automatically.
 3. Run command `edb -r -s -f ExistOS.sys 1984` to flash the System.
   - Your calculatr will reboot automatically.
-4. Enjoy the ExistOS!
+1. Enjoy ExistOS!
   - If you are in trouble with the installation or anything else, open an issue or join our Discord server to seek for help.
 
 ## Compiling and Installing
 
-### Preparations
+### Prerequisites
 
 Clone the git repo first:
 ```bash
@@ -135,8 +141,8 @@ cd ExistOS-For-HP39GII
 Switch to the root directory of this project first.
 
 Note:
-- `gcc-arm-none-eabi` v10.3 is tested OK. Download binary executable file from [here](https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2).
-  - Using other versions of GCC may make the device unable to boot.
+- `gcc-arm-none-eabi` v10.3 is tested OK. Download binary executable files from [here](https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2).
+  - Using other versions of GCC may cause OSLoader to not run.
 
 |System|Install|
 |----|----|
@@ -145,42 +151,43 @@ Note:
 |Debian & Ubuntu|`apt-get install gcc-arm-none-eabi`|
 |Arch Linux|`pacman -Syu arm-none-eabi-gcc`|
 |Other|Lookup if there are binary packages provided. Or you can build from [source code](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads)|
-||The link above is the new version. You can download the old version (V10.3) form [here](https://developer.arm.com/downloads/-/gnu-rm#panel1a)|
+||The link above is the new version. You can download the old version (V10.3) from [here](https://developer.arm.com/downloads/-/gnu-rm#panel1a)|
 
 Add `udev` rule:
 |System|Install|
 |----|----|
 |Windows|N/A|
 |Linux|`sudo cp 99-hp39gii.rules /etc/udev/rules.d/`|
-||Then restart `udev` to load new rule:|
+||Then restart `udev` to load the new rule:|
 ||`sudo service udev restart`|
-||If command above didn't work:|
+||If commands above didn't work:|
 ||`sudo udevadm control --reload-rules`|
 ||`sudo udevadm trigger`|
+|Other distros using `udev`|Copy `99-hp39gii.rules` in the project to the directory containing `udev` rules, then restart `udev`|
 
 Install compiler:
 |System|Install|
 |----|----|
-|Windows|Download binary executable of [Ninja](https://github.com/ninja-build/ninja/releases), exract it to a directory in your PATH|
+|Windows|Download binary executable of [Ninja](https://github.com/ninja-build/ninja/releases), extract it to a directory and add it your PATH|
 |Debian & Ubuntu|`apt-get install cmake make`|
 |Arch Linux|`pacman -Syu cmake make`|
 
-Install requirements:
+Install dependencies:
 |System|Install|
 |----|----|
 |Windows|N/A|
 |Debian|`apt-get install libcrypto++-dev libusb-1.0.0-dev`|
 |Ubuntu|`apt-get install libcrypto++6 libcrypto++-dev libusb-1.0.0-dev`|
 |Arch Linux|`pacman -Syu libusb crypto++`|
-|Other|Install libusb 1.0, [libcrypto++](https://cryptopp.com/wiki/Linux#Distribution_Package)|
+|Others|Install libusb 1.0, [libcrypto++](https://cryptopp.com/wiki/Linux#Distribution_Package)|
 ||Check installtion with `pkg-config`|
 
-_Tips: `pkg-config` will search `/usr/lib/pkgconfig/*.pc` for libraries._
+_Tips: `pkg-config` will search for libraries according to `/usr/lib/pkgconfig/*.pc`. If you would like to manually add libraries, please modify `CMakeLists.txt` to correct paths._
 
 Build `sbtool`:
 |System|Install|
 |----|----|
-|Windows|Binary executable in `tools/`|
+|Windows|Pre-compiled executable in `tools/`|
 |Linux|`cd tools/sbtools/ && make`|
 ||`cp sb_loader ../`|
 ||`cp elftosb ../`|
@@ -191,7 +198,7 @@ Build `sbtool`:
 Build `EDB`:
 |System|Install|
 |----|----|
-|Windows|Binary executable in `tools/`|
+|Windows|Pre-compiled executable in `tools/`|
 |Linux|`cd tools/`|
 ||`git clone https://github.com/ExistOS-Team/edb-unix.git`|
 ||`cd edb-unix/`|
@@ -204,7 +211,7 @@ Build `EDB`:
 Build sys_signer:
 |System|Install|
 |----|----|
-|Windows|Binary executable in `tools/`|
+|Windows|Pre-compiled executable in `tools/`|
 |Linux|`cd tools/sys_signer/`|
 ||`mkdir build`|
 ||`cmake -B build/`|
@@ -214,7 +221,7 @@ Build sys_signer:
 
 ### Compiling ExistOS
 
-Create a new directory to store binary files and caches
+Create a new directory to store binary files and caches:
 ```bash
 mkdir build
 cd build
@@ -223,7 +230,7 @@ cd build
 Preparing to compile:
 |System|Install|Note|
 |----|----|----|
-|Windows|`cmake .. -G Ninja`|Assumed `Ninja` as complier|
+|Windows|`cmake .. -G Ninja`|Specifies `Ninja` as complier|
 |Linux|`cmake ..`||
 
 Compiling:
@@ -234,13 +241,13 @@ Compiling:
 
 ### Installing
 
-Note: Please install drivers for HP39GII by yourself.
-
 #### OSLoader in RAM (temporarily)
 
-You can skip this step if the OSLoader had been installed on your device.
+Note: Please install drivers for HP39GII on your own.
 
-The OSLoader can boot ExistOS and provides low-level APIs and virtual memory service. Run commands below to load the OSLoader temporarily.
+You can skip this step if the OSLoader has been installed on your device (unless it's bricked.)
+
+OSLoader boots ExistOS and provides low-level APIs and virtual memory service. Run commands below to load the OSLoader temporarily.
 
 Before flashing, power off your calculator completely by removing the batteries, and then plug in USB cable while holding down the `ON/C` key. Then your calculator will enter the flashing mode.
 
@@ -277,9 +284,19 @@ Your calculator will reboot automatically.
 
 ## Emulator
 
+Experience ExistOS first with ExistOS Emulator for Windows.
+
 ![Emulator](Image/46.png)
 
-Download form [here](https://github.com/ExistOS-Team/ExistOS-Emulator/releases/tag/Latest).
+Download from [here](https://github.com/ExistOS-Team/ExistOS-Emulator/releases/tag/Latest).
+
+### File transfer
+
+After system finishes booting, drag & drop files onto the emulator window to transfer them.
+
+### Updating system
+
+Replace ExistOS.sys directly.
 
 ## Basic Usage of the Firmware
 
@@ -289,7 +306,7 @@ During the first boot after the installation you will see the following dialog, 
 
 ![Sys1](Image/2.png)
 
-This screen indicates a successful format. Select OK to enter the main menu.
+This screen indicates a successful formatting attempt. Select OK to enter the main menu.
 
 ![Sys1](Image/3.png)
 
@@ -297,9 +314,15 @@ This system only comes with a KhiCAS application for now. Press `←` `→` `↑
 
 ![Sys1](Image/4.png)
 
-The status tab currently shows the system status.
+The Files tab is the file explorer that is capable of viewing jpg pictures, playing mjpeg encoded avi videos and executing .exp ExistOS applications. No other file managing functions are implemented now.
+
+![Sys1](Image/4-1.png)
+
+The Status tab shows system status and related settings.
 
 ![Sys1](Image/5.png)
+
+![Sys1](Image/5-1.png)
 
 ### Shortcuts
 
@@ -460,13 +483,31 @@ Final output:
 
 ## About Experimental Features
 
-### Charging (Untested)
+### Charging (Not fully tested)
 
-### Emu48 39/48 Emulator
+ExistOS supports controlling the DC-DC and linear regulators inside the SoC to step-down 5V USB voltage, feeding 1.4V to the battery compartment. Make sure you're using rechargable batteries when using this feature to avoid possible danger.
 
-Put `rom.g39` (1MB size) to the root directory of calculator storage, then click `Emu48` from the menu of ExistOS.
+Usage: Plug in USB cable and switch to the `Status` tab. Scroll to the bottom and tick `Enable Charge` to start charging. The core temperature shown above may rise up to 50℃, since the voltage regulators are integrated in the same chip along with the CPU.
 
-It is still unsupport to save data or escape from emulator unless reboot your calculator.
+![Sys1](Image/41.png)
+
+The following system status graph was drawn charging one AAAA battery rated 400mAh 1.2V for 6 hours.
+
+![Sys1](Image/42.png)
+
+The following system status graph was drawn discharging one AAAA battery rated 400mAh 1.2V for 2 hours.
+
+![Sys1](Image/43.png)
+
+### Emu48 39/48 Saturn Emulator
+
+This application runs the firmware of HP39/48 calculators by running a Saturn emulator. Right now it only supports loading the HP 39g firmware, leaving quitting the emulator and saving user data unfinished. Optimizations are also not applied yet, so expect a slow speed.
+
+Usage: Put `rom.g39` (1MB) to the root directory of the calculator's internal storage, then start `Emu48` from the main menu.
+
+Reboot: `ON + F6`
+
+Shut down: `ON + F3`
 
 ![Sys1](Image/44.png)
 
