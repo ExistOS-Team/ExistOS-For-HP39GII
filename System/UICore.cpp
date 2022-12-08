@@ -702,12 +702,15 @@ void keyMsg(uint32_t key, int state) {
             if (curPage == 3) {
                 switch (page3Subpage) {
                 case 0:
-                    if (power_save == 'X') {
+                    if (power_save == 'A') {
+                        power_save = 'B';
+                        ll_cpu_slowdown_enable(2);
+                    } else if (power_save == 'B') {
                         power_save = ' ';
-                        ll_cpu_slowdown_enable(false);
-                    } else {
-                        power_save = 'X';
-                        ll_cpu_slowdown_enable(true);
+                        ll_cpu_slowdown_enable(0);
+                    } else if (power_save == ' ') {
+                        power_save = 'A';
+                        ll_cpu_slowdown_enable(1);
                     }
                     break;
 
@@ -743,7 +746,10 @@ void keyMsg(uint32_t key, int state) {
 
                         ll_charge_enable(false);
                     } else {
-
+                        if (power_save != 'B'){
+                            power_save = 'B';
+                            ll_cpu_slowdown_enable(2);
+                        }
                         ll_charge_enable(true);
                     }
                     break;

@@ -637,7 +637,7 @@ void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters
 
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    HW_POWER_5VCTRL.B.ENABLE_DCDC = 1;
+    HW_POWER_5VCTRL.B.ENABLE_DCDC = 0;
 
     HW_POWER_CHARGE.B.CHRG_STS_OFF = 0;
 
@@ -645,7 +645,6 @@ void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters
     HW_POWER_CHARGE.B.STOP_ILIMIT = 0;
 
     HW_POWER_CHARGE.B.PWD_BATTCHRG = 1;
-
     HW_POWER_VDDDCTRL.B.DISABLE_FET = 1;
 
     // HW_POWER_VDDACTRL.B.DISABLE_FET = 1;
@@ -879,20 +878,35 @@ void vBatteryMon(void *__n) {
         vdd5v_voltage = (int)(portLRADCConvCh(5, 5) * 0.45 * 4);
         coreTemp = (int)((portLRADCConvCh(4, 5) - portLRADCConvCh(3, 5)) * 1.012 / 4 - 273.15);
 
-        if (t % 5 == 0) {
+        extern bool g_chargeEnable;
+        if (g_chargeEnable) {
+            if (batt_voltage >= 1420) {
+
+                HW_POWER_5VCTRL.B.ENABLE_DCDC = 0;
+                printf("Disable DCDC\n");
+
+                extern bool g_chargeEnable;
+                if (batt_voltage >= 1500) {
+                    portChargeEnable(false);
+                }; //
+            }
+        }
+
+        if (t % 3 == 0) {
 
             g_core_temp = coreTemp;
             g_batt_volt = batt_voltage;
-
-            if (portGetBatteryMode() == 0) {
-                printf("Battery = Li-ion\n");
-            } else {
-                printf("Battery = Single AA or AAA\n");
-            }
+            /*
+                        if (portGetBatteryMode() == 0) {
+                            printf("Battery = Li-ion\n");
+                        } else {
+                            printf("Battery = Single AA or AAA\n");
+                        }
+                        */
             printf("Batt. voltage:%ld mv, adc:%ld\n", batt_voltage, vatt_adc);
             printf("VDDIO: %d mV\n", (int)(portLRADCConvCh(6, 5) * 0.9));
             printf("VDD5V: %ld mV\n", vdd5v_voltage);
-            printf("VBG: %d mV\n", (int)(portLRADCConvCh(2, 5) * 0.45));
+            // printf("VBG: %d mV\n", (int)(portLRADCConvCh(2, 5) * 0.45));
             printf("Core Temp: %d ℃\n", coreTemp);
             printf("Power Speed:%lu\n", portGetPWRSpeed());
         }
@@ -907,7 +921,7 @@ void vBatteryMon(void *__n) {
         if (show_bat_val < 800) {
             show_bat_val = 800;
         }
-        vTaskDelay(pdMS_TO_TICKS(2000));
+        vTaskDelay(pdMS_TO_TICKS(1000));
         n = 0;
         if (((show_bat_val - 800) * 100 / (1500 - 800)) >= ((100 / 4) * 1))
             n |= (1 << 0);
