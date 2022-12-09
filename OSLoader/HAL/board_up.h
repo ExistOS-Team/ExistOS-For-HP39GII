@@ -41,7 +41,7 @@ void portGetCoreFreqDIV(uint32_t *CPU_DIV, uint32_t *CPU_Frac, uint32_t *HCLK_DI
 
 void enterSlowDown();
 void exitSlowDown();
-void slowDownEnable(bool enable);
+void slowDownEnable(int mode);
 void setSlowDownMinCpuFrac(uint8_t frac);
 
 void stmp_audio_init();
