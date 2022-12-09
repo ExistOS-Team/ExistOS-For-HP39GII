@@ -24,11 +24,13 @@
 
 #include <malloc.h>
 
+#include "timestamp.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define CONF_SUBPAGES (3)
+#define CONF_SUBPAGES (4)
 
 extern const unsigned char gImage_khicas_ico[48 * 48];
 
@@ -177,23 +179,26 @@ void UI_SetLang(int lang) {
 #define DISPH (mainw->content_height)
 #define DISPW (mainw->content_width)
 
-static inline void __puts(char *s, int len, int line) {
+static inline void __puts(char *s, int len, int line, uint8_t fsize) {
     for (int i = 0; i < len - 1; i++) {
-        uidisp->draw_char_ascii(32 + i * 8, 16 + line * 16, s[i], 16, 255, 0);
+        uidisp->draw_char_ascii(32 + i * 8, 16 + line * 16, s[i], fsize, 255, 0);
     }
 }
 
 static char msg1[] = "!!Out of Memory!!";
 static char msg2[] = "Enable Mem Swap or use";
 static char msg3[] = "memory Compression.";
-static char msg4[] = "[ON]+[F6] Reboot";
+static char msg4[] = "[ON]+[F6] > Reboot";
 void UI_OOM() {
     uidisp->emergencyBuffer();
-
-    __puts(msg1, sizeof(msg1), 1);
-    __puts(msg2, sizeof(msg2), 2);
-    __puts(msg3, sizeof(msg3), 3);
-    __puts(msg4, sizeof(msg4), 4);
+    uidisp->draw_box(0, 0, 255, 126, 192, 192);
+    uidisp->draw_box(8, 8, 247, 118, 0, 0);
+    uidisp->draw_box(214, 16, 228, 80, 128, 128);
+    uidisp->draw_box(214, 96, 228, 108, 128, 128);
+    __puts(msg1, sizeof(msg1), 0, 16);
+    __puts(msg2, sizeof(msg2), 2, 12);
+    __puts(msg3, sizeof(msg3), 3, 12);
+    __puts(msg4, sizeof(msg4), 5, 12);
 }
 
 void pageUpdate() {
@@ -227,9 +232,7 @@ void pageUpdate() {
 
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "[%c]%s .. (1)", power_save, UI_Power_Save_Mode);
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "[%c]%s .... (2)", Charging ? 'X' : ' ', UI_Enable_Charge);
-        }
-
-        if (page3Subpage == 1) {
+        } else if (page3Subpage == 1) {
 
             // sprintf(s, "%02d:%02d:%02d", (rtc_time_sec / (60 * 60)) % 24, (rtc_time_sec / 60) % 60, rtc_time_sec % 60);
 
@@ -242,8 +245,7 @@ void pageUpdate() {
 
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s: %d/%d KB", UI_Storage_Space, total - free, total);
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s", UI_ONF5Format);
-        }
-        if (page3Subpage == 2) {
+        } else if (page3Subpage == 2) {
             uint32_t free, total;
             float mem_cmpr = ll_mem_comprate();
             uint32_t total_phy_mem = ll_mem_phy_info(&free, &total);
@@ -256,6 +258,20 @@ void pageUpdate() {
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "SRAM Heap Pre-allocated: %d KB   ", getOnChipHeapAllocated() / 1024);
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "Swap Heap Pre-allocated: %d KB   ", getSwapMemHeapAllocated() / 1024);
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "[%c] Enable Memory Swap (1)", ll_mem_swap_size() ? 'X' : ' ');
+        } else if (page3Subpage == 3) {
+            uidisp->draw_bmp((char *)logo, DISPX + 12, DISPY + 8, 50, 25);
+
+            uidisp->draw_line(DISPX + 64, DISPY + 10, DISPX + 64, DISPY + 30, 64);
+            uidisp->draw_line(DISPX + 63, DISPY + 10, DISPX + 63, DISPY + 30, 64);
+
+            uidisp->draw_printf(DISPX + 72, DISPY + 11, 8, 64, 255, "Build Time:");
+            uidisp->draw_printf(DISPX + 72, DISPY + 23, 8, 64, 255, "%s", _TIMEZ_);
+
+            line = 3;
+            uidisp->draw_printf(DISPX + 16, DISPY - 8 + 16 * line++, 16, 64, 255, "An Open Source");
+            uidisp->draw_printf(DISPX + 16, DISPY - 8 + 16 * line++, 16, 64, 255, "Firmware Project.");
+            uidisp->draw_printf(DISPX + 16, DISPY - 4 + 16 * line++, 12, 64, 255, "github.com/ExistOS-Team");
+            
         }
     }
     if (isMsgBoxShow)
@@ -390,7 +406,7 @@ void keyMsg(uint32_t key, int state) {
             if (shift == 1) {
                 uidisp->draw_box(0, 0, 255, 126, 255, 255);
                 uidisp->draw_bmp((char *)logo, 103, 32, 50, 25);
-                uidisp->draw_printf(74, 74, 12, 0, 255, "Shutting down");
+                uidisp->draw_printf(76, 74, 12, 0, 255, "Shutting down");
 
                 printf("Trig Power Off\n");
                 vTaskDelay(pdMS_TO_TICKS(500));
@@ -487,7 +503,7 @@ void keyMsg(uint32_t key, int state) {
                         //     // strcat(pathNow, "/");
                         //     deleteFiles(pathNow);
                         // }
-                        
+
                         FS_DeleteFolderOrFile(pathNow);
 
                         getWholePath(pathNow);
