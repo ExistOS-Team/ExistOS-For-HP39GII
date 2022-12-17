@@ -2,60 +2,68 @@
 #define __KEYBOARD_H__
 #include <stdbool.h>
 // Character codes
-#define KEY_CHAR_0          0x30
-#define KEY_CHAR_1          0x31
-#define KEY_CHAR_2          0x32
-#define KEY_CHAR_3          0x33
-#define KEY_CHAR_4          0x34
-#define KEY_CHAR_5          0x35
-#define KEY_CHAR_6          0x36
-#define KEY_CHAR_7          0x37
-#define KEY_CHAR_8          0x38
-#define KEY_CHAR_9          0x39
-#define KEY_CHAR_DP         0x2e
-#define KEY_CHAR_EXP        0x0f
-#define KEY_CHAR_PMINUS     0x87
-#define KEY_CHAR_PLUS       0x89
-#define KEY_CHAR_MINUS      0x99
-#define KEY_CHAR_MULT       0xa9
-#define KEY_CHAR_DIV        0xb9
-#define KEY_CHAR_FRAC       0xbb
-#define KEY_CHAR_LPAR       0x28
-#define KEY_CHAR_RPAR       0x29
-#define KEY_CHAR_COMMA      0x2c
-#define KEY_CHAR_STORE      0x0e
-#define KEY_CHAR_LOG        0x95
-#define KEY_CHAR_LN         0x85
-#define KEY_CHAR_SIN        0x81
-#define KEY_CHAR_COS        0x82
-#define KEY_CHAR_TAN        0x83
-#define KEY_CHAR_SQUARE     0x8b
-#define KEY_CHAR_POW        0xa8
-#define KEY_CHAR_IMGNRY     0x7f50
-#define KEY_CHAR_LIST       0x7f51
-#define KEY_CHAR_MAT        0x7f40
-#define KEY_CHAR_EQUAL      0x3d
-#define KEY_CHAR_PI         0xd0
-#define KEY_CHAR_ANS        0xc0
-#define KEY_CHAR_LBRCKT     0x5b
-#define KEY_CHAR_RBRCKT     0x5d
-#define KEY_CHAR_LBRACE     0x7b
-#define KEY_CHAR_RBRACE     0x7d
+#define KEY_CHAR_0          0x30 /* 0 */
+#define KEY_CHAR_1          0x31 /* 1 */
+#define KEY_CHAR_2          0x32 /* 2 */
+#define KEY_CHAR_3          0x33 /* 3 */
+#define KEY_CHAR_4          0x34 /* 4 */
+#define KEY_CHAR_5          0x35 /* 5 */
+#define KEY_CHAR_6          0x36 /* 6 */
+#define KEY_CHAR_7          0x37 /* 7 */
+#define KEY_CHAR_8          0x38 /* 8 */
+#define KEY_CHAR_9          0x39 /* 9 */
+#define KEY_CHAR_COLON      0x3a /* : */
+#define KEY_CHAR_SEMI       0x3b /* ; */
+#define KEY_CHAR_LESS       0x3c /* < */
+#define KEY_CHAR_GREATER    0x3e /* > */
+#define KEY_CHAR_VERBAR     0x7c /* | */
+#define KEY_CHAR_GRAVE      0x60 /* ` */
+#define KEY_CHAR_BACKSLASH  0x5c /* \ */
+#define KEY_CHAR_EXCL       0x21 /* ! */
+#define KEY_CHAR_DP         0x2e /* . */
+#define KEY_CHAR_EXP        0x0f /* ee */
+#define KEY_CHAR_PMINUS     0x87 /* - */
+#define KEY_CHAR_PLUS       0x89 /* + */
+#define KEY_CHAR_MINUS      0x99 /* - */
+#define KEY_CHAR_MULT       0xa9 /* * */
+#define KEY_CHAR_DIV        0xb9 /* / */
+#define KEY_CHAR_FRAC 0xbb       /* KEY_CTRL_F14 */
+#define KEY_CHAR_LPAR       0x28 /* ( */
+#define KEY_CHAR_RPAR       0x29 /* ) */
+#define KEY_CHAR_COMMA      0x2c /* , */
+#define KEY_CHAR_STORE      0x0e /* => */
+#define KEY_CHAR_LOG        0x95 /* log10( */
+#define KEY_CHAR_LN         0x85 /* ln( */
+#define KEY_CHAR_SIN        0x81 /* sin( */
+#define KEY_CHAR_COS        0x82 /* cos( */
+#define KEY_CHAR_TAN        0x83 /* tan( */
+#define KEY_CHAR_SQUARE     0x8b /* ^2 */
+#define KEY_CHAR_POW        0xa8 /* ^ */
+#define KEY_CHAR_IMGNRY     0x7f50 /* i */
+#define KEY_CHAR_LIST       0x7f51 /* KEY_CTRL_F9 */
+#define KEY_CHAR_MAT        0x7f40 /* KEY_CTRL_F8 */
+#define KEY_CHAR_EQUAL      0x3d /* = */
+#define KEY_CHAR_PI         0xd0 /* pi */
+#define KEY_CHAR_ANS        0xc0 /* ans() */
+#define KEY_CHAR_LBRCKT     0x5b /* [ */
+#define KEY_CHAR_RBRCKT     0x5d /* ] */
+#define KEY_CHAR_LBRACE     0x7b /* { */
+#define KEY_CHAR_RBRACE     0x7d /* } */
 #define KEY_CHAR_CR         0x0d
-#define KEY_CHAR_CUBEROOT   0x96
-#define KEY_CHAR_RECIP      0x9b
-#define KEY_CHAR_ANGLE      0x7f54
-#define KEY_CHAR_EXPN10     0xb5
-#define KEY_CHAR_EXPN       0xa5
-#define KEY_CHAR_ASIN       0x91
-#define KEY_CHAR_ACOS       0x92
-#define KEY_CHAR_ATAN       0x93
-#define KEY_CHAR_ROOT       0x86
-#define KEY_CHAR_POWROOT    0xb8
-#define KEY_CHAR_SPACE      0x20
-#define KEY_CHAR_DQUATE     0x22
-#define KEY_CHAR_VALR       0xcd
-#define KEY_CHAR_THETA      0xce
+#define KEY_CHAR_CUBEROOT   0x96 /* ^(1/3) */
+#define KEY_CHAR_RECIP      0x9b /* ^(-1) */
+#define KEY_CHAR_ANGLE      0x7f54 /* KEY_CTRL_F13 */
+#define KEY_CHAR_EXPN10     0xb5 /* 10^( */
+#define KEY_CHAR_EXPN       0xa5 /* e^( */
+#define KEY_CHAR_ASIN       0x91 /* asin( */
+#define KEY_CHAR_ACOS       0x92 /* acos( */
+#define KEY_CHAR_ATAN       0x93 /* atan( */
+#define KEY_CHAR_ROOT       0x86 /* sqrt( */
+#define KEY_CHAR_POWROOT    0xb8 /* ^(1/ */
+#define KEY_CHAR_SPACE      0x20 /* ' ' */
+#define KEY_CHAR_DQUATE     0x22 /* " */
+#define KEY_CHAR_VALR       0xcd /* abs( */
+#define KEY_CHAR_THETA      0xce /* arg( */
 #define KEY_CHAR_A          0x41
 #define KEY_CHAR_B          0x42
 #define KEY_CHAR_C          0x43
