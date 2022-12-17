@@ -7,7 +7,10 @@
 #define MAIN_WIN_TITLE_CN            "Exist OS"
 #define MAIN_WIN_FKEY_BAR_CN         "应用|终端| | |文件|设置|"
 #define MAIN_WIN_FKEY_BAR2_CN        "应用|终端|<|>|文件|设置|"
-#define MAIN_WIN_FKEY_BARFILE_CN     "应用|终端|||删除|设置|"
+#define MAIN_WIN_FKEY_BARFILE_CN "应用|终端|||删除|设置|"
+
+#define UI_Yes_CN "是"
+#define UI_No_CN "否"
 
 #define UI_TEMPERRATURE_CN           "温度"
 #define UI_MEMUSED_CN                "内存使用"
@@ -40,3 +43,6 @@
 #define UI_PhyMem_CN                "已分配压缩内存"
 #define UI_Compression_rate_CN      "压缩率"
 
+#define UI_SRAM_Heap_Pre_Allocated_CN "SRAM堆预分配内存"
+#define UI_Swap_Heap_Pre_Allocated_CN "交换堆预分配内存"
+#define UI_Enable_Mem_Swap_CN "启用虚拟内存"

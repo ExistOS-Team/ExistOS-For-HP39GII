@@ -895,4 +895,90 @@ public:
 
 #endif
 
+#define DISPX 0
+#define DISPY 12
+#define DISPH 96
+#define DISPW 256
+#define CONSH (DISPH / 8) /* 12 */
+#define CONSW (DISPW / 8) /* 32 */
+#define FONTS 8
+struct SimpShell {
+    struct ShellDispLine {
+        char col[CONSW];
+    } lin[CONSH];
+    uint32_t cx, cy;
+    UI_Display *uidisp;
+
+    SimpShell(UI_Display *a_uidisp){
+        this->clear();
+        this->uidisp = a_uidisp;
+    }
+
+    void refresh() {
+        uidisp->draw_box(DISPX, DISPY, DISPX + DISPW, DISPY + DISPH, -1, 255);
+        for (int i = 0; i < CONSH; i++) {
+            for (int j = 0; j < CONSW; j++) {
+                uidisp->draw_char_ascii(DISPX + FONTS * j, DISPY + FONTS * i, lin[i].col[j], FONTS, 0, 255);
+            }
+        }
+    }
+
+    void clear() {
+        cx = cy = 0;
+        memset(lin, 0, sizeof(lin));
+    }
+
+    int scroll() {
+        if (cy >= CONSH) {
+            for (int i = 0; i < CONSH - 1; i++) {
+                lin[i] = lin[i + 1];
+            }
+            memset(&lin[CONSH - 1], 0, sizeof(lin[CONSH - 1]));
+            this->refresh();
+            cy = CONSH - 1;
+            return 1;
+        }
+        return 0;
+    }
+
+    void put(const char c) {
+        lin[cy].col[cx] = c;
+        cx++;
+        if (cx >= CONSW) {
+            cx = 0;
+            cy++;
+            this->scroll();
+        }
+    }
+
+    void puts(const char *s) {
+        while (s[0]) {
+            if(s[0]=='\n'){
+                cy++;
+                cx=0;
+                this->scroll();
+            }else if(s[0]=='\b'){
+                cx--;
+                if(cx<0){
+                    cx=CONSW-1;
+                    cy--;
+                    if(cy<0) {cy=0; cx=0;}
+                }
+                lin[cy].col[cx]=0;
+            }else{
+                put(s[0]);
+            }
+            s++;
+        }
+        this->refresh();
+    }
+};
+#undef DISPX
+#undef DISPY
+#undef DISPH
+#undef DISPW
+#undef CONSH
+#undef CONSW
+#undef FONTS
+
 #endif
