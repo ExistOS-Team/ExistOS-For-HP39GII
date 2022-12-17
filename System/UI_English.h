@@ -18,8 +18,8 @@
 #define UI_CHARGING_EN               "Charging"
 #define UI_TIME_EN                   "Time"
 
-#define UI_Power_Save_Mode_EN        "Power Save Mode"
-#define UI_Enable_Charge_EN          "Enable Charge"
+#define UI_Power_Save_Mode_EN        "Power Save Mode .."
+#define UI_Enable_Charge_EN          "Enable Charge ...."
 
 #define UI_LANGUAGE_EN               "Language"
 #define UI_LANGUAGE_ENGLISH_EN       "EN"
