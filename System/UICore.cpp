@@ -171,7 +171,7 @@ void UI_SetLang(int lang) {
 
 static inline void __puts(char *s, int len, int line, uint8_t fsize) {
     for (int i = 0; i < len - 1; i++) {
-        uidisp->draw_char_ascii(32 + i * 8, 16 + line * 16, s[i], fsize, 255, 0);
+        uidisp->draw_char_ascii(32 + i * (fsize == 16 ? 8 : 6), 16 + line * 16, s[i], fsize, 255, 0);
     }
 }
 
@@ -217,11 +217,11 @@ void pageUpdate() {
 
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "CPU:%3d/%d MHz, %s:%d `C", ll_get_cur_freq(), 480 * 18 / cur_cpu_div / cur_cpu_frac, UI_TEMPERRATURE, ll_get_core_temp());
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s: %d/%d KB", UI_MEMUSE, getHeapAllocateSize() / 1024, TotalAllocatableSize / 1024);
-            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s: %d mv, %s: %s  ", UI_BATTERY, ll_get_bat_voltage(), UI_CHARGING, Charging ? "Yes" : "NO");
+            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s: %d mv, %s: %s  ", UI_BATTERY, ll_get_bat_voltage(), UI_CHARGING, Charging ? UI_Yes : UI_No);
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s: %s", UI_TIME, timeStr);
 
-            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "[%c]%s .. (1)", power_save, UI_Power_Save_Mode);
-            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "[%c]%s .... (2)", Charging ? 'X' : ' ', UI_Enable_Charge);
+            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "[%c]%s (1)", power_save, UI_Power_Save_Mode);
+            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "[%c]%s (2)", Charging ? 'X' : ' ', UI_Enable_Charge);
         } else if (page3Subpage == 1) {
 
             // sprintf(s, "%02d:%02d:%02d", (rtc_time_sec / (60 * 60)) % 24, (rtc_time_sec / 60) % 60, rtc_time_sec % 60);
@@ -245,9 +245,9 @@ void pageUpdate() {
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s:%d/%d KB   ", UI_Allocate_Mem, getHeapAllocateSize() / 1024, TotalAllocatableSize / 1024);
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s:%d/%d KB   ", UI_PhyMem, total - free, total);
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s:%.2f", UI_Compression_rate, mem_cmpr);
-            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "SRAM Heap Pre-allocated: %d KB   ", getOnChipHeapAllocated() / 1024);
-            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "Swap Heap Pre-allocated: %d KB   ", getSwapMemHeapAllocated() / 1024);
-            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "[%c] Enable Memory Swap (1)", ll_mem_swap_size() ? 'X' : ' ');
+            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s:%d KB   ", UI_SRAM_Heap_Pre_Allocated, getOnChipHeapAllocated() / 1024);
+            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s:%d KB   ", UI_Swap_Heap_Pre_Allocated, getSwapMemHeapAllocated() / 1024);
+            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "[%c] %s (1)", ll_mem_swap_size() ? 'X' : ' ', UI_Enable_Mem_Swap);
         } else if (page3Subpage == 3) {
             uidisp->draw_bmp((char *)logo, DISPX + 12, DISPY + 8, 50, 25);
 
@@ -258,9 +258,10 @@ void pageUpdate() {
             uidisp->draw_printf(DISPX + 72, DISPY + 23, 8, 64, 255, "%s", _TIMEZ_);
 
             line = 3;
-            uidisp->draw_printf(DISPX + 16, DISPY - 8 + 16 * line++, 16, 64, 255, "An Open Source");
-            uidisp->draw_printf(DISPX + 16, DISPY - 8 + 16 * line++, 16, 64, 255, "Firmware Project.");
-            uidisp->draw_printf(DISPX + 16, DISPY - 4 + 16 * line++, 12, 64, 255, "github.com/ExistOS-Team");
+            uidisp->draw_printf(DISPX + (DISPW - (8 * 29)) / 2, DISPY - 8 + 16 * line++, 16, 64, 255, "Open Source Firmware Project");
+            uidisp->draw_printf(DISPX + (DISPW - (16 * 9 + 8 * 7)) / 2, DISPY - 8 + 16 * line++, 16, 64, 255, "HP39GII计算器开源固件项目");
+            uidisp->draw_printf(DISPX + 16, DISPY - 4 + 16 * line, 8, 64, 255, "github.com/ExistOS-Team");
+            uidisp->draw_printf(DISPX + DISPW - 16 - 6 * 21, DISPY - 4 + 16 * line + 8, 8, 64, 255, "/ExistOS-For-HP39GII");
         }
     }
     if (isMsgBoxShow)

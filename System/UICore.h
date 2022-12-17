@@ -225,7 +225,7 @@ public:
         for (int i = 0, x = x0; (i < sizeof(buffer)) && (buffer[i]); i++) {
             if (buffer[i] < 0x80) {
                 draw_char_ascii(x, y0, buffer[i], fontSize, fg, bg);
-                x += 8;
+                x += fontSize == 16 ? 8 : 6;
                 if (x > disp_w) {
                     break;
                 }
@@ -895,13 +895,19 @@ public:
 
 #endif
 
-#define DISPX 0
-#define DISPY 12
-#define DISPH 96
-#define DISPW 256
-#define CONSH (DISPH / 8) /* 12 */
-#define CONSW (DISPW / 8) /* 32 */
 #define FONTS 8
+#define DISPY 13
+#define DISPH 96
+#define CONSH (DISPH / 8) /* 12 */
+#if FONTS == 8
+#define DISPX 2
+#define DISPW 252
+#define CONSW (DISPW / 6) /* 42 */
+#else
+#define DISPX 0
+#define DISPW 256
+#define CONSW (DISPW / 8) /* 32 */
+#endif
 struct SimpShell {
     struct ShellDispLine {
         char col[CONSW];
@@ -918,7 +924,7 @@ struct SimpShell {
         uidisp->draw_box(DISPX, DISPY, DISPX + DISPW, DISPY + DISPH, -1, 255);
         for (int i = 0; i < CONSH; i++) {
             for (int j = 0; j < CONSW; j++) {
-                uidisp->draw_char_ascii(DISPX + FONTS * j, DISPY + FONTS * i, lin[i].col[j], FONTS, 0, 255);
+                uidisp->draw_char_ascii(DISPX + (FONTS == 8 ? 6 : 8) * j, DISPY + 8 * i, lin[i].col[j], FONTS, 0, 255);
             }
         }
     }

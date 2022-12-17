@@ -18,7 +18,7 @@
 #define UI_CHARGING_CN               "充电中"
 #define UI_TIME_CN                   "时间"
 
-#define UI_Power_Save_Mode_CN        "省电模式  "
+#define UI_Power_Save_Mode_CN        "省电模式"
 #define UI_Enable_Charge_CN          "开启充电"
 
 #define UI_FS_init1                  "文件系统未初始化"
