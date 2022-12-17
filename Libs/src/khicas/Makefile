@@ -29,7 +29,7 @@ GUI_OBJS = main.o console.o memory.o kdisplay.o file.o textGUI.o menuen.o
 #.PRECIOUS: libcas.a libgui.a
 all: libcas.libcpp libkcasgui.libcpp
 #all: khicas.g1a khicasen.g1a # pour la version console, supprimer le lien iostream -> iostream.new
-	/bin/cp libcas.libcpp libkcasgui.libcpp ../../os/Libs
+	/bin/cp libcas.libcpp libkcasgui.libcpp ../../
 
 %.o: %.s
 	$(CC) $(CFLAGS) -c $<

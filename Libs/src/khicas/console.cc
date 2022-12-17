@@ -1778,6 +1778,12 @@ int Console_GetKey()
       return Console_Input((const unsigned char *)"ans()");
     if (key == KEY_CHAR_PLUS)
       return Console_Input((const unsigned char *)"+");
+    if (key == KEY_CHAR_COLON)
+      return Console_Input((const unsigned char *)":");
+    if (key == KEY_CHAR_SEMI)
+      return Console_Input((const unsigned char *)";");
+    if (key == KEY_CHAR_VERBAR)
+      return Console_Input((const unsigned char *)"|");
     if (key == KEY_CHAR_LBRCKT)
       return Console_Input((const unsigned char *)"[");
     if (key == KEY_CHAR_RBRCKT)
@@ -1788,6 +1794,10 @@ int Console_GetKey()
       return Console_Input((const unsigned char *)"{");
     if (key == KEY_CHAR_DIV)
       return Console_Input((const unsigned char *)"/");
+    if (key == KEY_CHAR_BACKSLASH)
+      return Console_Input((const unsigned char *)"\\");
+    if (key == KEY_CHAR_GRAVE)
+      return Console_Input((const unsigned char *)"`");
     if (key == KEY_CHAR_RBRACE)
       return Console_Input((const unsigned char *)"}");
     // if (key == KEY_CTRL_MIXEDFRAC) return Console_FMenu(KEY_CTRL_F10);//	return Console_Input((const unsigned char *)"limit(");
