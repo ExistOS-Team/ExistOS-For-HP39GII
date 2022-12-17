@@ -7,8 +7,10 @@
 #define MAIN_WIN_TITLE_EN            "Exist OS"
 #define MAIN_WIN_FKEY_BAR_EN         "APP|CONS| | |FILE|CONF|"
 #define MAIN_WIN_FKEY_BAR2_EN        "APP|CONS|<|>|FILE|CONF|"
-#define MAIN_WIN_FKEY_BARFILE_EN     "APP|CONS|||DEL|CONF|"
+#define MAIN_WIN_FKEY_BARFILE_EN "APP|CONS|||DEL|CONF|"
 
+#define UI_Yes_EN "Yes"
+#define UI_No_EN "No"
 
 #define UI_TEMPERRATURE_EN           "Temp."
 #define UI_MEMUSED_EN                "MEM USED"
@@ -32,3 +34,7 @@
 #define UI_Allocate_Mem_EN           "Allocate MEM"
 #define UI_PhyMem_EN                 "Allocate zRAM"
 #define UI_Compression_rate_EN       "Compression rate"
+
+#define UI_SRAM_Heap_Pre_Allocated_EN "SRAM Heap Pre-allocated"
+#define UI_Swap_Heap_Pre_Allocated_EN "Swap Heap Pre-allocated"
+#define UI_Enable_Mem_Swap_EN "Enable Memory Swap"

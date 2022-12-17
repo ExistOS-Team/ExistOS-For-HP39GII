@@ -39,6 +39,7 @@ static char power_save = ' ';
 UI_Display *uidisp;
 UI_Window *mainw;
 UI_Msgbox *msgbox;
+SimpShell *console;
 
 bool UIForceRefresh = false;
 
@@ -74,6 +75,8 @@ struct strNode *pathList;
 struct strNode *pathList_firstNode;
 static DIR fileManagerDir;
 static FILINFO fileInfo;
+void initConsole();
+void refreshConsole();
 unsigned long getFileCounts(TCHAR *path);
 void refreshFileNames(TCHAR *path, TCHAR **names, bool *info, unsigned long *counts);
 void refreshDir();
@@ -121,53 +124,40 @@ int exf_getfree(uint8_t *drv, uint32_t *total, uint32_t *free) {
     return res;
 }
 
+#define SET_LANG(lang)                                              \
+    MAIN_WIN_TITLE = MAIN_WIN_TITLE_##lang;                         \
+    MAIN_WIN_FKEY_BAR = MAIN_WIN_FKEY_BAR_##lang;                   \
+    MAIN_WIN_FKEY_BAR2 = MAIN_WIN_FKEY_BAR2_##lang;                 \
+    MAIN_WIN_FKEY_BARFILE = MAIN_WIN_FKEY_BARFILE_##lang;           \
+    UI_Yes = UI_Yes_##lang;                                         \
+    UI_No = UI_No_##lang;                                           \
+    UI_TEMPERRATURE = UI_TEMPERRATURE_##lang;                       \
+    UI_MEMUSE = UI_MEMUSED_##lang;                                  \
+    UI_BATTERY = UI_BATTERY_##lang;                                 \
+    UI_CHARGING = UI_CHARGING_##lang;                               \
+    UI_TIME = UI_TIME_##lang;                                       \
+    UI_Power_Save_Mode = UI_Power_Save_Mode_##lang;                 \
+    UI_Enable_Charge = UI_Enable_Charge_##lang;                     \
+    UI_LANGUAGE = UI_LANGUAGE_##lang;                               \
+    UI_Hours = UI_Hours_##lang;                                     \
+    UI_Minutes = UI_Minutes_##lang;                                 \
+    UI_Seconds = UI_Seconds_##lang;                                 \
+    UI_Storage_Space = UI_Storage_Space_##lang;                     \
+    UI_ONF5Format = UI_ONF5Format_##lang;                           \
+    UI_PhyMem = UI_PhyMem_##lang;                                   \
+    UI_Allocate_Mem = UI_Allocate_Mem_##lang;                       \
+    UI_Compression_rate = UI_Compression_rate_##lang;               \
+    UI_SRAM_Heap_Pre_Allocated = UI_SRAM_Heap_Pre_Allocated_##lang; \
+    UI_Swap_Heap_Pre_Allocated = UI_Swap_Heap_Pre_Allocated_##lang; \
+    UI_Enable_Mem_Swap = UI_Enable_Mem_Swap_##lang;
+
 void UI_SetLang(int lang) {
     switch (lang) {
     case UI_LANG_EN:
-        MAIN_WIN_TITLE = MAIN_WIN_TITLE_EN;
-        MAIN_WIN_FKEY_BAR = MAIN_WIN_FKEY_BAR_EN;
-        MAIN_WIN_FKEY_BAR2 = MAIN_WIN_FKEY_BAR2_EN;
-        MAIN_WIN_FKEY_BARFILE = MAIN_WIN_FKEY_BARFILE_EN;
-
-        UI_TEMPERRATURE = UI_TEMPERRATURE_EN;
-        UI_MEMUSE = UI_MEMUSED_EN;
-        UI_BATTERY = UI_BATTERY_EN;
-        UI_CHARGING = UI_CHARGING_EN;
-        UI_TIME = UI_TIME_EN;
-        UI_Power_Save_Mode = UI_Power_Save_Mode_EN;
-        UI_Enable_Charge = UI_Enable_Charge_EN;
-        UI_LANGUAGE = UI_LANGUAGE_EN;
-        UI_Hours = UI_Hours_EN;
-        UI_Minutes = UI_Minutes_EN;
-        UI_Seconds = UI_Seconds_EN;
-        UI_Storage_Space = UI_Storage_Space_EN;
-        UI_ONF5Format = UI_ONF5Format_EN;
-        UI_PhyMem = UI_PhyMem_EN;
-        UI_Allocate_Mem = UI_Allocate_Mem_EN;
-        UI_Compression_rate = UI_Compression_rate_EN;
+        SET_LANG(EN)
         break;
     case UI_LANG_CN:
-        MAIN_WIN_TITLE = MAIN_WIN_TITLE_CN;
-        MAIN_WIN_FKEY_BAR = MAIN_WIN_FKEY_BAR_CN;
-        MAIN_WIN_FKEY_BAR2 = MAIN_WIN_FKEY_BAR2_CN;
-        MAIN_WIN_FKEY_BARFILE = MAIN_WIN_FKEY_BARFILE_CN;
-
-        UI_TEMPERRATURE = UI_TEMPERRATURE_CN;
-        UI_MEMUSE = UI_MEMUSED_CN;
-        UI_BATTERY = UI_BATTERY_CN;
-        UI_CHARGING = UI_CHARGING_CN;
-        UI_TIME = UI_TIME_CN;
-        UI_Power_Save_Mode = UI_Power_Save_Mode_CN;
-        UI_Enable_Charge = UI_Enable_Charge_CN;
-        UI_LANGUAGE = UI_LANGUAGE_CN;
-        UI_Hours = UI_Hours_CN;
-        UI_Minutes = UI_Minutes_CN;
-        UI_Seconds = UI_Seconds_CN;
-        UI_Storage_Space = UI_Storage_Space_CN;
-        UI_ONF5Format = UI_ONF5Format_CN;
-        UI_PhyMem = UI_PhyMem_CN;
-        UI_Allocate_Mem = UI_Allocate_Mem_CN;
-        UI_Compression_rate = UI_Compression_rate_CN;
+        SET_LANG(CN)
         break;
     default:
         break;
@@ -176,8 +166,8 @@ void UI_SetLang(int lang) {
 
 #define DISPX (mainw->content_x0)
 #define DISPY (mainw->content_y0)
-#define DISPH (mainw->content_height)
-#define DISPW (mainw->content_width)
+#define DISPH (mainw->content_height) /* 95 */
+#define DISPW (mainw->content_width)  /* 255 */
 
 static inline void __puts(char *s, int len, int line, uint8_t fsize) {
     for (int i = 0; i < len - 1; i++) {
@@ -271,7 +261,6 @@ void pageUpdate() {
             uidisp->draw_printf(DISPX + 16, DISPY - 8 + 16 * line++, 16, 64, 255, "An Open Source");
             uidisp->draw_printf(DISPX + 16, DISPY - 8 + 16 * line++, 16, 64, 255, "Firmware Project.");
             uidisp->draw_printf(DISPX + 16, DISPY - 4 + 16 * line++, 12, 64, 255, "github.com/ExistOS-Team");
-            
         }
     }
     if (isMsgBoxShow)
@@ -299,6 +288,10 @@ void drawPage(int page) {
                          mainw->content_y0 + 12 + 48,
                          0,
                          -1);
+        break;
+
+    case 1:
+        refreshConsole();
         break;
 
     case 2:
@@ -409,6 +402,11 @@ void keyMsg(uint32_t key, int state) {
                 uidisp->draw_printf(76, 74, 12, 0, 255, "Shutting down");
 
                 printf("Trig Power Off\n");
+
+                if(curPage==2){
+                    f_closedir(&fileManagerDir);
+                }
+
                 vTaskDelay(pdMS_TO_TICKS(500));
                 ll_power_off();
                 ll_power_off();
@@ -424,7 +422,7 @@ void keyMsg(uint32_t key, int state) {
     }
 
     if (state == KEY_TRIG) {
-        if (curPage == 2 && (key == KEY_F1 || key == KEY_F6)) {
+        if (curPage == 2 && (key == KEY_F1 || key == KEY_F2 || key == KEY_F6)) {
             f_closedir(&fileManagerDir);
 
             for (int i = 0; i < *filesCount; i++) {
@@ -474,6 +472,16 @@ void keyMsg(uint32_t key, int state) {
 
         case KEY_F1:
             curPage = 0;
+            drawPage(curPage);
+
+            mainw->setFuncKeys(MAIN_WIN_FKEY_BAR);
+            break;
+
+        case KEY_F2:
+            if (curPage != 1) {
+                initConsole();
+            }
+            curPage = 1;
             drawPage(curPage);
 
             mainw->setFuncKeys(MAIN_WIN_FKEY_BAR);
@@ -590,6 +598,9 @@ void keyMsg(uint32_t key, int state) {
             break;
 
         case KEY_LEFT:
+            if (curPage == 1) {
+                goto CONSOLE_KEY_EVENT;
+            }
             if (curPage == 0) {
                 if (appPage_select > 0) {
                     appPage_select--;
@@ -614,6 +625,9 @@ void keyMsg(uint32_t key, int state) {
             break;
 
         case KEY_RIGHT:
+            if (curPage == 1) {
+                goto CONSOLE_KEY_EVENT;
+            }
             if (curPage == 0) {
                 if (appPage_select < 1) {
                     appPage_select++;
@@ -623,6 +637,9 @@ void keyMsg(uint32_t key, int state) {
             break;
 
         case KEY_UP:
+            if (curPage == 1) {
+                goto CONSOLE_KEY_EVENT;
+            }
             if (curPage == 2) {
                 if (*selectedItem != 1) {
                     (*selectedItem)--;
@@ -638,6 +655,9 @@ void keyMsg(uint32_t key, int state) {
             break;
 
         case KEY_DOWN:
+            if (curPage == 1) {
+                goto CONSOLE_KEY_EVENT;
+            }
             if (curPage == 2) {
                 if (*selectedItem != 5 && (*pageNow - 1) * 5 + *selectedItem != *filesCount) {
                     (*selectedItem)++;
@@ -659,6 +679,8 @@ void keyMsg(uint32_t key, int state) {
                     void StartKhiCAS();
                     StartKhiCAS();
                 }
+            } else if (curPage == 1) {
+                goto CONSOLE_KEY_EVENT;
             } else if (curPage == 2) {
                 if (*filesCount > 0) {
                     if (dirItemInfos[(*pageNow - 1) * 5 + *selectedItem - 1] == false) {
@@ -695,6 +717,9 @@ void keyMsg(uint32_t key, int state) {
             break;
 
         case KEY_PLUS:
+            if (curPage == 1) {
+                goto CONSOLE_KEY_EVENT;
+            }
             if (curPage == 2) {
                 if (*pageNow < *pageAll) {
                     (*pageNow)++;
@@ -705,6 +730,9 @@ void keyMsg(uint32_t key, int state) {
             break;
 
         case KEY_SUBTRACTION:
+            if (curPage == 1) {
+                goto CONSOLE_KEY_EVENT;
+            }
             if (curPage == 2) {
                 if (*pageNow > 1) {
                     (*pageNow)--;
@@ -715,6 +743,9 @@ void keyMsg(uint32_t key, int state) {
             break;
 
         case KEY_1:
+            if (curPage == 1) {
+                goto CONSOLE_KEY_EVENT;
+            }
             if (curPage == 3) {
                 switch (page3Subpage) {
                 case 0:
@@ -755,6 +786,9 @@ void keyMsg(uint32_t key, int state) {
             }
             break;
         case KEY_2:
+            if (curPage ==1){
+                goto CONSOLE_KEY_EVENT;
+            }
             if (curPage == 3) {
                 switch (page3Subpage) {
                 case 0:
@@ -762,7 +796,7 @@ void keyMsg(uint32_t key, int state) {
 
                         ll_charge_enable(false);
                     } else {
-                        if (power_save != 'B'){
+                        if (power_save != 'B') {
                             power_save = 'B';
                             ll_cpu_slowdown_enable(2);
                         }
@@ -813,6 +847,64 @@ void keyMsg(uint32_t key, int state) {
         default:
             // mainw->refreshWindow();
             // drawPage(curPage);
+            if (curPage == 1) {
+            CONSOLE_KEY_EVENT :
+#define K(KEY, NORM, SHIFT, ALPHA, ALPHAS) \
+    case KEY: {                            \
+        if (shift) {                       \
+            console->puts(SHIFT);          \
+            shift = 0;                     \
+        } else {                           \
+            if (abs(alpha) == 1) {         \
+                console->puts(ALPHA);      \
+            } else if (abs(alpha) == 2) {  \
+                console->puts(ALPHAS);     \
+            } else {                       \
+                console->puts(NORM);       \
+            }                              \
+            if (alpha > 0) {               \
+                alpha = 0;                 \
+            }                              \
+        }                                  \
+    } break;
+            {
+                switch (key) {
+                    K(KEY_0, "0", "@", "\"", "\"")
+                    K(KEY_1, "1", "$", "X", "x")
+                    K(KEY_2, "2", "2", "Y", "y")
+                    K(KEY_3, "3", "3", "Z", "z")
+                    K(KEY_4, "4", "#", "T", "t")
+                    K(KEY_5, "5", "[", "U", "u")
+                    K(KEY_6, "6", "]", "V", "v")
+                    K(KEY_7, "7", "&", "P", "p")
+                    K(KEY_8, "8", "{", "Q", "q")
+                    K(KEY_9, "9", "}", "R", "r")
+                    K(KEY_VARS, "~", "`", "A", "a")
+                    K(KEY_MATH, "\b", "$", "B", "b")
+                    K(KEY_ABC, "\'", "\'", "C", "c")
+                    K(KEY_XTPHIN, "X", "e", "D", "d")
+                    K(KEY_BACKSPACE, "\x7F", "\x7F", "\x7F", "\x7F")
+                    K(KEY_SIN, "e", "E", "E", "e")
+                    K(KEY_COS, "f", "F", "F", "f")
+                    K(KEY_TAN, "g", "G", "G", "g")
+                    K(KEY_LN, "h", "H", "H", "h")
+                    K(KEY_LOG, "l", "L", "L", "l")
+                    K(KEY_X2, "j", "J", "J", "j")
+                    K(KEY_XY, "^", "^", "K", "k")
+                    K(KEY_LEFTBRACKET, "(", "<", "L", "l")
+                    K(KEY_RIGHTBRACKET, ")", ">", "M", "m")
+                    K(KEY_DIVISION, "/", "/", "N", "n")
+                    K(KEY_COMMA, ",", "`", "O", "o")
+                    K(KEY_MULTIPLICATION, "*", "!", "S", "s")
+                    K(KEY_SUBTRACTION, "-", "-", "W", "w")
+                    K(KEY_PLUS, "+", "+", " ", " ")
+                    K(KEY_DOT, ".", "=", ":", ":")
+                    K(KEY_NEGATIVE, "_", "|", ";", ";")
+                    K(KEY_ENTER, "\n", "\n", "\n", "\n")
+                }
+            }
+#undef K
+            }
             break;
         }
     }
@@ -849,6 +941,45 @@ static void checkFS() {
         vPortFree(work);
     }
 }
+#define CONSH (DISPH / 8) /* 11 */
+#define CONSW (DISPW / 8) /* 31 */
+
+void initConsole() {
+    console = new SimpShell(uidisp);
+    console->puts("\nExist OS Console\nversion 0.0.0\nby ExistOS Team\nTry `help` for commands\n");
+    console->refresh();
+}
+
+void refreshConsole() {
+    console->refresh();
+    // uidisp->draw_box(DISPX, DISPY, DISPX + DISPW, DISPY + DISPH, -1, 255);
+    // uidisp->draw_line(DISPX, DISPY + DISPH - 9, DISPX + DISPW, DISPY + DISPH - 9, 0);
+    // uidisp->draw_printf(DISPX, DISPY + DISPH - 8, 8, 0, 255, "%s>%s", cons_pwd, cons_in);
+    // uidisp->draw_printf(0,0,8, 0, 255, "%d; %d", DISPH, DISPW);
+    // const char *cons_end = cons_out + strlen(cons_out);
+    // char *cons_break;
+    // char *cons_line = cons_out + strlen(cons_out) - 1;
+    // for (int i = CONSH - 1; i >= 0; i--) {
+    //     cons_break = cons_line;
+    //     while (cons_line > cons_out && cons_line[0] != '\n' && (cons_break - cons_line) <= CONSW)
+    //         cons_line--;
+    //     // for (int j = 0; cons_line + j < cons_break; j++) {
+    //     //     uidisp->draw_char_ascii(DISPX + 8 * j, DISPY + DISPH - 8 * i, *(cons_line + j), 8, 0, 255);
+    //     // }
+    //     // cons_break = cons_line;
+    // }
+    // for (int i = 0; i < CONSH; i++) {
+    //     cons_break = cons_line;
+    //     while (cons_break[0] != '\n' && cons_break != cons_end && cons_break - cons_line <= CONSW) {
+    //         uidisp->draw_char_ascii(DISPX + 8 * (cons_break - cons_line), DISPY + 8 * i, cons_break[0], 8, 0, 255);
+    //         cons_break++;
+    //     }
+    //     cons_line=cons_break;
+    // }
+}
+
+#undef CONSW
+#undef CONSH
 
 unsigned long getFileCounts(TCHAR *path) {
     unsigned long count = 0;

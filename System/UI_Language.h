@@ -7,6 +7,9 @@ const char *MAIN_WIN_FKEY_BAR = MAIN_WIN_FKEY_BAR_EN;
 const char *MAIN_WIN_FKEY_BAR2 = MAIN_WIN_FKEY_BAR2_EN;
 const char *MAIN_WIN_FKEY_BARFILE = MAIN_WIN_FKEY_BARFILE_EN;
 
+const char *UI_Yes = "Y";
+const char *UI_No = "N";
+
 const char *UI_TEMPERRATURE = UI_TEMPERRATURE_EN;
 const char *UI_MEMUSE = UI_MEMUSED_EN;
 const char *UI_BATTERY = UI_BATTERY_EN;
@@ -31,4 +34,6 @@ const char *UI_PhyMem           = UI_PhyMem_EN;
 const char *UI_Allocate_Mem           = UI_Allocate_Mem_EN;     
 const char *UI_Compression_rate   = UI_Compression_rate_EN;   
 
-
+const char *UI_SRAM_Heap_Pre_Allocated = UI_SRAM_Heap_Pre_Allocated_EN;
+const char *UI_Swap_Heap_Pre_Allocated = UI_Swap_Heap_Pre_Allocated_EN;
+const char *UI_Enable_Mem_Swap = UI_Enable_Mem_Swap_EN;
