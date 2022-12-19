@@ -16,6 +16,7 @@
 #include "UICore.h"
 #include "UI_Config.h"
 #include "UI_Language.h"
+#include "UI_build_stamp.h"
 
 #include "ExistOSlogo.h"
 
@@ -254,7 +255,7 @@ void pageUpdate() {
             uidisp->draw_line(DISPX + 64, DISPY + 10, DISPX + 64, DISPY + 30, 64);
             uidisp->draw_line(DISPX + 63, DISPY + 10, DISPX + 63, DISPY + 30, 64);
 
-            uidisp->draw_printf(DISPX + 72, DISPY + 11, 8, 64, 255, "Build Time:");
+            uidisp->draw_printf(DISPX + 72, DISPY + 11, 8, 64, 255, BUILD_STAMP);
             uidisp->draw_printf(DISPX + 72, DISPY + 23, 8, 64, 255, "%s", _TIMEZ_);
 
             line = 3;
