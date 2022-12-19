@@ -400,7 +400,7 @@ void keyMsg(uint32_t key, int state) {
             if (shift == 1) {
                 uidisp->draw_box(0, 0, 255, 126, 255, 255);
                 uidisp->draw_bmp((char *)logo, 103, 32, 50, 25);
-                uidisp->draw_printf(76, 74, 12, 0, 255, "Shutting down");
+                uidisp->draw_printf(128-14*6/2, 74, 12, 0, 255, "Shutting down");
 
                 printf("Trig Power Off\n");
 
