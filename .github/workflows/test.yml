@@ -36,6 +36,13 @@ jobs:
         cd Libs/src/micropython-master/ports/eoslib
         make
         cd ../../../../..
+    - name: Build KhiCAS
+      run: |
+        export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
+        cd Libs/src/khicas/
+        make clean
+        make
+        cd ../../..
     - name: CMake configure
       run: |
         export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
