@@ -46,7 +46,9 @@ jobs:
     - name: CMake configure
       run: |
         export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
-        echo "#pragma once\n#define BUILD_STAMP \"Release build ${{ github.run_number }}\n\"" > System/UI_build_stamp.h
+        echo "#pragma once\
+        #define BUILD_STAMP \"Release build ${{ github.run_number }}\"\
+        " > System/UI_build_stamp.h
         cmake .
     - name : CMake build
       run: |
