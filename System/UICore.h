@@ -912,14 +912,21 @@ struct SimpShell {
     struct ShellDispLine {
         char col[CONSW];
     } lin[CONSH];
-    uint32_t cx, cy;
-    UI_Display *uidisp;
+    uint32_t cx, cy;    /// cursor position
+    bool cursorBlink;   /// set true if cursor blink on
+    UI_Display *uidisp; /// refer to main windows's ui display interface
 
-    SimpShell(UI_Display *a_uidisp){
+    SimpShell(UI_Display *a_uidisp) {
         this->clear();
+        cursorBlink = true;
         this->uidisp = a_uidisp;
     }
 
+    /**
+     * @brief refresh console screen
+     * @note will not check if outside of console screen interface
+     *
+     */
     void refresh() {
         uidisp->draw_box(DISPX, DISPY, DISPX + DISPW, DISPY + DISPH, -1, 255);
         for (int i = 0; i < CONSH; i++) {
@@ -929,54 +936,111 @@ struct SimpShell {
         }
     }
 
+    /**
+     * @brief clear console screen buffer
+     * @note will not refresh console screen
+     */
     void clear() {
         cx = cy = 0;
         memset(lin, 0, sizeof(lin));
     }
 
-    int scroll() {
-        if (cy >= CONSH) {
-            for (int i = 0; i < CONSH - 1; i++) {
-                lin[i] = lin[i + 1];
-            }
-            memset(&lin[CONSH - 1], 0, sizeof(lin[CONSH - 1]));
-            this->refresh();
-            cy = CONSH - 1;
-            return 1;
-        }
-        return 0;
+    /**
+     * @brief set `cursorBlink`
+     * @note will not refresh console screen
+     */
+    void setCursorBlink(const bool &target) {
+        cursorBlink = target;
     }
 
-    void put(const char c) {
+    /**
+     * @brief move console screen to above
+     * @param y {{{ if set 0, will scroll screen only cursor out of screen range;
+     * else will scroll screen (y) line to above
+     * }}}
+     * @note if param (y) invaild, will work formally as (y) set to the maxium
+     * @return uint32_t scroll line counts
+     */
+    uint32_t scroll(uint32_t y) {
+        if (y) {
+            if (y > CONSH) {
+                y = CONSH;
+            }
+            uint32_t i = 0;
+            for (; i + y < CONSH; i++) {
+                lin[i] = lin[i + y];
+            }
+            cy = i;
+            for (; i < CONSH; i++) {
+                memset(&lin[i], 0, sizeof(lin[i]));
+            }
+            this->refresh();
+            return y;
+        } else {
+            if (cy >= CONSH) {
+                this->scroll(1);
+                return 1;
+            }
+            return 0;
+        }
+    }
+
+    /**
+     * @brief print a character to the cursor position
+     * @note will not detect special characters
+     * @param c chatachter
+     */
+    void put(const char &c) {
         lin[cy].col[cx] = c;
         cx++;
         if (cx >= CONSW) {
             cx = 0;
             cy++;
-            this->scroll();
+            this->scroll(0);
         }
     }
 
+    /**
+     * @brief print a null-terminated string to the cursor position
+     * @note will detect special characters
+     * @param s null-terminated string
+     */
     void puts(const char *s) {
         while (s[0]) {
-            if(s[0]=='\n'){
+            if (s[0] == '\n') {
                 cy++;
-                cx=0;
-                this->scroll();
-            }else if(s[0]=='\b'){
+                cx = 0;
+                this->scroll(0);
+            } else if (s[0] == '\b') {
                 cx--;
-                if(cx<0){
-                    cx=CONSW-1;
+                if (cx < 0) {
+                    cx = CONSW - 1;
                     cy--;
-                    if(cy<0) {cy=0; cx=0;}
+                    if (cy < 0) {
+                        cy = 0;
+                        cx = 0;
+                    }
                 }
-                lin[cy].col[cx]=0;
-            }else{
+                lin[cy].col[cx] = 0;
+            } else {
                 put(s[0]);
             }
             s++;
         }
         this->refresh();
+    }
+
+    /**
+     * @brief print a null-terminated string to the terminal screen at the specified coordinates
+     * @note will not handle special characters, the part of the string that exceeds the screen width will be ignored
+     * @param y line
+     * @param x column
+     * @param s null-terminated string
+     */
+    void locate(const uint32_t &y, const uint32_t &x, const char *s) {
+        for (uint32_t i = 0; s[i] && i + x < CONSW; i++) {
+            lin[y].col[i + x] = s[i];
+        }
     }
 };
 #undef DISPX

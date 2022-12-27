@@ -76,8 +76,10 @@ struct strNode *pathList;
 struct strNode *pathList_firstNode;
 static DIR fileManagerDir;
 static FILINFO fileInfo;
+char *conin; /* Console Input Buffer */
 void initConsole();
 void refreshConsole();
+void keyupConsole(Keys_t key);
 unsigned long getFileCounts(TCHAR *path);
 void refreshFileNames(TCHAR *path, TCHAR **names, bool *info, unsigned long *counts);
 void refreshDir();
@@ -946,38 +948,31 @@ static void checkFS() {
 #define CONSH (DISPH / 8) /* 11 */
 #define CONSW (DISPW / 8) /* 31 */
 
-void initConsole() {
+inline void initConsole() {
     console = new SimpShell(uidisp);
     console->puts("\nExist OS Console\nversion 0.0.0\nby ExistOS Team\nTry `help` for commands\n");
     console->refresh();
 }
 
-void refreshConsole() {
+inline void refreshConsole() {
     console->refresh();
-    // uidisp->draw_box(DISPX, DISPY, DISPX + DISPW, DISPY + DISPH, -1, 255);
-    // uidisp->draw_line(DISPX, DISPY + DISPH - 9, DISPX + DISPW, DISPY + DISPH - 9, 0);
-    // uidisp->draw_printf(DISPX, DISPY + DISPH - 8, 8, 0, 255, "%s>%s", cons_pwd, cons_in);
-    // uidisp->draw_printf(0,0,8, 0, 255, "%d; %d", DISPH, DISPW);
-    // const char *cons_end = cons_out + strlen(cons_out);
-    // char *cons_break;
-    // char *cons_line = cons_out + strlen(cons_out) - 1;
-    // for (int i = CONSH - 1; i >= 0; i--) {
-    //     cons_break = cons_line;
-    //     while (cons_line > cons_out && cons_line[0] != '\n' && (cons_break - cons_line) <= CONSW)
-    //         cons_line--;
-    //     // for (int j = 0; cons_line + j < cons_break; j++) {
-    //     //     uidisp->draw_char_ascii(DISPX + 8 * j, DISPY + DISPH - 8 * i, *(cons_line + j), 8, 0, 255);
-    //     // }
-    //     // cons_break = cons_line;
-    // }
-    // for (int i = 0; i < CONSH; i++) {
-    //     cons_break = cons_line;
-    //     while (cons_break[0] != '\n' && cons_break != cons_end && cons_break - cons_line <= CONSW) {
-    //         uidisp->draw_char_ascii(DISPX + 8 * (cons_break - cons_line), DISPY + 8 * i, cons_break[0], 8, 0, 255);
-    //         cons_break++;
-    //     }
-    //     cons_line=cons_break;
-    // }
+}
+
+
+/**
+ * @brief Process key down event send to Console
+ * @param key Keys_t
+ */
+void keyupConsole(Keys_t key){
+    #define K(ORGIN_KEY, LEFT_SHIFT, RIGHT_SHIFT, CAPITAL_ALPHA, SMALL_ALPHA)
+    switch (key)
+    {
+    case KEY_ALPHA:break;
+    case KEY_SHIFT:break;
+    default:
+        break;
+    }
+    #undef K
 }
 
 #undef CONSW
