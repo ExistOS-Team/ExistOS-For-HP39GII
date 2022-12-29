@@ -201,6 +201,10 @@ void pageUpdate() {
 
     getTimeStr(timeStr);
 
+    if( curPage == 1){
+        console->blink();
+    }
+
     if (curPage <= 2) {
         uidisp->draw_box(180, 0, 255, 11, -1, 0);
         uidisp->draw_printf(180, 0, 16, 255, -1, "%s", timeStr);

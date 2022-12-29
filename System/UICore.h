@@ -912,13 +912,15 @@ struct SimpShell {
     struct ShellDispLine {
         char col[CONSW];
     } lin[CONSH];
-    uint32_t cx, cy;    /// cursor position
-    bool cursorBlink;   /// set true if cursor blink on
-    UI_Display *uidisp; /// refer to main windows's ui display interface
+    uint32_t cx, cy;        /// cursor position
+    bool cursorBlink;       /// set true if cursor blink on
+    bool cursor_displaying; /// set true if cursor displaying
+    UI_Display *uidisp;     /// refer to main windows's ui display interface
 
     SimpShell(UI_Display *a_uidisp) {
         this->clear();
         cursorBlink = true;
+        cursor_displaying = false;
         this->uidisp = a_uidisp;
     }
 
@@ -933,6 +935,9 @@ struct SimpShell {
             for (int j = 0; j < CONSW; j++) {
                 uidisp->draw_char_ascii(DISPX + (FONTS == 8 ? 6 : 8) * j, DISPY + 8 * i, lin[i].col[j], FONTS, 0, 255);
             }
+        }
+        if (this->cursorBlink) {
+            this->blink();
         }
     }
 
@@ -1040,6 +1045,21 @@ struct SimpShell {
     void locate(const uint32_t &y, const uint32_t &x, const char *s) {
         for (uint32_t i = 0; s[i] && i + x < CONSW; i++) {
             lin[y].col[i + x] = s[i];
+        }
+    }
+
+    /**
+     * @brief cursor blinking
+     */
+    void blink() {
+        if (!this->cursorBlink)
+            return;
+        cursor_displaying = !cursor_displaying;
+        if (cursor_displaying) {
+            uidisp->draw_line(DISPX + (FONTS == 8 ? 6 : 8) * cx, DISPY + FONTS * cy, DISPX + (FONTS == 8 ? 6 : 8) * cx, DISPY + FONTS * (cy + 1) - 1, 0);
+        } else {
+            uidisp->draw_line(DISPX + (FONTS == 8 ? 6 : 8) * cx, DISPY + FONTS * cy, DISPX + (FONTS == 8 ? 6 : 8) * cx, DISPY + FONTS * (cy + 1) - 1, 255);
+            uidisp->draw_char_ascii(DISPX + (FONTS == 8 ? 6 : 8) * cx, DISPY + 8 * cy, lin[cy].col[cx], FONTS, 0, 255);
         }
     }
 };
