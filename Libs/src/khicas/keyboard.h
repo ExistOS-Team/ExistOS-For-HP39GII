@@ -22,7 +22,7 @@
 #define KEY_CHAR_EXCL       0x21 /* ! */
 #define KEY_CHAR_DP         0x2e /* . */
 #define KEY_CHAR_EXP        0x0f /* ee */
-#define KEY_CHAR_PMINUS     30200 /* - */
+#define KEY_CHAR_PMINUS     30200 /* _ */
 #define KEY_CHAR_PLUS       43   /* + */
 #define KEY_CHAR_MINUS      45   /* - */
 #define KEY_CHAR_MULT       42   /* * */
@@ -142,10 +142,10 @@
 #define KEY_CTRL_ALPHA      30007
 #define KEY_CTRL_OPTN       30008
 #define KEY_CTRL_VARS       30030
-#define KEY_CTRL_UP         30018
-#define KEY_CTRL_LEFT       30020
-#define KEY_CTRL_RIGHT      30021
-#define KEY_CTRL_DOWN       30023
+#define KEY_CTRL_UP         1
+#define KEY_CTRL_DOWN       2
+#define KEY_CTRL_LEFT       0
+#define KEY_CTRL_RIGHT      3
 #define KEY_CTRL_F1         30009
 #define KEY_CTRL_F2         30010
 #define KEY_CTRL_F3         30011

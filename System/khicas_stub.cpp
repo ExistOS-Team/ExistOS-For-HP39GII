@@ -246,7 +246,7 @@ int GetKey(int *key) {
 
 
         case KEY_SHIFT:
-            *key = 0;
+            *key = -1;
             // *key = KEY_CTRL_SHIFT; 
             if (keyStatus & 1) {
                 keyStatus &= ~1;
@@ -264,7 +264,7 @@ int GetKey(int *key) {
             break;
 
         case KEY_ALPHA:
-            *key = 0;
+            *key = -1;
             // *key = KEY_CTRL_ALPHA;
 
             if (keyStatus & 4) {
@@ -388,7 +388,7 @@ int GetKey(int *key) {
         }
 
         default:
-            *key = 0;
+            *key = -1;
             return KEYREP_NOEVENT;
             break;
         }
@@ -396,7 +396,7 @@ int GetKey(int *key) {
         return KEYREP_KEYEVENT;
     }
 
-    *key = 0;
+    *key = -1;
 
     return KEYREP_NOEVENT;
 }
