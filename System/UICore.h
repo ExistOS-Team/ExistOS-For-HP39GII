@@ -930,10 +930,31 @@ struct SimpShell {
      *
      */
     void refresh() {
-        uidisp->draw_box(DISPX, DISPY, DISPX + DISPW, DISPY + DISPH, -1, 255);
+        // uidisp->draw_box(DISPX, DISPY, DISPX + DISPW, DISPY + DISPH, -1, 255);
         for (int i = 0; i < CONSH; i++) {
+                uidisp->draw_box(DISPX, DISPY + 8 * i, DISPX + DISPW, DISPY + 8 * (i+1), -1, 255);
             for (int j = 0; j < CONSW; j++) {
                 uidisp->draw_char_ascii(DISPX + (FONTS == 8 ? 6 : 8) * j, DISPY + 8 * i, lin[i].col[j], FONTS, 0, 255);
+            }
+        }
+        if (this->cursorBlink) {
+            this->blink();
+        }
+    }
+
+    /**
+     * @brief refresh console screen area [x0,x1), [y0,y1)
+     * @note will not check if outside of console screen interface or param out of console screnn range
+     * @param x0 start x pos
+     * @param y0 start y pos
+     * @param x1 end x pos
+     * @param y1 end y pos
+     */
+    void refresh(const uint32_t &x0, const uint32_t &y0, const uint32_t &x1, const uint32_t &y1) {
+        uidisp->draw_box(DISPX + (FONTS == 8 ? 6 : 8) * x0, DISPY + FONTS * y0, DISPX + (FONTS == 8 ? 6 : 8) * x1, DISPY + FONTS * y1, -1, 255);
+        for (int i = 0; i < CONSH; i++) {
+            for (int j = 0; j < CONSW; j++) {
+                uidisp->draw_char_ascii(DISPX + (FONTS == 8 ? 6 : 8) * j, DISPY + FONTS * i, lin[i].col[j], FONTS, 0, 255);
             }
         }
         if (this->cursorBlink) {
@@ -1013,6 +1034,7 @@ struct SimpShell {
     void puts(const char *s) {
         while (s[0]) {
             if (s[0] == '\n') {
+                if(this->cursor_displaying) this->blink();
                 cy++;
                 cx = 0;
                 this->scroll(0);
@@ -1032,7 +1054,7 @@ struct SimpShell {
             }
             s++;
         }
-        this->refresh();
+        this->refresh(0, cy, CONSW, cy);
     }
 
     /**

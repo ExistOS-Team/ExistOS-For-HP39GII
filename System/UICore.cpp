@@ -201,7 +201,7 @@ void pageUpdate() {
 
     getTimeStr(timeStr);
 
-    if( curPage == 1){
+    if (curPage == 1) {
         console->blink();
     }
 
@@ -407,11 +407,11 @@ void keyMsg(uint32_t key, int state) {
             if (shift == 1) {
                 uidisp->draw_box(0, 0, 255, 126, 255, 255);
                 uidisp->draw_bmp((char *)logo, 103, 32, 50, 25);
-                uidisp->draw_printf(128-14*6/2, 74, 12, 0, 255, "Shutting down");
+                uidisp->draw_printf(128 - 14 * 6 / 2, 74, 12, 0, 255, "Shutting down");
 
                 printf("Trig Power Off\n");
 
-                if(curPage==2){
+                if (curPage == 2) {
                     f_closedir(&fileManagerDir);
                 }
 
@@ -794,7 +794,7 @@ void keyMsg(uint32_t key, int state) {
             }
             break;
         case KEY_2:
-            if (curPage ==1){
+            if (curPage == 1) {
                 goto CONSOLE_KEY_EVENT;
             }
             if (curPage == 3) {
@@ -954,7 +954,11 @@ static void checkFS() {
 
 inline void initConsole() {
     console = new SimpShell(uidisp);
-    console->puts("\nExist OS Console\nversion 0.0.0\nby ExistOS Team\nTry `help` for commands\n");
+    console->puts("\n"
+        "ExistOS Console v0.0.0\n"
+        "2022 (C) ExistOS Team\n"
+        "ExistOS is licensed under GPL-3.0, for more information please visit <https://github.com/ExistOS-Team/ExistOS-For-HP39GII>\n"
+        "Try `help` for commands\n");
     console->refresh();
 }
 
@@ -962,21 +966,21 @@ inline void refreshConsole() {
     console->refresh();
 }
 
-
 /**
  * @brief Process key down event send to Console
  * @param key Keys_t
  */
-void keyupConsole(Keys_t key){
-    #define K(ORGIN_KEY, LEFT_SHIFT, RIGHT_SHIFT, CAPITAL_ALPHA, SMALL_ALPHA)
-    switch (key)
-    {
-    case KEY_ALPHA:break;
-    case KEY_SHIFT:break;
+void keyupConsole(Keys_t key) {
+#define K(ORGIN_KEY, LEFT_SHIFT, RIGHT_SHIFT, CAPITAL_ALPHA, SMALL_ALPHA)
+    switch (key) {
+    case KEY_ALPHA:
+        break;
+    case KEY_SHIFT:
+        break;
     default:
         break;
     }
-    #undef K
+#undef K
 }
 
 #undef CONSW
