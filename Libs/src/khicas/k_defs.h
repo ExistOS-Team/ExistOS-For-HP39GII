@@ -144,10 +144,10 @@
 #define KEY_CTRL_PAGEDOWN   30053
 #define KEY_CTRL_MENU       30003
 #define KEY_SHIFT_OPTN	    30059
-#define KEY_CTRL_RESERVE1	30060
-#define KEY_CTRL_RESERVE2	30061
-#define KEY_SHIFT_LEFT		30062
-#define KEY_SHIFT_RIGHT		30063
+#define KEY_CTRL_RESERVE1   30060
+#define KEY_CTRL_RESERVE2   30061
+#define KEY_SHIFT_LEFT      30062
+#define KEY_SHIFT_RIGHT     30063
 #define KEY_UP_CTRL         31060
 #define KEY_DOWN_CTRL       31061
 #define KEY_LEFT_CTRL       31062
@@ -206,6 +206,6 @@
 #define KEY_PRGM_ALPHA 77 
 #define KEY_PRGM_SHIFT 78
 #define KEY_PRGM_MENU 48
-#define KEY_CTRL_SD         39990
+#define KEY_CTRL_SD 39990
 
 #endif

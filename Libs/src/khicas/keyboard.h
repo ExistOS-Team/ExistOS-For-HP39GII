@@ -22,11 +22,11 @@
 #define KEY_CHAR_EXCL       0x21 /* ! */
 #define KEY_CHAR_DP         0x2e /* . */
 #define KEY_CHAR_EXP        0x0f /* ee */
-#define KEY_CHAR_PMINUS     0x87 /* - */
-#define KEY_CHAR_PLUS       0x89 /* + */
-#define KEY_CHAR_MINUS      0x99 /* - */
-#define KEY_CHAR_MULT       0xa9 /* * */
-#define KEY_CHAR_DIV        0xb9 /* / */
+#define KEY_CHAR_PMINUS     30200 /* - */
+#define KEY_CHAR_PLUS       43   /* + */
+#define KEY_CHAR_MINUS      45   /* - */
+#define KEY_CHAR_MULT       42   /* * */
+#define KEY_CHAR_DIV        47   /* / */
 #define KEY_CHAR_FRAC       0xbb /* KEY_CTRL_F14 */
 #define KEY_CHAR_LPAR       0x28 /* ( */
 #define KEY_CHAR_RPAR       0x29 /* ) */
@@ -45,6 +45,7 @@
 #define KEY_CHAR_EQUAL      0x3d /* = */
 #define KEY_CHAR_PI         0xd0 /* pi */
 #define KEY_CHAR_ANS        0xc0 /* ans() */
+#define KEY_SHIFT_ANS       0xc1
 #define KEY_CHAR_LBRCKT     0x5b /* [ */
 #define KEY_CHAR_RBRCKT     0x5d /* ] */
 #define KEY_CHAR_LBRACE     0x7b /* { */
@@ -64,6 +65,11 @@
 #define KEY_CHAR_DQUATE     0x22 /* " */
 #define KEY_CHAR_VALR       0xcd /* abs( */
 #define KEY_CHAR_THETA      0xce /* arg( */
+#define KEY_CHAR_FACTOR     0xda
+#define KEY_CHAR_NORMAL     0xdb
+#define KEY_CHAR_SHIFTMINUS 0xdc
+#define KEY_CHAR_CROCHETS   0xdd
+#define KEY_CHAR_ACCOLADES  0xde
 #define KEY_CHAR_A          0x41
 #define KEY_CHAR_B          0x42
 #define KEY_CHAR_C          0x43
@@ -123,18 +129,19 @@
 #define KEY_CHAR_LOWER_Z    0x7A
 
 // Control codes
-#define KEY_CTRL_NOP        0
-#define KEY_CTRL_EXE        30004
+#define KEY_CTRL_NOP        30202
+#define KEY_CTRL_EXE        30201
 #define KEY_CTRL_DEL        30025
-#define KEY_CTRL_AC         30015
+#define KEY_CTRL_AC         30070
 #define KEY_CTRL_FD         30046
 #define KEY_CTRL_UNDO       30045
 #define KEY_CTRL_XTT        30001
-#define KEY_CTRL_EXIT       30002
+#define KEY_CTRL_EXIT       5
+#define KEY_CTRL_OK         4
 #define KEY_CTRL_SHIFT      30006
 #define KEY_CTRL_ALPHA      30007
 #define KEY_CTRL_OPTN       30008
-#define KEY_CTRL_VARS       30016
+#define KEY_CTRL_VARS       30030
 #define KEY_CTRL_UP         30018
 #define KEY_CTRL_LEFT       30020
 #define KEY_CTRL_RIGHT      30021
@@ -145,20 +152,25 @@
 #define KEY_CTRL_F4         30012
 #define KEY_CTRL_F5         30013
 #define KEY_CTRL_F6         30014
-
-#define KEY_CTRL_F7         30075
-#define KEY_CTRL_F8         30076
-#define KEY_CTRL_F9         30077
-#define KEY_CTRL_F10        30078
-#define KEY_CTRL_F11        30079
-#define KEY_CTRL_F12        30080
-#define KEY_CTRL_F13        30081
-#define KEY_CTRL_F14        30082
-
+#define KEY_CTRL_F7         30915
+#define KEY_CTRL_F8         30916
+#define KEY_CTRL_F9         30917
+#define KEY_CTRL_F10        30918
+#define KEY_CTRL_F11        30919
+#define KEY_CTRL_F12        30920
+#define KEY_CTRL_F13        30921
+#define KEY_CTRL_F14        30922
+#define KEY_CTRL_F15        30923
+#define KEY_CTRL_F16        30924
+#define KEY_CTRL_F17        30925
+#define KEY_CTRL_F18        30926
+#define KEY_CTRL_F19        30927
+#define KEY_CTRL_F20        30928
 #define KEY_CTRL_CATALOG    30100
-#define KEY_CTRL_FORMAT     30101
+#define KEY_CTRL_FORMAT     30203
 #define KEY_CTRL_CAPTURE    30055
 #define KEY_CTRL_CLIP       30050
+#define KEY_CTRL_CUT        30250
 #define KEY_CTRL_PASTE      30036
 #define KEY_CTRL_INS        30033
 #define KEY_CTRL_MIXEDFRAC  30054
@@ -170,10 +182,39 @@
 #define KEY_CTRL_PAGEDOWN   30053
 #define KEY_CTRL_MENU       30003
 #define KEY_SHIFT_OPTN	    30059
-#define KEY_CTRL_RESERVE1	30060
-#define KEY_CTRL_RESERVE2	30061
-#define KEY_SHIFT_LEFT		30062
-#define KEY_SHIFT_RIGHT		30063
+#define KEY_CTRL_RESERVE1   30060
+#define KEY_CTRL_RESERVE2   30061
+#define KEY_SHIFT_LEFT      30062
+#define KEY_SHIFT_RIGHT     30063
+#define KEY_UP_CTRL         31060
+#define KEY_DOWN_CTRL       31061
+#define KEY_LEFT_CTRL       31062
+#define KEY_RIGHT_CTRL      31063
+#define KEY_CALCULATOR      31064
+#define KEY_SAVE            31065
+#define KEY_LOAD            31066
+#define KEY_CTRL_A          31001
+#define KEY_CTRL_D          31004
+#define KEY_CTRL_E          31005
+#define KEY_CTRL_H          31008 // help?
+#define KEY_CTRL_M          31011 // doc menu
+#define KEY_CTRL_N          31012
+#define KEY_CTRL_R          31018
+#define KEY_CTRL_S          31019
+#define KEY_CTRL_T          31020
+#define KEY_EQW_TEMPLATE    31100
+#define KEY_AFFECT          31101
+#define KEY_FLAG            31102
+#define KEY_BOOK            31103
+//#define KEY_CTRL_APPS     31104
+#define KEY_CTRL_SYMB       31105
+//#define KEY_CTRL_NUM      31106
+//#define KEY_CTRL_PLOT     31107
+#define KEY_SELECT_LEFT     31200
+#define KEY_SELECT_UP       31201
+#define KEY_SELECT_DOWN     31202
+#define KEY_SELECT_RIGHT    31203
+#define KEY_SHUTDOWN        32109
 
 #define KEY_PRGM_ACON 10
 #define KEY_PRGM_DOWN 37
@@ -204,6 +245,7 @@
 #define KEY_PRGM_SHIFT 78
 #define KEY_PRGM_OPTN 68
 #define KEY_PRGM_MENU 48
+#define KEY_CTRL_SD 39990
 
 // in Bkey_GetKeyWait function
 #define KEYWAIT_HALTON_TIMEROFF     0
