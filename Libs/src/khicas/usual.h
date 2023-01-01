@@ -62,7 +62,6 @@ namespace giac {
   gen alog10(const gen & e,GIAC_CONTEXT);
   gen atan(const gen & e0,GIAC_CONTEXT);
   gen exp(const gen & e0,GIAC_CONTEXT);
-  gen expi(const gen &g,GIAC_CONTEXT);
 
   // convert a gen to a string, format=0 (normal), 1 (tex)
   std::string gen2string(const gen & g,int format,GIAC_CONTEXT);
@@ -138,20 +137,19 @@ namespace giac {
   gen atanh(const gen & e,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_atanh ;
 
-  gen symb_inv(const gen & e);
-  gen symb_exp(const gen & e);
-  gen symb_ln(const gen & e);
-  gen symb_cos(const gen & e);
-  gen symb_sin(const gen & e);
-  gen symb_cosh(const gen & e);
-  gen symb_sinh(const gen & e);
-  gen symb_tan(const gen & e);
-  gen symb_atan(const gen & e);
-  gen symb_not(const gen & e);
-  gen symb_asin(const gen & e);
-  gen symb_neg(const gen & );
+  symbolic symb_inv(const gen & e);
+  symbolic symb_exp(const gen & e);
+  symbolic symb_ln(const gen & e);
+  symbolic symb_cos(const gen & e);
+  symbolic symb_sin(const gen & e);
+  symbolic symb_cosh(const gen & e);
+  symbolic symb_sinh(const gen & e);
+  symbolic symb_tan(const gen & e);
+  symbolic symb_atan(const gen & e);
+  symbolic symb_not(const gen & e);
+  symbolic symb_asin(const gen & e);
 
-  gen symb_quote(const gen & arg);
+  symbolic symb_quote(const gen & arg);
   gen quote(const gen & e,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_quote ;
 
@@ -165,14 +163,12 @@ namespace giac {
   gen order_size(const gen & e,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_order_size ;
 
-  gen symb_and(const vecteur &v);
-  gen symb_and(const gen & a,const gen & b);
+  symbolic symb_and(const gen & a,const gen & b);
   gen _and(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_and;
   gen and2(const gen & a,const gen & b);
 
-  gen symb_ou(const vecteur &v);
-  gen symb_ou(const gen & a,const gen & b);
+  symbolic symb_ou(const gen & a,const gen & b);
   gen _ou(const gen & args,GIAC_CONTEXT);
   gen ou2(const gen & a,const gen & b);
   extern const unary_function_ptr * const  at_ou;
@@ -181,11 +177,11 @@ namespace giac {
   gen xor2(const gen & a,const gen & b,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_xor;
 
-  gen symb_min(const gen & a,const gen & b);
+  symbolic symb_min(const gen & a,const gen & b);
   gen _min(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_min;
 
-  gen symb_max(const gen & a,const gen & b);
+  symbolic symb_max(const gen & a,const gen & b);
   gen _max(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_max;
 
@@ -284,14 +280,14 @@ namespace giac {
 
   extern const unary_function_ptr * const  at_im;
 
-  gen symb_conj(const gen & e);
+  symbolic symb_conj(const gen & e);
   extern const unary_function_ptr * const  at_conj ;
 
   gen _abs(const gen & args,GIAC_CONTEXT);
-  gen symb_abs(const gen & e);
+  symbolic symb_abs(const gen & e);
   extern const unary_function_ptr * const  at_abs ;
 
-  gen symb_arg(const gen & e);
+  symbolic symb_arg(const gen & e);
   extern const unary_function_ptr * const  at_arg ;
 
   extern const unary_function_ptr * const  at_sign;
@@ -311,12 +307,13 @@ namespace giac {
   extern const unary_function_ptr * const  at_quorem ;
   extern const unary_function_ptr * const  at_normalmod;
 
-  gen symb_sto(const gen & a,gen & b,bool in_place=false);
-  gen symb_sto(const gen & e);
+  symbolic symb_sto(const gen & a,gen & b,bool in_place=false);
+  symbolic parser_symb_sto(const gen & a_,gen & b,bool in_place=false);
+  // same as symb_sto but check if a is a vector, if so make a copy
+  symbolic symb_sto(const gen & e);
   extern const unary_function_ptr * const  at_sto ;
   extern const unary_function_ptr * const  at_array_sto ;
   extern const unary_function_ptr * const  at_increment;
-  extern const unary_function_ptr * const  at_powsto;
   extern const unary_function_ptr * const  at_decrement;
   extern const unary_function_ptr * const  at_multcrement;
   extern const unary_function_ptr * const  at_divcrement;
@@ -326,6 +323,7 @@ namespace giac {
   extern const unary_function_ptr * const  at_orsto;
   extern const unary_function_ptr * const  at_xorsto;
   extern const unary_function_ptr * const  at_shiftsto;
+  extern const unary_function_ptr * const  at_powsto;
   gen _shiftsto(const gen & a,const context * contextptr);
   extern const unary_function_ptr * const  at_rotatesto;
   gen _rotatesto(const gen & a,const context * contextptr);
@@ -375,27 +373,27 @@ namespace giac {
   extern const unary_function_ptr * const  at_equal;
   extern const unary_function_ptr * const  at_equal2;
   gen symb_same(const gen & a);
-  gen symb_same(const gen & a,const gen & b);
+  symbolic symb_same(const gen & a,const gen & b);
   gen _same(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_same;
 
-  gen symb_inferieur_strict(const gen & a);
-  gen symb_inferieur_strict(const gen & a,const gen & b);
+  symbolic symb_inferieur_strict(const gen & a);
+  symbolic symb_inferieur_strict(const gen & a,const gen & b);
   gen _inferieur_strict(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_inferieur_strict;
 
-  gen symb_inferieur_egal(const gen & a);
-  gen symb_inferieur_egal(const gen & a,const gen & b);
+  symbolic symb_inferieur_egal(const gen & a);
+  symbolic symb_inferieur_egal(const gen & a,const gen & b);
   gen _inferieur_egal(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_inferieur_egal;
 
-  gen symb_superieur_strict(const gen & a);
-  gen symb_superieur_strict(const gen & a,const gen & b);
+  symbolic symb_superieur_strict(const gen & a);
+  symbolic symb_superieur_strict(const gen & a,const gen & b);
   gen _superieur_strict(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_superieur_strict;
 
-  gen symb_superieur_egal(const gen & a);
-  gen symb_superieur_egal(const gen & a,const gen & b);
+  symbolic symb_superieur_egal(const gen & a);
+  symbolic symb_superieur_egal(const gen & a,const gen & b);
   gen _superieur_egal(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_superieur_egal;
 
@@ -404,14 +402,14 @@ namespace giac {
   gen _different(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_different;
 
-  gen symb_of(const gen & a);
-  gen symb_of(const gen & a,const gen & b);
+  symbolic symb_of(const gen & a);
+  symbolic symb_of(const gen & a,const gen & b);
   gen check_symb_of(const gen & a,const gen & b,GIAC_CONTEXT);
   gen _of(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_of;
 
-  gen symb_at(const gen & a);
-  gen symb_at(const gen & a,const gen & b,GIAC_CONTEXT);
+  symbolic symb_at(const gen & a);
+  symbolic symb_at(const gen & a,const gen & b,GIAC_CONTEXT);
   gen _at(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_at;
   
@@ -421,18 +419,12 @@ namespace giac {
   // usual multiargs
   // for multiargs we use _name for the corresponding "unary" function
   // to avoid confusion of pointers since name is used
-  gen symb_plus(const gen & a);
-  gen symb_plus(const vecteur & a);
-  gen symb_plus(const gen & a,const gen & b);
-  symbolic do_symb_plus(const gen & a,const gen &b);
+  symbolic symb_plus(const gen & a,const gen & b);
   gen _plus(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_plus ;
   extern const unary_function_ptr * const  at_pointplus ;
   extern const unary_function_ptr * const  at_pointminus ;
 
-  gen symb_prod(const gen &);
-  gen symb_prod(const vecteur &);
-  gen symb_prod2(const gen & a,const gen & b);
   gen symb_prod(const gen & a,const gen & b);
   gen _prod(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_prod ;
@@ -443,8 +435,7 @@ namespace giac {
   std::string printasor(const gen & feuille,const char * sommetstr,GIAC_CONTEXT);
   std::string texprintasor(const gen & g,const char * s,GIAC_CONTEXT);
 
-  gen symb_pow(const gen & a);
-  gen symb_pow(const gen & a,const gen & b);
+  symbolic symb_pow(const gen & a,const gen & b);
   std::string cprintaspow(const gen & feuille,const char * sommetstr_orig,GIAC_CONTEXT);
 #ifndef GIAC_HAS_STO_38
 #if defined NSPIRE || defined FXCG
@@ -460,16 +451,16 @@ namespace giac {
   gen _powmod(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_powmod ;
 
-  gen symb_tran(const gen & a);
-  gen symb_trace(const gen & a);
-  gen symb_rref(const gen & a);
-  gen symb_idn(const gen & e);
-  gen symb_ranm(const gen & e);
-  gen symb_det(const gen & a);
-  gen symb_pcar(const gen & a);
-  gen symb_ker(const gen & a);
-  gen symb_image(const gen & a);
-  gen symb_moyal(const gen & a,const gen & b, const gen &vars,const gen & order);
+  symbolic symb_tran(const gen & a);
+  symbolic symb_trace(const gen & a);
+  symbolic symb_rref(const gen & a);
+  symbolic symb_idn(const gen & e);
+  symbolic symb_ranm(const gen & e);
+  symbolic symb_det(const gen & a);
+  symbolic symb_pcar(const gen & a);
+  symbolic symb_ker(const gen & a);
+  symbolic symb_image(const gen & a);
+  symbolic symb_moyal(const gen & a,const gen & b, const gen &vars,const gen & order);
 
   extern const unary_function_ptr * const  at_evalf;
   gen _eval(const gen & a,GIAC_CONTEXT);
@@ -477,10 +468,10 @@ namespace giac {
 
   extern const unary_function_ptr * const  at_eval;
   extern const unary_function_ptr * const  at_evalm;
-  gen symb_eval(const gen & a);
-  gen symb_evalf(const gen & a);
+  symbolic symb_eval(const gen & a);
+  symbolic symb_evalf(const gen & a);
   
-  gen symb_subst(const gen & e);
+  symbolic symb_subst(const gen & e);
   gen _subst(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_subst;
   gen _subs(const gen & args,GIAC_CONTEXT);
@@ -502,7 +493,6 @@ namespace giac {
   extern const unary_function_ptr * const  at_igamma_exp ;
   double lngamma(double x);
   gen lngamma(const gen & x,GIAC_CONTEXT);
-  extern const unary_function_ptr * const  at_lgamma ;
   extern const unary_function_ptr * const  at_Gamma;
   extern const unary_function_ptr * const  at_lnGamma_minus;
   extern const unary_function_ptr * const  at_erfs;
@@ -511,6 +501,9 @@ namespace giac {
   extern const unary_function_ptr * const  at_Si;
   extern const unary_function_ptr * const  at_Ei ;
   extern const unary_function_ptr * const  at_Ei_f ;
+  extern const unary_function_ptr * const  at_LambertW;
+  extern const unary_function_ptr * const  at_LambertWs;
+  gen _LambertW(const gen & args,GIAC_CONTEXT);
 
   gen Psi(const gen & x,GIAC_CONTEXT);
   gen Psi(const gen & x,int n,GIAC_CONTEXT);
@@ -543,14 +536,23 @@ namespace giac {
   gen _Heaviside(const gen & args,GIAC_CONTEXT);
   gen _Dirac(const gen & args,GIAC_CONTEXT);
 
-  gen cst_ipi();
+#if defined(EMCC) || defined(EMCC2)
+#define gen_zero gen(0)
+#else
+#define gen_zero zero
+#endif
+
 #if defined(GIAC_GENERIC_CONSTANTS) // || (defined(VISUALC) && !defined(RTOS_THREADX)) || defined(x86_64)
   extern const gen zero;
   extern const gen plus_one;
   extern const gen minus_one;
   extern const gen plus_two;
   extern const gen plus_three;
+#if defined(EMCC) || defined(EMCC2)
+#define cst_i gen(0,1)
+#else
   extern const gen cst_i;
+#endif
 #else
   extern const alias_gen alias_zero;
   extern const gen & zero;
@@ -941,6 +943,25 @@ namespace giac {
 #ifndef VISUALC
   gen * normal_sin_pi_12_ptr_();
   gen * normal_cos_pi_12_ptr_();
+#endif
+
+#if defined GIAC_HAS_STO_38 || defined NSPIRE || defined NSPIRE_NEWLIB || defined FXCG || defined GIAC_GGB || defined USE_GMP_REPLACEMENTS || defined KHICAS
+#else
+  // additions by L. Marohnić:
+  std::string to_unix_path(const std::string &path);
+  std::string temp_file_name(const char *fallback_name,const char *ext=NULL);
+  bool ckfileexists(const char *fname);
+  class temp_file {
+    // TEMPORARY FILE CLASS
+    // This is a temporary file object that is accessed through the 'handle' member.
+    // The file is created and opened by constructor and automatically deleted by destructor.
+    std::string _fname;
+  public:
+    FILE *handle;
+    temp_file(const char *fallback_name,const char *ext=NULL);
+    ~temp_file();
+    bool fail() const { return handle==NULL; }
+  };
 #endif
 
 #ifndef NO_NAMESPACE_GIAC

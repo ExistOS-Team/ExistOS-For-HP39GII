@@ -9,8 +9,8 @@ RM	= /bin/rm
 #CFLAGS = -Os -mb -m4a-nofpu -mhitachi -flto -fno-strict-aliasing  -fno-exceptions -DHAVE_CONFIG_H -DTIMEOUT -DRELEASE -I. -I../include -I../include/fx
 #CXXFLAGS = -Os -mb -m4a-nofpu -mhitachi -std=c++98 -fpermissive -flto -fno-use-cxa-atexit -fno-strict-aliasing -fno-rtti -fno-exceptions -DHAVE_CONFIG_H -DTIMEOUT -DRELEASE -I. -I../include -I../include/ustl -I../include/fx 
 #-DTIMEOUT -flto 
-CFLAGS = -O3 -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -fno-strict-aliasing -mthumb -fno-exceptions -DHAVE_CONFIG_H -I../libtommath-0.39 -I. -ffunction-sections -fdata-sections -fomit-frame-pointer 
-CXXFLAGS = -Os -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -std=c++11  -fpermissive -fno-use-cxa-atexit -fno-strict-aliasing -fno-rtti -fno-exceptions -DHAVE_CONFIG_H -I../libtommath-0.39 -I. -ffunction-sections -fdata-sections -Werror=reorder
+CFLAGS = -O3 -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -fno-strict-aliasing -mthumb -fno-exceptions -DHP39 -DKHICAS -DHAVE_CONFIG_H -I../libtommath-0.39 -I. -ffunction-sections -fdata-sections -fomit-frame-pointer 
+CXXFLAGS = -Os -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -std=c++11  -fpermissive -fno-use-cxa-atexit -fno-strict-aliasing -fno-rtti -fno-exceptions -DHP39 -DKHICAS -DHAVE_CONFIG_H -I../libtommath-0.39 -I. -ffunction-sections -fdata-sections 
 # -Werror=reorder
 
 LDFLAGS = -static -nostdlib -Taddin.ld  -Wl,--gc-sections
@@ -19,12 +19,12 @@ STDLIBS =  -L. -L../lib  -ltommath -lustl -lm -lc -lfx -lgcc
 
 LIBS = -L. -L../lib -Wl,--start-group -lgui -lcas -ltommath -lustl -lm -lc -lfx -lgcc -Wl,--end-group
 
-CAS_OBJS = ksym2poly.o kgausspol.o kthreaded.o kcsturm.o kmaple.o krpn.o kmoyal.o kmisc.o kpermu.o kdesolve.o input_parser.o ksymbolic.o index.o kmodpoly.o kmodfactor.o kezgcd.o kderive.o ksolve.o kintg.o kintgab.o klin.o kseries.o ksubst.o kvecteur.o kglobal.o kifactor.o kalg_ext.o kgauss.o khelp.o kti89.o kplot.o kprog.o kunary.o kusual.o kidentificateur.o kgen.o krisch.o input_lexer.o first.o softmath.o
+CAS_OBJS =sym2poly.o gausspol.o threaded.o maple.o ti89.o mathml.o moyal.o misc.o permu.o desolve.o input_parser.o symbolic.o index.o modpoly.o modfactor.o ezgcd.o derive.o solve.o intg.o intgab.o risch.o lin.o series.o subst.o vecteur.o sparse.o csturm.o tex.o global.o ifactor.o alg_ext.o gauss.o isom.o help.o plot.o plot3d.o rpn.o prog.o cocoa.o pari.o unary.o usual.o identificateur.o gen.o input_lexer.o tinymt32.o first.o quater.o k_cppsdk.o #softmath.o
 # memmgr.o mem.o 
 
 #  = dConsole.o fileGUI.o inputGUI.o menuGUI.o textGUI.o fileProvider.o graphicsProvider.o stringsProvider.o history.o kdisplay.o
 
-GUI_OBJS = main.o console.o memory.o kdisplay.o file.o textGUI.o menuen.o
+GUI_OBJS = kdisplay.o kadd.o file.o
 
 #.PRECIOUS: libcas.a libgui.a
 all: libcas.libcpp libkcasgui.libcpp

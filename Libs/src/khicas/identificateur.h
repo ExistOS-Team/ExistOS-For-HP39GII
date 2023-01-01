@@ -19,7 +19,7 @@
 #define _GIAC_IDENTIFICATEUR_H
 #include "first.h"
 #include <string>
-#include "iostream"
+#include <iostream>
 #include "global.h"
 #include "gen.h"
 
@@ -30,6 +30,14 @@ namespace giac {
   extern int protection_level; // for local vars
 
   const int MAXLENSIZE = 1000000; // max size of a line in files
+
+  struct alias_identificateur {
+    int * ref_count;
+    gen * value;
+    const char * id_name;
+    vecteur * localvalue;
+    short int * quoted;
+  };
 
   // make g identificateurs evaluated as global in null context
   gen global_eval(const gen & g,int level);
@@ -79,7 +87,7 @@ namespace giac {
   extern const gen & undef;
 #endif
 
-#if defined GIAC_HAS_STO_38 || defined NSPIRE || defined NSPIRE_NEWLIB || defined FXCG
+#if defined GIAC_HAS_STO_38 || defined NSPIRE || defined NSPIRE_NEWLIB || defined KHICAS
   extern const identificateur & a__IDNT;
   extern const alias_gen alias_a38;
 #define a__IDNT_e (*(gen const *)&alias_a38)
@@ -165,7 +173,7 @@ namespace giac {
   extern const identificateur & laplace_var;
 
   extern const gen & CST__IDNT_e;
-  gen & vx_var(); 
+  // extern gen & vx_var; 
   // commented otherwise can not make assign/assumptions on vx_var
   // if must uncomment, check extern gen vx_var declaration after endif
 #else
@@ -228,7 +236,7 @@ namespace giac {
   extern identificateur CST__IDNT;
   extern gen CST__IDNT_e;
 #endif
-  //extern gen vx_var;
+  extern gen vx_var;
   extern const gen * const tab_one_letter_idnt[];
   // small utility to remove #...
   int removecomments(const char * ss,char * ss2);

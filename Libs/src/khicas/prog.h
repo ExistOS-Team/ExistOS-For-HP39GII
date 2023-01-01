@@ -26,10 +26,13 @@
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
+  typedef const char * cstcharptr;
+  extern int (*micropy_ptr) (cstcharptr);
+  extern char * (*quickjs_ptr) (cstcharptr);
   extern bool user_screen; 
   extern int user_screen_io_x,user_screen_io_y,user_screen_fontsize;
   extern const int rand_max2; // replace RAND_MAX if giac_rand(contextptr) is used
-  extern bool warn_equal_in_prog;
+  extern bool warn_equal_in_prog,warn_symb_program_sto;
 
   struct user_function;
   struct module_info {
@@ -73,10 +76,13 @@ namespace giac {
   symbolic symb_program_sto(const gen & a,const gen & b,const gen & c,const gen & d,bool embedd=false,GIAC_CONTEXT=context0);
   symbolic symb_program(const gen & a,const gen & b,const gen & c,GIAC_CONTEXT);
   symbolic symb_program(const gen & args);
-  gen symb_prog3(const gen & a,const gen &b,const gen &c);
   gen quote_program(const gen & args,GIAC_CONTEXT);
   gen _program(const gen & args,const gen & name,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_program ;
+  extern const unary_function_ptr * const  at_monotonic;
+  extern const unary_function_ptr * const  at_sleep;
+  // parser helper
+  gen symb_test_equal(const gen & a,const gen & op,const gen & b);
   void adjust_sst_at(const gen & name,GIAC_CONTEXT); //used in symbolic.cc by nr_eval
   void program_leave(const gen & save_debug_info,bool save_sst_mode,debug_struct * dbgptr);
 
@@ -299,6 +305,9 @@ namespace giac {
   gen _all_trig_solutions(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_all_trig_solutions;
 
+  gen _increasing_power(const gen & args,GIAC_CONTEXT);
+  extern const unary_function_ptr * const  at_increasing_power;
+
   gen _ntl_on(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_ntl_on;
 
@@ -387,11 +396,14 @@ namespace giac {
   gen quote_read(const gen & args,GIAC_CONTEXT); // read in a file and return non evaled
   gen _read(const gen & args,GIAC_CONTEXT); // read in a file and return evaled
   extern const unary_function_ptr * const  at_read;
+  extern const unary_function_ptr * const  at_read16;
   extern const unary_function_ptr * const  at_read32;
-  extern const unary_function_ptr * const  at_write32;
+  extern const unary_function_ptr * const  at_read_nand;
 
   gen _write(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_write;
+  extern const unary_function_ptr * const  at_write16;
+  extern const unary_function_ptr * const  at_write32;
 
   gen _save_history(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_save_history;
@@ -490,8 +502,7 @@ namespace giac {
   extern const unary_function_ptr * const  at_part;
 
   gen _Pause(const gen & args,GIAC_CONTEXT);
-  extern const unary_function_ptr * const  at_sleep;
-  extern const unary_function_ptr * const  at_monotonic;
+  extern const unary_function_ptr * const  at_Pause;
 
   gen _Row(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_Row;
@@ -567,7 +578,7 @@ namespace giac {
   extern const unary_function_ptr * const  at_widget_size;
 
   gen current_sheet(const gen & g,GIAC_CONTEXT);
-#if !defined RTOS_THREADX && !defined NSPIRE && !defined FXCG
+#if !defined RTOS_THREADX && !defined NSPIRE && !defined FXCG && !defined KHICAS
   extern unary_function_eval __current_sheet;
 #endif
   extern const unary_function_ptr * const  at_current_sheet;
@@ -625,6 +636,7 @@ namespace giac {
   vecteur mksa_convert(const gen & g,GIAC_CONTEXT);
   gen _ufactor(const gen & g,GIAC_CONTEXT);
   gen _usimplify(const gen & g,GIAC_CONTEXT);
+  extern const unary_function_ptr * const  at_regrouper;  
 
   extern const mksa_unit __m_unit;
   extern const mksa_unit __kg_unit;
@@ -810,6 +822,7 @@ namespace giac {
   extern gen _mol_unit;
   extern gen _cd_unit;
   extern gen _E_unit;
+#ifndef STATIC_BUILTIN_LEXER_FUNCTIONS
   // other metric units in m,kg,s,A
   extern gen _Bq_unit;
   extern gen _C_unit;
@@ -848,13 +861,13 @@ namespace giac {
   extern gen _chain_unit;
   extern gen _Curie_unit;
   extern gen _ct_unit;
-  // extern gen _°_unit;
+  // extern gen _Â°_unit;
   extern gen _d_unit;
   extern gen _dB_unit;
   extern gen _dyn_unit;
   extern gen _erg_unit;
   extern gen _eV_unit;
-  // extern gen _°F_unit;
+  // extern gen _Â°F_unit;
   extern gen _fath_unit;
   extern gen _fbm_unit;
   // extern gen _fc_unit;
@@ -959,6 +972,7 @@ namespace giac {
   extern gen cst_Vm;
   extern gen cst_kBoltzmann;
   extern gen cst_NA;
+#endif // STATIC_BUILTIN_LEXER_FUNCTIONS
 #endif // NO_PHYSICAL_CONSTANTS
 #ifndef FXCG
   const unary_function_ptr * binary_op_tab();
@@ -1011,6 +1025,7 @@ namespace giac {
   gen _struct_dot(const gen & g,GIAC_CONTEXT);
   // replace := by = in builtin commands (for Python compatible mode)
   gen denest_sto(const gen & g);
+  gen os_nary_workaround(const gen & g); // replace [[a,b,...]] by a,b,...
 
   extern const unary_function_ptr * const  at_index ;
   gen _index(const gen & args,GIAC_CONTEXT);

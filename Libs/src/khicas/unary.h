@@ -71,29 +71,29 @@ namespace giac {
     // normally be s
     printfunction printsommet;
     // how to print as a latex formula, 
-    //printfunction texprint;
+    printfunction texprint;
     // how to print if translated to C++
-    //printfunction cprint;
+    printfunction cprint;
     // the function to apply
     gen_op_context op;
     unsigned index_quoted_function; // bit 0= quoted, bit1-> index of function
     // members functions
     gen operator () (const gen & arg,const context * context_ptr) const { return op(arg,context_ptr); };    
     // constructor
-    unary_function_eval(unsigned u,const gen_op_context & myop,const std::string & mys) : s(mys.c_str()),D(0),series_expansion(taylor),printsommet(0),op(myop),index_quoted_function(u) {};
-    unary_function_eval(unsigned u,const gen_op_context & myop,const char * mys) : s(mys),D(0),series_expansion(taylor),printsommet(0),op(myop),index_quoted_function(u) {};
-    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD,const std::string & mys) : s(mys.c_str()),D(myD),series_expansion(taylor),printsommet(0),op(myop),index_quoted_function(u) {};
-    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD,const char * mys) : s(mys),D(myD),series_expansion(taylor),printsommet(0),op(myop),index_quoted_function(u) {};
-    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const std::string & mys) : s(mys.c_str()),D(myD),series_expansion(mytaylor),printsommet(0),op(myop),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
-    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const char * mys) : s(mys),D(myD),series_expansion(mytaylor),printsommet(0),op(myop),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
-    unary_function_eval(unsigned u,const gen_op_context & myop,const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys.c_str()),D(0),series_expansion(taylor),printsommet(myprintsommet),op(myop),index_quoted_function(u) {};
-    unary_function_eval(unsigned u,const gen_op_context & myop,const char * mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys),D(0),series_expansion(taylor),printsommet(myprintsommet),op(myop),index_quoted_function(u) {};
-    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys.c_str()),D(myD),series_expansion(taylor),printsommet(myprintsommet),op(myop),index_quoted_function(u) {};
-    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, const char * mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys),D(myD),series_expansion(taylor),printsommet(myprintsommet),op(myop),index_quoted_function(u) {};
-    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys.c_str()),D(myD),series_expansion(mytaylor),printsommet(myprintsommet),op(myop),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
-    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const char * mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys),D(myD),series_expansion(mytaylor),printsommet(myprintsommet),op(myop),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
+    unary_function_eval(unsigned u,const gen_op_context & myop,const std::string & mys) : s(mys.c_str()),D(0),series_expansion(taylor),printsommet(0),texprint(0),cprint(0),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const char * mys) : s(mys),D(0),series_expansion(taylor),printsommet(0),texprint(0),cprint(0),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD,const std::string & mys) : s(mys.c_str()),D(myD),series_expansion(taylor),printsommet(0),texprint(0),cprint(0),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD,const char * mys) : s(mys),D(myD),series_expansion(taylor),printsommet(0),texprint(0),cprint(0),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const std::string & mys) : s(mys.c_str()),D(myD),series_expansion(mytaylor),printsommet(0),texprint(0),cprint(0),op(myop),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const char * mys) : s(mys),D(myD),series_expansion(mytaylor),printsommet(0),texprint(0),cprint(0),op(myop),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
+    unary_function_eval(unsigned u,const gen_op_context & myop,const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys.c_str()),D(0),series_expansion(taylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const char * mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys),D(0),series_expansion(taylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys.c_str()),D(myD),series_expansion(taylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, const char * mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys),D(myD),series_expansion(taylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),op(myop),index_quoted_function(u) {};
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const std::string & mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys.c_str()),D(myD),series_expansion(mytaylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),op(myop),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
+    unary_function_eval(unsigned u,const gen_op_context & myop,const partial_derivative * myD, taylortype mytaylor,const char * mys,printfunction myprintsommet,printfunction mytexprint=0,printfunction mycprint=0) : s(mys),D(myD),series_expansion(mytaylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),op(myop),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
     const char * print(GIAC_CONTEXT) const ;
-    void dbgprint() const { COUT << s << std::endl; };
+    void dbgprint() const { COUT << s << '\n'; };
   };
   std::ostream & operator << (std::ostream & os,const unary_function_eval & o);
 
@@ -105,9 +105,9 @@ namespace giac {
     // normally be s
     printfunction printsommet;
     // how to print as a latex formula, 
-    // printfunction texprint;
+    printfunction texprint;
     // how to print if translated to C++
-    //printfunction cprint;
+    printfunction cprint;
     gen_op_context op;
     unsigned index_quoted_function; // bit 0= quoted, bit1-> index of function
   };
@@ -135,34 +135,37 @@ namespace giac {
     // normally be s
     printfunction printsommet;
     // how to print as a latex formula, 
-    //printfunction texprint;
+    printfunction texprint;
     // how to print if translated to C++
-    //printfunction cprint;
+    printfunction cprint;
     unsigned index_quoted_function; // bit 0= quoted, bit1-> index of function
     // members functions
     virtual gen operator () (const gen & arg,const context * context_ptr) const { return 0;} ;
     virtual unary_function_abstract * recopie() const ;
     const char * print(GIAC_CONTEXT) const ;
-    void dbgprint() const { COUT << s << std::endl; };
+    void dbgprint() const { COUT << s << '\n'; };
     // constructors
-    unary_function_abstract(unsigned u) : D(0),series_expansion(taylor),printsommet(0),index_quoted_function(u) {};
-    unary_function_abstract(unsigned u,const std::string & mys): s(mys.c_str()),D(0),series_expansion(0),printsommet(0),index_quoted_function(u) {};
-    unary_function_abstract(unsigned u,const char * mys): s(mys),D(0),series_expansion(0),printsommet(0),index_quoted_function(u) {};
-    unary_function_abstract(unsigned u,const std::string & mys,const partial_derivative * myD): s(mys.c_str()),D(myD),series_expansion(taylor),printsommet(0),index_quoted_function(u) {};
-    unary_function_abstract(unsigned u,const char * mys,const partial_derivative * myD): s(mys),D(myD),series_expansion(taylor),printsommet(0),index_quoted_function(u) {};
-    unary_function_abstract(unsigned u,const std::string & mys,const partial_derivative * myD,printfunction myprintsommet, printfunction mytexprint,printfunction mycprint): s(mys.c_str()),D(myD),series_expansion(taylor),printsommet(myprintsommet),index_quoted_function(u) {};
-    unary_function_abstract(unsigned u,const char * mys,const partial_derivative * myD,printfunction myprintsommet, printfunction mytexprint,printfunction mycprint): s(mys),D(myD),series_expansion(taylor),printsommet(myprintsommet),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u) : D(0),series_expansion(taylor),printsommet(0),texprint(0),cprint(0),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u,const std::string & mys): s(mys.c_str()),D(0),series_expansion(0),printsommet(0),texprint(0),cprint(0),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u,const char * mys): s(mys),D(0),series_expansion(0),printsommet(0),texprint(0),cprint(0),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u,const std::string & mys,const partial_derivative * myD): s(mys.c_str()),D(myD),series_expansion(taylor),printsommet(0),texprint(0),cprint(0),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u,const char * mys,const partial_derivative * myD): s(mys),D(myD),series_expansion(taylor),printsommet(0),texprint(0),cprint(0),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u,const std::string & mys,const partial_derivative * myD,printfunction myprintsommet, printfunction mytexprint,printfunction mycprint): s(mys.c_str()),D(myD),series_expansion(taylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u,const char * mys,const partial_derivative * myD,printfunction myprintsommet, printfunction mytexprint,printfunction mycprint): s(mys),D(myD),series_expansion(taylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),index_quoted_function(u) {};
     // if preprocessing is needed for f,mytaylor for ordre==-1 should 
     // push back in a global std::vector f and it's substitution
-    unary_function_abstract(unsigned u,const std::string & mys,const partial_derivative * myD,taylortype mytaylor): s(mys.c_str()),D(myD),series_expansion(mytaylor),printsommet(0),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
-    unary_function_abstract(unsigned u,const char * mys,const partial_derivative * myD,taylortype mytaylor): s(mys),D(myD),series_expansion(mytaylor),printsommet(0),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
-    unary_function_abstract(unsigned u,const std::string & mys,const partial_derivative * myD,taylortype mytaylor,printfunction myprintsommet,printfunction mytexprint,printfunction mycprint): s(mys.c_str()),D(myD),series_expansion(mytaylor),printsommet(myprintsommet),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0);};
-    unary_function_abstract(unsigned u,const char * mys,const partial_derivative * myD,taylortype mytaylor,printfunction myprintsommet,printfunction mytexprint,printfunction mycprint): s(mys),D(myD),series_expansion(mytaylor),printsommet(myprintsommet),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0);};
-    unary_function_abstract(unsigned u,const std::string & mys,printfunction myprintsommet,printfunction mytexprint,printfunction mycprint): s(mys.c_str()),D(0),printsommet(myprintsommet),index_quoted_function(u) {};
-    unary_function_abstract(unsigned u,const char * mys,printfunction myprintsommet,printfunction mytexprint,printfunction mycprint): s(mys),D(0),printsommet(myprintsommet),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u,const std::string & mys,const partial_derivative * myD,taylortype mytaylor): s(mys.c_str()),D(myD),series_expansion(mytaylor),printsommet(0),texprint(0),cprint(0),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
+    unary_function_abstract(unsigned u,const char * mys,const partial_derivative * myD,taylortype mytaylor): s(mys),D(myD),series_expansion(mytaylor),printsommet(0),texprint(0),cprint(0),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0); };
+    unary_function_abstract(unsigned u,const std::string & mys,const partial_derivative * myD,taylortype mytaylor,printfunction myprintsommet,printfunction mytexprint,printfunction mycprint): s(mys.c_str()),D(myD),series_expansion(mytaylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0);};
+    unary_function_abstract(unsigned u,const char * mys,const partial_derivative * myD,taylortype mytaylor,printfunction myprintsommet,printfunction mytexprint,printfunction mycprint): s(mys),D(myD),series_expansion(mytaylor),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),index_quoted_function(u) { gen temp; mytaylor(0,-1,this,0,temp,0);};
+    unary_function_abstract(unsigned u,const std::string & mys,printfunction myprintsommet,printfunction mytexprint,printfunction mycprint): s(mys.c_str()),D(0),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),index_quoted_function(u) {};
+    unary_function_abstract(unsigned u,const char * mys,printfunction myprintsommet,printfunction mytexprint,printfunction mycprint): s(mys),D(0),printsommet(myprintsommet),texprint(mytexprint),cprint(mycprint),index_quoted_function(u) {};
     virtual ~unary_function_abstract() {};
   };
 
+#ifdef KHICAS
+  stdostream & operator<<(stdostream & os,const unary_function_abstract & a);
+#endif
 #ifdef NSPIRE
   template<class T> nio::ios_base<T> & operator<<(nio::ios_base<T> & os,const unary_function_abstract & a);
 #else
@@ -225,9 +228,9 @@ namespace giac {
     // normally be s
     printfunction printsommet;
     // how to print as a latex formula, 
-    //printfunction texprint;
+    printfunction texprint;
     // how to print if translated to C++
-    //printfunction cprint;
+    printfunction cprint;
     gen_op_context op;    
     unsigned index_quoted_function; // bit 0= quoted, bit1-> index of function
   };
@@ -241,9 +244,9 @@ namespace giac {
     // normally be s
     printfunction printsommet;
     // how to print as a latex formula, 
-    //printfunction texprint;
+    printfunction texprint;
     // how to print if translated to C++
-    //printfunction cprint;
+    printfunction cprint;
     gen_op_context op;    
     unsigned index_quoted_function; // bit 0= quoted, bit1-> index of function
   };

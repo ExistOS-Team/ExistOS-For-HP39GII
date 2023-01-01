@@ -198,7 +198,7 @@ void vGL_putChar(int x0, int y0, char ch, int fg, int bg, int fontSize) {
 
 }
 
-void vGL_putString(int x0, int y0, char *s, int fg, int bg, int fontSize) {
+void vGL_putString(int x0, int y0, const char *s, int fg, int bg, int fontSize) {
     int font_w;
     int font_h;
     int len = strlen(s);

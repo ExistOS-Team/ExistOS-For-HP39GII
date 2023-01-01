@@ -30,8 +30,6 @@
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
 
-  extern const unary_function_ptr * const  at_expm1;
-  extern const unary_function_ptr * const  at_copysign;
   std::string printasconstant(const gen & feuille,const char * sommetstr,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_INTERSECT;
   extern const unary_function_ptr * const  at_MINUS;

@@ -12,8 +12,8 @@
 
 #define FLEX_SCANNER
 #define YY_FLEX_MAJOR_VERSION 2
-#define YY_FLEX_MINOR_VERSION 6
-#define YY_FLEX_SUBMINOR_VERSION 1
+#define YY_FLEX_MINOR_VERSION 5
+#define YY_FLEX_SUBMINOR_VERSION 35
 #if YY_FLEX_SUBMINOR_VERSION > 0
 #define FLEX_BETA
 #endif
@@ -92,13 +92,25 @@ typedef unsigned int flex_uint32_t;
 
 #endif /* ! FLEXINT_H */
 
-/* TODO: this is always defined, so inline it */
-#define yyconst const
+#ifdef __cplusplus
 
-#if defined(__GNUC__) && __GNUC__ >= 3
-#define yynoreturn __attribute__((__noreturn__))
+/* The "const" storage-class-modifier is valid. */
+#define YY_USE_CONST
+
+#else	/* ! __cplusplus */
+
+/* C99 requires __STDC__ to be defined as 1. */
+#if defined (__STDC__)
+
+#define YY_USE_CONST
+
+#endif	/* defined (__STDC__) */
+#endif	/* ! __cplusplus */
+
+#ifdef YY_USE_CONST
+#define yyconst const
 #else
-#define yynoreturn
+#define yyconst
 #endif
 
 /* An opaque pointer. */
@@ -153,7 +165,7 @@ struct yy_buffer_state
 	/* Size of input buffer in bytes, not including room for EOB
 	 * characters.
 	 */
-	int yy_buf_size;
+	yy_size_t yy_buf_size;
 
 	/* Number of characters read into yy_ch_buf, not including EOB
 	 * characters.
@@ -181,7 +193,7 @@ struct yy_buffer_state
 
     int yy_bs_lineno; /**< The line count. */
     int yy_bs_column; /**< The column count. */
-
+    
 	/* Whether to try to fill the input buffer when we reach the
 	 * end of it.
 	 */
@@ -210,7 +222,7 @@ void giac_yyfree (void * ,yyscan_t yyscanner );
 
 /* Begin user sect3 */
 
-#define giac_yywrap(yyscanner) (/*CONSTCOND*/1)
+#define giac_yywrap(n) 1
 #define YY_SKIP_YYWRAP
 
 #define yytext_ptr yytext_r
@@ -238,7 +250,7 @@ void giac_yyfree (void * ,yyscan_t yyscanner );
 
 int giac_yylex_init (yyscan_t* scanner);
 
-int giac_yylex_init_extra (giac::YY_EXTRA_TYPE user_defined,yyscan_t* scanner);
+int giac_yylex_init_extra (YY_EXTRA_TYPE user_defined,yyscan_t* scanner);
 
 /* Accessor methods to globals.
    These are made visible to non-reentrant scanners for convenience. */
@@ -249,33 +261,33 @@ int giac_yyget_debug (yyscan_t yyscanner );
 
 void giac_yyset_debug (int debug_flag ,yyscan_t yyscanner );
 
-giac::YY_EXTRA_TYPE giac_yyget_extra (yyscan_t yyscanner );
+YY_EXTRA_TYPE giac_yyget_extra (yyscan_t yyscanner );
 
-void giac_yyset_extra (giac::YY_EXTRA_TYPE user_defined ,yyscan_t yyscanner );
+void giac_yyset_extra (YY_EXTRA_TYPE user_defined ,yyscan_t yyscanner );
 
 FILE *giac_yyget_in (yyscan_t yyscanner );
 
-void giac_yyset_in  (FILE * _in_str ,yyscan_t yyscanner );
+void giac_yyset_in  (FILE * in_str ,yyscan_t yyscanner );
 
 FILE *giac_yyget_out (yyscan_t yyscanner );
 
-void giac_yyset_out  (FILE * _out_str ,yyscan_t yyscanner );
+void giac_yyset_out  (FILE * out_str ,yyscan_t yyscanner );
 
-			int giac_yyget_leng (yyscan_t yyscanner );
+int giac_yyget_leng (yyscan_t yyscanner );
 
 char *giac_yyget_text (yyscan_t yyscanner );
 
 int giac_yyget_lineno (yyscan_t yyscanner );
 
-void giac_yyset_lineno (int _line_number ,yyscan_t yyscanner );
+void giac_yyset_lineno (int line_number ,yyscan_t yyscanner );
 
 int giac_yyget_column  (yyscan_t yyscanner );
 
-void giac_yyset_column (int _column_no ,yyscan_t yyscanner );
+void giac_yyset_column (int column_no ,yyscan_t yyscanner );
 
-giac::YYSTYPE * giac_yyget_lval (yyscan_t yyscanner );
+YYSTYPE * giac_yyget_lval (yyscan_t yyscanner );
 
-void giac_yyset_lval (giac::YYSTYPE * yylval_param ,yyscan_t yyscanner );
+void giac_yyset_lval (YYSTYPE * yylval_param ,yyscan_t yyscanner );
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -323,10 +335,10 @@ static int yy_flex_strlen (yyconst char * ,yyscan_t yyscanner);
 #define YY_DECL_IS_OURS 1
 
 extern int giac_yylex \
-(giac::YYSTYPE * yylval_param ,yyscan_t yyscanner);
+               (YYSTYPE * yylval_param ,yyscan_t yyscanner);
 
 #define YY_DECL int giac_yylex \
-  (giac::YYSTYPE * yylval_param , yyscan_t yyscanner)
+               (YYSTYPE * yylval_param , yyscan_t yyscanner)
 #endif /* !YY_DECL */
 
 /* yy_get_previous_state - get the state just before the EOB char was reached */
@@ -343,9 +355,9 @@ extern int giac_yylex \
 #undef YY_DECL
 #endif
 
-#line 875 "input_lexer.ll"
+#line 913 "input_lexer.ll"
 
 
-#line 350 "lexer.h"
+#line 362 "lexer.h"
 #undef giac_yyIN_HEADER
 #endif /* giac_yyHEADER_H */

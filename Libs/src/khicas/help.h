@@ -19,7 +19,7 @@
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <fstream>
+//#include <fstream>
 #include <string>
 #include "vector.h"
 #include <map>
@@ -33,10 +33,17 @@ namespace giac {
   // true if ch is alphanumeric
   bool isalphan(char ch);
 
+  bool is_python_builtin(const char * s);
+  bool is_python_keyword(const char * s);
+  extern const char * python_keywords[];
+  extern const char * const python_builtins[];
+  extern const char * js_keywords[];
+  bool is_js_keyword(const char * s);
+
   // search if cmd_name has static describing help
   // NB: cmd_name may be localized but related is not localized
-  bool has_static_help(const char * cmd_name,int lang,const char * & howto,const char * & syntax,const char * & examples,const char * & related);
-
+  bool has_static_help(const char * & cmd_name,int lang,const char * & howto,const char * & syntax,const char * & examples,const char * & related);
+  
   // search for s in a read-opened FILE f
   bool grep(FILE * f,const std::string & s);
   // search for s in filename
@@ -84,7 +91,7 @@ namespace giac {
   aide helpon(const std::string & demande,const std::vector<aide> & v,int language,int count,bool with_op=true);
   std::string writehelp(const aide & cur_aide,int language);
 
-#if !defined(NSPIRE_NEWLIB) && !defined(RTOS_THREADX) && !defined(EMCC) && !defined(NSPIRE) && !defined(FXCG)
+#if !defined(NSPIRE_NEWLIB) && !defined(RTOS_THREADX) && !defined(EMCC) && !defined(EMCC2) && !defined(NSPIRE) && !defined(FXCG) && !defined KHICAS
   extern std::multimap<std::string,std::string> html_mtt,html_mall;
   extern std::vector<std::string> html_vtt,html_vall;
 

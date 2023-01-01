@@ -31,7 +31,6 @@ namespace giac {
   struct symbolic;
 
   gen makeline(const gen & a,const gen &b);
-  
   bool proot_cached(const vecteur & v,double eps,vecteur & res);
   bool proot_cache(const vecteur & v,double eps,const vecteur & res);
 
@@ -44,14 +43,14 @@ namespace giac {
   bool is_sqrt(const gen & a,gen & arg);
   gen select_root(const vecteur & v,GIAC_CONTEXT);
   gen in_select_root(const vecteur & a,bool reel,GIAC_CONTEXT,double eps=1e-14);
-  bool is_known_rootof(const vecteur & v,gen & symroot,GIAC_CONTEXT);
+  bool is_known_rootof(const vecteur & v,const vecteur &lv,gen & symroot,GIAC_CONTEXT);
   gen horner_rootof(const vecteur & p,const gen & g,GIAC_CONTEXT);
   bool has_rootof_value(const gen & Pmin,gen & value,GIAC_CONTEXT);
 
   gen alg_evalf(const gen & a,const gen &b,GIAC_CONTEXT);
   gen approx_rootof(const gen & e,GIAC_CONTEXT);
   gen common_EXT(gen & a,gen & b,const vecteur * l,GIAC_CONTEXT);
-  gen common_minimal_POLY(const gen & ga,const gen & gb, gen & a,gen & b,int &k,GIAC_CONTEXT);
+  gen common_minimal_POLY(const gen & ga,const gen & gb, gen & a,gen & b,int &k,const vecteur *l,GIAC_CONTEXT);
   gen algebraic_EXTension(const gen & a,const gen & v);
   gen ext_reduce(const gen & a, const gen & v);
   gen ext_reduce(const gen & e);

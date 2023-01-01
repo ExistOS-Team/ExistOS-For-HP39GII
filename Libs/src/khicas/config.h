@@ -33,7 +33,8 @@
 
 /* Version number of package */
 #define VERSION "1.4.9-57"
-#define FXCG
+//#define FXCG
+// #define HP39 // define in Makefile
 #define GIAC_NO_OPTIMIZATIONS
 #define HAVE_NO_HOME_DIRECTORY
 #define HAVE_NO_SIGNAL_H
@@ -66,8 +67,6 @@
 #define TIMEOUT
 //#include "softmath.h"
 #define RELEASE
-    extern volatile bool ctrl_c;
-    extern volatile bool interrupted;
     #include <cassert>
 #ifndef M_PI
 #define M_PI       3.14159265358979323846

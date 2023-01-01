@@ -127,7 +127,7 @@ inline int mpz_set_str(mpz_t &  z,char * s,int base){return mp_read_radix(&z,s,b
 inline int mpz_get_str(char * s,int base,const mpz_t &  z){return mp_toradix((mp_int *)&z,s,base);}
 inline double mpz_get_d(const mpz_t & z){ 
   if (mp_count_bits((mp_int *)&z)>1023) {
-#if defined NSPIRE || defined FXCG
+#if defined NSPIRE || defined FXCG || defined HP39
     return 1e300/1e-300;
 #else
     return std::numeric_limits<double>::infinity();

@@ -38,13 +38,9 @@ typedef struct DISPBOX
 #define LCD_WIDTH_PX   256
 #define LCD_HEIGHT_PX  128
 
-#define COLOR_CYAN   90
-#define COLOR_RED    68
-#define COLOR_GREEN  68
-#define COLOR_WHITE  255
-#define COLOR_BLACK  0
 
 
+/*
 enum
 {
   TEXT_COLOR_BLACK = 0,
@@ -56,14 +52,20 @@ enum
   TEXT_COLOR_YELLOW = 6,
   TEXT_COLOR_WHITE = 7
 };
-
-enum
-{
+enum {
   TEXT_MODE_NORMAL = 0x00,
   TEXT_MODE_INVERT = 0x01,
   TEXT_MODE_TRANSPARENT_BACKGROUND = 0x20,
   TEXT_MODE_AND = 0x21
 };
+*/
+
+
+#define COLOR_CYAN   90
+#define COLOR_RED    68
+#define COLOR_GREEN  68
+#define COLOR_WHITE  255
+#define COLOR_BLACK  0
 
 
 
@@ -80,8 +82,8 @@ typedef struct
   unsigned long address;
 } FILE_INFO;
 
-void PrintMini(int x, int y, const unsigned char* s, int rev);
-void PrintXY(int x, int y, const unsigned char* s, int rev);
+int PrintMini(int x, int y, const unsigned char* s, int rev);
+int PrintXY(int x, int y, const unsigned char* s, int rev);
 void locate(int x, int y);
 void PrintRev(unsigned char *s);
 void Print(unsigned char *s);
@@ -122,5 +124,6 @@ bool chkEsc(void);
 int SetTimer(int TimerID, int period, void (*callback)(void));
 void KillTimer(int TimerID);
 
+// extern "C" void SetQuitHandler(void (*callback)(void)) ;
 
 #endif

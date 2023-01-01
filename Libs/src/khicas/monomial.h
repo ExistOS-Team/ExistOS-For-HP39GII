@@ -18,19 +18,19 @@
 #ifndef _GIAC_MONOMIAL_H_
 #define _GIAC_MONOMIAL_H_
 #include "first.h"
-#include "iostream"
-#include <fstream>
+#include <iostream>
+//#include <fstream>
 #include <functional>
 #include <algorithm>
 #include <cmath>
 #include <map>
 #include <string>
+#include <cassert>
 #ifdef USTL
 #include <pair>
 #endif
 #include "index.h"
 #include "poly.h"
-#include <cassert>
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
@@ -38,6 +38,12 @@ namespace giac {
 
   int powmod(int a,unsigned long n,int m);
 
+#ifdef KHICAS
+  template<class T,class U>
+  stdostream & operator << (stdostream & os,const std::pair<T,U> & p){
+    return os << "<" << p.first << "," << p.second << ">";
+  }
+#endif
 #ifdef NSPIRE
   template<class T,class U,class I>
   nio::ios_base<I> & operator << (nio::ios_base<I> & os,const std::pair<T,U> & p){
@@ -338,6 +344,12 @@ namespace giac {
     bool operator () (const monomial<T> & a, const monomial<T> & b){ return strictly_greater(a,b);}
   };
 
+#ifdef KHICAS
+  template <class T>
+  stdostream & operator << (stdostream & os, const monomial<T> & m ){
+    return os << m.print();
+  }
+#endif
 #ifdef NSPIRE
   template <class T,class I>
   nio::ios_base<I> & operator << (nio::ios_base<I> & os, const monomial<T> & m ){
@@ -366,6 +378,7 @@ namespace giac {
     new_i.push_back(j);
     return monomial<T>(t,new_i);
   }
+
 
 #ifdef NSPIRE
   template <class T,class I>
@@ -511,7 +524,7 @@ namespace giac {
     /* if (a!=a_end)
        log=a->index.size()>=12; 
        if (log)
-       CERR << "+ begin" << CLOCK() << endl; */
+       CERR << "+ begin" << CLOCK() << '\n'; */
     for (;;) {
       if (a == a_end) {
 	while (b != b_end) {
@@ -552,7 +565,7 @@ namespace giac {
       }
     }
     //  if (log)
-    //  CERR << "+ end " << CLOCK() << endl;
+    //  CERR << "+ end " << CLOCK() << '\n';
   }
 
   template <class T>
@@ -702,7 +715,7 @@ namespace giac {
     for (;prod_it_!=prod_it_end;++prod_it_)
       if (!is_zero(prod_it_->second))
 	new_coord.push_back(monomial<T>(prod_it_->second,prod_it_->first));
-    // CERR << new_coord <<endl;
+    // CERR << new_coord <<'\n';
 #if 1
     sort_helper<T> M(m_is_strictly_greater);
     sort(new_coord.begin(),new_coord.end(),M);    
@@ -744,7 +757,7 @@ namespace giac {
     for (;prod_it!=prod_itend;++prod_it)
       if (!is_zero(prod_it->second))
 	new_coord.push_back(monomial<T>(prod_it->second,prod_it->first));
-    // CERR << new_coord <<endl;
+    // CERR << new_coord <<'\n';
     // sort(new_coord.begin(),new_coord.end(),m_is_strictly_greater);
     return;
 #else
@@ -810,7 +823,7 @@ namespace giac {
     // a dense poly of deg. aa and d variables has binomial(aa+d,d) monomials
     // we need to reserve at most asize*bsize
     // but less for dense polynomials since 
-    //�binomial(aa+d,d)*binomial(bb+d,d) > binomial(aa+bb+d,d)
+    // binomial(aa+d,d)*binomial(bb+d,d) > binomial(aa+bb+d,d)
     int aa=total_degree(ita_begin->index),bb=total_degree(itb_begin->index);
     double r;
     double factoriald=std::lgamma(d+1);
@@ -819,13 +832,13 @@ namespace giac {
     double factorialaabbd=std::lgamma(aa+bb+d+1),factorialaabb=std::lgamma(aa+bb+1);
     r=std::exp(factorialaabbd-(factorialaabb+factoriald));
     if (debug_infolevel)
-      CERR << "// " << CLOCK() << " Mul degree " << aa << "+" << bb << " size " << asize << "*" << bsize << "=" << asize*bsize << " max " << r << std::endl;
+      CERR << "// " << CLOCK() << " Mul degree " << aa << "+" << bb << " size " << asize << "*" << bsize << "=" << asize*bsize << " max " << r << '\n';
     new_coord.clear();
     new_coord.reserve(std::min(int(r),itend-it));
     // add terms with same power
     addsamepower(it,itend,new_coord);
     if (debug_infolevel)
-      CERR << "// Actual mul size " << new_coord.size() << std::endl;
+      CERR << "// Actual mul size " << new_coord.size() << '\n';
 #endif
   }
 
@@ -903,7 +916,7 @@ namespace giac {
   template<class T>
   void Nextcoeff(typename std::vector< monomial<T> >::const_iterator & it,const typename std::vector< monomial<T> >::const_iterator & itend,std::vector< monomial<T> > & v){
     int n=it->index.front();
-    int d=it->index.size();
+    //int d=it->index.size();
     for (;(it!=itend) && (it->index.front()==n);++it)
       v.push_back(it->trunc1());
   }
@@ -1037,7 +1050,7 @@ namespace giac {
 	std::vector< monomial<T> > temp;
 	Nextcoeff(it,itend,temp);
 	if (r!=pivotr){
-	  // COUT << "L" << r << "=" << pivotcoeff << "*L" << r << "-" << pivotcol[r] << "*L" << pivotr << std::endl ;
+	  // COUT << "L" << r << "=" << pivotcoeff << "*L" << r << "-" << pivotcol[r] << "*L" << pivotr << '\n' ;
 	  temp=temp*pivotcoeff-pivotline*pivotcol[r];
 	  if (dobareiss)
 	    temp=temp/bareisscoeff;
@@ -1048,7 +1061,7 @@ namespace giac {
       }
       bareisscoeff=pivotcoeff;
       v=newcoord;
-      // COUT << v << std::endl;
+      // COUT << v << '\n';
     }
     delete [] pivotcol;
   }

@@ -29,6 +29,7 @@ namespace giac {
   // x, y are 2 idnt
   // xfact and yfact should be initialized to 1
   // return true if f=xfact*yfact where xfact depends on x and yfact on y only
+  bool separate_variables(const gen & f,const gen & x,const gen & y,gen & xfact,gen & yfact,int step_info,GIAC_CONTEXT);
   bool separate_variables(const gen & f,const gen & x,const gen & y,gen & xfact,gen & yfact,GIAC_CONTEXT);
 
   gen laplace(const gen & f,const gen & x,const gen & s,GIAC_CONTEXT);
@@ -42,7 +43,7 @@ namespace giac {
   extern const unary_function_ptr * const  at_ilaplace ;
 
   gen desolve(const gen & f,const gen & x,const gen & y,int & ordre,vecteur & parameters,GIAC_CONTEXT);
-  gen desolve_f(const gen & f_orig,const gen & x_orig,const gen & y_orig,int & ordre,vecteur & parameters,gen & f,int step_info,GIAC_CONTEXT);
+  gen desolve_f(const gen & f_orig,const gen & x_orig,const gen & y_orig,int & ordre,vecteur & parameters,gen & f,int step_info,bool & num,GIAC_CONTEXT);
   gen _desolve(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_desolve ;
   gen ztrans(const gen & f,const gen & x,const gen & s,GIAC_CONTEXT);
@@ -53,7 +54,13 @@ namespace giac {
   gen integrate_without_lnabs(const gen & e,const gen & x,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_Kronecker ;
   gen _Kronecker(const gen & args,GIAC_CONTEXT);
-  
+#ifndef USE_GMP_REPLACEMENTS
+  gen kovacicsols(const gen &r_orig,const gen &x,const gen &dy_coeff,GIAC_CONTEXT);
+  gen _kovacicsols(const gen &g,GIAC_CONTEXT);
+  gen idnteval(const gen &g,GIAC_CONTEXT) ;  
+  bool is_constant_wrt_vars(const gen &e,const vecteur &vars,GIAC_CONTEXT) ;
+  gen radsimp(const gen &g,GIAC_CONTEXT) ;
+#endif  
 
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac

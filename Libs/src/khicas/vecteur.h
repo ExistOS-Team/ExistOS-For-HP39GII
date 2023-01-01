@@ -20,7 +20,7 @@
 #include "first.h"
 #include "index.h"
 #include <complex>
-#include "iostream"
+#include <iostream>
 #ifdef HAVE_LIBGSL
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
@@ -55,7 +55,6 @@ namespace giac {
   // vecteur related functions
   vecteur makevecteur(const gen & a);
   vecteur makevecteur(const gen & a,const gen & b);
-  vecteur makevecteur(int a,int b);
   vecteur makevecteur(const gen & a,const gen & b,const gen & c);
   vecteur makevecteur(const gen & a,const gen & b,const gen & c,const gen & d);
   vecteur makevecteur(const gen & a,const gen & b,const gen & c,const gen & d,const gen & e);
@@ -70,9 +69,7 @@ namespace giac {
   vecteur makevecteur(const gen & a,const gen & b,const gen & c,const gen & d,const gen & e,const gen & f,const gen & g,const gen & h,const gen & i,const gen &j,const gen & k,const gen & l,const gen & m,const gen &n);
 
   gen makesequence(const gen & a);
-  gen makesequence(int a);
   gen makesequence(const gen & a,const gen & b);
-  gen makesequence(int a,int b);
   gen makesequence(const gen & a,const gen & b,const gen & c);
   gen makesequence(const gen & a,const gen & b,const gen & c,const gen & d);
   gen makesequence(const gen & a,const gen & b,const gen & c,const gen & d,const gen & e);
@@ -162,7 +159,7 @@ namespace giac {
   // extract submatrix
   matrice matrice_extract(const matrice & m,int insert_row,int insert_col,int nrows,int ncols);
   void makespreadsheetmatrice(matrice & m,GIAC_CONTEXT);
-  matrice extractmatricefromsheet(const matrice & m);
+  matrice extractmatricefromsheet(const matrice & m,bool value=true);
   // eval spreadsheet, compute list of dependances in lc
   void spread_eval(matrice & m,GIAC_CONTEXT);
 
@@ -212,7 +209,7 @@ namespace giac {
   bool iszero(const std::vector<int> & p);
   
   // matrice related functions
-  bool ckmatrix(const matrice & a,bool allow_embedded_vect);
+  bool ckmatrix(const matrice & a,bool allow_embedded_vect,bool ckundef=true);
   bool ckmatrix(const matrice & a);
   bool ckmatrix(const gen & a);
   bool ckmatrix(const gen & a,bool);
@@ -226,7 +223,7 @@ namespace giac {
   int mrows(const matrice & a);
   int mcols(const matrice & a);
   void mdims(const matrice &m,int & r,int & c);
-  void mtran(const matrice & a,matrice & res,int ncolres=0);
+  void mtran(const matrice & a,matrice & res,int ncolres=0,bool ckundef=true);
   matrice mtran(const matrice & a);
   gen _tran(const gen & a,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_tran ;
@@ -263,6 +260,7 @@ namespace giac {
   bool multvectvector_int_vector_int(const std::vector< std::vector<int> > & M,const std::vector<int> & v,int modulo,std::vector<int> & Mv);
   void tran_vect_vector_int(const std::vector< std::vector<int> > & N,std::vector< std::vector<int> > & tN);
   void apply_permutation(const std::vector<int> & permutation,const std::vector<int> &x,std::vector<int> & y);
+  void apply_permutation(vecteur &v,std::vector<int> &p,bool keep_p=false); // efficient sorting of v w.r.t. p, added by L. Marohnic
   void vecteur2vector_int(const vecteur & v,int modulo,std::vector<int> & res);
   
   enum matrix_algorithms {
@@ -310,13 +308,20 @@ namespace giac {
   // finish full row reduction to echelon form if N is upper triangular
   // this is done from lmax-1 to l
   void smallmodrref_upper(std::vector< std::vector<int> > & N,int l,int lmax,int c,int cmax,int modulo);
+  // finish row reduction for matrices with much more columns than rows
+  // version adapted for threads parallelization
+  // assumes that all columns are reduced in parallel, pivots are searched
+  // starting at column 0
+  void in_thread_smallmodrref_upper(std::vector< std::vector<int> > & N,int l,int lpivot,int lmax,int c,int cmax,int modulo,int parallel);
+  void thread_smallmodrref_upper(std::vector< std::vector<int> > & N,int l,int lmax,int c,int cmax,int modulo,int parallel);
   void free_null_lines(std::vector< std::vector<int> > & N,int l,int lmax,int c,int cmax);
+  int smallmodrref_lastpivotcol(const std::vector< std::vector<int> > & K,int lmax);
 
   void smallmodrref(int nthreads,std::vector< std::vector<int> > & N,vecteur & pivots,std::vector<int> & permutation,std::vector<int> & maxrankcols,longlong & idet,int l, int lmax, int c,int cmax,int fullreduction,int dont_swap_below,int modulo,int rref_or_det_or_lu,bool reset,smallmodrref_temp_t * workptr,bool allow_block,int carac);
   void doublerref(matrix_double & N,vecteur & pivots,std::vector<int> & permutation,std::vector<int> & maxrankcols,double & idet,int l, int lmax, int c,int cmax,int fullreduction,int dont_swap_below,int rref_or_det_or_lu,double eps);
   void modlinear_combination(vecteur & v1,const gen & c2,const vecteur & v2,const gen & modulo,int cstart,int cend=0);
   void modlinear_combination(std::vector<int> & v1,int c2,const std::vector<int> & v2,int modulo,int cstart,int cend,bool pseudo);
-  vecteur fracmod(const vecteur & v,const gen & modulo);
+  vecteur fracmod(const vecteur & v,const gen & modulo,gen * den=0,int prealloc=128);
   gen modproduct(const vecteur & v, const gen & modulo);
   matrice mrref(const matrice & a,GIAC_CONTEXT);
   gen _rref(const gen & a,GIAC_CONTEXT); // first non 0 elem in row is 1
@@ -335,6 +340,7 @@ namespace giac {
   gen _idn(const gen & e,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_idn ;
 
+  gen fieldcoeff(const gen &F);
   vecteur vranm(int n,const gen & f,GIAC_CONTEXT); 
   matrice mranm(int n,int m,const gen & f,GIAC_CONTEXT); // random matrix using f
   gen _ranm(const gen & e,GIAC_CONTEXT);
@@ -434,6 +440,7 @@ namespace giac {
   matrice matpow(const matrice & m,const gen & n,GIAC_CONTEXT);
   gen _matpow(const gen & a,GIAC_CONTEXT);
 
+  bool mker(std::vector< std::vector<int> > & a,std::vector< std::vector<int> > & v,int modulo);
   bool mker(const matrice & a,vecteur & v,int algorithm,GIAC_CONTEXT);
   bool mker(const matrice & a,vecteur & v,GIAC_CONTEXT); // algorithm=0
   vecteur mker(const matrice & a,GIAC_CONTEXT);
@@ -459,9 +466,10 @@ namespace giac {
   int vecteur2gsl_vector(const vecteur & v,gsl_vector * w,GIAC_CONTEXT); // no alloc
   int vecteur2gsl_vector(const_iterateur it,const_iterateur itend,gsl_vector * w,GIAC_CONTEXT);
   vecteur gsl_vector2vecteur(const gsl_vector * v);
+  int matrice2gsl_matrix(const matrice & m,int i0,int j0,int n1,int n2,bool transp,gsl_matrix * w,GIAC_CONTEXT);
   int matrice2gsl_matrix(const matrice & m,gsl_matrix * w,GIAC_CONTEXT);
   gsl_matrix * matrice2gsl_matrix(const matrice & m,GIAC_CONTEXT);
-  matrice gsl_matrix2matrice(const gsl_matrix * v);
+  matrice gsl_matrix2matrice(const gsl_matrix * v,bool transp=false);
   vecteur gsl_permutation2vecteur(const gsl_permutation * p,GIAC_CONTEXT);
 #endif // HAVE_LIBGSL
   
@@ -477,6 +485,29 @@ namespace giac {
 
   gen _cholesky(const gen & a,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_cholesky ;
+#if !defined KHICAS && !defined GIAC_HAS_STO_38
+  // additions by L. Marohnić:
+  struct log_output_redirect { // redirecting log output to string
+    log_output_redirect(GIAC_CONTEXT) { old=logptr(ctx=contextptr)->rdbuf(buffer.rdbuf()); }
+    ~log_output_redirect() { logptr(ctx)->rdbuf(old); }
+    std::string get_buffer_string() const { return buffer.str(); }
+  private:
+    const context *ctx;
+    std::stringstream buffer;
+    std::streambuf *old;
+  };
+#endif
+  // LDL decomposition, inertia computation and solve_indef for fast system solving using the factorization
+  bool ldl(matrice & a,std::vector<int> & perm,int mat_type,bool &sing,double time_limit,GIAC_CONTEXT);
+#ifdef HAVE_LIBLAPACK
+  bool solve_indef(double *A,double **WORK,int *IPIV,double *b,int N,int NRHS,int *p,int *n,int *z);
+#endif
+  bool solve_indef(matrice &A,const vecteur *b,vecteur &x,int *p,int *n,int *z,GIAC_CONTEXT);
+  gen _ldl(const gen & a,GIAC_CONTEXT);
+  extern const unary_function_ptr * const  at_ldl ;
+  gen _inertia(const gen & a,GIAC_CONTEXT);
+  extern const unary_function_ptr * const  at_inertia ;
+  // end additions by L. Marohnić
   gen _svd(const gen & a,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_svd ;
   gen _basis(const gen & a,GIAC_CONTEXT);

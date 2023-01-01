@@ -904,7 +904,7 @@ int doCatalogMenu(char *insertText, const char *title, int category, const char 
     menu.scrollout = 1;
     menu.title = (char *)title;
     menu.type = MENUTYPE_FKEYS;
-    menu.height = 7; //!!!!!
+    menu.height = MENUHEIGHT; //!!!!!
     while (1)
     {
       drawRectangle(0, F_KEY_BAR_Y_START - 2, LCD_WIDTH_PX, 12, COLOR_BLACK); //!!!!

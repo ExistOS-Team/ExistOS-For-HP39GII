@@ -24,10 +24,6 @@ namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
   typedef unsigned char octet;
   class gen;
-  extern const unary_function_ptr * const  at_evolute;
-  extern const unary_function_ptr * const  at_frenet;
-  extern const unary_function_ptr * const  at_osculating_circle;
-  extern const unary_function_ptr * const  at_curvature;
   extern const unary_function_ptr * const  at_entry;
   extern const unary_function_ptr * const  at_ans;
   gen _seq(const gen & g,GIAC_CONTEXT);
@@ -75,8 +71,8 @@ namespace giac {
   gen _semi_augment(const gen & g,GIAC_CONTEXT);
   gen _cumSum(const gen & g,GIAC_CONTEXT);
   gen _exp2list(const gen & g,GIAC_CONTEXT);
+  gen _list2exp(const gen & g,GIAC_CONTEXT);
   gen _list2mat(const gen & g,GIAC_CONTEXT);
-  //gen _list2exp(const gen & g,GIAC_CONTEXT);
   gen _deltalist(const gen & g,GIAC_CONTEXT);
   gen _mat2list(const gen & g,GIAC_CONTEXT);
   gen _newList(const gen & g,GIAC_CONTEXT);
@@ -155,7 +151,14 @@ namespace giac {
   extern const unary_function_ptr * const  at_InputStr;
   extern const unary_function_ptr * const  at_Prompt;
   extern const unary_function_ptr * const  at_rowswap;
+#ifndef RTOS_THREADX
+#ifndef BESTA_OS
+  extern unary_function_eval __getKey;
+  extern unary_function_eval __get_key;
+#endif
+#endif
   extern const unary_function_ptr * const  at_getKey;
+  extern const unary_function_ptr * const  at_keydown;
   extern const unary_function_ptr * const  at_numer;
   extern const unary_function_ptr * const  at_ClrIO;
   extern const unary_function_ptr * const  at_Output;

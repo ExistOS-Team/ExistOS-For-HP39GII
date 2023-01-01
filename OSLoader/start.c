@@ -253,6 +253,8 @@ void System(void *par) {
     setCPUDivider(CPU_DIVIDE_NORMAL);
     bootAddr += 4;
     atagsAddr = (uint32_t *)(VM_ROM_BASE + (4234 - 1984) * 2048);
+    // 1984 is the System page in options of Updater
+    //atagsAddr = (uint32_t *)(VM_ROM_BASE + 3000 * 2048);
 
     g_vm_status = VM_STATUS_RUNNING;
 

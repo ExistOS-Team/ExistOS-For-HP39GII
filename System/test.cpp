@@ -145,7 +145,6 @@ void run(const char * s,int do_logo_graph_eqw){
 
   //return ge; 
 }
-#endif
  
 
 
@@ -191,7 +190,7 @@ void tstdo_run(const char *s, gen &g, gen &ge)
 		{
 			// clear turtle, display msg
 			turtle_stack() = vector<logo_turtle>(1, logo_turtle());
-			while (confirm((lang ? "Memoire remplie!" : "Memory full"), "Purge variable", true) == -1)
+			while (confirm(("Memory full"), "Purge variable", true) == -1)
 				;
 			/*
 			  gen g=select_var(contextptr);
@@ -275,9 +274,9 @@ void tstrun(const char *s)
 	// return ge;
 }
   
+#endif
 
-
-    int kcas_main(int isAppli, unsigned short OptionNum);
+int kcas_main(int isAppli, unsigned short OptionNum);
 extern "C"{
 extern bool khicasRunning;
 #include "SystemFs.h"

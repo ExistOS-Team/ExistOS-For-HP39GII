@@ -24,7 +24,7 @@
 #if 0
     signed char icon=-1; //for file browsers, to show a file icon. -1 shows no icon (default)
 #endif
-    MenuItem():token(0),type(MENUITEM_NORMAL),value(MENUITEM_VALUE_NONE),isselected(0),isfolder(0),color(TEXT_COLOR_BLACK) {}
+    MenuItem():token(0),type(MENUITEM_NORMAL),value(MENUITEM_VALUE_NONE),isselected(0),isfolder(0),color(0) {}
   } ;
 
 typedef struct
@@ -41,7 +41,7 @@ typedef struct {
   char* statusText = NULL; // text to be shown on the status bar, may be empty
   char* title = NULL; // title to be shown on the first line if not null
   char* subtitle = NULL;
-  int titleColor=TEXT_COLOR_BLUE; //color of the title
+  int titleColor=0; //color of the title
   char* nodatamsg; // message to show when there are no menu items to display
   int startX=0; //X where to start drawing the menu. NOTE this is not absolute pixel coordinates but rather character coordinates
   int startY=0; //Y where to start drawing the menu. NOTE this is not absolute pixel coordinates but rather character coordinates
