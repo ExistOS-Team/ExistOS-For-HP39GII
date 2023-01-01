@@ -23,6 +23,14 @@
 #include "gen.h"
 #include "unary.h"
 #include "symbolic.h"
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+
+#ifdef __MINGW_H
+inline int setenv(const char *name, const char *value, int overwrite){ return 0;}
+inline int unsetenv(const char *name){return 0;}
+#endif
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
@@ -56,9 +64,8 @@ namespace giac {
   extern const unary_function_ptr * const  at_lcoeff ;
   extern const unary_function_ptr * const  at_set_language ;
   extern const unary_function_ptr * const  at_float ;
+  gen _build_complex(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_complex ;
-  extern const unary_function_ptr * const  at_fmod ;
-  extern const unary_function_ptr * const  at_addr ;
 
   gen _tcoeff(const gen & args,GIAC_CONTEXT);
   gen _sqrfree(const gen & args,GIAC_CONTEXT);
@@ -73,6 +80,7 @@ namespace giac {
   gen _dfc2f(const gen & g,GIAC_CONTEXT);
   gen _float2rational(const gen & g,GIAC_CONTEXT);
   gen _gramschmidt(const gen & g,GIAC_CONTEXT);
+  gen _fmod(const gen & g,GIAC_CONTEXT);
   gen _pmin(const gen & g,GIAC_CONTEXT);
   gen _potential(const gen & g,GIAC_CONTEXT);
   gen _vpotential(const gen & g,GIAC_CONTEXT);
@@ -101,7 +109,7 @@ namespace giac {
   gen _l1norm(const gen & g0,GIAC_CONTEXT);
   gen _dotprod(const gen & g,GIAC_CONTEXT);
   gen _diag(const gen & g,GIAC_CONTEXT);
-  gen _giacinput(const gen & args,GIAC_CONTEXT);
+  gen _input(const gen & args,GIAC_CONTEXT);
   gen _textinput(const gen & args,GIAC_CONTEXT);
   gen _primpart(const gen & g,GIAC_CONTEXT);
   gen _content(const gen & g,GIAC_CONTEXT);
@@ -149,6 +157,8 @@ namespace giac {
   gen _polygonscatterplot(const gen & g,GIAC_CONTEXT);
   gen _diagramme_batons(const gen & g,GIAC_CONTEXT);
   gen _camembert(const gen & g,GIAC_CONTEXT);
+  gen _axis(const gen & g,GIAC_CONTEXT);
+  extern const unary_function_ptr * const  at_axis;
   gen cross_prod(const gen & a,const gen & b,const gen & c,GIAC_CONTEXT);
   gen _convexhull(const gen & g,GIAC_CONTEXT);
   matrice simplex_reduce(const matrice & m_orig,vecteur & bfs,gen & optimum,bool max_pb,bool choose_first,GIAC_CONTEXT);
@@ -230,13 +240,18 @@ namespace giac {
   extern const unary_function_ptr * const  at_ncols;
   extern const unary_function_ptr * const  at_l2norm;
   extern const unary_function_ptr * const  at_input;
+#ifdef RTOS_THREADX
+  // extern const unary_function_eval __input;
+  extern const alias_unary_function_eval __input;
+#else
+  extern unary_function_eval __input;
+#endif
   extern const unary_function_ptr * const  at_histogram;
   extern const unary_function_ptr * const  at_bitand;
-  extern const unary_function_ptr * const  at_bitnot;
   extern const unary_function_ptr * const  at_bitor;
+  extern const unary_function_ptr * const  at_bitnot;
   extern const unary_function_ptr * const  at_bitxor;
   extern const unary_function_ptr * const  at_hamdist;
-  extern const unary_function_ptr * const  at_is_matrix;
   matrice effectifs(const vecteur & v,double class_minimum,double class_size,GIAC_CONTEXT);
   // scalar product <a|b> (unlike dotproduct, takes the conjugate of coordinates of a)
   gen scalarproduct(const vecteur & a,const vecteur & b,GIAC_CONTEXT);
@@ -246,11 +261,15 @@ namespace giac {
   gen conjugate_gradient(const matrice & A,const vecteur & b_orig,const vecteur & x0,double eps,GIAC_CONTEXT);
 
   bool has_undef_stringerr(const gen & g,std::string & err);
+  gen _is_polynomial(const gen & args,GIAC_CONTEXT);
+  bool is_periodic(const gen & f,const gen & x,gen & periode,GIAC_CONTEXT);
 
   // step by step utilities
   // poi=point of interest, tvi=table of variation
   // asym=list of asymptotes, crit=critical points, inflex=inflection points
-  int step_func(const gen & f,const gen & x,gen & xmin,gen&xmax,vecteur & poig,vecteur & tvi,gen & periode,vecteur & asym,vecteur & parab,vecteur & crit,vecteur & inflex,bool printtvi,bool exactlegende,GIAC_CONTEXT,bool do_inflex=true);
+  // bit 0 of do_inflex_tabsign = set to 1 for inflexion (valid for tabvar)
+  // bit 1 of do_inflex_tabsign = set to 1 for tabsign, 0 for tabvar
+  int step_func(const gen & f,const gen & x,gen & xmin,gen&xmax,vecteur & poig,vecteur & tvi,gen & periode,vecteur & asym,vecteur & parab,vecteur & crit,vecteur & inflex,bool printtvi,bool exactlegende,GIAC_CONTEXT,int do_inflex_tabsign=1);
   extern const unary_function_ptr * const  at_tabvar;
   int step_param(const gen & f,const gen & g,const gen & t,gen & tmin,gen&tmax,vecteur & poi,vecteur & tvi,bool printtvi,bool exactlegende,GIAC_CONTEXT);
   // translate HTML Xcas for Firefox link to a giac list of commands
@@ -270,9 +289,13 @@ namespace giac {
   extern const unary_function_ptr * const  at_pop;
   extern const unary_function_ptr * const  at_coth ;
   extern const unary_function_ptr * const  at_atan2 ;
-  extern bool freeze;
-  void printCentered(const char* text, int y) ;
+  vecteur get_pixel_v();
+  void adjust_pixels_dim(const vecteur & V,int & I,int &J);
   extern const unary_function_ptr * const  at_get_pixel ;
+  extern int screen_w,screen_h;
+  gen _set_pixel(const gen & args,GIAC_CONTEXT);
+  gen _get_pixel(const gen & args,GIAC_CONTEXT);
+  gen _draw_string(const gen & a_,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_set_pixel ;
   extern const unary_function_ptr * const  at_strip ;
   extern const unary_function_ptr * const  at_lower ;
@@ -280,49 +303,63 @@ namespace giac {
   extern const unary_function_ptr * const  at_isinf ;
   extern const unary_function_ptr * const  at_isfinite ;
   extern const unary_function_ptr * const  at_isnan ;
+  extern const unary_function_ptr * const  at_fmod ;
   extern const unary_function_ptr * const  at_draw_string ;
+  extern const unary_function_ptr * const  at_draw_filled_circle ;
+  extern const unary_function_ptr * const  at_draw_filled_arc ;
+  extern const unary_function_ptr * const  at_draw_circle ;
+  extern const unary_function_ptr * const  at_draw_arc ;
   extern const unary_function_ptr * const  at_draw_line ;
   extern const unary_function_ptr * const  at_draw_polygon ;
-  extern const unary_function_ptr * const  at_draw_arc ;
-  extern const unary_function_ptr * const  at_draw_circle ;
-  extern const unary_function_ptr * const  at_draw_rectangle ;
   extern const unary_function_ptr * const  at_fill_rect ;
+  extern const unary_function_ptr * const  at_draw_rectangle ;
   extern const unary_function_ptr * const  at_dtype ;
   extern const unary_function_ptr * const  at_rgb ;
+  extern const unary_function_ptr * const  at_prediction;
+  extern const unary_function_ptr * const  at_prediction95;
+  extern const unary_function_ptr * const  at_confidence;
+  extern const unary_function_ptr * const  at_sin_regression;
+  extern const unary_function_ptr * const  at_sin_regression_plot;
+  extern const unary_function_ptr * const  at_locate ;
+  extern const unary_function_ptr * const  at_ls ;
+  extern const unary_function_ptr * const  at_more ;
+  extern const unary_function_ptr * const  at_cp ;
+  extern const unary_function_ptr * const  at_mkdir ;
+  extern const unary_function_ptr * const  at_rm ;
+  int rgb888to565(int c);
+  int rgb565to888(int c);
+#if defined HAVE_UNISTD_H && !defined NUMWORKS
+  int cp(const char * sourcename,const char * targetname);
+  int rm(const char * filename);
+#endif
+
+  gen _show_pixels(const gen & args,GIAC_CONTEXT);
   gen _rgb(const gen & args,GIAC_CONTEXT);
-  extern int lang;
-  extern int xthetat;
-  bool isalphanum(char c);
-  int handle_f5();
-  extern bool clip_pasted;
-  const char * paste_clipboard();
-  void copy_clipboard(const ustl::string & s,bool status=true);
-  void delete_clipboard();
-  int confirm(const char * msg1,const char * msg2,bool acexit=false);
-  bool do_confirm(const char * s);
-  bool confirm_overwrite();
-  void invalid_varname();
-  gen select_var(GIAC_CONTEXT);
-  const char * keytostring(int key,int keyflag,bool py,GIAC_CONTEXT);
-  int chartab();
-  void print_alpha_shift(int keyflag);
-  int print_msg12(const char * msg1,const char * msg2,int textY=42);
-  void insert(std::string & s,int pos,const char * add);  //std
-  int inputline(const char * msg1,const char * msg2,ustl::string & s,bool numeric,int ypos=35);
-  void set_pixel(int xc,int yc,unsigned short color);
-  extern int clip_ymin; // 0 or 24
-  void draw_line(int x1, int y1, int x2, int y2, int color=0,unsigned short motif=0xffff);
-  void draw_circle(int xc,int yc,int r,int color,bool q1=true,bool q2=true,bool q3=true,bool q4=true);
-  void draw_arc(int xc,int yc,int rx,int ry,int color,double theta1,double theta2,GIAC_CONTEXT);
+  gen _charpoly(const gen & args,GIAC_CONTEXT);
+  extern bool freeze;
+  extern "C" void console_freeze();
+  extern "C" void sync_screen();
+  void draw_rectangle(int x, int y, int width, int height, unsigned short color,GIAC_CONTEXT);
+  void draw_polygon(std::vector< std::vector<int> > & v1,int color,GIAC_CONTEXT);
+  void draw_filled_polygon(std::vector< std::vector<int> > &L,int xmin,int xmax,int ymin,int ymax,int color,GIAC_CONTEXT);
+  void draw_line(int x1, int y1, int x2, int y2, int color,GIAC_CONTEXT);
+  void set_pixel(int x,int y,int c,GIAC_CONTEXT);
+  extern "C" void set_pixel(int x,int y,int c);
+  void draw_circle(int xc,int yc,int r,int color,bool q1,bool q2,bool q3,bool q4,GIAC_CONTEXT);
+  void draw_filled_circle(int xc,int yc,int r,int color,bool left,bool right,GIAC_CONTEXT);
   void draw_arc(int xc,int yc,int rx,int ry,int color,double t1, double t2,bool q1,bool q2,bool q3,bool q4,GIAC_CONTEXT);
-  void draw_filled_circle(int xc,int yc,int r,int color,bool left=true,bool right=true);
-  void draw_rectangle(int x, int y, int width, int height, unsigned short color);
-  void drawRectangle(int x, int y, int width, int height, unsigned short color);
-  void draw_filled_polygon(std::vector< std::vector<int> > & L,int xmin=0,int xmax=384,int ymin=0,int ymax=218,int color=0);
-  void draw_polygon(std::vector< std::vector<int> > & L,int color=0);
-  void draw_filled_arc(int x,int y,int rx,int ry,int theta1_deg,int theta2_deg,int color=0,int xmin=0,int xmax=384,int ymin=0,int ymax=218,bool segment=false);
+  void draw_arc(int xc,int yc,int rx,int ry,int color,double theta1, double theta2,GIAC_CONTEXT);
+  void draw_filled_arc(int x,int y,int rx,int ry,int theta1_deg,int theta2_deg,int color,int xmin,int xmax,int ymin,int ymax,bool segment,GIAC_CONTEXT);
 
   std::string fetch(const std::string & url);
+
+  // 4x4 matrix utilities on double, for trig regression
+  void Tran4(double * colmat);
+  void Mult4(double * colmat,double * vect,double * res);
+  void Mult4(double * c,double k,double * res);
+  double Det4(double * c);
+  void Inv4(double * c,double * res);
+
 #ifndef NO_NAMESPACE_GIAC
 } // namespace giac
 #endif // NO_NAMESPACE_GIAC

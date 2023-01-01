@@ -23,6 +23,14 @@
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
   class gen;
+  struct cpureal_t {
+    double cpu;
+    double real;
+  };
+  inline std::ostream & operator << (std::ostream & os,const cpureal_t & cr){ return os << "[" << cr.cpu << "," << cr.real << "]"; }
+  inline cpureal_t operator -(const cpureal_t & t1,const cpureal_t & t2){ cpureal_t ans={std::floor(1e6*(t1.cpu-t2.cpu)+.5)*1e-6,std::floor(1e6*(t1.real-t2.real)+.5)*1e-6}; return ans;}
+  double realtime(); // since 2021
+  cpureal_t clock_realtime();
 
   gen _about(const gen & g,GIAC_CONTEXT);
   gen _zip(const gen & args,GIAC_CONTEXT);
@@ -40,7 +48,6 @@ namespace giac {
   gen _revlist(const gen & a,GIAC_CONTEXT);
   gen _restart(const gen & args,GIAC_CONTEXT);
   gen _restart_modes(const gen & args,GIAC_CONTEXT);
-  void get_time(int & heure,int & minute);
   gen _time(const gen & a,GIAC_CONTEXT);
   gen _cat(const gen & a_orig,GIAC_CONTEXT);
   gen _pivot(const gen & a_orig,GIAC_CONTEXT);
@@ -78,8 +85,8 @@ namespace giac {
   gen _Nullspace(const gen & g,GIAC_CONTEXT);
   gen _assign(const gen & g,GIAC_CONTEXT);
   gen _implicitplot3d(const gen & g,GIAC_CONTEXT);
-  gen _readwav(const gen & g,GIAC_CONTEXT);
-  gen _writewav(const gen & g,GIAC_CONTEXT);
+  //gen _readwav(const gen & g,GIAC_CONTEXT);
+  //gen _writewav(const gen & g,GIAC_CONTEXT);
   gen _animate(const gen & g,GIAC_CONTEXT);
   gen _animate3d(const gen & g,GIAC_CONTEXT);
   gen _even(const gen & g,GIAC_CONTEXT);

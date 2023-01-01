@@ -1,3 +1,3 @@
 #! /bin/bash
-tar cvfz giac39.tgz k*.cc first.cc index.cc input_lexer.ll input_lexer.cc lexer.h.bak input_parser.yy input_parser.cc Makefile *.s *.c *.h *.ld *.bmp *.hpp main.cc console.cc menufr.cc menuen.cc file.cc textGUI.cc mkgiac mkxcas mkfr mken update39 fixme *.png  README changes.tgz
+tar cvfz giac39.tgz *.cc *.h input_parser.yy Makefile *.s *.c *.ld *.bmp *.hpp mkfr mken update39 *.png  README stdstream changes.tgz
 #scp kupdate.tgz malherbe.ujf-grenoble.fr:tmp

@@ -50,13 +50,16 @@ namespace giac {
   // given a 2-var 2nd order equation `equation_conique'
   // and the vecteur of variables 'nom_des_variables'
   // conique_reduite returns
+  // 0 if not a conic, <0 if not a proper conic
+  // 2 for parabola, 3 for ellipse, 4 for hyperbola
+  // if aptr!=0 and bptr!=0 they are set to the eigenvalues of the quad form
   // the coordinates of the center of the conic in x0 and y0
   // the eigenvectors in V1 and V2
   // a parameter `propre'
   // and the reduced equation in equation_reduite
   // param_curves is a vecteur containing vecteurs of size 2 (lines) 
   // or 5 (parametric curves with equation,identificateur,tmin,tmax,tstep)
-  bool conique_reduite(const gen & equation_conique,const gen & pointsurconique,const vecteur & nom_des_variables,gen & x0, gen & y0, vecteur & V1, vecteur &V2, gen & propre,gen & equation_reduite, vecteur & param_curves,gen & ratparam,bool numeric,GIAC_CONTEXT);
+  int conique_reduite(const gen & equation_conique,const gen & pointsurconique,const vecteur & nom_des_variables,gen & x0, gen & y0, vecteur & V1, vecteur &V2, gen & propre,gen & equation_reduite, vecteur & param_curves,gen & ratparam,bool numeric,GIAC_CONTEXT,gen * aptr=0,gen * bptr=0);
   bool quadrique_reduite(const gen & q,const gen & pointsurquadrique,const vecteur & vxyz,gen & x,gen & y,gen & z,vecteur & u,vecteur & v,vecteur & w,vecteur & propre,gen & equation_reduite,vecteur & param_surface,vecteur & centre,bool numeric,GIAC_CONTEXT);
 
   extern const unary_function_ptr * const  at_conique_reduite;

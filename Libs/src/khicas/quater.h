@@ -51,6 +51,7 @@ namespace giac {
   };
   gen _quaternion(const gen & args,GIAC_CONTEXT);
 
+  gen char2_uncoerce(const gen & a);
   class galois_field : public gen_user {
   public:
     gen p; // F_p^m, characteristic of the field
@@ -59,7 +60,7 @@ namespace giac {
     gen a; // value as a vector polynomial or undef (whole field)
     virtual gen_user * memory_alloc() const { 
       galois_field * ptr= new galois_field(*this,false);
-      // if (a != smod(a,p) && smod(a,p))  CERR << "not reduced" << endl;
+      // if (a != smod(a,p) && smod(a,p))  CERR << "not reduced" << '\n';
       return ptr; 
     }
     galois_field(const galois_field & q,bool doreduce=true);
@@ -74,6 +75,7 @@ namespace giac {
     virtual gen inv () const ;
     virtual std::string print (GIAC_CONTEXT) const ;
     virtual std::string texprint (GIAC_CONTEXT) const ;
+    virtual gen giac_constructor (GIAC_CONTEXT) const ;
     virtual bool operator == (const gen &) const ;
     virtual bool is_zero() const;
     virtual bool is_one() const;
@@ -98,9 +100,12 @@ namespace giac {
   };
 
   // Is the polynomial v irreducible and primitive modulo p?
-  // If it is only irreducible, returns 2 and sets vmin
-  int is_irreducible_primitive(const vecteur & v,const gen & p,vecteur & vmin,bool primitive,GIAC_CONTEXT);
-  vecteur find_irreducible_primitive(const gen & p,int m,bool primitive,GIAC_CONTEXT);
+  // If it is only irreducible, returns 2 and sets vmin if primitive==1
+  // if primitive==0 or 2 does not compute vmin 
+  // issues a warning if primitive==0
+  int is_irreducible_primitive(const vecteur & v,const gen & p,vecteur & vmin,int primitive,GIAC_CONTEXT);
+  int is_irreducible(const vecteur &v,const gen &g);
+  vecteur find_irreducible_primitive(const gen & p,int m,int primitive,GIAC_CONTEXT);
   gen _galois_field(const gen & args,GIAC_CONTEXT);
 
   struct gen_context_t {
@@ -114,6 +119,42 @@ namespace giac {
   gfmap & gf_list();
   int gfsize(const gen & P);
   bool has_gf_coeff(const gen & e,gen & p, gen & pmin);
+  bool has_gf_coeff(const vecteur & v,gen & p, gen & pmin);
+  bool has_gf_coeff(const gen & e);
+  bool has_gf_coeff(const vecteur & v);
+  // convert v in char 2, returns minimal polynomial or 0 (unknown) or -1 (unable to convert), set x to the generator of the field
+  int gf_char2_vecteur2vectorint(const vecteur & v,std::vector<int> & V,gen & x);
+  // convert m in char 2, returns minimal polynomial or 0 (unknown) or -1 (unable to convert), set x to the generator of the field
+  int gf_char2_matrice2vectorvectorint(const matrice & m,std::vector< std::vector<int> > & M,gen & x);
+  void gf_char2_vectorint2vecteur(const std::vector<int> & source,vecteur & target,int M,const gen & x);
+  void gf_char2_vectorvectorint2mat(const std::vector< std::vector<int> > & source,matrice & target,int M,const gen & x);
+  int dotgf_char2(const std::vector<int> & v,const std::vector<int> & w,int M);
+  bool gf_char2_mmult_atranb(const std::vector< std::vector<int> > & A,const std::vector< std::vector<int> > & tranB,std::vector< std::vector<int> > & C,int M);
+  bool gf_char2_rref(std::vector< std::vector<int> > & N,const gen & x,int M,vecteur & pivots,std::vector<int> & permutation,std::vector<int> & maxrankcols,gen & det,int l, int lmax, int c,int cmax,int fullreduction,int dont_swap_below,int rref_or_det_or_lu);
+  bool gf_char2_multpoly(const std::vector<int> & a,const std::vector<int> & b,std::vector<int> & res,int M);
+  bool gf_multpoly(const std::vector< std::vector<int> > & a,const std::vector< std::vector<int> > & b,std::vector< std::vector<int> > & res,const std::vector<int> & pmin,int modulo);
+  int gf_vecteur2vectorvectorint(const vecteur & v,std::vector< std::vector<int> > & V,gen & x,std::vector<int> & pmin);
+  bool gf_multpoly(const std::vector< std::vector<int> > & a,const std::vector< std::vector<int> > & b,std::vector< std::vector<int> > & res,const std::vector<int> & pmin,int modulo);
+  void gf_vectorvectorint2vecteur(const std::vector< std::vector<int> > & source,vecteur & target,const gen & carac,const vecteur & pmin,const gen & x);
+  void gf_vectorvectorint2vecteur(const std::vector< std::vector<int> > & source,vecteur & target,int carac,const std::vector<int> & pmin,const gen & x);
+
+#else // NO_RTTI
+  inline bool has_gf_coeff(const gen & e,gen & p, gen & pmin){ return false; }
+  inline bool has_gf_coeff(const vecteur & v,gen & p, gen & pmin){ return false; }
+  inline bool has_gf_coeff(const gen & e){ return false; }
+  inline bool has_gf_coeff(const vecteur & v){ return false; }
+  inline int gf_char2_vecteur2vectorint(const vecteur & v,std::vector<int> & V,gen & x){ return -1; }
+  inline int gf_char2_matrice2vectorvectorint(const matrice & m,std::vector< std::vector<int> > & M,gen & x){ return -1;}
+  inline int dotgf_char2(const std::vector<int> & v,const std::vector<int> & w,int M){ return 0; }
+  inline void gf_char2_vectorint2vecteur(const std::vector<int> & source,vecteur & target,int M,const gen & x){};
+  inline void gf_char2_vectorvectorint2mat(const std::vector< std::vector<int> > & source,matrice & target,int M,const gen & x){};
+  inline   bool gf_char2_mmult_atranb(const std::vector< std::vector<int> > & A,const std::vector< std::vector<int> > & tranB,std::vector< std::vector<int> > & C,int M){ return false;};
+  inline bool gf_char2_rref(std::vector< std::vector<int> > & N,const gen & x,int M,vecteur & pivots,std::vector<int> & permutation,std::vector<int> & maxrankcols,gen & det,int l, int lmax, int c,int cmax,int fullreduction,int dont_swap_below,int rref_or_det_or_lu){ return false; };
+  inline bool gf_char2_multpoly(const std::vector<int> & a,const std::vector<int> & b,std::vector<int> & res,int M){ return false; }
+  inline int gf_vecteur2vectorvectorint(const vecteur & v,std::vector< std::vector<int> > & V,gen & x,std::vector<int> & pmin){ return 0; }
+  inline bool gf_multpoly(const std::vector< std::vector<int> > & a,const std::vector< std::vector<int> > & b,std::vector< std::vector<int> > & res,const std::vector<int> & pmin,int modulo){ return false; }
+  inline void gf_vectorvectorint2vecteur(const std::vector< std::vector<int> > & source,vecteur & target,const gen & carac,const vecteur & pmin,const gen & x){}
+  inline void gf_vectorvectorint2vecteur(const std::vector< std::vector<int> > & source,vecteur & target,int carac,const std::vector<int> & pmin,const gen & x){};
 
 #endif // NO_RTTI
 

@@ -4,14 +4,14 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "menuGUI.h"
+#include "kdisplay.h"
 #include "file.h"
 #include "syscalls.h"
 
 //!!
 #include "porting.h"
 #include <alloca.h> 
-
+using namespace giac;
 // FIXME!!!
 int matchmask(const char * mask,const char * filename){
   if (strlen(mask)==4 && mask[0]=='*' && mask[1]=='.'){
@@ -111,6 +111,7 @@ int GetFiles(File* files, MenuItem* menuitems, char* basepath, int* count, char*
         menuitems[*count].isselected = 0; //clear selection. this means selection is cleared when changing directory (doesn't happen with native file manager)
         // because usually alloca is used to declare space for MenuItem*, the space is not cleared. which means we need to explicitly set each field:
         menuitems[*count].text = files[*count].visname;
+        printf("menu %i %s\n",*count,files[*count].visname);
         menuitems[*count].color=TEXT_COLOR_BLACK;
         menuitems[*count].type=MENUITEM_NORMAL;
         menuitems[*count].value=MENUITEM_VALUE_NONE;
@@ -142,6 +143,7 @@ void nameFromFilename(char* filename, char* name) {
 
 int fileBrowser(char* filename, char* filter, char* title) {
   // returns 1 when user selects a file, 0 when aborts (exit)
+  printf("filebrowser %s\n",filter);
   int res = 1;
   char browserbasepath[MAX_FILENAME_SIZE+1] = "\\\\fls0\\";  
   while(res) {
@@ -201,7 +203,7 @@ int fileBrowserSub(char* browserbasepath, char* filename, char* filter, char* ti
     } else break;
   }
   menu.subtitle = friendlypath;
-  menu.type = MENUTYPE_MULTISELECT;
+  //menu.type = MENUTYPE_MULTISELECT;
   menu.scrollout=1;
   menu.nodatamsg = (char*)"No Data";
   menu.title = title;
@@ -217,6 +219,7 @@ int fileBrowserSub(char* browserbasepath, char* filename, char* filter, char* ti
 #else
     int res = doMenu(&menu, 0);
 #endif
+    // printf("menu res %i\n",res);
     switch(res) {
       case MENU_RETURN_EXIT:
         if(!strcmp(browserbasepath,"\\\\fls0\\")) { //check that we aren't already in the root folder
@@ -235,7 +238,7 @@ int fileBrowserSub(char* browserbasepath, char* filename, char* filter, char* ti
           return 1; //reload at new folder
         }
         break;
-      case MENU_RETURN_SELECTION:
+    case MENU_RETURN_SELECTION: case KEY_CTRL_EXE:
         if(menuitems[menu.selection-1].isfolder) {
           strcpy(browserbasepath, files[menu.selection-1].filename); //switch to selected folder
           strcat(browserbasepath, "\\");

@@ -34,6 +34,7 @@ namespace giac {
   int is_meromorphic(const gen & g,const gen & x,gen &a,gen &b,gen & P,GIAC_CONTEXT);
   // 0 none, 1 even, 2 odd
   int is_even_odd(const gen & f,const gen & x,GIAC_CONTEXT);
+  int fast_is_even_odd(const gen & f,const gen & x,GIAC_CONTEXT);
   // residue of g at x=a
   gen residue(const gen & g,const gen & x,const gen & a,GIAC_CONTEXT);
   gen _residue(const gen & args,GIAC_CONTEXT);

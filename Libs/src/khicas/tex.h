@@ -32,11 +32,15 @@ namespace giac {
   extern const char mbox_end[];
   class gen;
 
+  bool has_improved_latex_export(const gen &g,std::string &s,bool override_texmacs,GIAC_CONTEXT);
+  void enable_texmacs_compatible_latex_export(bool yes);
+  std::string gen2scm(const gen &g,GIAC_CONTEXT); // added by L. Marohnić
   bool is_clipped(double a,double xmin,double xmax,double b,double ymin,double ymax,double c,double & x0,double &y0,double & x1,double &y1);
 
   bool clip_line(double x1,double y1,double x2,double y2,double xmin,double ymin,double xmax,double ymax,int mode,double & xa,double & ya,double & xb,double & yb);
 
   std::string get_path(const std::string & s);
+  std::string remove_path(const std::string &);
 
   void evalfdouble2reim(const gen & a,gen & e,gen & f0,gen & f1,GIAC_CONTEXT);
   void autoscaleminmax(std::vector<double> & v,double & m,double & M,bool fullview);
@@ -64,6 +68,7 @@ namespace giac {
   extern const unary_function_ptr * const  at_latex ;
   extern const unary_function_ptr * const  at_TeX ;
   std::string get_path(const std::string & st);
+  std::string remove_path(const std::string & st);
   struct plot_attr {
     std::string xlegende,ylegende,title;
   };

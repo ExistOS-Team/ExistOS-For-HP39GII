@@ -13,7 +13,6 @@ void save(const char * fname); // save session
 int restore_session(const char * fname);
 void displaygraph(const giac::gen & ge);
 void displaylogo();
-ustl::string remove_path(const ustl::string & st);
 void edit_script(const char * fname);
 int load_script(const char * filename,string & s);
 int find_color(const char * s); 

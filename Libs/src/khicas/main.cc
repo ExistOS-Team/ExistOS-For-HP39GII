@@ -29,6 +29,7 @@ extern "C"
 
 #define USER_FUNCTIONS "\\\\fls0\\USER.eig"
 #define USER_FUNCTIONS_MAX_LENGTH 200
+int clip_ymin=0;
 
 int ck_getkey(int *keyptr)
 {
@@ -59,7 +60,7 @@ int find_color(const char *s)
     return 0;
   char buf[256];
   const char *ptr = s;
-  for (int i = 0; i < 255 && (isalphanum(*ptr) || *ptr == '_'); ++i)
+  for (int i = 0; i < 255 && (is_alphanum(*ptr) || *ptr == '_'); ++i)
   {
     ++ptr;
   }
@@ -79,6 +80,27 @@ int find_color(const char *s)
     return _CYAN;
   if (token != T_SYMBOL)
     return _RED;
+  return 0;
+}
+
+int handle_f5(){
+  int keyflag = GetSetupSetting( (unsigned int)0x14);
+  if (keyflag == 0x04 || keyflag == 0x08 || keyflag == 0x84 || keyflag == 0x88) {
+    // ^only applies if some sort of alpha (not locked) is already on
+    if (keyflag == 0x08 || keyflag == 0x88) { //if lowercase
+      SetSetupSetting( (unsigned int)0x14, keyflag-0x04);
+      // DisplayStatusArea();
+      return 1; //do not process the key, because otherwise we will leave alpha status
+    } else {
+      SetSetupSetting( (unsigned int)0x14, keyflag+0x04);
+      // DisplayStatusArea();
+      return 1; //do not process the key, because otherwise we will leave alpha status
+    }
+  }
+  if (keyflag==0) {
+    SetSetupSetting( (unsigned int)0x14, 0x88);	
+    // DisplayStatusArea();
+  }
   return 0;
 }
 
@@ -362,17 +384,6 @@ void save_khicas_symbols_smem(const char *filename)
   save_script(filename, s);
 }
 
-string remove_path(const string &st)
-{
-  int s = int(st.size()), i;
-  for (i = s - 1; i >= 0; --i)
-  {
-    if (st[i] == '\\')
-      break;
-  }
-  return st.substr(i + 1, s - i - 1);
-}
-
 void save(const char *fname)
 {
   clear_abort();
@@ -388,8 +399,8 @@ void save_session()
   if (strcmp(session_filename, "session") && console_changed)
   {
     ustl::string tmp(session_filename);
-    tmp += giac::lang ? " a ete modifie!" : " was modified!";
-    if (giac::confirm(tmp.c_str(), giac::lang ? "F1: sauvegarder, F6: tant pis" : "F1: save, F6: discard changes") == KEY_CTRL_F1)
+    tmp += lang ? " a ete modifie!" : " was modified!";
+    if (giac::confirm(tmp.c_str(), lang ? "F1: sauvegarder, F6: tant pis" : "F1: save, F6: discard changes") == KEY_CTRL_F1)
     {
       save(session_filename);
       console_changed = 0;
@@ -446,26 +457,6 @@ void TeX_quit(void)
 }
 #endif
 
-const unsigned char *Setup[] = {
-    NULL};
-
-bool islogo(const gen &g)
-{
-  if (g.type != _VECT || g._VECTptr->empty())
-    return false;
-  if (g.subtype == _LOGO__VECT)
-    return true;
-  const vecteur &v = *g._VECTptr;
-  if (islogo(v.back()))
-    return true;
-  for (size_t i = 0; i < v.size(); ++i)
-  {
-    if (v[i].type == _VECT && v[i].subtype == _LOGO__VECT)
-      return true;
-  }
-  return false;
-}
-
 bool ispnt(const gen &g)
 {
   if (g.is_symb_of_sommet(giac::at_pnt))
@@ -484,7 +475,7 @@ giac::gen eqw(const giac::gen &ge, bool editable)
   giac::gen geq(_copy(ge, contextptr));
   // if (ge.type!=giac::_DOUBLE_ && giac::has_evalf(ge,geq,1,contextptr)) geq=giac::symb_equal(ge,geq);
   int line = -1, col = -1, nlines = 0, ncols = 0, listormat = 0;
-  xcas::Equation eq(0, 0, geq);
+  xcas::Equation eq(0, 0, geq,contextptr);
   giac::eqwdata eqdata = xcas::Equation_total_size(eq.data);
 #if 1
   if (eqdata.dx > 1.5 * LCD_WIDTH_PX || eqdata.dy > 1.5 * LCD_HEIGHT_PX)
@@ -549,7 +540,7 @@ giac::gen eqw(const giac::gen &ge, bool editable)
     Bdisp_AllClr_VRAM();
     int save_clip_ymin = clip_ymin;
     clip_ymin = 0;
-    xcas::display(eq, dx, dy);
+    xcas::display(eq, dx, dy,contextptr);
     // draw_menu(2); // FIXME menus
     clip_ymin = save_clip_ymin;
     int keyflag = (unsigned char)Setup_GetEntry(0x14);
@@ -730,7 +721,7 @@ giac::gen eqw(const giac::gen &ge, bool editable)
           gen tmp = value._SYMBptr->feuille;
           if (tmp.type != _VECT || tmp.subtype != _SEQ__VECT)
           {
-            xcas::replace_selection(eq, tmp, gsel, &goto_sel);
+            xcas::replace_selection(eq, tmp, gsel, &goto_sel,contextptr);
             continue;
           }
         }
@@ -762,7 +753,7 @@ giac::gen eqw(const giac::gen &ge, bool editable)
                   if (v.size() == 2 && (opg == at_plus || opg == at_prod || opg == at_pow))
                     value = eval(value, 1, contextptr);
                   goto_sel.erase(goto_sel.begin());
-                  xcas::replace_selection(eq, value, gselparent, &goto_sel);
+                  xcas::replace_selection(eq, value, gselparent, &goto_sel,contextptr);
                   continue;
                 }
               }
@@ -830,7 +821,7 @@ giac::gen eqw(const giac::gen &ge, bool editable)
       key = 'i';
     const char keybuf[2] = {(key == KEY_CHAR_PMINUS ? '-' : char(key)), 0};
     const char *adds = (key == KEY_CHAR_PMINUS ||
-                        (key == char(key) && (isalphanum(key) || key == '.')))
+                        (key == char(key) && (is_alphanum(key) || key == '.')))
                            ? keybuf
                            : keytostring(key, keyflag, 0, contextptr);
     char catopn[256];
@@ -887,7 +878,7 @@ giac::gen eqw(const giac::gen &ge, bool editable)
       return geq;
     }
     if (key != KEY_CHAR_MINUS && key != KEY_CHAR_EQUAL &&
-        (ins || key == KEY_CHAR_PI || key == KEY_CTRL_F5 || (addssize == 1 && (isalphanum(adds[0]) || adds[0] == '.' || adds[0] == '-'))))
+        (ins || key == KEY_CHAR_PI || key == KEY_CTRL_F5 || (addssize == 1 && (is_alphanum(adds[0]) || adds[0] == '.' || adds[0] == '-'))))
     {
       edited = true;
       if (line >= 0 && xcas::eqw_select(eq.data, line, col, true, value))
@@ -949,7 +940,7 @@ giac::gen eqw(const giac::gen &ge, bool editable)
           {
             value = gen(s, contextptr);
             // cout << value << " goto " << goto_sel << endl;
-            xcas::replace_selection(eq, value, gsel, &goto_sel);
+            xcas::replace_selection(eq, value, gsel, &goto_sel,contextptr);
             firstrun = -1; // workaround, force 2 times display
           }
           continue;
@@ -1224,13 +1215,13 @@ giac::gen eqw(const giac::gen &ge, bool editable)
             if (addarg == 1)
               args = makesequence(args, 0);
             if (addarg == 2)
-              args = makesequence(args, vx_var(), 0);
+              args = makesequence(args, vx_var, 0);
             if (addarg == 3)
-              args = makesequence(args, vx_var(), 0, 1);
+              args = makesequence(args, vx_var, 0, 1);
             if (op == at_surd)
               args = makesequence(args, key == KEY_CHAR_CUBEROOT ? 3 : 4);
             if (op == at_subst)
-              args = makesequence(args, giac::symb_equal(vx_var(), 0));
+              args = makesequence(args, giac::symb_equal(vx_var, 0));
             unary_function_ptr immediate_op[] = {*at_eval, *at_evalf, *at_evalc, *at_regrouper, *at_simplify, *at_normal, *at_ratnormal, *at_factor, *at_cfactor, *at_partfrac, *at_cpartfrac, *at_expand, *at_canonical_form, *at_exp2trig, *at_trig2exp, *at_sincos, *at_lin, *at_tlin, *at_tcollect, *at_texpand, *at_trigexpand, *at_trigcos, *at_trigsin, *at_trigtan, *at_halftan, *at_approx, *at_exact};
             if (equalposcomp(immediate_op, *op._FUNCptr))
             {
@@ -1249,11 +1240,11 @@ giac::gen eqw(const giac::gen &ge, bool editable)
             giac::kbd_interrupted = interrupted = false;
             if (!is_undef(tmp))
             {
-              xcas::replace_selection(eq, tmp, gsel, &goto_sel);
+              xcas::replace_selection(eq, tmp, gsel, &goto_sel,contextptr);
               if (addarg)
               {
                 xcas::eqw_select_down(eq.data);
-                xcas::eqw_select_leftright(eq, false);
+                xcas::eqw_select_leftright(eq, false,contextptr);
               }
               eqdata = xcas::Equation_total_size(eq.data);
               dx = (eqdata.dx - LCD_WIDTH_PX) / 2;
@@ -1376,66 +1367,6 @@ bool eqws(char *s, bool eval)
 
 #endif
 
-#if 0
-void displaylogo(){
-}
-#else
-void displaylogo()
-{
-#ifdef TURTLETAB
-  xcas::Turtle t = {tablogo, 0, 0, 1, 1};
-#else
-  xcas::Turtle t = {&turtle_stack(), 0, 0, 1, 1};
-#endif
-  freeze = true; // avoid clearscreen
-  //*logptr(contextptr) << "logo " << int((*t.turtleptr)[0].color) << "\n";
-  while (1)
-  {
-    int save_ymin = clip_ymin;
-    clip_ymin = 0;
-    t.draw();
-    clip_ymin = save_ymin;
-    unsigned int key;
-    ck_getkey((int *)&key);
-    if (key == KEY_CTRL_EXIT || key == KEY_CTRL_AC || key == KEY_CTRL_MENU || key == KEY_CTRL_EXE || key == KEY_CTRL_VARS)
-      break;
-    if (key == KEY_CTRL_UP)
-    {
-      t.turtley += 10;
-    }
-    if (key == KEY_CTRL_PAGEUP)
-    {
-      t.turtley += 100;
-    }
-    if (key == KEY_CTRL_DOWN)
-    {
-      t.turtley -= 10;
-    }
-    if (key == KEY_CTRL_PAGEDOWN)
-    {
-      t.turtley -= 100;
-    }
-    if (key == KEY_CTRL_LEFT)
-    {
-      t.turtlex -= 10;
-    }
-    if (key == KEY_CTRL_RIGHT)
-    {
-      t.turtlex += 10;
-    }
-    if (key == KEY_CHAR_PLUS)
-    {
-      t.turtlezoom *= 2;
-    }
-    if (key == KEY_CHAR_MINUS)
-    {
-      t.turtlezoom /= 2;
-    }
-  }
-  freeze = false;
-}
-#endif
-
 bool stringtodouble(const string &s1, double &d)
 {
   gen g(s1, contextptr);
@@ -1452,7 +1383,7 @@ bool stringtodouble(const string &s1, double &d)
 void displaygraph(const giac::gen & ge){
   // graph display
   //if (aborttimer > 0) { Timer_Stop(aborttimer); Timer_Deinstall(aborttimer);}
-  xcas::Graph2d gr(ge);
+  xcas::Graph2d gr(ge,contextptr);
   gr.show_axes=true;
   // initial setting for x and y
   if (ge.type==_VECT){
@@ -1517,7 +1448,7 @@ void displaygraph(const giac::gen & ge){
       smallmenu.items=smallmenuitems;
       smallmenu.height=8;
       //smallmenu.title = "KhiCAS";
-      smallmenuitems[0].text = (char *) (giac::lang?"Etude graphe (xtt)":"Curve study (xtt)");
+      smallmenuitems[0].text = (char *) (lang?"Etude graphe (xtt)":"Curve study (xtt)");
       smallmenuitems[1].text = (char *) menu_xmin;
       smallmenuitems[2].text = (char *) menu_xmax;
       smallmenuitems[3].text = (char *) menu_ymin;
@@ -1539,7 +1470,7 @@ void displaygraph(const giac::gen & ge){
       smallmenuitems[13].text = (char*) ((lang==1)?"Voir cercle (F5)":"Show circle (F5)");
       smallmenuitems[13].type = MENUITEM_CHECKBOX;
       smallmenuitems[13].value = (gr.tracemode & 8)!=0;
-      smallmenuitems[14].text = (char*)(giac::lang?"Quitter":"Quit");
+      smallmenuitems[14].text = (char*)(lang?"Quitter":"Quit");
       int sres = doMenu(&smallmenu);
       if(sres == MENU_RETURN_SELECTION) {
 	const char * ptr=0;
@@ -1875,7 +1806,8 @@ extern char sextra, eextra;
 #endif
 
 int kcas_main(int isAppli, unsigned short OptionNum)
-{ 
+{
+  confirm("khicas main start");
   size_t rambase=0x02000000+4096; // 4096 for 1 bpp screen buf
   tab16=(four_int*) rambase;     // ALLOC16*16=4096 ALLOC16=256
 #if 1
@@ -1896,6 +1828,7 @@ int kcas_main(int isAppli, unsigned short OptionNum)
 
   SetQuitHandler(save_session); // automatically save session when exiting
 
+  confirm("khicas turtle init");
   turtle();
 #ifdef TURTLETAB
   turtle_stack_size = 0;
@@ -1903,20 +1836,17 @@ int kcas_main(int isAppli, unsigned short OptionNum)
   turtle_stack(); // required to init turtle
 #endif
 
+  confirm("khicas console init");
   Console_Init();
   context ct;
   contextptr = &ct;
   _srand(vecteur(0), contextptr);
+  confirm("khicas session");
   restore_session("session");
   // load_config();
   Console_Disp();
   //init_locale();
   lang = 0;
-
-  while (Setup[i] != NULL)
-  {
-    run((char *)Setup[i++]);
-  }
 
   i = 0;
 

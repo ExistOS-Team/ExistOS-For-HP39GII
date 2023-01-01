@@ -40,31 +40,57 @@ extern "C" {
 #include "help.h"
 // yacc stack type
 #ifndef YYSTYPE
-#define YYSTYPE gen
+#define YYSTYPE giac::gen
 #endif
-#define YY_EXTRA_TYPE  context const *
+#define YY_EXTRA_TYPE  const giac::context *
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 
 // lex functions/variables
 extern int giac_yyerror(void *scanner,const char *s);
-extern int giac_yylex(giac::YYSTYPE * yylval_param ,void * yyscanner);
+extern int giac_yylex(YYSTYPE * yylval_param ,void * yyscanner);
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
+  std::vector<int> & lexer_localization_vector();
+#if defined NSPIRE || defined FXCG
+  ustl::map<std::string,std::string> & lexer_localization_map();
+  ustl::multimap<std::string,localized_string> & back_lexer_localization_map();
+  // lexer_localization_map translates keywords from the locale to giac 
+  // lexer_localization_vector is the list of languages currently translated
+  void update_lexer_localization(const std::vector<int> & v,ustl::map<std::string,std::string> &lexer_map,ustl::multimap<std::string,localized_string> &back_lexer_map);
+#else
+  std::map<std::string,std::string> & lexer_localization_map();
+  std::multimap<std::string,localized_string> & back_lexer_localization_map();
+  // lexer_localization_map translates keywords from the locale to giac 
+  // lexer_localization_vector is the list of languages currently translated
+  void update_lexer_localization(const std::vector<int> & v,std::map<std::string,std::string> &lexer_map,std::multimap<std::string,localized_string> &back_lexer_map,GIAC_CONTEXT);
+#endif
   
 
+#if defined NSPIRE || defined FXCG
+  ustl::map<std::string,std::vector<std::string> > & lexer_translator();
+  ustl::map<std::string,std::vector<std::string> > & library_functions();
+#else
+  std::map<std::string,std::vector<std::string> > & lexer_translator();
+  std::map<std::string,std::vector<std::string> > & library_functions();
+#endif
+  map_charptr_gen & lexer_functions();
+
+#ifdef STATIC_BUILTIN_LEXER_FUNCTIONS
     // gen alias for static initialization on 32 bits processor
-  struct charptr_gen_unary {
-    const char * s;
-    size_t _FUNC_; // unary_function_ptr *
-    unsigned short reserved; 
-    signed char subtype;
-    unsigned char type;  // see dispatch.h
-  };
+    struct charptr_gen_unary {
+      const char * s;
+      unsigned char type;  // see dispatch.h
+      signed char subtype;
+      unsigned short reserved; 
+      size_t _FUNC_; // unary_function_ptr *
+    };
   extern const charptr_gen_unary builtin_lexer_functions[] ;
   extern const unsigned builtin_lexer_functions_number;
-  //std::vector<size_t> * builtin_lexer_functions_();
+#else
+  extern unsigned builtin_lexer_functions_number;
+#endif
 
   /* integer values */
   struct lexer_tab_int_type {
@@ -87,9 +113,24 @@ namespace giac {
   typedef std::pair<const char *,gen> charptr_gen;
   charptr_gen * builtin_lexer_functions_begin();
   charptr_gen * builtin_lexer_functions_end();
+#ifdef STATIC_BUILTIN_LEXER_FUNCTIONS
+#if defined NSPIRE || defined FXCG
+  std::vector<size_t> * builtin_lexer_functions_();
+#else
+#if defined KHICAS || defined NSPIRE_NEWLIB
+  extern const unary_function_ptr * const * const builtin_lexer_functions_[];
+#else
+  extern const size_t builtin_lexer_functions_[];
+#endif
+#endif
+#else
+  extern const size_t * const builtin_lexer_functions_;
+#endif
+
+  extern bool builtin_lexer_functions_sorted;
 
   // return true/false to tell if s is recognized. return the appropriate gen if true
-  // bool CasIsBuildInFunction(char const *s, gen &g);
+  bool CasIsBuildInFunction(char const *s, gen &g);
 
   int lock_syms_mutex();
   void unlock_syms_mutex();
@@ -104,6 +145,9 @@ namespace giac {
   // The subtype of the gen is used
   // to keep the parser token returned by the lexer
 
+  // Used to keep track of functions inserted during an insmod
+  extern bool doing_insmod ;
+  std::vector<user_function> & registered_lexer_functions();
   
   struct unary_function_ptr;
   // Return true if s is associated to a function with non prefix syntax
@@ -119,7 +163,7 @@ namespace giac {
   void set_lexer_symbols(const vecteur & l,GIAC_CONTEXT);
   
   /** Set the input string to be parsed by giac_yyparse() (used internally). */
-  YY_BUFFER_STATE set_lexer_string(const std::string &s,void * & scanner,const context * contextptr,int maxsize=0);
+  YY_BUFFER_STATE set_lexer_string(const std::string &s,void * & scanner,const context * contextptr);
   int delete_lexer_string(YY_BUFFER_STATE &state,void * & scanner);
   
   /** Get error message from the parser. */

@@ -14,9 +14,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "config.h"
-#include "porting.h"
-
 #undef max
 #undef min
 //#define GIAC_VECTOR
@@ -24,16 +21,41 @@
 #ifndef _GIAC_FIRST_H_
 #define _GIAC_FIRST_H_
 
+#ifdef NUMWORKS
+#define KHICAS 1
+#endif
+
 #ifndef GIAC_VERSION
 #define GIAC_VERSION VERSION
 #endif
 //#include <stdint.h>
 
-#ifdef __x86_64__
+// mingw now defines x86_64
+#if (defined(__x86_64__) || defined(__arm64__)) && !defined __MINGW_H
 #define x86_64 1
+#else
+#ifdef __MINGW_H
+#define MINGW32
+#ifndef M_LN2
+#define M_LN2 0.693147180559945310
+#endif
+#ifndef M_PI
+#define M_PI       3.14159265358979323846
+#define M_PI_2       (M_PI/2)
+#endif
+#ifndef M_E
+#define M_E       2.71828182845904524
+#endif
+#ifndef M_SQRT2
+#define M_SQRT2       1.41421356237309505
+#endif
+#endif
 #endif
 
-//#define TURTLETAB // if defined ecris/signe will not work
+#ifdef HP39
+#include <time.h>
+#define M_E 2.7182818284590452
+#endif
 
 // Thanks to Jason Papadopoulos, author of msieve
 #ifdef BESTA_OS
@@ -60,42 +82,27 @@
 #define NO_STDEXCEPT 1
 #endif
 
-#ifdef FXCG
+#define MAX_INTSTACK 32768 // maximal size for allocating an array by int tab[]
 
+#ifdef FXCG
+#define RAND_MAX 2147483647
 #define clock() 0
 #define CLOCK() 0
-//#define CLOCK() clock()
 #define CLOCK_T int
 #undef HAVE_LIBDL
 #undef HAVE_LIBPTHREAD
-//#define RAND_MAX 2147483647
 struct Bidon {
   int i;
- Bidon(int i_=0):i(i_){}
-  void flush() {}
+Bidon(int i_=0):i(i_){}
+  flush(){}
 };
 template<class T> Bidon operator << (Bidon ,const T&){ return Bidon(); }
 inline Bidon operator << (Bidon,const char *){return Bidon();}
 // #define CIN 0 //std::cin
-/*
-constexpr struct endl_ {
-    friend std::ostream& operator << (std::ostream& os, const endl_&) {
-        os << '\n'; // << std::flush;
-        return os;
-    }
-} endl;
-*/
-
-//#define COUT Bidon(0) //std::cout
-//#define CERR Bidon(0) //std::cout
-//#define DOUBLEVAL
-#include <iostream>
-#define CIN  (std::cin)
-#define COUT (std::cout)
-#define CERR (std::cout)
-
-//typedef unsigned pid_t;
-//double lgamma(double);
+#define COUT Bidon(0) //std::cout
+#define CERR Bidon(0) //std::cout
+typedef unsigned pid_t;
+double lgamma(double);
 #else // FXCG
 
 #ifdef NSPIRE
@@ -109,7 +116,7 @@ constexpr struct endl_ {
 #else // NSPIRE
 #define CIN std::cin
 #define COUT std::cout
-#ifdef EMCC
+#if defined(EMCC) || defined(EMCC2)
 #define CERR std::cout
 extern "C" double emcctime(); 
 extern "C" int glinit(int,int,int,int,int);
@@ -118,7 +125,7 @@ extern "C" void glcontext(int);
 #define CLOCK_T clock_t
 #else // EMCC
 #define CERR std::cerr
-#if defined(MS_SMART) || defined(NO_CLOCK)
+#if defined(MS_SMART) || defined(NO_CLOCK) || defined __MINGW_H
 #define CLOCK() 0
 #define CLOCK_T int
 #else
@@ -150,6 +157,8 @@ typedef long double giac_double;
 typedef double giac_double;
 #endif
 
+typedef long double  long_double;
+
 // sprintf replacement
 int my_sprintf(char * s, const char * format, ...);
 #ifdef GIAC_HAS_STO_38
@@ -159,7 +168,12 @@ int my_sprintf(char * s, const char * format, ...);
 #ifdef WITH_MYOSTREAM
 #include "myostream.h"
 #else
+#if defined KHICAS //&& defined STATIC_BUILTIN_LEXER_FUNCTION
+#include "stdstream"
+#define my_ostream stdostream
+#else
 #define my_ostream std::ostream
+#endif
 #endif
 
 #ifdef x86_64
@@ -168,7 +182,7 @@ int my_sprintf(char * s, const char * format, ...);
 #define alias_type size_t
 #endif
 
-#if defined(RTOS_THREADX) || defined(BESTA_OS) || defined NSPIRE
+#if defined(RTOS_THREADX) || defined(BESTA_OS) || defined NSPIRE || defined KHICAS
 #define NO_TEMPLATE_MULTGCD
 #endif
 
@@ -179,37 +193,37 @@ int my_sprintf(char * s, const char * format, ...);
 #define CLOCK_T int
 #endif
 
-#if !defined HAVE_ALLOCA_H && !defined GIAC_HAS_STO_38
-//#define alloca _alloca
+#if !defined HAVE_ALLOCA_H && !defined GIAC_HAS_STO_38 && !defined KHICAS
+#define alloca _alloca
 #endif
 
 #ifdef NO_UNARY_FUNCTION_COMPOSE
 
-#define define_unary_function_eval(name,ptr,name_s) const alias_unary_function_eval name={name_s,0,taylor,0,ptr,0}
-#define define_unary_function_eval2(name,ptr,name_s,printptr) const alias_unary_function_eval name={name_s,0,taylor,printptr,ptr,0}
-#define define_unary_function_eval3(name,ptr,derivee,name_s) const alias_unary_function_eval name={name_s,derivee,taylor,0,ptr,0}
-#define define_unary_function_eval4(name,ptr,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,0,taylor,printptr,ptr,0}
-#define define_unary_function_eval5(name,ptr,derive,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,derive,taylor,printptr,ptr,0}
-#define define_unary_function_eval_taylor(name,ptr,derive,taylors,name_s) const alias_unary_function_eval name={name_s,derive,taylors,0,ptr,0}
-#define define_unary_function_eval_taylor2(name,ptr,derive,taylors,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,derive,taylors,printptr,ptr,0}
-#define define_unary_function_eval_quoted(name,ptr,name_s) const alias_unary_function_eval name={name_s,0,taylor,0,ptr,1}
-#define define_unary_function_eval2_quoted(name,ptr,name_s,printptr) const alias_unary_function_eval name={name_s,0,taylor,printptr,ptr,1}
-#define define_unary_function_eval3_quoted(name,ptr,derivee,name_s) const alias_unary_function_eval name={name_s,derivee,taylor,0,ptr,1}
-#define define_unary_function_eval4_quoted(name,ptr,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,0,taylor,printptr,ptr,1}
-#define define_unary_function_eval5_quoted(name,ptr,derive,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,derive,taylor,printptr,ptr,1}
-#define define_unary_function_eval_taylor_quoted(name,ptr,derive,taylors,name_s) const alias_unary_function_eval name={name_s,derive,taylors,0,ptr,1}
-#define define_unary_function_eval_taylor2_quoted(name,ptr,derive,taylors,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,derive,taylors,printptr,ptr,1}
+#define define_unary_function_eval(name,ptr,name_s) const alias_unary_function_eval name={name_s,0,taylor,0,0,0,ptr,0}
+#define define_unary_function_eval2(name,ptr,name_s,printptr) const alias_unary_function_eval name={name_s,0,taylor,printptr,0,0,ptr,0}
+#define define_unary_function_eval3(name,ptr,derivee,name_s) const alias_unary_function_eval name={name_s,derivee,taylor,0,0,0,ptr,0}
+#define define_unary_function_eval4(name,ptr,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,0,taylor,printptr,texprintptr,0,ptr,0}
+#define define_unary_function_eval5(name,ptr,derive,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,derive,taylor,printptr,texprintptr,0,ptr,0}
+#define define_unary_function_eval_taylor(name,ptr,derive,taylors,name_s) const alias_unary_function_eval name={name_s,derive,taylors,0,0,0,ptr,0}
+#define define_unary_function_eval_taylor2(name,ptr,derive,taylors,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,derive,taylors,printptr,texprintptr,0,ptr,0}
+#define define_unary_function_eval_quoted(name,ptr,name_s) const alias_unary_function_eval name={name_s,0,taylor,0,0,0,ptr,1}
+#define define_unary_function_eval2_quoted(name,ptr,name_s,printptr) const alias_unary_function_eval name={name_s,0,taylor,printptr,0,0,ptr,1}
+#define define_unary_function_eval3_quoted(name,ptr,derivee,name_s) const alias_unary_function_eval name={name_s,derivee,taylor,0,0,0,ptr,1}
+#define define_unary_function_eval4_quoted(name,ptr,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,0,taylor,printptr,texprintptr,0,ptr,1}
+#define define_unary_function_eval5_quoted(name,ptr,derive,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,derive,taylor,printptr,texprintptr,0,ptr,1}
+#define define_unary_function_eval_taylor_quoted(name,ptr,derive,taylors,name_s) const alias_unary_function_eval name={name_s,derive,taylors,0,0,0,ptr,1}
+#define define_unary_function_eval_taylor2_quoted(name,ptr,derive,taylors,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,derive,taylors,printptr,texprintptr,0,ptr,1}
 
-#define define_unary_function_eval_index(u,name,ptr,name_s) const alias_unary_function_eval name={name_s,0,taylor,0,ptr,u}
-#define define_unary_function_eval2_index(u,name,ptr,name_s,printptr) const alias_unary_function_eval name={name_s,0,taylor,printptr,ptr,u}
-#define define_unary_function_eval3_index(u,name,ptr,derivee,name_s) const alias_unary_function_eval name={name_s,derivee,taylor,0,ptr,u}
-#define define_unary_function_eval4_index(u,name,ptr,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,0,taylor,printptr,ptr,u}
-#define define_unary_function_eval5_index(u,name,ptr,derive,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,derive,taylor,printptr,ptr,u}
-#define define_unary_function_eval_taylor_index(u,name,ptr,derive,taylors,name_s) const alias_unary_function_eval name={name_s,derive,taylors,0,ptr,u}
-#define define_unary_function_eval_taylor2_index(u,name,ptr,derive,taylors,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,derive,taylors,printptr,ptr,u}
+#define define_unary_function_eval_index(u,name,ptr,name_s) const alias_unary_function_eval name={name_s,0,taylor,0,0,0,ptr,u}
+#define define_unary_function_eval2_index(u,name,ptr,name_s,printptr) const alias_unary_function_eval name={name_s,0,taylor,printptr,0,0,ptr,u}
+#define define_unary_function_eval3_index(u,name,ptr,derivee,name_s) const alias_unary_function_eval name={name_s,derivee,taylor,0,0,0,ptr,u}
+#define define_unary_function_eval4_index(u,name,ptr,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,0,taylor,printptr,texprintptr,0,ptr,u}
+#define define_unary_function_eval5_index(u,name,ptr,derive,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,derive,taylor,printptr,texprintptr,0,ptr,u}
+#define define_unary_function_eval_taylor_index(u,name,ptr,derive,taylors,name_s) const alias_unary_function_eval name={name_s,derive,taylors,0,0,0,ptr,u}
+#define define_unary_function_eval_taylor2_index(u,name,ptr,derive,taylors,name_s,printptr,texprintptr) const alias_unary_function_eval name={name_s,derive,taylors,printptr,texprintptr,0,ptr,u}
 
 #define define_partial_derivative_onearg_unary_function_ptr(name,fcn) const size_t name=(const size_t) &fcn
-#define define_partial_derivative_onearg_genop(name,name_s,genop) const alias_unary_function_eval name##unary_function_eval={name_s,0,taylor,0,genop,0}; const size_t name##unary_function_ptr = (const size_t)(&name##unary_function_eval); const size_t name=(const size_t) &name##unary_function_ptr
+#define define_partial_derivative_onearg_genop(name,name_s,genop) const alias_unary_function_eval name##unary_function_eval={name_s,0,taylor,0,0,0,genop,0}; const size_t name##unary_function_ptr = (const size_t)(&name##unary_function_eval); const size_t name=(const size_t) &name##unary_function_ptr
 
 #else //  NO_UNARY_FUNCTION_COMPOSE
 
@@ -271,6 +285,7 @@ int my_sprintf(char * s, const char * format, ...);
 #endif
 
 #ifdef __VISUALC__ 
+#define _ITERATOR_DEBUG_LEVEL 0
 #define GIAC_GENERIC_CONSTANTS
 // Visual C++ is compiling
 #define VISUALC
@@ -294,8 +309,8 @@ typedef unsigned __int64 ulonglong ;
 typedef long long longlong;
 typedef unsigned long long ulonglong;
 #ifdef x86_64
-  typedef int int128_t __attribute__((mode(TI)));
-  typedef unsigned int uint128_t __attribute__((mode(TI)));
+typedef int int128_t __attribute__((mode(TI)));
+typedef unsigned int uint128_t __attribute__((mode(TI)));
 #ifndef INT128
 #define INT128 1
 #endif
@@ -305,7 +320,7 @@ typedef unsigned long long ulonglong;
 // #define PSEUDO_MOD accelerates cyclic* gbasis computation significantly
 // from int_multilinear_combination in vecteur.cc (from rref?)
 #ifdef FIR
-#if !(defined(BESTA_OS) || defined(WINDOWS) || defined(OSXIOS) || defined(FIR_LINUX) || defined(FIR_ANDROID) || defined(FREERTOS) )
+#if !(defined(BESTA_OS) || defined(WINDOWS) || defined(OSXIOS) || defined(FIR_LINUX) || defined(FIR_ANDROID) || defined(FREERTOS) || defined(PRIMEWEBASM))
 // was #if !(defined(IOS) || defined(__ANDROID__)) && !defined(OSX) && !defined(LINUX)
 #define PSEUDO_MOD 
 #endif
@@ -315,13 +330,14 @@ typedef unsigned long long ulonglong;
 
 #endif // __VISUALC__
 
+
 #ifdef VISUALC
 inline void swap_giac_double(double & a,double & b){ double c=a; a=b; b=c; }
 #else
 #define swap_giac_double(a,b) std::swap<giac_double>(a,b)
 #endif
 
-#if defined WIN32 && defined x86_64
+#if defined x86_64
 typedef longlong ref_count_t;
 #else
 typedef int ref_count_t;
@@ -365,9 +381,16 @@ typedef int ref_count_t;
 #undef HAVE_GMPXX_H
 #undef HAVE_LIBMPFR
 #include "gmp_replacements.h"
-#else
+#else // USE_GMP_REPLACEMENTS
 #include <cstddef>
+#ifdef BF2GMP
+#include "bf2gmp.h"
+// #undef HAVE_LIBMPFR // to be replaced by defined later
+#undef HAVE_LIBMPFI // to be replaced by defined later
+#undef HAVE_GMPXX_H
+#else
 #include "gmp.h"
+#endif // BF2GMP
 #endif // USE_GMP_REPLACEMENTS
 
 #ifndef FXCG
@@ -527,21 +550,21 @@ inline int fsign (float f1){return f1==0?0:(f1>0?1:-1);}
 float fsqrt (float f1);
 void print_float(const giac_float & f,char * ch);
 inline float fpow(float f1,float f2){ 
-#ifdef NSPIRE
+#if defined NSPIRE || defined FXCG
   return pow(f1,f2); 
 #else
   return std::pow(f1,f2); 
 #endif
 }
 inline float ffloor(float f1){ 
-#ifdef NSPIRE
+#if defined NSPIRE || defined FXCG
   return floor(f1); 
 #else
   return std::floor(f1); 
 #endif
 }
 inline float finv(float f1){ return 1/f1; }
-#if defined __APPLE__ || defined EMCC || defined NO_BSD 
+#if defined __APPLE__ || defined EMCC || defined EMCC2 || defined NO_BSD 
 inline float fgamma(float f1){ return tgammaf(f1); }
 #else
 #if defined(__MINGW_H) || defined(VISUALC) || defined(FXCG)// FIXME gamma, not used
@@ -553,7 +576,7 @@ inline float fgamma(float f1){ return gammaf(f1); } // or tgammaf(f1) on some ve
 #ifdef FXCG
 inline float atan2f(float f1,float f2,int rad){ if (rad) return std::atan2(f1,f2); else return std::atan2(f1,f2)*180/3.14159265358979323846;}
 #else
-inline float atan2f(float f1,float f2,int rad){ if (rad) return std::atan2(f1,f2); else return std::atan2(f1,f2)*180/M_PI;}
+inline float atan2f(float f1,float f2,int rad){ if (rad) return atan2f(f1,f2); else return atan2f(f1,f2)*180/3.14159265358979323846;}
 #endif
 #define fis_nan my_isnan
 #define fis_inf my_isinf
@@ -563,4 +586,31 @@ inline float atan2f(float f1,float f2,int rad){ if (rad) return std::atan2(f1,f2
 #undef B0 //this conflicts with a define
 #undef bcopy //this conflicts with a define
 #endif
+
+#ifdef FXCG
+namespace ustl {
+  inline double abs(double d){ return ::fabs(d); }
+  inline double tan(double d){ return ::tan(d); }
+  inline double atan(double d){ return ::atan(d); }
+  inline double asin(double d){ return ::asin(d); }
+  inline double sin(double d){ return ::sin(d); }
+  inline double acos(double d){ return ::acos(d); }
+  inline double cos(double d){ return ::cos(d); }
+  inline double tanh(double d){ return ::tanh(d); }
+  inline double atanh(double d){ return ::atanh(d); }
+  inline double asinh(double d){ return ::asinh(d); }
+  inline double sinh(double d){ return ::sinh(d); }
+  inline double acosh(double d){ return ::acosh(d); }
+  inline double cosh(double d){ return ::cosh(d); }
+  inline double log(double d){ return ::log(d); }
+  inline double log10(double d){ return ::log10(d); }
+  inline double exp(double d){ return ::exp(d); }
+  inline double sqrt(double d){ return ::sqrt(d); }
+  inline double floor(double d){ return ::floor(d); }
+  inline double ceil(double d){ return ::ceil(d); }
+  inline double pow(double d1,double d2){ return ::pow(d1,d2); }
+  inline double atan2(double d1,double d2){ return ::atan2(d1,d2); }
+}
+#endif
+
 #endif // _GIAC_FIRST_H_

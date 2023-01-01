@@ -14,14 +14,14 @@
 
 
 #define ABT_STACK_ADDR      (MEMORY_BASE + MEMORY_SIZE - 4)
-#define UND_STACK_ADDR      (ABT_STACK_ADDR - 0x100)
-#define FIQ_STACK_ADDR      (UND_STACK_ADDR - 0x100)
-#define IRQ_STACK_ADDR      (FIQ_STACK_ADDR - 0x100)
-#define SVC_STACK_ADDR      (IRQ_STACK_ADDR - 0x100)
-#define SYS_STACK_ADDR      (SVC_STACK_ADDR - 0x100)
+#define UND_STACK_ADDR      (ABT_STACK_ADDR - 0x400)
+#define FIQ_STACK_ADDR      (UND_STACK_ADDR - 0x200)
+#define IRQ_STACK_ADDR      (FIQ_STACK_ADDR - 0x200)
+#define SVC_STACK_ADDR      (IRQ_STACK_ADDR - 0x400)
+#define SYS_STACK_ADDR      (SVC_STACK_ADDR - 0x400)
 
 
-#define HEAP_END        (SYS_STACK_ADDR - 0x100)
+#define HEAP_END        (SYS_STACK_ADDR - 0x200)
 
 
 #define SEG_SIZE            1048576
@@ -127,10 +127,15 @@
 #define CPU_DIVIDE_PWRSAVE      3
 #define CPU_DIVIDE_IDLE_INTIAL  10
 
-#define FLASH_LOADER_BLOCK      22
+// Flash is divided in sectors of size 2K,
+// a block is 64 sectors, i.e. 128K,
+// the flash is on blocks number 0 to 1024 (excluded)
+// or on pages (sectprs) 0 to 65536 (excluded)
+// edb writes pages 16 by 16 (32K)
+#define FLASH_LOADER_BLOCK      22 // page 22*64=1408 (*2K)
 #define FLASH_CONFIG_BLOCK      23
-#define FLASH_SYSTEM_BLOCK      31
-#define FLASH_DATA_BLOCK        160
+#define FLASH_SYSTEM_BLOCK      31 // page 31*64=1984 (*2K)
+#define FLASH_DATA_BLOCK        160 // page 10240 (*2K), also named DATA_START_BLOCK 
 
 #define FLASH_FTL_DATA_SECTOR   4096    //8MB Start
 

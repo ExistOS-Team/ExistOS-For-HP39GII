@@ -4,7 +4,7 @@
 // Incomplete (allocation is handled by new/delete)
 // compatible with alias_ref_vecteur and without all VISUALC++ checks
 #include <string.h>
-// #include "iostream"
+// #include <iostream>
 // define IMMEDIATE_VECTOR if you want to use imvector
 #define immvector_max 1 << 30 
 
@@ -41,22 +41,13 @@ namespace std {
   // define IMMEDIATE_VECTOR to an integer>=1 for non-dynamical small vectors
 #if defined(IMMEDIATE_VECTOR) 
 
-#if 1
 #define _begin_immediate_vect _ptr[0]
 #define _endalloc_immediate_vect _ptr[1]
-#endif
-  
   template<typename _Tp> class imvector{
     // private members
     int _taille; // <=0 for immediate, >0 for allocated, immvector_max for empty allocated
     union {
-#if 1
       _Tp *_ptr[2]; // ptr[0]==begin_immediate_vect, ptr[1]==endalloc_immediate_vect
-      void * reserved;
-#else
-      _Tp * _begin_immediate_vect;
-      _Tp * _endalloc_immediate_vect;
-#endif
       int _tab[IMMEDIATE_VECTOR];
     };
     // private allocation methods
@@ -73,7 +64,7 @@ namespace std {
     void _destroy(){
       if (_taille>0){ 
 	if (_begin_immediate_vect) {
-	  // std::cerr << "delete " << _taille << endl;
+	  // std::cerr << "delete " << _taille << '\n';
 	  delete [] _begin_immediate_vect; 
 	}
       }
@@ -103,8 +94,12 @@ namespace std {
 	_endalloc_immediate_vect=_begin_immediate_vect+n;
 	return;
       }
-      if ( _endalloc_immediate_vect-_begin_immediate_vect>=int(n) )
+      if ( _endalloc_immediate_vect-_begin_immediate_vect>=int(n) ){
+	_Tp * ptr=_begin_immediate_vect+n;
+	for (;ptr!=_endalloc_immediate_vect;++ptr)
+	  *ptr=_Tp();
 	return;
+      }
       n=nextpow2(n);
       _Tp * _newbegin = new _Tp[n];
       _Tp * _end_immediate_vect = _begin_immediate_vect+(_taille==immvector_max?0:_taille);
@@ -482,7 +477,6 @@ namespace std {
 namespace std {
   template<typename _Tp> class vector{
     // private members
-  public:
     _Tp * _begin,*_end,*_endalloc;
     // private allocation methods
     void _realloc(unsigned n){
@@ -582,6 +576,7 @@ namespace std {
 	for (;_end!=_endalloc;++_end){
 	  *_end=value;
 	}
+	_end=_begin+n;
       }
     }
     void erase(_Tp * b,_Tp * e){

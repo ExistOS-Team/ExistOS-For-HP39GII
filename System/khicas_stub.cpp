@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <string>
 
 #include "SysConf.h"
 
@@ -125,23 +126,18 @@ char *Setup_SetEntry(unsigned int index, char setting) {
     return NULL;
 }
 
-#define INPUT_TRANSLATE(_rawin, normal, shift_l, shift_r, alpha_capital, alpha_small) \
-    case _rawin: {                                                                    \
-        if (keyStatus & 1) {                                                          \
-            *key = shift_l;                                                           \
-            keyStatus = 0;                                                            \
-            flush_indBit();                                                           \
-        } else if (rshift) {                                                          \
-            *key = shift_r;                                                           \
-        } else if (keyStatus & 4) {                                                   \
-            *key = alpha_small;                                                       \
-        } else if (keyStatus & 8) {                                                   \
-            *key = alpha_capital;                                                     \
-        } else {                                                                      \
-            *key = normal;                                                            \
-        }                                                                             \
-        break;                                                                        \
-    }
+
+
+#define INPUT_TRANSLATE(_rawin, normal, shift_l, shift_r,  alpha_capital, alpha_small) \
+    case _rawin :    \
+        {   \
+          if(keyStatus & 1){*key = shift_l; keyStatus=0; flush_indBit(); } \
+          else if(rshift)  {*key = shift_r;}  \
+          else if(keyStatus & 4)  {*key = alpha_small; if(!(keyStatus&0x80)) keyStatus=0; flush_indBit();} \
+          else if(keyStatus & 8)  {*key = alpha_capital; if(!(keyStatus&0x80)) keyStatus=0; flush_indBit();}  \
+          else {*key = normal;}  \
+          break;\
+        }  \
 
 bool IsKeyDown(int test_key)
 {
@@ -169,10 +165,11 @@ bool IsKeyDown(int test_key)
         INPUT_TRANSLATE(KEY_RIGHT, KEY_CTRL_RIGHT, KEY_SHIFT_RIGHT, KEY_SHIFT_RIGHT, KEY_CTRL_RIGHT, KEY_CTRL_RIGHT);
 
         INPUT_TRANSLATE(KEY_VIEWS, KEY_CTRL_EXIT, KEY_CTRL_QUIT, KEY_CTRL_EXIT, KEY_CTRL_EXIT, KEY_CTRL_EXIT);
+        INPUT_TRANSLATE(KEY_HOME, KEY_CTRL_INS, KEY_CTRL_INS, KEY_CTRL_INS, KEY_CTRL_INS, KEY_CTRL_INS);
 
         INPUT_TRANSLATE(KEY_NUM, KEY_CTRL_OPTN, KEY_SHIFT_OPTN, KEY_SHIFT_OPTN, KEY_CTRL_OPTN, KEY_CTRL_OPTN);
         INPUT_TRANSLATE(KEY_SYMB, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP);
-        INPUT_TRANSLATE(KEY_VARS, KEY_CTRL_VARS, KEY_CTRL_INS, KEY_CTRL_VARS, 'a', 'A');
+        INPUT_TRANSLATE(KEY_VARS, KEY_CTRL_VARS, KEY_CTRL_INS, KEY_CTRL_INS, 'a', 'A');
         INPUT_TRANSLATE(KEY_MATH, KEY_CTRL_MENU, 0000000000000, 0000000000000, 'b', 'B');
         INPUT_TRANSLATE(KEY_ABC, KEY_CTRL_FRACCNVRT, KEY_CTRL_MIXEDFRAC, 0000000000000, 'c', 'C');
         INPUT_TRANSLATE(KEY_XTPHIN, KEY_CTRL_XTT, KEY_CHAR_EXPN10, KEY_CHAR_EXPN10, 'd', 'D');
@@ -185,8 +182,8 @@ bool IsKeyDown(int test_key)
         INPUT_TRANSLATE(KEY_X2, KEY_CHAR_SQUARE, KEY_CHAR_ROOT, KEY_CHAR_ROOT, 'j', 'J');
         INPUT_TRANSLATE(KEY_XY, KEY_CHAR_POW, KEY_CHAR_POWROOT, KEY_CHAR_POWROOT, 'k', 'K');
  
-        INPUT_TRANSLATE(KEY_LEFTBRACKET, '(', '[', KEY_CTRL_CLIP, 'l', 'L');
-        INPUT_TRANSLATE(KEY_RIGHTBRACKET, ')', ']', KEY_CTRL_PASTE, 'm', 'M');
+        INPUT_TRANSLATE(KEY_LEFTBRACKET, '(', KEY_CTRL_CLIP, KEY_CTRL_CLIP, 'l', 'L');
+        INPUT_TRANSLATE(KEY_RIGHTBRACKET, ')', KEY_CTRL_PASTE, KEY_CTRL_PASTE, 'm', 'M');
 
         INPUT_TRANSLATE(KEY_COMMA, ',', ',', ',', 'o', 'O');
 
@@ -300,11 +297,14 @@ int GetKey(int *key) {
         INPUT_TRANSLATE(KEY_RIGHT, KEY_CTRL_RIGHT, KEY_SHIFT_RIGHT, KEY_SHIFT_RIGHT, KEY_CTRL_RIGHT, KEY_CTRL_RIGHT);
 
         INPUT_TRANSLATE(KEY_VIEWS, KEY_CTRL_EXIT, KEY_CTRL_QUIT, KEY_CTRL_EXIT, KEY_CTRL_EXIT, KEY_CTRL_EXIT);
+        INPUT_TRANSLATE(KEY_HOME, KEY_CTRL_MENU,KEY_CTRL_SETUP,KEY_CTRL_SETUP,KEY_CTRL_MENU,KEY_CTRL_MENU);
 
         INPUT_TRANSLATE(KEY_NUM, KEY_CTRL_OPTN, KEY_SHIFT_OPTN, KEY_SHIFT_OPTN, KEY_CTRL_OPTN, KEY_CTRL_OPTN);
-        INPUT_TRANSLATE(KEY_SYMB, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP);
-        INPUT_TRANSLATE(KEY_VARS, KEY_CTRL_VARS, KEY_CTRL_INS, KEY_CTRL_VARS, 'a', 'A');
-        INPUT_TRANSLATE(KEY_MATH, KEY_CTRL_MENU, 0000000000000, 0000000000000, 'b', 'B');
+        INPUT_TRANSLATE(KEY_APPS, KEY_CTRL_SD, KEY_BOOK, KEY_BOOK, KEY_BOOK, KEY_BOOK);
+        INPUT_TRANSLATE(KEY_SYMB, KEY_CTRL_SYMB, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP);
+        INPUT_TRANSLATE(KEY_PLOT, KEY_CTRL_OK, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP, KEY_CTRL_SETUP);
+        INPUT_TRANSLATE(KEY_VARS, KEY_CTRL_VARS, KEY_CTRL_INS, KEY_CTRL_INS, 'a', 'A');
+        INPUT_TRANSLATE(KEY_MATH, KEY_CTRL_CATALOG, KEY_CTRL_CATALOG, KEY_CTRL_CATALOG, 'b', 'B');
         INPUT_TRANSLATE(KEY_ABC, KEY_CTRL_FRACCNVRT, KEY_CTRL_MIXEDFRAC, 0000000000000, 'c', 'C');
         INPUT_TRANSLATE(KEY_XTPHIN, KEY_CTRL_XTT, KEY_CHAR_EXPN10, KEY_CHAR_EXPN10, 'd', 'D');
         INPUT_TRANSLATE(KEY_BACKSPACE, KEY_CTRL_DEL, KEY_CTRL_DEL, KEY_CTRL_DEL, KEY_CTRL_DEL, KEY_CTRL_DEL);
@@ -316,8 +316,8 @@ int GetKey(int *key) {
         INPUT_TRANSLATE(KEY_X2, KEY_CHAR_SQUARE, KEY_CHAR_ROOT, KEY_CHAR_ROOT, 'j', 'J');
         INPUT_TRANSLATE(KEY_XY, KEY_CHAR_POW, KEY_CHAR_POWROOT, KEY_CHAR_POWROOT, 'k', 'K');
  
-        INPUT_TRANSLATE(KEY_LEFTBRACKET, '(', '[', KEY_CTRL_CLIP, 'l', 'L');
-        INPUT_TRANSLATE(KEY_RIGHTBRACKET, ')', ']', KEY_CTRL_PASTE, 'm', 'M');
+        INPUT_TRANSLATE(KEY_LEFTBRACKET, '(', KEY_CTRL_CLIP, KEY_CTRL_CLIP, 'l', 'L');
+        INPUT_TRANSLATE(KEY_RIGHTBRACKET, ')', KEY_CTRL_PASTE, KEY_CTRL_PASTE, 'm', 'M');
 
         INPUT_TRANSLATE(KEY_COMMA, ',', ',', ',', 'o', 'O');
 
@@ -430,23 +430,28 @@ void sprint_double(char *ch, double d)
     sprintf(ch, "%g", d);
 }
 
-void PrintMini(int x, int y, unsigned char const *s, int rev) {
-    // printf("Pmini(%d,%d,%d):%s\n", x,y,rev ,s);
+int PrintMini(int x, int y, unsigned char const *s, int rev) {
+    printf("Pmini(%d,%d,%d):%s\n", x,y,rev ,s);
     if (rev) {
-        vGL_putString(x, y, (char *)s, 255, 0, 12);
+        vGL_putString(x, y, (char *)s, 255, 0, 14);
     } else {
-        vGL_putString(x, y, (char *)s, 0, 255, 12);
+        vGL_putString(x, y, (char *)s, 0, 255, 14);
     }
+    x += strlen((const char *) s)*7;
+    return x;
 }
 
-void PrintXY(int x, int y, unsigned char const *s, int rev) {
+int PrintXY(int x, int y, unsigned char const *s, int rev) {
     // printf("Pxy(%d,%d,%d):%s\n",x,y, rev,s);
     if (rev) {
-        vGL_putString(x, y, (char *)s, 255, 0, 12);
+        vGL_putString(x, y, (char *)s, 255, 0, 16);
     } else {
-        vGL_putString(x, y, (char *)s, 0, 255, 12);
+        vGL_putString(x, y, (char *)s, 0, 255, 16);
     }
+    x += strlen((const char *)s)*8;
+    return x;
 }
+
  
 void PopUpWin(int win) {
     printf("PopUpWin:%d\n", win);
@@ -546,6 +551,18 @@ void Bfile_NameToStr_ncpy(unsigned char *dest, const unsigned short *source , in
     strlcpy((char *)dest, (const char *)source, len);
 }
 
+
+extern "C" bool file_exists(const char * filename);
+bool file_exists(const char * filename){
+  unsigned short dest[strlen(filename)+1]={0};
+  Bfile_StrToName_ncpy(dest,(const unsigned char *)filename,strlen(filename));
+  FIL handle;
+  FRESULT fr = f_open(&handle, (char *)dest,(FA_OPEN_EXISTING | FA_READ | FA_WRITE));
+  printf("f_open:[%s] %d\n",(char *) dest,fr);
+  if (fr != FR_OK)
+    return false;
+  return true;
+}
 
 int Bfile_OpenFile_OS(unsigned short *pFile, int mode) {
     //path_replace((char *)pFile);

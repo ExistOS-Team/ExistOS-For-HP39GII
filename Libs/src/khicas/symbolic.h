@@ -18,7 +18,7 @@
 #ifndef _GIAC_SYMBOLIC_H
 #define _GIAC_SYMBOLIC_H
 #include "first.h"
-#include "iostream"
+#include <iostream>
 #include <string>
 #include "vector.h"
 #include "unary.h"

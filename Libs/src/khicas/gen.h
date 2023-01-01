@@ -17,6 +17,9 @@
  */
 #ifndef _GIAC_GEN_H
 #define _GIAC_GEN_H
+#ifdef KHICAS
+extern size_t stackptr;
+#endif
 
 /* Warning: the size of a gen depend on the architecture and of compile-time flags
    Define -DSMARTPTR64 on 64 bit CPU if the pointers allocated by new are 48 bits
@@ -38,23 +41,27 @@
 #include "config.h"
 #endif
 #include "first.h"
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
 
 // #include <gmp.h>
-#ifdef USE_GMP_REPLACEMENTS
+#if defined USE_GMP_REPLACEMENTS 
 #undef HAVE_GMPXX_H
 #undef HAVE_LIBMPFR
+#undef HAVE_LIBMPFI
 #endif
-#ifdef HAVE_GMPXX_H
-#include <gmpxx.h>
-#endif
-#ifdef HAVE_LIBMPFR
+#if defined HAVE_LIBMPFR && !defined BF2GMP_H 
 #include <mpfr.h>
 // #include <mpf2mpfr.h>
+#endif
+#if defined HAVE_GMPXX_H && !defined BF2GMP_H
+#include <gmpxx.h>
 #endif
 #ifdef HAVE_LIBMPFI
 #include <mpfi.h>
 #endif
-#include "iostream"
+#include <iostream>
 #include <string>
 #include "vector.h"
 #include <map>
@@ -72,7 +79,6 @@
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
-
 
   struct eight_int {
     int i1,i2,i3,i4,i5,i6,i7,i8;
@@ -93,12 +99,10 @@ namespace giac {
   extern twelve_int * tab48;
   extern four_int * tab16;
   extern six_int * tab24;
-  size_t freeslotmem();
+  size_t freeslotmem(); // non 0 if ALLOCSMALL is defined
 
-#ifdef USE_GMP_REPLACEMENTS
-#undef HAVE_GMPXX_H
-#undef HAVE_LIBMPFR
-#endif
+  int sprint_int(char * s,int r);
+  void sprint_double(char * s,double d);
 
   void my_mpz_gcd(mpz_t &z,const mpz_t & A,const mpz_t & B);
 
@@ -147,6 +151,7 @@ namespace giac {
   int invmod(int n,int modulo);
   unsigned invmod(unsigned a,int b);
   int invmod(longlong a,int b);
+  longlong invmodll(longlong a,longlong b);
 #ifdef INT128
   int invmod(int128_t a,int b);
   inline int smod(int128_t r,int m){
@@ -161,6 +166,7 @@ namespace giac {
   }
   int smod(int a,int b); // where b is assumed to be positive
   int smod(longlong a,int b); 
+  longlong smodll(longlong res,longlong m);
   int simplify(int & a,int & b);
 
   struct ref_mpz_t {
@@ -260,7 +266,7 @@ namespace giac {
       static std::string s; 
       s=this->print(0);
 #if 0 // ndef NSPIRE
-      CERR << s << std::endl;
+      CERR << s << '\n';
 #endif
       return s.c_str(); 
     }
@@ -282,6 +288,7 @@ namespace giac {
     virtual gen divide (const gen & g,GIAC_CONTEXT) const;
     gen operator / (const gen & g) const;
     virtual gen substract (const gen & g,GIAC_CONTEXT) const;
+    gen subtract(const gen & g,GIAC_CONTEXT) const;
     virtual gen operator / (const real_object & g) const;
     gen operator - (const gen & g) const;
     virtual gen operator - (const real_object & g) const;
@@ -388,6 +395,7 @@ namespace giac {
     virtual real_interval operator * (const real_interval & g) const;
     virtual gen divide (const gen & g,GIAC_CONTEXT) const;
     virtual gen substract (const gen & g,GIAC_CONTEXT) const;
+    gen subtract(const gen & g,GIAC_CONTEXT) const;
     virtual gen operator - (const real_object & g) const;
     virtual real_interval operator - (const real_interval & g) const ;
     virtual gen operator -() const;
@@ -426,6 +434,7 @@ namespace giac {
   gen accurate_evalf(const gen & g,int nbits);
   vecteur accurate_evalf(const vecteur & v,int nbits);
   std::string print_DOUBLE_(double d,GIAC_CONTEXT);
+  bool islogo(const gen & g);
 
 #if 1 // def NSPIRE
   class comparegen {
@@ -529,13 +538,21 @@ namespace giac {
   // FIXME: for little-endian check if type/unused/subtype order is correct!
   class gen {
   public:
+#ifdef GIAC_TYPE_ON_8BITS
+    unsigned char type;  // see dispatch.h
+#else
+    unsigned char type:5;  // 32 types is enough, keep 3 bits more for double
+    unsigned char type_unused:3; 
+#endif
+    signed char subtype;
+    unsigned short reserved; // used if SMARTPTR is defined on 64 bit CPU (16 bits for pointer val)
     union {
-    // immediate types
+      // immediate types
+      int val; // immediate int (type _INT_)
 #ifdef DOUBLEVAL
       double _DOUBLE_val; // immediate float (type _DOUBLE_)
       giac_float _FLOAT_val;
 #endif
-      int val; // immediate int (type _INT_)
 #ifndef SMARTPTR64
       // pointer types
       ref_mpz_t * __ZINTptr; // long int (type _ZINT)
@@ -568,32 +585,76 @@ namespace giac {
       ref_void_pointer * __POINTERptr;
 #endif
     };
-    unsigned short reserved = 0; // used if SMARTPTR is defined on 64 bit CPU (16 bits for pointer val)
-    signed char subtype;
-#if 1 //def GIAC_TYPE_ON_8BITS
-    unsigned char type;  // see dispatch.h
+    inline volatile ref_count_t & ref_count() const { 
+#ifdef SMARTPTR64
+      return ((ref_mpz_t *) ((* (ulonglong *) (this))>>16))->ref_count;
 #else
-    unsigned char type_unused:3; 
-    unsigned char type:5;  // 32 types is enough, keep 3 bits more for double
+      return __ZINTptr->ref_count;
 #endif
-    volatile ref_count_t & ref_count() const;
-    gen(){ *(ulonglong *) this=0;}
-    gen(int i);
-
-    gen(void *ptr,short int subt): subtype(char(subt)),type(_POINTER_) {
+    }
+#ifdef SMARTPTR64
+    gen()  {
+      * ((ulonglong * ) this)=0;
+#if defined COMPILE_FOR_STABILITY && !defined(POCKETCAS)
+      control_c();
+#endif
+    };
+#else
+    gen(): type(_INT_),subtype(0),val(0) {
+#if defined COMPILE_FOR_STABILITY && !defined(POCKETCAS)
+      control_c();
+#endif
+    };
+#endif
+#ifdef SMARTPTR64
+    gen(void *ptr,short int subt)  {
+#ifdef COMPILE_FOR_STABILITY
+      control_c();
+#endif
+      ulonglong __POINTERptr = (ulonglong ) new ref_void_pointer(ptr); 
+#ifndef NO_STDEXCEPT
+      if (__POINTERptr & 0xffff000000000000)
+	setsizeerr(gettext("Pointer out of range"));
+#endif
+      * ((ulonglong *) this) = __POINTERptr << 16;
+      subtype=(signed char)subt;
+      type=_POINTER_;
+    };
+#else
+    gen(void *ptr,short int subt): type(_POINTER_),subtype(char(subt)) {
 #ifdef COMPILE_FOR_STABILITY
       control_c();
 #endif
       __POINTERptr=new ref_void_pointer(ptr); 
     };
-
-    gen(size_t i): val((int)i),subtype(0),type(_INT_) 
-    {
-#ifdef COMPILE_FOR_STABILITY
+#endif
+#ifdef SMARTPTR64
+    gen(int i) {
+      * ((ulonglong * ) this)=0;
+      val=i;
+#ifdef COMPILE_FOR_STABILITY 
       control_c();
 #endif
     };
-
+    gen(size_t i) {
+      * ((ulonglong * ) this)=0;
+      val=int(i);
+#ifdef COMPILE_FOR_STABILITY 
+      control_c();
+#endif
+    };
+#else
+    gen(int i): type(_INT_),subtype(0),val(i) {
+#if defined COMPILE_FOR_STABILITY && !defined(POCKETCAS)
+      control_c();
+#endif
+    };
+    gen(size_t i): type(_INT_),subtype(0),val((int)i)  {
+#if defined COMPILE_FOR_STABILITY && !defined(POCKETCAS)
+      control_c();
+#endif
+    };
+#endif
     gen(long i);
     gen(longlong i);
     gen(longlong i,int nbits);
@@ -605,7 +666,7 @@ namespace giac {
     // Pls do not use this constructor unless you know exactly what you do!!
     gen(ref_mpz_t * mptr);
 #ifdef DOUBLEVAL
-    gen(double d): type(_DOUBLE_),_DOUBLE_val(d) {};
+    inline gen(double d): type(_DOUBLE_),_DOUBLE_val(d) {};
 #else
     // may not work on ia64 with -O2
     gen(double d);
@@ -646,15 +707,28 @@ namespace giac {
     gen (const gen_map & m);
     gen (const eqwdata & );
     gen (const grob & );
-#ifdef HAVE_GMPXX_H
+#if defined HAVE_GMPXX_H && !defined BF2GMP_H
     gen (const mpz_class &);
 #endif
     gen (const my_mpz &);
     void delete_gen();
-    ~gen();
+    ~gen(){ 
+      if ( type>_DOUBLE_ && type!=_FLOAT_
+#if !defined SMARTPTR64 // || defined STATIC_BUILTIN_LEXER_FUNCTIONS
+	   && type!=_FUNC 
+#endif
+	   ){
+	// optimization for ref_count access must be checked in multi-thread
+	ref_count_t * rc=(ref_count_t *) & ref_count();
+	if (*rc!=-1 && !--*rc){
+	  delete_gen();
+	}
+      }
+    }
+
     bool in_eval(int level,gen & evaled,const context * contextptr) const;
     inline gen eval(int level,const context * contextptr) const{
-      // CERR << "eval " << *this << " " << level << endl;
+      // CERR << "eval " << *this << " " << level << '\n';
       gen res;
       // return in_eval(level,res,contextptr)?res:*this;
       if (in_eval(level,res,contextptr))
@@ -668,10 +742,62 @@ namespace giac {
     // inline gen evalf() const { return evalf(DEFAULT_EVAL_LEVEL,context0); }
     gen evalf_double(int level,const context * contextptr) const ;
     gen evalf2double(int level,const context * contextptr) const;
-    gen & operator = (const gen & a);
-    gen & operator = (int a);
-    gen & operator = (double a);
-    gen & operator = (longlong a);
+#if defined SMARTPTR64 
+    gen & operator = (const gen & a){
+      ulonglong al=*((ulonglong *) &a);
+      unsigned char atype=al&0x1f;
+      ulonglong tl=*((ulonglong *) this);
+      // Copy before deleting because the target might be embedded in a
+      // with a ptr_val.ref_count of a equals to 1
+      // short int type_save=type; // short int subtype_save=subtype; 
+      * ((ulonglong *) this) = al;
+      if (atype>_DOUBLE_ && atype!=_FLOAT_ 
+	  && (al >> 16)	){
+	ref_count_t * rc=(ref_count_t *)& ((ref_mpz_t *)(al>>16) )->ref_count;
+	if (*rc!=-1)
+	  ++(*rc); // increase ref count
+      }
+      // Now we delete the target 
+      if ( (tl &0x1f)>_DOUBLE_)
+	delete_ptr( (signed char) ((tl&0xff00)>>8),(tl &0x1f),(ref_mpz_t *) (tl >> 16));
+      return *this;
+    }
+    
+#else // SMARTPTR64
+    gen & operator = (const gen & a){
+      register unsigned t=(type << _DECALAGE) | a.type;
+      if (!t){
+	subtype=a.subtype;
+	val=a.val;
+	return *this;
+      }
+      if (a.type>_DOUBLE_ && a.type!=_FLOAT_ 
+	  && a.type!=_FUNC && a.__ZINTptr
+	  ){
+	ref_count_t * rc=(ref_count_t *)&a.ref_count();
+	if (*rc!=-1)
+	  ++(*rc); // increase ref count
+      }
+      // Copy before deleting because the target might be embedded in a
+      // with a ptr_val.ref_count of a equals to 1
+      short int type_save=type; // short int subtype_save=subtype; 
+      ref_mpz_t * ptr_save = __ZINTptr;
+#ifdef DOUBLEVAL
+      _DOUBLE_val = a._DOUBLE_val;
+      subtype=a.subtype;
+#else
+      * ((ulonglong *) this) = *((ulonglong * ) &a);
+#endif
+      __ZINTptr=a.__ZINTptr;
+      type=a.type;
+      // Now we delete the target 
+      if ( type_save>_DOUBLE_ && type_save!=_FLOAT_
+	   && type_save!=_FUNC 
+	   )
+	delete_ptr(subtype,type_save,ptr_save);
+      return *this;
+    }
+#endif // SMARTPTR64
     int to_int() const ;
     double to_double(const context * contextptr) const;
     bool is_vector_of_size(size_t n) const;
@@ -681,17 +807,17 @@ namespace giac {
     bool is_integer() const ;
     bool is_constant() const;
     std::string print(GIAC_CONTEXT) const;
-    inline const char * printcharptr(GIAC_CONTEXT) const { return print(contextptr).c_str(); };
+    // inline const char * printcharptr(GIAC_CONTEXT) const { return print(contextptr).c_str(); };
     // if sptr==0, return length required, otherwise print at end of *sptr
     int sprint(std::string * sptr,GIAC_CONTEXT) const; 
     std::string print_universal(GIAC_CONTEXT) const;
     std::string print() const;
-    inline const char * printcharptr() const { return print().c_str(); };
+    //inline const char * printcharptr() const { return print().c_str(); };
     wchar_t * wprint(GIAC_CONTEXT) const ; 
     // print then convert to a malloc-ated wchar_t *
     void modify(int i) { *this =gen(i); };
     const char * dbgprint() const; 
-    void uncoerce() ;
+    void uncoerce(size_t s=128) ;
     gen conj(GIAC_CONTEXT) const;
     gen re(GIAC_CONTEXT) const ;
     gen im(GIAC_CONTEXT) const ;
@@ -747,14 +873,14 @@ namespace giac {
   typedef ulonglong alias_gen;
 #else
   struct alias_gen {
+    unsigned char type;  // see dispatch.h
+    signed char subtype;
+    unsigned short reserved; // not used 
 #ifdef DOUBLEVAL
     longlong value;
 #else
     long value ; 
 #endif
-    unsigned short reserved; // not used 
-    signed char subtype;
-    unsigned char type;  // see dispatch.h
   };
 #endif
 
@@ -764,7 +890,7 @@ namespace giac {
     vectpoly(size_t i,const polynome & p):std::vector<polynome>::vector(i,p) {};
     const char * dbgprint(){  
 #if !defined(NSPIRE) && !defined(FXCG)
-      CERR << *this << std::endl; 
+      CERR << *this << '\n'; 
 #endif
       return "Done";
     }
@@ -784,8 +910,13 @@ namespace giac {
   struct alias_ref_fraction { ref_count_t ref_count; alias_gen num; alias_gen den; };
   struct alias_ref_complex {
     ref_count_t ref_count;
+#ifdef BIGENDIAN
+    alias_gen im,re;
+    int display;
+#else
     int display;
     alias_gen re,im;
+#endif
   };
 
   struct ref_vecteur {
@@ -813,30 +944,34 @@ namespace giac {
 #define define_alias_ref_complex(name,retype,resubtype,reptr,imtype,imsubtype,imptr) alias_ref_complex name={-1,0,{retype,resubtype,0,ulonglong(reptr)},{imtype,imsubtype,0,ulonglong(imptr)}};
 #define define_tab2_alias_gen(name,retype,resubtype,reptr,imtype,imsubtype,imptr) alias_gen name[]={{retype,resubtype,0,ulonglong(reptr)},{imtype,imsubtype,0,ulonglong(imptr)}};
 #else // DOUBLEVAL
-#define define_alias_gen(name,type,subtype,ptr) alias_gen name={long(ptr),0,subtype,type};//{type,subtype,0,long(ptr)};
-#define define_alias_ref_symbolic(name,sommet,type,subtype,ptr) alias_ref_symbolic name={-1,(unary_function_eval *)sommet,long(ptr),0,subtype,type};//{-1,(unary_function_eval *)sommet,type,subtype,0,long(ptr)};
-#define define_alias_ref_fraction(name,numtype,numsubtype,numptr,dentype,densubtype,denptr) alias_ref_fraction name={-1,{long(numptr),0,numsubtype,numtype},{long(denptr),0,densubtype,dentype}};//{-1,{numtype,numsubtype,0,long(numptr)},{dentype,densubtype,0,long(denptr)}};
-#define define_alias_ref_complex(name,retype,resubtype,reptr,imtype,imsubtype,imptr) alias_ref_complex name={-1,0,{long(reptr),0,resubtype,retype},{long(imptr),0,imsubtype,imtype}};//{-1,0,{retype,resubtype,0,long(reptr)},{imtype,imsubtype,0,long(imptr)}};
-#define define_tab2_alias_gen(name,retype,resubtype,reptr,imtype,imsubtype,imptr) alias_gen name[]={{long(reptr),0,resubtype,retype},{long(imptr),0,imsubtype,imtype}};//{{retype,resubtype,0,long(reptr)},{imtype,imsubtype,0,long(imptr)}};
+#define define_alias_gen(name,type,subtype,ptr) alias_gen name={type,subtype,0,long(ptr)};
+#define define_alias_ref_symbolic(name,sommet,type,subtype,ptr) alias_ref_symbolic name={-1,(unary_function_eval *)sommet,type,subtype,0,long(ptr)};
+#define define_alias_ref_fraction(name,numtype,numsubtype,numptr,dentype,densubtype,denptr) alias_ref_fraction name={-1,{numtype,numsubtype,0,long(numptr)},{dentype,densubtype,0,long(denptr)}};
+#define define_alias_ref_complex(name,retype,resubtype,reptr,imtype,imsubtype,imptr) alias_ref_complex name={-1,0,{retype,resubtype,0,long(reptr)},{imtype,imsubtype,0,long(imptr)}};
+#define define_tab2_alias_gen(name,retype,resubtype,reptr,imtype,imsubtype,imptr) alias_gen name[]={{retype,resubtype,0,long(reptr)},{imtype,imsubtype,0,long(imptr)}};
 #endif // DOUBLEVAL
 #endif // SMARTPTR64
 
   // ? #ifdef __GNUC__
 #ifdef IMMEDIATE_VECTOR
-  struct alias_ref_vecteur { ref_count_t ref_count; const int _taille; const alias_gen * end_immediate_vect; const alias_gen * begin_immediate_vect; void * ptr;  };
-  //#define define_alias_ref_vecteur(name,b) alias_ref_vecteur name={-1,sizeof(b)/sizeof(gen),(const alias_gen *)b,(const alias_gen *)b+sizeof(b)/sizeof(gen),0};
+  struct alias_ref_vecteur { ref_count_t ref_count; const int _taille; const alias_gen * begin_immediate_vect; const alias_gen * end_immediate_vect; void * ptr; };
+#define define_alias_ref_vecteur(name,b) alias_ref_vecteur name={-1,sizeof(b)/sizeof(gen),(const alias_gen *)b,(const alias_gen *)b+sizeof(b)/sizeof(gen),0};
 #define define_alias_ref_vecteur2(name,b) alias_ref_vecteur name={-1,2,&b[0],&b[2],0};
 #else
-  struct alias_ref_vecteur { ref_count_t ref_count; void * ptr; const alias_gen * begin; unsigned size; unsigned capacity; };
-#define define_alias_ref_vecteur(name,b) alias_ref_vecteur name={-1,0,(const alias_gen *)b,sizeof(gen),sizeof(gen)};
-  //#define define_alias_ref_vecteur2(name,b) alias_ref_vecteur name={-1,&b[0],&b[2],&b[2],0};
-#define define_alias_ref_vecteur2(name,b) alias_ref_vecteur name={-1,0,&b[0],2*sizeof(gen),2*sizeof(gen)};
+  struct alias_ref_vecteur { ref_count_t ref_count; const alias_gen * begin; const alias_gen * end; const alias_gen * finish; void * ptr; };
+#define define_alias_ref_vecteur(name,b) alias_ref_vecteur name={-1,(const alias_gen *)b,(const alias_gen *)b+sizeof(b)/sizeof(gen),(const alias_gen *)b+sizeof(b)/sizeof(gen),0};
+#define define_alias_ref_vecteur2(name,b) alias_ref_vecteur name={-1,&b[0],&b[2],&b[2],0};
 #endif
 
   struct ref_complex {
     volatile ref_count_t ref_count;
+#ifdef BIGENDIAN
+    gen im,re;
+    int display;
+#else
     int display;
     gen re,im;
+#endif
     ref_complex(const std::complex<double> & c):ref_count(1),display(0),re(real(c)),im(imag(c)) {}
     ref_complex(const gen & R,const gen & I):ref_count(1),display(0),re(R),im(I) {}
     ref_complex(const gen & R,const gen & I,int display_mode):ref_count(1),display(display_mode),re(R),im(I) {}
@@ -916,6 +1051,7 @@ namespace giac {
   gen rdiv(const gen & a,const gen & b,GIAC_CONTEXT0); // rational division
   inline gen operator /(const gen & a,const gen & b){ return rdiv(a,b); };
   gen operator %(const gen & a,const gen & b); // for int only
+  bool is_multiple(const gen & a,const gen &b);
   // gen inv(const gen & a);
   gen inv(const gen & a,GIAC_CONTEXT);
   inline wchar_t * wprint(const gen & g,GIAC_CONTEXT){ return g.wprint(contextptr); }
@@ -1010,6 +1146,7 @@ namespace giac {
   // more advanced arithmetic
   gen gcd(const gen & A,const gen & B,GIAC_CONTEXT);
   gen gcd(const gen & A,const gen & B);
+  int iegcd(int a_,int b_,int &u,int & v);
   gen lcm(const gen & a,const gen & b);
   gen simplify(gen & n, gen & d);
   void egcd(const gen &a,const gen &b, gen & u,gen &v,gen &d );
@@ -1018,13 +1155,12 @@ namespace giac {
   gen fracmod(const gen & a_orig,const gen & modulo); // -> p/q=a mod modulo
   bool fracmod(const gen & a_orig,const gen & modulo,gen & res);
   bool in_fracmod(const gen &m,const gen & a,mpz_t & d,mpz_t & d1,mpz_t & absd1,mpz_t &u,mpz_t & u1,mpz_t & ur,mpz_t & q,mpz_t & r,mpz_t &sqrtm,mpz_t & tmp,gen & num,gen & den);
+  bool alloc_fracmod(const gen & a_orig,const gen & modulo,gen & res,mpz_t & d,mpz_t & d1,mpz_t & absd1,mpz_t &u,mpz_t & u1,mpz_t & ur,mpz_t & q,mpz_t & r,mpz_t &sqrtm,mpz_t & tmp);
   gen powmod(const gen &base,const gen & expo,const gen & modulo);
   gen isqrt(const gen & A);
   gen re(const gen & a,GIAC_CONTEXT);
-  gen symbolic_re(const gen & a);
   gen no_context_re(const gen & a);
   gen im(const gen & a,GIAC_CONTEXT);
-  gen symbolic_im(const gen & a);
   gen no_context_im(const gen & a);
   void reim(const gen & g,gen & r,gen & i,GIAC_CONTEXT);
   gen conj(const gen & a,GIAC_CONTEXT);
@@ -1085,13 +1221,6 @@ namespace giac {
   double int2double(int i);
   inline  bool is_constant(const gen & g){ return g.is_constant(); } ;
   inline bool is_approx(const gen & g){ return g.is_approx(); };
-  template <class T> void vptr_reverse(T* a,T * aend){
-    T* b=aend-1;
-    for (;a<b;++a,--b){
-      std::swap(*a,*b);
-    }
-  }
-  void vreverse(iterateur a,iterateur b);
   gen aplatir_fois_plus(const gen & g);
   gen collect(const gen & g,GIAC_CONTEXT);
 
@@ -1144,7 +1273,7 @@ namespace giac {
       return false;
     }
     virtual bool operator == (const gen_user & a) const { return (*this) == gen(a); }
-    // must redefine > AND <= since we do not have symetrical type arguments
+    // must redefine > AND <= since we do not have symmetrical type arguments
     virtual gen operator > (const gen &) const { return gensizeerr(gettext("> not redefined")); }
     virtual gen operator > (const gen_user & a) const { return superieur_strict(*this, gen(a),0); }
     virtual gen operator <= (const gen &) const { return gensizeerr(gettext("<= not redefined")); }
@@ -1161,11 +1290,12 @@ namespace giac {
       static std::string s;
       s=this->print(0);
 #if !defined( NSPIRE) && !defined(FXCG)
-      CERR << s << std::endl;
+      CERR << s << '\n';
 #endif
       return s.c_str();
     }
     virtual std::string texprint (GIAC_CONTEXT) const { return "Nothing_to_print_tex"; }
+    virtual gen giac_constructor (GIAC_CONTEXT) const { return *this; }
     virtual gen eval(int level,const context * contextptr) const {return *this;};
     virtual gen evalf(int level,const context * contextptr) const {return *this;};
     virtual gen makegen(int i) const { return string2gen("makegen not redefined"); } ;
@@ -1182,6 +1312,9 @@ namespace giac {
   std::string print_the_type(int val,GIAC_CONTEXT);
 
   // I/O
+#ifdef KHICAS
+  stdostream & operator << (stdostream & os,const gen & a);
+#endif
 #ifdef NSPIRE
   template<class T> nio::ios_base<T> & operator<<(nio::ios_base<T> & os,const gen & a){
     return os << a.print(context0); 
@@ -1190,7 +1323,6 @@ namespace giac {
 #else
   std::ostream & operator << (std::ostream & os,const gen & a);
   std::istream & operator >> (std::istream & is,gen & a);
-  inline stdostream & operator << (stdostream & os,const gen & a){ return os<<a.print(context0); }
 #endif
 
 #if defined(GIAC_GENERIC_CONSTANTS) // || (defined(VISUALC) && !defined(RTOS_THREADX)) || defined(x86_64)
@@ -1209,6 +1341,9 @@ namespace giac {
     std::string print(GIAC_CONTEXT) const ;
     const char * dbgprint() const ;
   };
+#if 0 // def KHICAS
+  stdostream & operator<<(stdostream & os,const monome & m){    return os << m.print() ;}
+#endif
 #ifdef NSPIRE
   template<class T> nio::ios_base<T> & operator<<(nio::ios_base<T> & os,const monome & m){    return os << m.print() ;}
 #else
@@ -1269,9 +1404,9 @@ namespace giac {
   // extern environment * env; 
 
   struct attributs {
-    int fontsize;
-    int background;
-    int text_color;
+    short int fontsize;
+    unsigned short int background;
+    unsigned short int text_color;
     attributs(int f,int b,int t): fontsize(f),background(b),text_color(t) {};
     attributs():fontsize(0),background(0),text_color(0) {};
   };
@@ -1279,18 +1414,23 @@ namespace giac {
   // Terminal data for EQW display
   struct eqwdata {
     gen g; 
-    attributs eqw_attributs;
+#if defined KHICAS || defined FXCG
+    short int x,y,dx,dy;
+    short int baseline;
+#else
     int x,y,dx,dy;
+    int baseline;
+#endif
     bool selected;
     bool active;
     bool hasbaseline;
     bool modifiable;
-    int baseline;
+    attributs eqw_attributs;
     eqwdata(int dxx,int dyy,int xx, int yy,const attributs & a,const gen& gg):g(gg),eqw_attributs(a),x(xx),y(yy),dx(dxx),dy(dyy),selected(false),active(false),hasbaseline(false),modifiable(true),baseline(0) {};
     eqwdata(int dxx,int dyy,int xx, int yy,const attributs & a,const gen& gg,int mybaseline):g(gg),eqw_attributs(a),x(xx),y(yy),dx(dxx),dy(dyy),selected(false),active(false),hasbaseline(true),modifiable(true),baseline(mybaseline) {};
     const char * dbgprint(){ 
 #if !defined( NSPIRE) && !defined(FXCG)
-      CERR << g << ":" << dx<< ","<< dy<< "+"<<x <<","<< y<< "," << baseline << "," << eqw_attributs.fontsize << "," << eqw_attributs.background << "," << eqw_attributs.text_color << std::endl; 
+      CERR << g << ":" << dx<< ","<< dy<< "+"<<x <<","<< y<< "," << baseline << "," << eqw_attributs.fontsize << "," << eqw_attributs.background << "," << eqw_attributs.text_color << '\n'; 
 #endif
       return "Done";
     }
@@ -1393,7 +1533,7 @@ namespace giac {
       static std::string s;
       s=this->print(context0);
 #if 0 // ndef NSPIRE
-      COUT << s << std::endl; 
+      COUT << s << '\n'; 
 #endif
       return s.c_str();
     }
@@ -1417,14 +1557,14 @@ namespace giac {
   struct alias_ref_symbolic {
     ref_count_t ref_count;
     unary_function_eval * sommet;
+    unsigned char type;  // see dispatch.h
+    signed char subtype;
+    unsigned short reserved; // not used 
 #ifdef DOUBLEVAL
     longlong value;
 #else
     long value ; 
 #endif
-    unsigned short reserved; // not used 
-    signed char subtype;
-    unsigned char type;  // see dispatch.h
   };
 #endif
 
@@ -1602,6 +1742,8 @@ namespace giac {
   void sprintfdouble(char *,const char *,double d);
 
   extern "C" const char * caseval(const char *);
+  extern "C" void stack_check_init(size_t max_stack_size);
+  bool stack_check(GIAC_CONTEXT);
 
 // Alloca proposal by Cyrille to make it work on every compiler.
 #ifndef ALLOCA

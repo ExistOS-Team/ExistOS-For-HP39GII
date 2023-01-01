@@ -818,10 +818,10 @@ int doCatalogMenu(char* insertText, const char* title, int category,const char *
     menu.scrollout=1;
     menu.title = (char *) title;
     menu.type = MENUTYPE_FKEYS;
-    menu.height = 13;
+    menu.height = MENUHEIGHT;
     while(1) {
-      drawRectangle(0,56,LCD_WIDTH_PX,8,COLOR_BLACK);
-      PrintMini(0,57,(const unsigned char *)(category==CAT_CATEGORY_ALL?"input| ex1 | ex2 |     |    | help":"input| ex1 | ex2 |cmds |    |help"),MINI_REV);
+      drawRectangle(0,56*2,LCD_WIDTH_PX,8*2,COLOR_BLACK);
+      PrintMini(0,57*2,(const unsigned char *)(category==CAT_CATEGORY_ALL?"input| ex1 | ex2 |     |    | help":"input| ex1 | ex2 |cmds |    |help"),MINI_REV);
       int sres = doMenu(&menu);
       if (sres==KEY_CTRL_F4 && category!=CAT_CATEGORY_ALL){
 	break;

@@ -500,20 +500,20 @@ const char *input_matrix(bool list)
 }
 
 /*
-  以下函数将用于删除字符串指定位置之前共n个字符。其中，1个宽字符（占2字节）将算作1个字符。
+  ÒÔÏÂº¯Êý½«ÓÃÓÚÉ¾³ý×Ö·û´®Ö¸¶¨Î»ÖÃÖ®Ç°¹²n¸ö×Ö·û¡£ÆäÖÐ£¬1¸ö¿í×Ö·û£¨Õ¼2×Ö½Ú£©½«Ëã×÷1¸ö×Ö·û¡£
 
-  例如，我们有如下字符串str：
+  ÀýÈç£¬ÎÒÃÇÓÐÈçÏÂ×Ö·û´®str£º
 
-  位置 | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
-  字符 |'a'|'b'|'c'|'d'|'e'|'f'| 0 |
+  Î»ÖÃ | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+  ×Ö·û |'a'|'b'|'c'|'d'|'e'|'f'| 0 |
 
-  则调用Console_DelStr(str, 3, 2)后，位置1、2的字符将被删除，其后的字符将被提前。
-  结果如下：
+  Ôòµ÷ÓÃConsole_DelStr(str, 3, 2)ºó£¬Î»ÖÃ1¡¢2µÄ×Ö·û½«±»É¾³ý£¬ÆäºóµÄ×Ö·û½«±»ÌáÇ°¡£
+  ½á¹ûÈçÏÂ£º
 
-  位置 | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
-  字符 |'a'|'d'|'e'|'f'| 0 |'f'| 0 |
+  Î»ÖÃ | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+  ×Ö·û |'a'|'d'|'e'|'f'| 0 |'f'| 0 |
 
-  （注意：多余的位置并不会被填充为'\0'，但是原字符串末尾的'\0'将被拷贝。）
+  £¨×¢Òâ£º¶àÓàµÄÎ»ÖÃ²¢²»»á±»Ìî³äÎª'\0'£¬µ«ÊÇÔ­×Ö·û´®Ä©Î²µÄ'\0'½«±»¿½±´¡££©
 
   The following functions will be used to specify the location before deleting a string of n characters altogether. Among them, a wide character (2 bytes) will be counted as a character.
 
@@ -557,9 +557,9 @@ int Console_DelStr(unsigned char *str, int end_pos, int n)
 }
 
 /*
-  以下函数用于在指定位置插入指定的字符串。
+  ÒÔÏÂº¯ÊýÓÃÓÚÔÚÖ¸¶¨Î»ÖÃ²åÈëÖ¸¶¨µÄ×Ö·û´®¡£
 
-  （注意：这里的位置指的是打印时的位置，而不是实际的位置。）
+  £¨×¢Òâ£ºÕâÀïµÄÎ»ÖÃÖ¸µÄÊÇ´òÓ¡Ê±µÄÎ»ÖÃ£¬¶ø²»ÊÇÊµ¼ÊµÄÎ»ÖÃ¡££©
 
   The following functions are used to specify the location of the insertion in the specified string.
   (Note: This refers to the position of the printing position when, rather than the actual position.)
@@ -596,20 +596,20 @@ int Console_InsStr(unsigned char *dest, const unsigned char *src, int disp_pos)
 }
 
 /*
-  以下函数用于确定对应于字符串打印位置的真实位置。
+  ÒÔÏÂº¯ÊýÓÃÓÚÈ·¶¨¶ÔÓ¦ÓÚ×Ö·û´®´òÓ¡Î»ÖÃµÄÕæÊµÎ»ÖÃ¡£
 
-  例如，在以下这一包含宽字符的字符串str中，打印时的位置如下：
+  ÀýÈç£¬ÔÚÒÔÏÂÕâÒ»°üº¬¿í×Ö·ûµÄ×Ö·û´®strÖÐ£¬´òÓ¡Ê±µÄÎ»ÖÃÈçÏÂ£º
 
-  位置 | 00 | 01 | 02 | 03 | 04 | 05 | 06 |
-  字符 | 一 | 二 | 三 | 四 | 五 | 六 | \0 |
+  Î»ÖÃ | 00 | 01 | 02 | 03 | 04 | 05 | 06 |
+  ×Ö·û | Ò» | ¶þ | Èý | ËÄ | Îå | Áù | \0 |
 
-  而在实际存储时的位置如下：
+  ¶øÔÚÊµ¼Ê´æ´¢Ê±µÄÎ»ÖÃÈçÏÂ£º
 
-  位置 |  00  |  01  |  02  |  03  |  04  |  05  |  06  |  07  |  08  |  09  |  10  |  11  |
-  值   | 0xD2 | 0xBB | 0xB6 | 0xFE | 0xC8 | 0xFD | 0xCB | 0xC4 | 0xCE | 0xE5 | 0xC1 | 0xF9 |
+  Î»ÖÃ |  00  |  01  |  02  |  03  |  04  |  05  |  06  |  07  |  08  |  09  |  10  |  11  |
+  Öµ   | 0xD2 | 0xBB | 0xB6 | 0xFE | 0xC8 | 0xFD | 0xCB | 0xC4 | 0xCE | 0xE5 | 0xC1 | 0xF9 |
 
-  可以发现，第4个字符‘五’实际上存储于第8的位置。
-  因此，当调用Console_GetActualPos(str, 4)时，将返回8。
+  ¿ÉÒÔ·¢ÏÖ£¬µÚ4¸ö×Ö·û¡®Îå¡¯Êµ¼ÊÉÏ´æ´¢ÓÚµÚ8µÄÎ»ÖÃ¡£
+  Òò´Ë£¬µ±µ÷ÓÃConsole_GetActualPos(str, 4)Ê±£¬½«·µ»Ø8¡£
 
 
   The following function is used to determine the true position of the string corresponding to the printing position.
@@ -650,7 +650,7 @@ int Console_GetActualPos(const unsigned char *str, int disp_pos)
 }
 
 /*
-  以下函数用于获取字符串的打印长度，即，1个宽字符（占用2字节）记作1字符。
+  ÒÔÏÂº¯ÊýÓÃÓÚ»ñÈ¡×Ö·û´®µÄ´òÓ¡³¤¶È£¬¼´£¬1¸ö¿í×Ö·û£¨Õ¼ÓÃ2×Ö½Ú£©¼Ç×÷1×Ö·û¡£
   The following functions are used to obtain a string of print length, ie, a wide character (2 bytes) recorded as a character.
 */
 
@@ -674,7 +674,7 @@ int Console_GetDispLen(const unsigned char *str)
 }
 
 /*
-  以下函数用于移动光标。
+  ÒÔÏÂº¯ÊýÓÃÓÚÒÆ¶¯¹â±ê¡£
   The following functions are used to move the cursor.
 */
 
@@ -685,35 +685,35 @@ int Console_MoveCursor(int direction)
   case CURSOR_UP:
     if (Current_Line == Last_Line)
       editline_cursor = Cursor.x;
-    // 如果需要操作。
+    //Èç¹ûÐèÒª²Ù×÷¡£
     // If you need to operate.
     if ((Cursor.y > 0) || (Start_Line > 0))
     {
-        // 如果当前行不是只读的,则将Edit_Line拷贝给当前行。
-        // If the current line is not read-only, then Edit_Line copy to the current line.
+      //Èç¹ûµ±Ç°ÐÐ²»ÊÇÖ»¶ÁµÄ,Ôò½«Edit_Line¿½±´¸øµ±Ç°ÐÐ¡£
+      // If the current line is not read-only, then Edit_Line copy to the current line.
       if (!Line[Current_Line].readonly)
       {
-            if ((Line[Current_Line].str = (unsigned char *)malloc(strlen((const char *)Edit_Line) + 1)) == NULL)
-                return CONSOLE_MEM_ERR;
-            strcpy((char *)Line[Current_Line].str, (const char *)Edit_Line);
-            Line[Current_Line].disp_len = Console_GetDispLen(Line[Current_Line].str);
-            Line[Current_Line].type = LINE_TYPE_INPUT;
+        if ((Line[Current_Line].str = (unsigned char *)malloc(strlen((const char *)Edit_Line) + 1)) == NULL)
+          return CONSOLE_MEM_ERR;
+        strcpy((char *)Line[Current_Line].str, (const char *)Edit_Line);
+        Line[Current_Line].disp_len = Console_GetDispLen(Line[Current_Line].str);
+        Line[Current_Line].type = LINE_TYPE_INPUT;
       }
 
-      // 如果光标未移到最上方,则直接将光标向上移。
+      //Èç¹û¹â±êÎ´ÒÆµ½×îÉÏ·½,ÔòÖ±½Ó½«¹â±êÏòÉÏÒÆ¡£
       // If the cursor does not move to the top of, directly move the cursor upward.
       if (Cursor.y > 0)
       {
         Cursor.y--;
       }
-      // 否则，如果屏幕上首行不是第一行，则将开始显示的行数减一。
+      //·ñÔò£¬Èç¹ûÆÁÄ»ÉÏÊ×ÐÐ²»ÊÇµÚÒ»ÐÐ£¬Ôò½«¿ªÊ¼ÏÔÊ¾µÄÐÐÊý¼õÒ»¡£
       // Otherwise, the number of rows, if the screen's first line is not the first line, then began to show minus one.
       else if (Start_Line > 0)
       {
-          Start_Line--;
+        Start_Line--;
       }
 
-      // 如果移动后光标水平位置超过行末，则将光标移至行末。
+      //Èç¹ûÒÆ¶¯ºó¹â±êË®Æ½Î»ÖÃ³¬¹ýÐÐÄ©£¬Ôò½«¹â±êÒÆÖÁÐÐÄ©¡£
       // End if the horizontal position after moving the cursor over the line, then move the cursor to the end of the line.
       if (Cursor.x > Line[Current_Line].disp_len)
       {
@@ -725,12 +725,12 @@ int Console_MoveCursor(int direction)
           Cursor.x = COL_DISP_MAX - 1;
       }
 
-      // 如果移动后光标在行首，且该行前面有字符未显示，则将光标移至位置1。
+      //Èç¹ûÒÆ¶¯ºó¹â±êÔÚÐÐÊ×£¬ÇÒ¸ÃÐÐÇ°ÃæÓÐ×Ö·ûÎ´ÏÔÊ¾£¬Ôò½«¹â±êÒÆÖÁÎ»ÖÃ1¡£
       // If you move the cursor to the line after the first, and the front of the line there is a character does not appear, then move the cursor to position 1.
       if (Cursor.x == 0 && Line[Current_Line].start_col > 0)
         Cursor.x = 1;
 
-      // 如果现在光标所在行不是只读的，则将其字符串拷贝给Edit_Line以供编辑。
+      //Èç¹ûÏÖÔÚ¹â±êËùÔÚÐÐ²»ÊÇÖ»¶ÁµÄ£¬Ôò½«Æä×Ö·û´®¿½±´¸øEdit_LineÒÔ¹©±à¼­¡£
       // If the current cursor line is not read-only, then it is a string copy to Edit_Line for editing.
       if (!Line[Current_Line].readonly && Line[Current_Line].str)
       {
@@ -769,33 +769,35 @@ int Console_MoveCursor(int direction)
   case CURSOR_DOWN:
     if (Current_Line == Last_Line)
       editline_cursor = Cursor.x;
-    // 如果需要操作。
+    //Èç¹ûÐèÒª²Ù×÷¡£
     // If you need to operate.
     if ((Cursor.y < LINE_DISP_MAX - 1) && (Current_Line < Last_Line) || (Start_Line + LINE_DISP_MAX - 1 < Last_Line))
     {
-        // 如果当前行不是只读的,则将Edit_Line拷贝给当前行。
-        // If the current line is not read-only, then Edit_Line copy to the current line.
-        if (!Line[Current_Line].readonly) {
-            if ((Line[Current_Line].str = (unsigned char *)malloc(strlen((const char *)Edit_Line) + 1)) == NULL)
-                return CONSOLE_MEM_ERR;
-            strcpy((char *)Line[Current_Line].str, (const char *)Edit_Line);
-            Line[Current_Line].disp_len = Console_GetDispLen(Line[Current_Line].str);
-            Line[Current_Line].type = LINE_TYPE_INPUT;
+      //Èç¹ûµ±Ç°ÐÐ²»ÊÇÖ»¶ÁµÄ,Ôò½«Edit_Line¿½±´¸øµ±Ç°ÐÐ¡£
+      // If the current line is not read-only, then Edit_Line copy to the current line.
+      if (!Line[Current_Line].readonly)
+      {
+        if ((Line[Current_Line].str = (unsigned char *)malloc(strlen((const char *)Edit_Line) + 1)) == NULL)
+          return CONSOLE_MEM_ERR;
+        strcpy((char *)Line[Current_Line].str, (const char *)Edit_Line);
+        Line[Current_Line].disp_len = Console_GetDispLen(Line[Current_Line].str);
+        Line[Current_Line].type = LINE_TYPE_INPUT;
       }
 
-      // 如果光标未移到最下方,则直接将光标向下移。
+      //Èç¹û¹â±êÎ´ÒÆµ½×îÏÂ·½,ÔòÖ±½Ó½«¹â±êÏòÏÂÒÆ¡£
       // If the cursor does not move to the bottom, the cursor moves down directly.
       if (Cursor.y < LINE_DISP_MAX - 1 && Current_Line < Last_Line)
       {
         Cursor.y++;
       }
-      // 否则，如果屏幕上末行不是最后一行，则将开始显示的行数加一。
+      //·ñÔò£¬Èç¹ûÆÁÄ»ÉÏÄ©ÐÐ²»ÊÇ×îºóÒ»ÐÐ£¬Ôò½«¿ªÊ¼ÏÔÊ¾µÄÐÐÊý¼ÓÒ»¡£
       // The number of rows Otherwise, if the last line is not the last line on the screen, it will begin to show a plus.
-      else if (Start_Line + LINE_DISP_MAX - 1 < Last_Line) {
-          Start_Line++;
+      else if (Start_Line + LINE_DISP_MAX - 1 < Last_Line)
+      {
+        Start_Line++;
       }
 
-      // 如果移动后光标水平位置超过行末，则将光标移至行末。
+      //Èç¹ûÒÆ¶¯ºó¹â±êË®Æ½Î»ÖÃ³¬¹ýÐÐÄ©£¬Ôò½«¹â±êÒÆÖÁÐÐÄ©¡£
       // If you move the cursor after the end of the horizontal position over the line, then move the cursor to the end of the line.
       if (Cursor.x > Line[Current_Line].disp_len)
       {
@@ -807,12 +809,12 @@ int Console_MoveCursor(int direction)
           Cursor.x = COL_DISP_MAX - 1;
       }
 
-      // 如果移动后光标在行首，且该行前面有字符未显示，则将光标移至位置1。
+      //Èç¹ûÒÆ¶¯ºó¹â±êÔÚÐÐÊ×£¬ÇÒ¸ÃÐÐÇ°ÃæÓÐ×Ö·ûÎ´ÏÔÊ¾£¬Ôò½«¹â±êÒÆÖÁÎ»ÖÃ1¡£
       // If you move the cursor to the line after the first, and the front of the line there is a character does not appear, then move the cursor to position 1.
       if (Cursor.x == 0 && Line[Current_Line].start_col > 0)
         Cursor.x = 1;
 
-      // 如果现在光标所在行不是只读的，则将其字符串拷贝给Edit_Line以供编辑。
+      //Èç¹ûÏÖÔÚ¹â±êËùÔÚÐÐ²»ÊÇÖ»¶ÁµÄ£¬Ôò½«Æä×Ö·û´®¿½±´¸øEdit_LineÒÔ¹©±à¼­¡£
       // If the current cursor line is not read-only, then it is a string copy to Edit_Line for editing.
       if (!Line[Current_Line].readonly && Line[Current_Line].str)
       {
@@ -891,8 +893,8 @@ int Console_MoveCursor(int direction)
 }
 
 /*
-  以下函数用于输入。
-  字符串将输入到光标处，光标将自动移动。
+  ÒÔÏÂº¯ÊýÓÃÓÚÊäÈë¡£
+  ×Ö·û´®½«ÊäÈëµ½¹â±ê´¦£¬¹â±ê½«×Ô¶¯ÒÆ¶¯¡£
 
   The following function is used for input.
   String input to the cursor, the cursor will automatically move.
@@ -924,7 +926,7 @@ int Console_Input(const unsigned char *str)
 }
 
 /*
-  以下函数用于输出字符串到当前行。
+  ÒÔÏÂº¯ÊýÓÃÓÚÊä³ö×Ö·û´®µ½µ±Ç°ÐÐ¡£
   The following functions are used to output the string to the current line.
 */
 
@@ -1013,9 +1015,9 @@ void Console_Clear_EditLine()
 }
 
 /*
-  以下函数用于创建新行。
-  参数pre_line_type用于指定上一行的类型，参数pre_line_readonly用于指定上一行是否只读。
-  参数new_line_type用于指定下一行的类型，参数new_line_readonly用于指定下一行是否只读。
+  ÒÔÏÂº¯ÊýÓÃÓÚ´´½¨ÐÂÐÐ¡£
+  ²ÎÊýpre_line_typeÓÃÓÚÖ¸¶¨ÉÏÒ»ÐÐµÄÀàÐÍ£¬²ÎÊýpre_line_readonlyÓÃÓÚÖ¸¶¨ÉÏÒ»ÐÐÊÇ·ñÖ»¶Á¡£
+  ²ÎÊýnew_line_typeÓÃÓÚÖ¸¶¨ÏÂÒ»ÐÐµÄÀàÐÍ£¬²ÎÊýnew_line_readonlyÓÃÓÚÖ¸¶¨ÏÂÒ»ÐÐÊÇ·ñÖ»¶Á¡£
 
   The following functions are used to create a new line.
   Pre_line_type type parameter is used to specify the line, pre_line_readonly parameter is used to specify the line is read-only.
@@ -1029,20 +1031,22 @@ int Console_NewLine(int pre_line_type, int pre_line_readonly)
 
   if (strlen((const char *)Edit_Line) || Line[Current_Line].type == LINE_TYPE_OUTPUT)
   {
-      // 如果已经是所能存储的最后一行，则删除第一行。
-      // If this is the last line we can store, delete the first line.
-      if (Last_Line == COL_LINE_MAX - 1) {
-          for (i = 0; i < Last_Line; i++) {
-              Line[i].disp_len = Line[i + 1].disp_len;
-              Line[i].readonly = Line[i + 1].readonly;
-              Line[i].start_col = Line[i + 1].start_col;
-              Line[i].str = Line[i + 1].str;
-              Line[i].type = Line[i + 1].type;
-          }
-          Last_Line--;
+    //Èç¹ûÒÑ¾­ÊÇËùÄÜ´æ´¢µÄ×îºóÒ»ÐÐ£¬ÔòÉ¾³ýµÚÒ»ÐÐ¡£
+    // If this is the last line we can store, delete the first line.
+    if (Last_Line == COL_LINE_MAX - 1)
+    {
+      for (i = 0; i < Last_Line; i++)
+      {
+        Line[i].disp_len = Line[i + 1].disp_len;
+        Line[i].readonly = Line[i + 1].readonly;
+        Line[i].start_col = Line[i + 1].start_col;
+        Line[i].str = Line[i + 1].str;
+        Line[i].type = Line[i + 1].type;
+      }
+      Last_Line--;
 
-          if (Start_Line > 0)
-              Start_Line--;
+      if (Start_Line > 0)
+        Start_Line--;
     }
 
     if (Line[Last_Line].type == LINE_TYPE_OUTPUT && strlen((const char *)Edit_Line) == 0)
@@ -1057,7 +1061,7 @@ int Console_NewLine(int pre_line_type, int pre_line_readonly)
       Line[Last_Line].tex_flag = 0;
 #endif
 
-      // 将Edit_Line的内容拷贝给最后一行。
+      //½«Edit_LineµÄÄÚÈÝ¿½±´¸ø×îºóÒ»ÐÐ¡£
       // Edit_Line copy the contents to the last line.
 
 #ifdef POPUP_PRETTY
@@ -1196,7 +1200,7 @@ int Console_Backspace()
 }
 
 /*
-  以下函数用于处理按键。
+  ÒÔÏÂº¯ÊýÓÃÓÚ´¦Àí°´¼ü¡£
   The following functions are used to deal with the key.
 */
 
@@ -1774,12 +1778,6 @@ int Console_GetKey()
       return Console_Input((const unsigned char *)"ans()");
     if (key == KEY_CHAR_PLUS)
       return Console_Input((const unsigned char *)"+");
-    if (key == KEY_CHAR_COLON)
-      return Console_Input((const unsigned char *)":");
-    if (key == KEY_CHAR_SEMI)
-      return Console_Input((const unsigned char *)";");
-    if (key == KEY_CHAR_VERBAR)
-      return Console_Input((const unsigned char *)"|");
     if (key == KEY_CHAR_LBRCKT)
       return Console_Input((const unsigned char *)"[");
     if (key == KEY_CHAR_RBRCKT)
@@ -1790,10 +1788,6 @@ int Console_GetKey()
       return Console_Input((const unsigned char *)"{");
     if (key == KEY_CHAR_DIV)
       return Console_Input((const unsigned char *)"/");
-    if (key == KEY_CHAR_BACKSLASH)
-      return Console_Input((const unsigned char *)"\\");
-    if (key == KEY_CHAR_GRAVE)
-      return Console_Input((const unsigned char *)"`");
     if (key == KEY_CHAR_RBRACE)
       return Console_Input((const unsigned char *)"}");
     // if (key == KEY_CTRL_MIXEDFRAC) return Console_FMenu(KEY_CTRL_F10);//	return Console_Input((const unsigned char *)"limit(");
@@ -1934,7 +1928,7 @@ int Console_GetKey()
         int c=giac::chartab();
         char s[2]={0};
         if (c>32 && c<127) s[0]=char(c);
-        Console_Input((const unsigned char*)s);
+        Console_Input(s);
       }
       Console_Disp();
       continue;
@@ -2187,7 +2181,7 @@ const char *Console_Draw_FMenu(int key, struct FMenu *menu, unsigned char *cfg, 
 }
 
 /*
-  以下函数用于初始化。
+  ÒÔÏÂº¯ÊýÓÃÓÚ³õÊ¼»¯¡£
 */
 
 int Console_Init()
@@ -2294,8 +2288,8 @@ void Console_FMenu_Init()
 }
 
 /*
-  以下函数用于显示所有行。
-  注意：调用该函数后，将首先清空显存。
+  ÒÔÏÂº¯ÊýÓÃÓÚÏÔÊ¾ËùÓÐÐÐ¡£
+  ×¢Òâ£ºµ÷ÓÃ¸Ãº¯Êýºó£¬½«Ê×ÏÈÇå¿ÕÏÔ´æ¡£
   The following functions are used to display all lines.
   Note: After calling this function, the first clear the memory.
 */
@@ -2648,7 +2642,7 @@ void Console_Draw_TeX_Popup(unsigned char *str, int width, int height)
 #endif
 
 /*
-  以下函数用于输入行，成功后将返回该行的字符串。
+  ÒÔÏÂº¯ÊýÓÃÓÚÊäÈëÐÐ£¬³É¹¦ºó½«·µ»Ø¸ÃÐÐµÄ×Ö·û´®¡£
 */
 
 unsigned char *Console_GetLine()

@@ -24,7 +24,7 @@
 #include <stdexcept>
 #include <cmath>
 #include <cstdlib>
-#include "iostream"
+#include <iostream>
 #include "gen.h"
 #include "plot3d.h"
 #include <stdio.h>
@@ -35,14 +35,14 @@
 #else
 #ifndef GIAC_HAS_STO_38
 enum Fl_Color {	// standard colors
-  FL_BLACK		= 1,
+  FL_BLACK		= 0,
   FL_RED		= 1,
   FL_GREEN		= 2,
   FL_YELLOW		= 3,
   FL_BLUE		= 4,
   FL_MAGENTA		= 5,
   FL_CYAN		= 6,
-  FL_WHITE		= 0,
+  FL_WHITE		= 7,
   FL_INACTIVE_COLOR	= 8,
   FL_SELECTION_COLOR	= 15,
 
@@ -105,7 +105,6 @@ namespace giac {
   extern bool autoscale;
   extern bool has_gnuplot;
 
-  gen vect2c(const gen & g);
   std::string print_DOUBLE_(double d,unsigned ndigits);
   gen makecomplex(const gen & a,const gen &b);
 
@@ -130,6 +129,11 @@ namespace giac {
   gen _point2d(const gen & args,GIAC_CONTEXT);
   gen mkrand2d3d(int dim,int nargs,gen (* f)(const gen &,const context *),GIAC_CONTEXT);
   gen droite_by_equation(const vecteur & v,bool est_plan,GIAC_CONTEXT);
+  // equation f -> geometric object g
+  // if allowed == 1 only lines allowed
+  // 2 lines and circles
+  // >2 all conics
+  bool equation2geo2d(const gen & f0,const gen & x,const gen & y,gen & g,double tmin,double tmax,double tstep,const gen & pointon,int allowed,const context * contextptr);
   // given 2 points e and f return equation of line e,f as coeffs a,b,c
   bool point2abc(const gen & e,const gen & f,gen & a,gen & b,gen & c,GIAC_CONTEXT);
   gen abs_norm(const gen & g,GIAC_CONTEXT);
@@ -142,13 +146,6 @@ namespace giac {
   vecteur inter2cercles_or_spheres(const gen & centre_a,const gen & rayon_a2,const gen & centre_b,const gen & rayon_b2,bool a2d,GIAC_CONTEXT);
   vecteur curveintercircle(const gen & curve,const gen &circle,bool iscircle,GIAC_CONTEXT);
 
-#ifdef TURTLETAB
-  extern logo_turtle tablogo[];
-  extern int turtle_stack_size;
-#else
-  std::vector<logo_turtle> & turtle_stack();
-#endif
-  std::vector<std::string> & ecristab();
   bool set_turtle_state(const vecteur & v,GIAC_CONTEXT);
   gen turtle2gen(const logo_turtle & turtle);
   vecteur turtlevect2vecteur(const std::vector<logo_turtle> & v);
@@ -190,13 +187,13 @@ namespace giac {
   vecteur gen2vecteur(const gen & arg);
   bool chk_double_interval(const gen & g,double & inf,double & sup,GIAC_CONTEXT);
   bool readrange(const gen & g,double defaultxmin,double defaultxmax,gen & x, double & xmin, double & xmax,GIAC_CONTEXT);
-  bool ck_parameter_x(GIAC_CONTEXT);
-  bool ck_parameter_y(GIAC_CONTEXT);
-  bool ck_parameter_z(GIAC_CONTEXT);
-  bool ck_parameter_t(GIAC_CONTEXT);
+  void ck_parameter_x(GIAC_CONTEXT);
+  void ck_parameter_y(GIAC_CONTEXT);
+  void ck_parameter_z(GIAC_CONTEXT);
+  void ck_parameter_t(GIAC_CONTEXT);
   void ck_parameter_u(GIAC_CONTEXT);
   void ck_parameter_v(GIAC_CONTEXT);
-  bool ck_parameter(const gen & ,GIAC_CONTEXT);
+  void ck_parameter(const gen & ,GIAC_CONTEXT);
 
   void autoname_plus_plus(std::string & autoname);
   int erase3d();
@@ -249,6 +246,7 @@ namespace giac {
    when all fork/child etc. will be removed */
   extern vecteur plot_instructions;
 #endif
+  extern bool gnuplot_opengl;
   int gnuplot_show_pnt(const symbolic & e,GIAC_CONTEXT);
 
   gen rationalparam2equation(const gen & at_orig,const gen & t_orig,const gen &x,const gen & y,GIAC_CONTEXT);
@@ -256,12 +254,12 @@ namespace giac {
   // return parametrization for a parametric curve and translate
   // ellipsis/hyperbola to a rational parametrization
   // m will contain the complex depending on gen_t 
-  bool find_curve_parametrization(const gen & geo_obj,gen & m,const gen & gen_t,double T,gen & tmin,gen & tmax,gen & tstep,GIAC_CONTEXT);
+  bool find_curve_parametrization(const gen & geo_obj,gen & m,const gen & gen_t,double T,gen & tmin,gen & tmax,bool tminmax_defined,GIAC_CONTEXT);
   // test if a point f is on a parametric curve e
   // compute t if true
   bool on(const gen & e_orig,const gen & f,gen & t,GIAC_CONTEXT);
 
-  gen plotfunc(const gen & f,const gen & vars,const vecteur & attributs,bool clrplot,double function_xmin,double function_xmax,double function_ymin,double function_ymax,double function_zmin, double function_zmax,int nstep,int jstep,bool showeq,GIAC_CONTEXT);
+  gen plotfunc(const gen & f,const gen & vars,const vecteur & attributs,int densityplot,double function_xmin,double function_xmax,double function_ymin,double function_ymax,double function_zmin, double function_zmax,int nstep,int jstep,bool showeq,GIAC_CONTEXT);
   // return a vector of values with simple decimal representation
   // between xmin/xmax or including xmin/xmax (if bounds is true)
   vecteur ticks(double xmin,double xmax,bool bounds);
@@ -275,7 +273,7 @@ namespace giac {
   gen approx_area(const gen & f,const gen & x,const gen & a,const gen &b,int n,int method,GIAC_CONTEXT);
   gen _aire(const gen & args,GIAC_CONTEXT);
   gen _perimetre(const gen & args,GIAC_CONTEXT);
-  gen funcplotfunc(const gen & args,bool densityplot,const context * contextptr);
+  gen funcplotfunc(const gen & args,int densityplot,const context * contextptr);
   gen _plotfunc(const gen &,GIAC_CONTEXT);
   gen _funcplot(const gen & args,const context * contextptr);
   gen _plotdensity(const gen & args,const context * contextptr);
@@ -326,6 +324,7 @@ namespace giac {
   gen _animation(const gen & args,GIAC_CONTEXT);
   int animations(const gen & g); // number of animations inside g
   gen get_animation_pnt(const gen & g,int pos);
+  bool get_sol(gen & sol,GIAC_CONTEXT); // get solution from bisection solver
 
   gen _point(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_point;
@@ -349,7 +348,7 @@ namespace giac {
 
   gen _cercle(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_cercle;
-  bool centre_rayon(const gen & cercle,gen & centre,gen & rayon,bool absrayon, GIAC_CONTEXT);
+  bool centre_rayon(const gen & cercle,gen & centre,gen & rayon,bool absrayon, GIAC_CONTEXT,bool detect_conic=false);
   gen _centre(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_centre;
   gen _rayon(const gen & args,GIAC_CONTEXT);
@@ -425,7 +424,7 @@ namespace giac {
   gen _click(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_click;
   class unary_function_eval;
-#if 1 //def RTOS_THREADX
+#ifdef RTOS_THREADX
   extern const alias_unary_function_eval __click;
 #else
   extern unary_function_eval __click;
@@ -463,6 +462,7 @@ namespace giac {
   extern const unary_function_ptr * const  at_homothetie;
   gen _est_coplanaire(const gen & args,GIAC_CONTEXT);
 
+  extern const unary_function_ptr * const  at_est_dans;
   gen _est_aligne(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_est_aligne;
 
@@ -494,12 +494,12 @@ namespace giac {
   // 4 optional != 0 automatically show a legende based on arg 0 and 1
   // 5 optional cartesian equation in x and y, 6 optional parametric rational equation
 
-  gen plotparam(const gen & f,const gen & vars,const vecteur & attributs,bool densityplot,double function_xmin,double function_xmax,double function_ymin,double function_ymax,double function_tmin, double function_tmax,double function_tstep,const gen & equation,const gen & parameq,const context * contextptr);
+  gen plotparam(const gen & f,const gen & vars,const vecteur & attributs,int densityplot,double function_xmin,double function_xmax,double function_ymin,double function_ymax,double function_tmin, double function_tmax,double function_tstep,const gen & equation,const gen & parameq,const context * contextptr);
   gen _plotparam(const gen & args,GIAC_CONTEXT);
   gen _paramplot(const gen & args,const context * contextptr);
   extern const unary_function_ptr * const  at_plotparam;
   extern const unary_function_ptr * const  at_paramplot;
-  gen paramplotparam(const gen & args,bool clrplot,const context * contextptr);
+  gen paramplotparam(const gen & args,int densityplot,const context * contextptr);
   gen _plot(const gen & g,const context * contextptr);
 
   gen _plotpolar(const gen & args,GIAC_CONTEXT);
@@ -638,13 +638,13 @@ namespace giac {
   gen _switch_axes(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_switch_axes;
 
-  int find_plotseq_args(const gen & args,gen & expr,gen & x,double & x0d,double & xmin,double & xmax,int & niter,vecteur & attributs,GIAC_CONTEXT);
-  gen plotseq(const gen& f,const gen&x,double x0,double xmin,double xmax,int niter,const vecteur & attributs,const context * contextptr);
+  int find_plotseq_args(const gen & args,gen & expr,gen & x,double & x0d,double & xmin,double & xmax,int & niter,vecteur & attributs,GIAC_CONTEXT,bool & print);
+  gen plotseq(const gen& f,const gen&x,double x0,double xmin,double xmax,int niter,const vecteur & attributs,const context * contextptr,bool print);
   gen _plotseq(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_plotseq;
   extern const unary_function_ptr * const  at_seqplot;
 
-  gen plotimplicit(const gen& f_orig,const gen&x,const gen & y,double xmin,double xmax,double ymin,double ymax,int nxstep,int nystep,double eps,const vecteur & attributs,bool unfactored,const context * contextptr,int ckgeo2d);
+  gen plotimplicit(const gen& f_orig,const gen&x,const gen & y,double xmin,double xmax,double ymin,double ymax,int nxstep,int nystep,double eps,const vecteur & attributs,bool unfactored,bool cklinear,const context * contextptr,int ckgeo2d);
   gen _plotimplicit(const gen & args,GIAC_CONTEXT);
   extern const unary_function_ptr * const  at_plotimplicit;
   extern const unary_function_ptr * const  at_implicitplot;
@@ -805,11 +805,9 @@ namespace giac {
   gen _Oy_3d_unit_vector(const gen & args,GIAC_CONTEXT);
   gen _Oz_3d_unit_vector(const gen & args,GIAC_CONTEXT);
   gen _frame_3d(const gen & args,GIAC_CONTEXT);
-  gen symb_curve(const gen & source,const gen & plot);
+  symbolic symb_curve(const gen & source,const gen & plot);
   extern const unary_function_ptr * const  at_Bezier;
-  extern const unary_function_ptr * const  at_est_dans;
-  extern const unary_function_ptr * const at_efface_logo;
-  extern const unary_function_ptr * const at_inverser;
+
 
 #if defined(GIAC_GENERIC_CONSTANTS) || (defined(VISUALC) && !defined(RTOS_THREADX)) || defined(x86_64)
   extern unary_function_ptr point_sommet_tab_op[];

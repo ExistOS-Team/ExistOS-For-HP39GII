@@ -19,16 +19,16 @@
 #define _GIAC_CSTURM_H
 #include "first.h"
 #include <complex>
-#include "iostream"
+#include <iostream>
 #include "modpoly.h"
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
 
-  // P(x)->P(a*x)
-  void change_scale(modpoly & p,const gen & l);
-  void back_change_scale(modpoly & p,const gen & l);
+  // P(x)->P(a*x), if lb!=1<<31 l=2^lb
+  void change_scale(modpoly & p,const gen & l,longlong lb=1<<31);
+  void back_change_scale(modpoly & p,const gen & l,longlong lb=1<<31);
   modpoly linear_changevar(const modpoly & p,const gen & a,const gen & b);
   modpoly inv_linear_changevar(const modpoly & p,const gen & a,const gen & b);
   // find rectangle limits, defined by boundaries complex a and b

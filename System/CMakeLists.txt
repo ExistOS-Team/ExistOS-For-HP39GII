@@ -18,6 +18,7 @@ include_directories(./Config)
 #include_directories(${CMAKE_SOURCE_DIR}/Libs/src/micropython-master/ports/eoslib/build)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/libtommath-0.39/)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/khicas/)
+include_directories(${CMAKE_SOURCE_DIR}/Libs/src/gmp/include/)
 
 
 aux_source_directory(.                                         SYS_SRCS)
@@ -51,6 +52,7 @@ target_compile_options(tjpgd PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle
 #-mthumb
 target_compile_options(sys.elf PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm
 -Os -pipe 
+-DHP39
 #-ffunction-sections -fno-strict-aliasing -fomit-frame-pointer
 #-fcommon -fno-strict-aliasing -fomit-frame-pointer
 #-fpermissive  -fdata-sections
@@ -71,7 +73,7 @@ ${CMAKE_SOURCE_DIR}/Libs/libcas.libcpp
 #${CMAKE_SOURCE_DIR}/Libs/libgiac1.4.9.libcpp
 #${CMAKE_SOURCE_DIR}/Libs/libgiac1.2.0.libcpp
 ${CMAKE_SOURCE_DIR}/Libs/libtommath.libcpp
-#${CMAKE_SOURCE_DIR}/Libs/libgmp.libcpp   
+${CMAKE_SOURCE_DIR}/Libs/libgmp.libcpp   
 )
 
 # build time in UTC ISO 8601

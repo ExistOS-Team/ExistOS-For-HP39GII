@@ -2,6 +2,8 @@
 #define STATIC_EXTERN
 namespace giac{
 struct unary_function_ptr;
+extern const unary_function_ptr * const  at_speed;
+extern const unary_function_ptr * const  at_towards;
 extern const unary_function_ptr * const  at_PERCENT;
 extern const unary_function_ptr * const  at_PERCENTCHANGE;
 extern const unary_function_ptr * const  at_PERCENTTOTAL;

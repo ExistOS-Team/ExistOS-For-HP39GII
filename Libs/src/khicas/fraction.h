@@ -25,7 +25,7 @@
 #ifndef _GIAC_FRACTION_H_
 #define _GIAC_FRACTION_H_
 #include "first.h"
-#include "iostream"
+#include <iostream>
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
@@ -151,7 +151,7 @@ template <class T>  Tfraction<T> operator / (const Tfraction<T> & a,const Tfract
   if (is_one(a.den))
     return(Tfraction<T> (a.num/b));
   if (is_one(b.den)){ 
-    // std::cerr << "fraction code change"<<std::endl; 
+    // std::cerr << "fraction code change"<<'\n'; 
     return(Tfraction<T> (a/b.num)); 
   }
   Tfraction<T> f1(a.num,b.num);
@@ -185,6 +185,14 @@ template <class T> Tfraction<T> pow (const Tfraction<T> & p,int n){
   return Tfraction<T>(pow(Tfraction<T>(p.den,p.num),-n));
 }
 
+#ifdef KHICAS
+  template <class T> 
+  stdostream & operator << (stdostream & os, const Tfraction<T> & f ){
+    os << f.num << "/" << f.den << " " ;
+    return os;
+  }
+#endif
+
 #ifdef NSPIRE
   template<class T,class U>
   nio::ios_base<T> & operator << (nio::ios_base<T> & os, const Tfraction<U> & f ){
@@ -216,6 +224,11 @@ void Tfraction<T>::dbgprint() {
     facteur():fact(1),mult(0) {}
     facteur(const facteur & f) : fact(f.fact), mult(f.mult) {}
     facteur(const T & f, int m) : fact(f),mult(m) {}
+#ifdef KHICAS
+    friend stdostream & operator << (stdostream & os, const facteur<T> & m ){
+      return os << ":facteur:!" << m.fact << "!" << "^" << m.mult  ;
+    }
+#endif
 #ifdef NSPIRE
     template<class I> friend nio::ios_base<I> & operator << (nio::ios_base<I> & os, const facteur<T> & m ){
       return os << ":facteur:!" << m.fact << "!" << "^" << m.mult  ;
@@ -226,7 +239,7 @@ void Tfraction<T>::dbgprint() {
     }
 #endif
     void dbgprint() const {
-      COUT << *this << std::endl;
+      COUT << *this << '\n';
     }
   };
 

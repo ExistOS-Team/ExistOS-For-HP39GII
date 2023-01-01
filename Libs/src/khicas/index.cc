@@ -57,10 +57,10 @@ namespace giac {
     b=tmp;
   }
 
-  index_t index_gcd(const index_t & a,const index_t & b){
+  void index_gcd(const index_t & a,const index_t & b,index_t & res){
     index_t::const_iterator ita=a.begin(),itaend=a.end(),itb=b.begin();
     unsigned s=unsigned(itaend-ita);
-    index_t res(s);
+    res.resize(s);
     index_t::iterator itres=res.begin();  
 #ifdef DEBUG_SUPPORT
     if (s!=b.size())
@@ -68,6 +68,11 @@ namespace giac {
 #endif // DEBUG_SUPPORT
     for (;ita!=itaend;++itb,++itres,++ita)
       *itres=giacmin(*ita,*itb);
+  }
+
+  index_t index_gcd(const index_t & a,const index_t & b){
+    index_t res;
+    index_gcd(a,b,res);
     return res;
   }
 
@@ -107,6 +112,16 @@ namespace giac {
     index_t::iterator itres=res.begin();  
     for (;ita!=itaend;++itb,++itres,++ita)
       *itres=(*ita)+(*itb);
+  }
+
+  bool equal(const index_t & a,const index_t &b){
+    index_t::const_iterator ita=a.begin(),itaend=a.end();
+    index_t::const_iterator itb=b.begin();
+    for (;ita!=itaend;++itb,++ita){
+      if (*ita!=*itb)
+	return false;
+    }
+    return true;
   }
 
   index_t operator + (const index_t & a, const index_t & b){
@@ -220,45 +235,45 @@ namespace giac {
 
   void add_print_INT_(string & s,int i){
     char c[256];
-    my_sprintf(c,"%d",i);
+    sprint_int(c,i);//my_sprintf(c,"%d",i);
     s += c;
   }
 
   string print_INT_(int i){
     char c[256];
-    //sprint_int(c,i); // my_sprintf(c,"%d",i);
-    sprintf(c,"%d",i);
+    sprint_int(c,i);//my_sprintf(c,"%d",i);
     return c;
   }
 
   string hexa_print_INT_(int i){
-    string res;
-    for (i=(i&0x7fffffff);i;){
-      int j=i&0xf;
-      i >>= 4;
-      if (j>=10)
-	res =char('a'+(j-10))+res;
-      else
-	res =char('0'+j)+res;
-    }
-    return "0x"+res;
+    char c[256];
+    my_sprintf(c,"%X",i);
+    return string("0x")+c;
   }
 
   string octal_print_INT_(int i){
     char c[256];
-    mpz_t tmp;
-    mpz_init_set_ui(tmp, i);
-    mpz_get_str(c, 8, tmp);
-    mpz_clear(tmp);
+    my_sprintf(c,"%o",i);
     return string("0o")+c;
   }
 
   string binary_print_INT_(int i){
+    if (i==0)
+      return "0b0";
     char c[256];
+#if 1
+    unsigned ii=i;
+    int j=sizeinbase2(ii);
+    c[j]=0;
+    for (--j;ii;--j,ii/=2){
+      c[j]='0'+(ii%2);
+    }
+#else
     mpz_t tmp;
     mpz_init_set_ui(tmp, i);
     mpz_get_str(c, 2, tmp);
     mpz_clear(tmp);
+#endif
     return string("0b")+c;
   }
 
@@ -380,7 +395,7 @@ namespace giac {
   bool operator == (const index_m & i1, const index_m & i2){
     if (i1.riptr==i2.riptr)
       return true;
-    return (i1.riptr->i==i2.riptr->i);
+    return equal(i1.riptr->i,i2.riptr->i);
   }
 
   int sum_degree_from(const index_m & v1,int start){
@@ -494,7 +509,7 @@ namespace giac {
       }
       return true;
 #else
-      return (i1.riptr->i==i2.riptr->i);
+      return equal(i1.riptr->i,i2.riptr->i);
 #endif
     }
     if (i1.taille!=i2.taille)

@@ -195,6 +195,7 @@ namespace giac {
     _EXT__VECT = _EXT*_DISPATCHBASE+_VECT,
     _EXT__MAP = _EXT*_DISPATCHBASE+_MAP,
     _EXT__INT_=  _EXT*_DISPATCHBASE+_INT_,
+    _EXT__ZINT =  _EXT*_DISPATCHBASE+_ZINT,
     _EXT__POLY=  _EXT*_DISPATCHBASE+_POLY,
     _STRNG__STRNG = _STRNG*_DISPATCHBASE+_STRNG,
     _STRNG__INT_=  _STRNG*_DISPATCHBASE+_INT_,
@@ -260,6 +261,7 @@ namespace giac {
     _TUPLE__VECT=29,
     _TABLE__VECT=30,
     _GRAPH__VECT =31,
+    _PRG__VECT=32,
   } ;
 
   enum symb_subtypes {
@@ -469,29 +471,41 @@ namespace giac {
     _CONTEXT_POINTER=3,
     _THREAD_POINTER=4,
     _VARFUNCDEF_POINTER=5,
-    _APPLET_POINTER=6
+    _APPLET_POINTER=6,
+    _BUFFER_POINTER=7,
   };
 
   enum color_values {
-#if 0
-    _BLACK=1,
-    _BLUE=7,
-    _GREEN=4,
-    _CYAN=3,
-    _RED=2,
-    _MAGENTA=5,
-    _YELLOW=6,
-    _WHITE=0,
-#else
+#if defined KHICAS || defined GIAC_HAS_STO_38
     _BLACK=0,
     _RED=0xf800,
-    _GREEN=0x0400,
+    _GREEN=0x07e0,
     _YELLOW=0xffe0,
     _BLUE=0x001f,
     _MAGENTA=0xf81f,
     _CYAN=0x07ff,
     _WHITE=0xffff,
+#else // KHICAS
+#ifdef GIAC_HAS_STO_38
+    _WHITE=0,
+    _RED=0xff0000,
+    _GREEN=0xff00,
+    _YELLOW=0xffff00,
+    _BLUE=0xff,
+    _MAGENTA=0xff00ff,
+    _CYAN=0xffff,
+    _BLACK=7,
+#else
+    _BLACK=0,
+    _RED=1,
+    _GREEN=2,
+    _YELLOW=3,
+    _BLUE=4,
+    _MAGENTA=5,
+    _CYAN=6,
+    _WHITE=7,
 #endif
+#endif // KHICAS
     _POINT_LOSANGE= 1 << 25,
     _POINT_PLUS = 1 << 26,
     _POINT_INVISIBLE = 1 << 27,
@@ -551,49 +565,74 @@ namespace giac {
     _NEGINT=2*256+2,
     _NONPOSINT=3*256+2,
     _NONNEGINT=4*256+2,
-    _LP_BINARY=106,           //   * binary
-    _LP_BINARYVARIABLES=107,  //   * binaryvariables
-    _LP_DEPTHLIMIT=108,       //   * depthlimit
-    _LP_INTEGER=109,          //   * integer
-    _LP_INTEGERVARIABLES=110, //   * integervariables
-    _LP_MAXIMIZE=111,         //   * maximize
-    _LP_NONNEGATIVE=112,      //   * nonnegative
-    _LP_NONNEGINT=113,        //   * nonnegint
-    _LP_VARIABLES=114,        //   * variables
-    _LP_ASSUME=115,
-    _LP_NODE_LIMIT = 116,             // lp_nodelimit
-    _LP_INTEGER_TOLERANCE = 117,      // lp_integertolerance
-    _LP_METHOD = 118,                 // lp_method
-    _LP_SIMPLEX = 119,                // lp_simplex
-    _LP_INTERIOR_POINT = 120,         // lp_interiorpoint
-    _LP_INITIAL_POINT = 121 ,          // lp_initialpoint
-    _LP_MAX_CUTS = 122,            // lp_maxcuts            option
-    _LP_GAP_TOLERANCE = 123,       // lp_gaptolerance       option
-    _LP_NODESELECT = 124,          // lp_nodeselect         option
-    _LP_VARSELECT = 125,           // lp_varselect          option
-    _LP_FIRSTFRACTIONAL = 126,     // lp_firstfractional    value
-    _LP_LASTFRACTIONAL = 127,      // lp_lastfractional     value
-    _LP_MOSTFRACTIONAL = 128,      // lp_mostfractional     value
-    _LP_PSEUDOCOST = 129,          // lp_pseudocost         value
-    _LP_DEPTHFIRST = 130,          // lp_depthfirst         value
-    _LP_BREADTHFIRST = 131,        // lp_breadthfirst       value
-    _LP_BEST_PROJECTION = 132,     // lp_bestprojection     value
-    _LP_HYBRID = 133,              // lp_hybrid             value
-    _LP_ITERATION_LIMIT = 134,     // lp_iterationlimit     option
-    _LP_TIME_LIMIT = 135,          // lp_timelimit          option
-    _LP_VERBOSE =136,             // lp_verbose            option
-    _NLP_INITIALPOINT = 137,    //nlp_initialpoint
-    _NLP_ITERATIONLIMIT = 138,  //nlp_iterationlimit
-    _NLP_NONNEGATIVE = 139,     //nlp_nonnegative
-    _NLP_PRECISION = 140,       //nlp_precision
-    _NLP_MAXIMIZE = 141,         //nlp_maximize
-    _GT_CONNECTED = 142, // connected
-    _GT_SPRING = 143, // spring
-    _GT_TREE = 144, // tree
-    _GT_PLANAR = 145, // planar
-    _GT_DIRECTED = 146, // directed
-    _GT_WEIGHTED = 147, // weighted
-    _GT_WEIGHTS = 148, // weights
+    _LP_BINARY=106,                // lp_binary
+    _LP_BINARYVARIABLES=107,       // lp_binaryvariables
+    _LP_DEPTHLIMIT=108,            // lp_depthlimit
+    _LP_INTEGER=109,               // lp_integer
+    _LP_INTEGERVARIABLES=110,      // lp_integervariables
+    _LP_MAXIMIZE=111,              // lp_maximize
+    _LP_NONNEGATIVE=112,           // lp_nonnegative
+    _LP_NONNEGINT=113,             // lp_nonnegint
+    _LP_ASSUME=114,                // lp_assume
+    _LP_NODE_LIMIT = 115,          // lp_nodelimit
+    _LP_METHOD = 116,              // lp_method
+    _LP_SIMPLEX = 117,             // lp_simplex
+    _LP_INTERIOR_POINT = 118,      // lp_interiorpoint
+    _LP_MAX_CUTS = 119,            // lp_maxcuts
+    _LP_GAP_TOLERANCE = 120,       // lp_gaptolerance
+    _LP_NODESELECT = 121,          // lp_nodeselect
+    _LP_VARSELECT = 122,           // lp_varselect
+    _LP_FIRSTFRACTIONAL = 123,     // lp_firstfractional
+    _LP_LASTFRACTIONAL = 124,      // lp_lastfractional
+    _LP_MOSTFRACTIONAL = 125,      // lp_mostfractional
+    _LP_PSEUDOCOST = 126,          // lp_pseudocost
+    _LP_DEPTHFIRST = 127,          // lp_depthfirst
+    _LP_BREADTHFIRST = 128,        // lp_breadthfirst
+    _LP_BEST_LOCAL_BOUND = 129,    // lp_bestlocalbound
+    _LP_BEST_PROJECTION = 130,     // lp_bestprojection
+    _LP_HYBRID = 131,              // lp_hybrid
+    _LP_ITERATION_LIMIT = 132,     // lp_iterationlimit
+    _LP_TIME_LIMIT = 133,          // lp_timelimit
+    _LP_VERBOSE = 134,             // lp_verbose
+    _LP_PRESOLVE = 135,            // lp_presolve
+    _LP_HEURISTIC = 136,           // lp_heuristic
+    _NLP_INITIALPOINT = 137,       // nlp_initialpoint
+    _NLP_ITERATIONLIMIT = 138,     // nlp_iterationlimit
+    _NLP_NONNEGATIVE = 139,        // nlp_nonnegative
+    _NLP_PRECISION = 140,          // nlp_precision
+    _NLP_MAXIMIZE = 141,           // nlp_maximize
+    _NLP_PRESOLVE = 142,           // nlp_presolve
+    _NLP_SAMPLES = 143,            // nlp_samples
+    _NLP_INTEGER = 144,            // nlp_integer
+    _NLP_INTEGERVARIABLES = 145,   // nlp_integervariables
+    _NLP_BINARY = 146,             // nlp_binary
+    _NLP_BINARYVARIABLES = 147,    // nlp_binaryvariables
+    _NLP_NONNEGINT = 148,          // nlp_nonnegint
+    _NLP_FEAS_TOL = 149,           // nlp_feasibilitytolerance
+    _NLP_INT_TOL = 150,            // nlp_integertolerance
+    _GT_CONNECTED = 151,           // connected
+    _GT_SPRING = 152,              // spring
+    _GT_TREE = 153,                // tree
+    _GT_PLANAR = 154,              // planar
+    _GT_DIRECTED = 155,            // directed
+    _GT_WEIGHTED = 156,            // weighted
+    _GT_WEIGHTS = 157,             // weights
+    _GT_BIPARTITE = 158,           // bipartite
+    _GT_ACYCLIC = 159,             // acyclic
+    _KDE_BANDWIDTH = 160,          // bandwidth
+    _KDE_BINS = 161,               // bins
+    _NLP_METHOD = 162,
+    _NLP_TOLERANCE = 163,
+    _NLP_VERBOSE = 164,
+    _ANN_HALF_MSE = 165,           // MSE
+    _ANN_CROSS_ENTROPY = 166,      // cross_entropy
+    _ANN_LOG_LOSS = 167,           // log_loss
+    _ANN_BLOCK_SIZE = 168,         // block_size
+    _ANN_MOMENTUM = 169,           // momentum
+    _ANN_TOPOLOGY = 170,            // topology
+    _ANN_LEARNING_RATE = 171,      // learning_rate
+    _ANN_WEIGHT_DECAY = 172,       // weight_decay
+    _ANN_RELU = 173,               // ReLU
   };
 
   enum mupad_operator {

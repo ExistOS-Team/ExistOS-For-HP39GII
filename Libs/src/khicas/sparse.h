@@ -21,7 +21,7 @@
 #include "index.h"
 #include "gen.h"
 #include <complex>
-#include "iostream"
+#include <iostream>
 
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {

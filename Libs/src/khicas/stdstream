@@ -1,0 +1,133 @@
+// -*- mode:C++ -*-
+#ifndef _STDSTREAM
+#define _STDSTREAM
+#include <string>
+#include <vector>
+#include <map>
+#include "string.h"
+#include <stdio.h>
+
+// Numworks: python/port/mphalport.h
+extern "C" {
+  void mp_hal_stdout_tx_strn_cooked(const char * str, size_t len);
+  const char * mp_hal_input(const char * prompt) ;
+}
+
+#ifndef NO_NAMESPACE_XCAS
+namespace xcas {
+#endif // ndef NO_NAMESPACE_XCAS
+  void dConsolePut(const char * S);
+  int Console_Output(const char *str);
+  int Console_NewLine(int pre_line_type, int pre_line_readonly);
+  int Console_Disp(int redraw_mode);
+#ifndef NO_NAMESPACE_XCAS
+} // namespace xcas
+#endif // ndef NO_NAMESPACE_XCAS
+
+// gen.cc
+#ifndef NO_NAMESPACE_GIAC
+namespace giac {
+#endif // ndef NO_NAMESPACE_GIAC
+  int sprint_int(char * s,int r);
+  void sprint_double(char * s,double d);
+  
+#ifndef NO_NAMESPACE_GIAC
+} // namespace giac
+#endif // ndef NO_NAMESPACE_GIAC
+
+struct stdostream {
+  void flush(){ }
+};
+
+struct stdistream {
+};
+
+inline void do_print(const char * buf){
+  xcas::dConsolePut(buf);
+  //xcas::Console_NewLine(1, 1);
+#ifdef GIAC_LINKED
+  mp_hal_stdout_tx_strn_cooked(buf,strlen(buf));
+#endif
+}
+
+inline stdostream & operator << (stdostream & os,int i){
+  char buf[32];
+  giac::sprint_int(buf,i);
+  do_print(buf);
+  return os;
+}
+
+inline stdostream & operator << (stdostream & os,long i){
+  char buf[32];
+  giac::sprint_int(buf,i);
+  do_print(buf);
+  return os;
+}
+
+inline stdostream & operator << (stdostream & os,unsigned i){
+  char buf[32];
+  sprintf(buf,"%u",i);
+  do_print(buf);
+  return os;
+}
+
+inline stdostream & operator << (stdostream & os,long unsigned i){
+  char buf[32];
+  giac::sprint_int(buf,i);
+  do_print(buf);
+  return os;
+}
+
+inline stdostream & operator << (stdostream & os,char ch){
+  char buf[2]={ch,0};
+  do_print(buf);
+  return os;
+}
+
+inline stdostream & operator << (stdostream & os,double d){
+  char buf[32];
+  giac::sprint_double(buf,d);
+  do_print(buf);
+  return os;
+}
+
+inline stdostream & operator << (stdostream & os,const char * s){
+  do_print(s);
+  return os;
+}
+
+inline stdostream & operator << (stdostream & os,const std::string & s){
+  do_print(s.c_str());
+  return os;  
+}
+
+template<class T>
+stdostream & operator << (stdostream & os,const std::vector<T> & v){
+  size_t s=v.size();
+  os << "[";
+  for (size_t i=0;i<s;++i){
+    os << v[i] ;
+    if (i!=s-1)
+      os << ",";
+  }
+  os << "]";
+  return os;
+}
+
+template<class T,class U>
+stdostream & operator << (stdostream & os,const std::map<T,U> & v){
+  os << "{";
+  typename std::map<T,U>::const_iterator it=v.begin(),itend=v.end();
+  for (;it!=itend;){
+    os << it->first << ":" << it->second ;
+    ++it;
+    if (it!=itend)
+      os << ",";
+  }
+  os << "}";
+  return os;
+}
+
+//extern stdostream cout;
+
+#endif

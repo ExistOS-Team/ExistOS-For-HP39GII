@@ -18,6 +18,7 @@
  */
 #ifndef _GIAC_GLOBAL_H
 #define _GIAC_GLOBAL_H
+//#define USE_OBJET_BIDON
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -34,7 +35,7 @@
 #if defined VISUALC || defined BESTA_OS || defined FREERTOS
 typedef long pid_t;
 #else // VISUALC
-#if !defined(__MINGW_H) && !defined(NSPIRE) && !defined(FXCG) && !defined(__ANDROID__) && !defined(NSPIRE_NEWLIB) && !defined(OSX) && !defined(IOS) && !defined(OSXIOS) && !defined(FIR_LINUX)
+#if !defined(__MINGW_H) && !defined(HP39) && !defined(NSPIRE) && !defined(FXCG) && !defined(__ANDROID__) && !defined(NSPIRE_NEWLIB) && !defined(OSX) && !defined(IOS) && !defined(OSXIOS) && !defined(FIR_LINUX) && !defined(PRIMEWEBASM)
 #include "wince_replacements.h"
 #endif
 #ifdef __MINGW_H
@@ -66,7 +67,7 @@ inline double giac_log(double d){
 }
 #else
 inline double giac_log(double d){
-  return log(d);
+  return std::log(d);
 }
 #endif
 
@@ -83,8 +84,8 @@ inline double giac_log(double d){
 #if !defined( NSPIRE) && !defined(FXCG)
 #include <cstring>
 #endif
-#include "iostream"
-#include <fstream>
+#include <iostream>
+//#include <fstream>
 #include <map>
 
 #ifdef GNUWINCE
@@ -101,10 +102,130 @@ inline double giac_log(double d){
 #include "tinymt32.h"
 #endif
 
+#if defined(HAVE_NO_SYS_TIMES_H) && defined(__MINGW_H)
+#include <time.h>
+#endif
+
+extern "C" int ctrl_c_interrupted(int exception);
+extern "C" void console_print(const char * s);
+extern "C" const char * console_prompt(const char * s);
+
+bool dfu_get_scriptstore_addr(size_t & start,size_t & taille);
+bool dfu_get_scriptstore(const char * fname);
+bool dfu_send_scriptstore(const char * fname);
+bool dfu_send_rescue(const char * fname);
+bool dfu_send_bootloader(const char * fname);
+const int nwstoresize1=0x8000,nwstoresize2=0x8014;
+// send to 0x90000000+offset*0x10000
+bool dfu_send_firmware(const char * fname,int offset);
+bool dfu_send_apps(const char * fname);
+bool dfu_update_khicas(const char * fname); 
+
+#if defined HAVE_LIBMICROPYTHON
+#include <string>
+// giac interface to micropython modules
+std::string & python_console();
+#endif
+#ifdef QUICKJS
+#include <string>
+extern std::string js_vars;
+#endif
+int js_token(const char * list,const char * buf);
+int js_token(const char * buf);
+void update_js_vars();
+
+extern bool freezeturtle;
+extern "C" size_t pythonjs_stack_size,pythonjs_heap_size;
+extern "C" void * bf_ctx_ptr;
+extern "C" size_t bf_global_prec;
+
+struct fileinfo_t {
+  std::string filename;
+  std::string type;
+  size_t size;
+  size_t header_offset;
+  int mode;
+};
+size_t tar_totalsize(const char * buffer,size_t byteLength);
+std::vector<fileinfo_t> tar_fileinfo(const char * buffer,size_t byteLength);
+// tar file format: operations on a malloc-ed char * buffer of size buffersize
+// (malloc is assumed if buffer needs to be resized by tar_adddata)
+extern char * buf64k; // a 64k buffer in RAM for flash sector copy
+extern int numworks_maxtarsize; // max tar size on the Numworks
+extern size_t tar_first_modified_offset; // will be used to truncate the file sent to  the Numworks
+int flash_adddata(const char * buffer_,const char * filename,const char * data,size_t datasize,int exec);
+int tar_adddata(char * & buffer,size_t * buffersizeptr,const char * filename,const char * data,size_t datasize,int exec=0); // filename is only used to fill the header
+int flash_addfile(const char * buffer,const char * filename);
+int tar_addfile(char * & buffer,const char * filename,size_t * buffersizeptr);
+const char * tar_loadfile(const char * buffer,const char * filename,size_t * len);
+int tar_filebrowser(const char * buf,const char ** filenames,int maxrecords,const char * extension);
+// by default removefile will mark the file as deleted (this requires 1 sector write)
+// if mark_only==2, this will undelete the file
+// int flash_removefile(const char * buffer,const char * filename,size_t * tar_first_modif_offsetptr,int mark_only=1);
+// write all changes made in records (filename and readable attribut)
+// returns 0 if there is a mismatch between buffer and finfo
+int flash_synchronize(const char * buffer,const std::vector<fileinfo_t> & finfo,size_t * tar_first_modif_offsetptr);
+ulonglong fromstring8(const char * ptr);
+std::string toString8(longlong chksum);
+void WriteMemory(char * target,const char * src,size_t length);
+void erase_sector(const char * buf);
+
+// empty trash: files marked as non readable are really removed
+// this will do 1 sector write from first sector where a file is marked to be removed to the end 
+int flash_emptytrash(const char * buffer,size_t * tar_first_modif_offsetptr);
+int flash_emptytrash(const char * buffer,const std::vector<fileinfo_t> & finfo,size_t * tar_first_modif_offsetptr);
+
+int tar_removefile(char * buffer,const char * filename,size_t * tar_first_modif_offsetptr);
+int tar_savefile(char * buffer,const char * filename);
+std::vector<fileinfo_t> tar_fileinfo(const char * buffer,size_t byteLength);
+char * file_gettar(const char * filename);
+// same as file_gettar but returns an aligned pointer and sets freeptr to the address to be free-ed
+char * file_gettar_aligned(const char * filename,char * & freeptr);
+int file_savetar(const char * filename,char * buffer,size_t buffersize);
+#if !defined KHICAS && !defined USE_GMP_REPLACEMENTS && !defined GIAC_HAS_STO_38// 
+// numworks_gettar return 0 or a buffer of size numworks_maxtarsize
+// initialized with the calculator content
+char * numworks_gettar(size_t & tar_first_modif_offset); 
+bool numworks_sendtar(char * buffer,size_t buffersize,size_t tar_first_modif_offset=0);
+#endif
+
+//sha256 support
+#if !defined USE_GMP_REPLACEMENTS && !defined GIAC_HAS_STO_38
+#ifdef __cplusplus
+extern "C" {
+#endif
+/*************************** HEADER FILES ***************************/
+#include <stddef.h>
+
+/****************************** MACROS ******************************/
+#define SHA256_BLOCK_SIZE 32            // SHA256 outputs a 32 byte digest
+
+/**************************** DATA TYPES ****************************/
+typedef unsigned char BYTE;             // 8-bit byte
+typedef unsigned int  WORD32;             // 32-bit word, change to "long" for 16-bit machines
+
+typedef struct {
+	BYTE data[64];
+	WORD32 datalen;
+	unsigned long long bitlen;
+	WORD32 state[8];
+} SHA256_CTX;
+
+/*********************** FUNCTION DECLARATIONS **********************/
+void giac_sha256_init(SHA256_CTX *ctx);
+void giac_sha256_update(SHA256_CTX *ctx, const BYTE data[], size_t len);
+void giac_sha256_final(SHA256_CTX *ctx, BYTE hash[]);
+#ifdef __cplusplus
+}
+#endif
+#endif // sha256  
+
 #ifndef NO_NAMESPACE_GIAC
 namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
-  bool cas_builtin(const char * s);
+
+  // 3 or 1 if a list of space separated commandnames includes buf
+  int dichotomic_search(const char * const * tab,unsigned tab_size,const char * s);
   void opaque_double_copy(void * source,void * target);
   double opaque_double_val(const void * source);
 
@@ -190,11 +311,15 @@ Boolean isLegalUTF8Sequence(const UTF8 *source, const UTF8 *sourceEnd);
   int access(const char * ch,int mode);
   void usleep(int );
 #endif
-#ifdef NSPIRE_NEWLIB
+#if defined NSPIRE_NEWLIB || defined KHICAS
   void usleep(int );
 #endif
 
+#ifndef HAVE_NO_SYS_TIMES_H
   double delta_tms(struct tms tmp1,struct tms tmp2);
+#elif defined(__MINGW_H)
+  double delta_tms(clock_t tmp1,clock_t tmp2);
+#endif
 
 #define GIAC_DATA_BEGIN   ((char) 2)
 #define GIAC_DATA_END     ((char) 5)
@@ -245,14 +370,20 @@ Boolean isLegalUTF8Sequence(const UTF8 *source, const UTF8 *sourceEnd);
   extern int GAMMA_LIMIT;
   extern int LIST_SIZE_LIMIT;
   extern int NEWTON_DEFAULT_ITERATION;
+  extern int NEWTON_MAX_RANDOM_RESTART;
   extern int DEFAULT_EVAL_LEVEL;
   extern int PARENTHESIS_NWAIT;
+  extern int MAX_PROD_EXPAND_SIZE;
 
   extern int TEST_PROBAB_PRIME; // probabilistic primality tests
   extern int GCDHEU_MAXTRY; // maximal number of retry for heuristic algorithms
   extern int GCDHEU_DEGREE; // max degree allowed inside gcdheu
   extern int MODFACTOR_PRIMES; // number of primes used for factorization
   extern int NTL_MODGCD; // lowest degree for NTL univariate modular GCD 
+  extern int NTL_RESULTANT; // lowest degree for NTL univariate resultant 
+  extern int NTL_XGCD; // lowest degree for NTL univariate extended GCD over Z
+  extern int MODRESULTANT; // lowest degree for modular resultant 
+  extern int HGCD; // lowest degree for half gcd call
   extern int HENSEL_QUADRATIC_POWER; // above #steps do quadratic Hensel lift
   extern int KARAMUL_SIZE; // Use Karatsuba multiplication if degree is >
   extern int INT_KARAMUL_SIZE; // Use Karatsuba multiplication if degree is >
@@ -269,10 +400,26 @@ Boolean isLegalUTF8Sequence(const UTF8 *source, const UTF8 *sourceEnd);
   extern int GBASISF4_MAX_TOTALDEG;
   extern int GBASISF4_MAXITER;
   // extern int GBASISF4_BUCHBERGER;
+  extern unsigned max_pairs_by_iteration; 
+  extern unsigned simult_primes,simult_primes2,simult_primes_seuil2,simult_primes3,simult_primes_seuil3; 
+  // see global.cc for explanations
+  extern double gbasis_reinject_ratio;
+  extern double gbasis_reinject_speed_ratio;
+  extern int gbasis_logz_age_sort,gbasis_stop,rur_do_gbasis,rur_do_certify,rur_certify_maxthreads;
+  extern bool rur_error_ifnot0dimensional; // error code or compute gbasis
+
   extern int PROOT_FACTOR_MAXDEG;
   extern int ABS_NBITS_EVALF;
-  extern volatile bool kbd_interrupted;
+  extern volatile bool ctrl_c,interrupted,kbd_interrupted;
   void ctrl_c_signal_handler(int signum);
+#ifdef TIMEOUT
+#if !defined(EMCC) && !defined(EMCC2)
+  double time(int );
+#endif
+  extern time_t caseval_begin,caseval_current;
+  extern double caseval_maxtime;
+  extern int caseval_n,caseval_mod,caseval_unitialized;
+#endif
   extern double powlog2float;
   extern int MPZ_MAXLOG2;
 
@@ -281,10 +428,6 @@ Boolean isLegalUTF8Sequence(const UTF8 *source, const UTF8 *sourceEnd);
   extern my_ostream my_cerr;
 #endif
 
-  extern int execution_in_progress;
-  void set_abort();
-  void clear_abort();
-  
   // void control_c();
   // note that ctrl_c=false was removed, should be done before calling eval
 #if defined (NSPIRE) || defined(FXCG)
@@ -292,17 +435,17 @@ Boolean isLegalUTF8Sequence(const UTF8 *source, const UTF8 *sourceEnd);
 #elif defined FIR
 #define control_c()
 #else
-#ifdef TIMEOUT
+#if defined TIMEOUT && !defined POCKETCAS
   void control_c();
 #else
 #if 0
-#define control_c() if (ctrl_c) { interrupted = true; CERR << "Throwing exception for user interruption." << std::endl; throw(std::runtime_error("Stopped by user interruption.")); }
+#define control_c() if (ctrl_c) { interrupted = true; CERR << "Throwing exception for user interruption." << '\n'; throw(std::runtime_error("Stopped by user interruption.")); }
 #else
 #define control_c() if (ctrl_c) { \
 interrupted = true; \
 std::string source_path = __FILE__; \
 std::string source_filename = source_path.substr(source_path.find_last_of("/\\") + 1); \
-CERR << "Throwing exception for user interruption (" << source_filename << ":" << __LINE__ << ")" << std::endl; \
+CERR << "Throwing exception for user interruption (" << source_filename << ":" << __LINE__ << ")" << '\n'; \
 throw(std::runtime_error("Stopped by user interruption.")); \
 }
 #endif
@@ -322,14 +465,14 @@ throw(std::runtime_error("Stopped by user interruption.")); \
     dbgprint_vector(size_t i,const T & t) : std::imvector<T>::imvector(i,t) { };
     // ~dbgprint_vector() { };
     // inherited destructors
-    void dbgprint() const { COUT << *this << std::endl; }
+    void dbgprint() const { COUT << *this << '\n'; }
   };
 #else // IMMEDIATE_VECTOR
   template <class T> class dbgprint_vector: public std::vector<T> {
   public:
     // inherited constructors
     dbgprint_vector() : std::vector<T>::vector() { };
-#if 0 //ndef GIAC_VECTOR
+#ifndef GIAC_VECTOR
     dbgprint_vector(const typename std::vector<T>::const_iterator & b,const typename std::vector<T>::const_iterator & e) : std::vector<T>::vector(b,e) { };
 #endif
     dbgprint_vector(const T * b,const T * e) : std::vector<T>::vector(b,e) { };
@@ -337,12 +480,7 @@ throw(std::runtime_error("Stopped by user interruption.")); \
     dbgprint_vector(size_t i,const T & t) : std::vector<T>::vector(i,t) { };
     // ~dbgprint_vector() { };
     // inherited destructors
-    void dbgprint() const { COUT << *this << std::endl; }
-    bool operator ==(const dbgprint_vector<T> &v) const {
-      if (this->size()!=v.size()) return false;
-      for (size_t i=0;i<this->size();++i){ if (v[i]!=(*this)[i]) return false;}
-      return true;
-    }
+    void dbgprint() const { COUT << *this << '\n'; }
   };
 #endif // IMMEDIATE_VECTOR
   
@@ -382,7 +520,7 @@ throw(std::runtime_error("Stopped by user interruption.")); \
       }
       return res;
     }
-    void dbgprint() { COUT << *this << std::endl; }
+    void dbgprint() { COUT << *this << '\n'; }
   };
 
   struct user_function {
@@ -400,6 +538,7 @@ throw(std::runtime_error("Stopped by user interruption.")); \
   vecteur * keywords_vecteur_ptr(); // idnt assigned to a commandname for localization, like mediatrice for perpen_bissector
 
   class context;
+  extern const giac::context * python_contextptr;
   
   struct debug_struct {
     int indent_spaces;
@@ -446,6 +585,7 @@ throw(std::runtime_error("Stopped by user interruption.")); \
     size_t stacksize;
     void * stackaddr;
 #endif
+    size_t stack;
     thread_param();
   };
 
@@ -474,6 +614,18 @@ throw(std::runtime_error("Stopped by user interruption.")); \
   typedef std::map<const char *, gen,ltstr> map_charptr_gen;
   typedef map_charptr_gen sym_tab;
 
+  struct nwsrec {
+    unsigned char type;
+    std::vector<unsigned char> data;
+  };
+  typedef std::map<std::string,nwsrec,ltstring> nws_map;
+  std::string dos2unix(const std::string & res);
+  bool scriptstore2map(const char * fname,nws_map & m);
+  bool map2scriptstore(const nws_map & m,const char * fname);
+  // check that filename content matches a file content signed in sigfilename
+  bool sha256_check(const char * sigfilename,const char * filename);
+  bool nws_certify_firmware(bool with_overwrite,GIAC_CONTEXT); // Numworks certification
+
   struct parser_lexer {
     int _index_status_; // 0 if [ -> T_VECT_DISPATCH, 1 if [ -> T_INDEX_BEGIN
     int _opened_quote_; // 1 if we are inside a quote
@@ -490,21 +642,50 @@ throw(std::runtime_error("Stopped by user interruption.")); \
     int _i_sqrt_minus1_;
   };
   std::string gen2string(const gen & g);
+  const int turtle_length=10;
+#ifdef KHICAS
   struct logo_turtle {
     double x,y;
-    float theta; // theta is given in degrees or radians dep. on angle_mode
-    int s;
-    bool visible:1; // true if turtle visible
-    bool mark:1; // true if moving marks
+    double theta; // theta is given in degrees or radians dep. on angle_mode
+    bool visible; // true if turtle visible
+    bool mark; // true if moving marks
     bool direct; // true if rond/disque is done in the trigonometric direction
-    char color;
-    char turtle_length;
+    char turtle_width;
+    short int s;//std::string s;
+    int color;
     int radius; // 0 nothing, >0 -> draw a plain disk 
     // bit 0-8=radius, bit9-17 angle1, bit 18-26 angle2, bit 27=1 filled  or 0 
     // <0 fill a polygon from previous turtle positions
-    logo_turtle(): x(35),y(35),theta(0),visible(true),mark(true),direct(true),color(1),turtle_length(5),radius(0) {}
+    logo_turtle(): x(100),y(100),theta(0),visible(true),mark(true),direct(true),color(0),turtle_width(1),radius(0) {}
+    inline bool equal_except_nomark(const logo_turtle &t) const {
+      return x==t.x && y==t.y && turtle_width==t.turtle_width && s==t.s && radius==t.radius;
+    }
   };
-
+#else // KHICAS
+  struct logo_turtle {
+    double x,y;
+    double theta; // theta is given in degrees or radians dep. on angle_mode
+    bool visible; // true if turtle visible
+    bool mark; // true if moving marks
+    bool direct; // true if rond/disque is done in the trigonometric direction
+    int color;
+    int turtle_width;
+    int radius; // 0 nothing, >0 -> draw a plain disk 
+    // bit 0-8=radius, bit9-17 angle1, bit 18-26 angle2, bit 27=1 filled  or 0 
+    // <0 fill a polygon from previous turtle positions
+    std::string s;
+    void * widget;
+    inline bool equal_except_nomark(const logo_turtle &t) const {
+      return x==t.x && y==t.y  && turtle_width==t.turtle_width && s==t.s &&  radius==t.radius;
+    }
+#ifdef IPAQ
+    logo_turtle(): x(70),y(70),theta(0),visible(true),mark(true),direct(true),color(0),turtle_width(1),radius(0),widget(0) {}
+#else
+    logo_turtle(): x(100),y(100),theta(0),visible(true),mark(true),direct(true),color(0),turtle_width(1),radius(0),widget(0) {}
+#endif
+  };
+#endif // KHICAS
+    
   // a structure that should contain all global variables
   class global {
   public:
@@ -534,6 +715,8 @@ throw(std::runtime_error("Stopped by user interruption.")); \
     bool _variables_are_files_;
     bool _local_eval_;
     bool _withsqrt_;
+    bool _show_point_; // show 3-d point 
+    bool _io_graph_; // show 2-d point in io
     bool _all_trig_sol_;
     bool _ntl_on_;
     bool _lexer_close_parenthesis_;
@@ -543,25 +726,28 @@ throw(std::runtime_error("Stopped by user interruption.")); \
     bool _atan_tan_no_floor_;
     bool _keep_acosh_asinh_;
     bool _keep_algext_;
+    bool _auto_assume_;
+    bool _parse_e_;
+    bool _convert_rootof_;
     int _python_compat_;
     int _angle_mode_;
     int _bounded_function_no_;
     int _series_flags_; // 1= full simplify, 2=1 for truncation, bit3=atan does not rewrite sin/cos to tan, bit4=no back conversion, bit5=write<<1,1>> with series_variable_name, bit 6=write O() instead of order_size, bit7= 1 diff in subst does not variable substitution
     int _step_infolevel_; 
+    int _default_color_;
     double _epsilon_;
     double _proba_epsilon_; // if not 0, probabilistic algo may be used
     // the proba should be less than proba_epsilon for giac to return an answer
+    int _show_axes_;
     int _spread_Row_,_spread_Col_;
     int _printcell_current_row_,_printcell_current_col_;
 #ifdef NSPIRE
     nio::console * _logptr_;
 #else
-#ifdef WITH_MYOSTREAM
+#if 1 // def WITH_MYOSTREAM
     my_ostream * _logptr_;
 #else
-    //!!!!!!!!
-    stdostream * _logptr_;
-    //ostream * _logptr_;
+    std::ostream * _logptr_;
 #endif
 #endif
     debug_struct * _debug_ptr;
@@ -580,8 +766,7 @@ throw(std::runtime_error("Stopped by user interruption.")); \
 #endif
     int _language_;
     const char * _last_evaled_function_name_;
-    const char * _currently_scanned_; //!!!! 2
-    const gen * _last_evaled_argptr_; //!!!! 1
+    const gen * _last_evaled_argptr_;
     int _max_sum_sqrt_;
     int _max_sum_add_;
     logo_turtle _turtle_;
@@ -589,6 +774,10 @@ throw(std::runtime_error("Stopped by user interruption.")); \
     std::string _format_double_;
     std::string _autosimplify_;
     std::string _lastprog_name_;
+    const char * _currently_scanned_;
+#ifndef KHICAS
+    std::vector<logo_turtle> _turtle_stack_; 
+#endif
     double _total_time_;
     void * _evaled_table_;
     void * _extra_ptr_;
@@ -628,6 +817,7 @@ throw(std::runtime_error("Stopped by user interruption.")); \
 
   context * clone_context(const context *);
   void init_context(context * ptr);
+  void clear_context(context * ptr);
 
   extern const context * context0;
   std::vector<context *> & context_list();
@@ -635,7 +825,7 @@ throw(std::runtime_error("Stopped by user interruption.")); \
   extern pthread_mutex_t context_list_mutex;
 #endif
   
-#if !defined(RTOS_THREADX) && !defined(BESTA_OS) && !defined(NSPIRE) && !defined(FXCG)
+#if !defined(RTOS_THREADX) && !defined(BESTA_OS) && !defined(NSPIRE) && !defined(FXCG) && !defined KHICAS
   extern std::map<std::string,context *> * context_names ;
 #endif
 
@@ -650,7 +840,6 @@ throw(std::runtime_error("Stopped by user interruption.")); \
 
   std::string autosimplify(GIAC_CONTEXT);
   std::string autosimplify(const std::string & s,GIAC_CONTEXT);
-  int dichotomic_search(const char * const * tab,unsigned tab_size,const char * s);
 
   bool csv_guess(const char * data,int count,char & sep,char & nl,char & decsep);
   std::string & format_double(GIAC_CONTEXT);
@@ -668,6 +857,7 @@ throw(std::runtime_error("Stopped by user interruption.")); \
   void python_compat(int b,GIAC_CONTEXT);
   int array_start(GIAC_CONTEXT);
   extern bool python_color; // global variable for syntax highlighting
+  extern bool os_shell; // true if Numworks called from shell
 
   int & calc_mode(GIAC_CONTEXT);
   int abs_calc_mode(GIAC_CONTEXT);
@@ -718,6 +908,15 @@ throw(std::runtime_error("Stopped by user interruption.")); \
   bool & keep_algext(GIAC_CONTEXT);
   void keep_algext(bool b,GIAC_CONTEXT);
 
+  bool & auto_assume(GIAC_CONTEXT);
+  void auto_assume(bool b,GIAC_CONTEXT);
+
+  bool & parse_e(GIAC_CONTEXT);
+  void parse_e(bool b,GIAC_CONTEXT);
+
+  bool & convert_rootof(GIAC_CONTEXT);
+  void convert_rootof(bool b,GIAC_CONTEXT);
+
   bool & do_lnabs(GIAC_CONTEXT);
   void do_lnabs(bool b,GIAC_CONTEXT);
 
@@ -765,8 +964,13 @@ throw(std::runtime_error("Stopped by user interruption.")); \
   std::string lastprog_name(GIAC_CONTEXT);
   std::string lastprog_name(const std::string & b,GIAC_CONTEXT);
 
+#ifdef KHICAS
   logo_turtle & turtle();
+  std::vector<logo_turtle> & turtle_stack();
+#else
+  logo_turtle & turtle(GIAC_CONTEXT);
   std::vector<logo_turtle> & turtle_stack(GIAC_CONTEXT);
+#endif
 
   int & angle_mode(GIAC_CONTEXT);
   int get_mode_set_radian(GIAC_CONTEXT);
@@ -824,17 +1028,9 @@ throw(std::runtime_error("Stopped by user interruption.")); \
   nio::console * logptr(GIAC_CONTEXT);
   void logptr(nio::console *,GIAC_CONTEXT);
 #else
-#ifdef FXCG
-//!!!!!!!!!!!
-  stdostream * logptr(GIAC_CONTEXT);
-  //ostream * logptr(GIAC_CONTEXT);
-  //void logptr(stdostream *,GIAC_CONTEXT);
-  void logptr(stdostream *,GIAC_CONTEXT);
-#else  
   my_ostream * logptr(GIAC_CONTEXT);
   void logptr(my_ostream *,GIAC_CONTEXT);
 #endif
-#endif  
 
   int & eval_level(GIAC_CONTEXT);
   // void eval_level(int b,GIAC_CONTEXT);
@@ -939,7 +1135,7 @@ throw(std::runtime_error("Stopped by user interruption.")); \
 
   void read_config(const std::string & name,GIAC_CONTEXT,bool verbose=true);
   void protected_read_config(GIAC_CONTEXT,bool verbose=true);
-  vecteur remove_multiples(vecteur & v); // sort v and return list without multiple occurences
+  vecteur remove_multiples(vecteur & v); // sort v and return list without multiple occurrences
   int equalposcomp(const std::vector<int> v,int i);
   int equalposcomp(const std::vector<short int> v,int i);
   int equalposcomp(int tab[],int f);

@@ -33,9 +33,14 @@ namespace giac {
 #endif // ndef NO_NAMESPACE_GIAC
 
   gen remove_pnt_vect(const gen & g);
+  extern const unary_function_ptr * const  at_volume ;
   extern const unary_function_ptr * const  at_sphere ;
   extern const unary_function_ptr * const  at_cylindre ;
   extern const unary_function_ptr * const  at_plan ;
+  extern const unary_function_ptr * const  at_tetraedre ;
+  extern const unary_function_ptr * const  at_octaedre ;
+  extern const unary_function_ptr * const  at_dodecaedre ;
+  extern const unary_function_ptr * const  at_icosaedre ;
   gen hypersurface(const gen & args,const gen & equation,const gen & vars);
   gen do_point3d(const gen & g);
   bool is3d(const gen & g);
@@ -101,7 +106,7 @@ namespace giac {
 
   extern const unary_function_ptr * const  at_hypersphere;
   gen plotparam3d(const gen & f,const vecteur & vars,double function_xmin,double function_xmax, double function_ymin, double function_ymax,double function_zmin,double function_zmax,double function_umin,double function_umax,double function_vmin,double function_vmax,bool densityplot,bool f_autoscale,const vecteur & attributs,double ustep,double vstep,const gen & eq,const vecteur & eqvars,GIAC_CONTEXT);
-  gen plotimplicit(const gen& f_orig,const gen&x,const gen & y,const gen & z,double xmin,double xmax,double ymin,double ymax,double zmin,double zmax,int nxstep,int nystep,int nzstep,double eps,const vecteur & attributs,bool unfactored,const context * contextptr);
+  gen plotimplicit(const gen& f_orig,const gen&x,const gen & y,const gen & z,double xmin,double xmax,double ymin,double ymax,double zmin,double zmax,int nxstep,int nystep,int nzstep,double eps,const vecteur & attributs,bool unfactored,bool cklinear,const context * contextptr);
 
   bool est_cospherique(const gen & a,const gen & b,const gen & c,const gen & d,const gen & f,GIAC_CONTEXT);
   gen _est_cospherique(const gen & args,GIAC_CONTEXT);
