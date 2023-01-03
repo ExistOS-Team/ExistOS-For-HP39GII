@@ -153,8 +153,6 @@ uint32_t __attribute__((naked)) getCurStackAdr() {
 }
 extern uint32_t SYSTEM_STACK; // in ld script
 void main() {
-    enableMemSwap(true);
-    
     void IRQ_ISR();
     void SWI_ISR();
     ll_set_irq_stack((uint32_t)&SYSTEM_STACK);

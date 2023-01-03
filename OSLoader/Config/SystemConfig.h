@@ -39,7 +39,7 @@
     #define MEM_COMPRESSION_ALGORITHM     (MINILZO) //algorithm
 #endif
 
-#define TOTAL_MEM_PAGE  (300)
+#define TOTAL_MEM_PAGE  (292)
 
 #if VMRAM_USE_FTL
     #if USE_TINY_PAGE
@@ -49,7 +49,7 @@
                     #define NUM_CACHEPAGE_VROM             ( 160 )  
                     #define NUM_CACHEPAGE_VRAM             ( 40 ) 
                     #define ZRAM_SIZE                      ( (TOTAL_MEM_PAGE - NUM_CACHEPAGE_VROM - NUM_CACHEPAGE_VRAM) * 1024 ) 
-                    #define ZRAM_COMPRESSED_SIZE           ( ZRAM_SIZE * 3 ) // (Assume that the compression ratio is 0.33)
+                    #define ZRAM_COMPRESSED_SIZE           (int)( ZRAM_SIZE * 3 ) // (Assume that the compression ratio is 0.33)
                 #else 
                     #define NUM_CACHEPAGE_VROM             ( 64 )  
                     #define NUM_CACHEPAGE_VRAM             ( 64 ) 
