@@ -96,12 +96,13 @@ Requires:
 - sb_loader: Used to send OSLoader to the RAM of your calculator if you haven't installed it before.
   - Windows: Download binary file from [here](../../raw/main/tools/sbtools_win/sb_loader.exe).
   - Linux: Download zip file from [here](../../archive/refs/heads/main.zip) and extract it. Then run the following commands:
+    - Install `crypto++` library. Following the "Install dependencies" section [here](#Prerequisites)
     - `cd tools/sbtools/`
     - `make`
     - Then you will get the executable file `sb_loader`
 - EDB (ExistOS Debug Brige): Used to flash firmwares.
   - Windows: Download binary file from [here](../../raw/main/tools/edb.exe).
-  - Linux: Download zip file from [here](https://github.com/ExistOS-Team/edb-unix/archive/refs/heads/main.zip) and extract it. Then run the following commands:
+  - Linux: Download zip file from [here](https://github.com/ExistOS-Team/edb-unix/archive/refs/heads/master.zip) and extract it. Then run the following commands:
     - `mkdir build`
     - `cmake -B build`
     - `cmake --build build`
@@ -112,15 +113,15 @@ Put the mentioned files to a directory.
 If you haven't installed ExistOS on your calculator, please go through this to-do list first:
 1. Remove all batteries from your calculator.
 2. Hold `ON/C` key and connect your calculator to computer via USB cable.
-3. Run command `sbloader -f OSLoader.sb`
+3. Run command `sbloader OSLoader.sb`
   - Normally your calculator will boot into the OSLoader, and then a message will show up on the screen. There is no need to unplug the USB cable now. Just continue to do the following steps.
   - ![OSL Boot](Image/1.png)
 
 If ExistOS has already been installed on your device:
 1. Connect your calculator to computer via USB cable.
-2. Run command `edb -r -s -f OSLoader.sb 1408 b` to flash the OSLoader.
+2. Run command `edb -r -f OSLoader.sb 1408 b` to flash the OSLoader.
   - Your calculator will reboot automatically.
-3. Run command `edb -r -s -f ExistOS.sys 1984` to flash the System.
+3. Run command `edb -r -f ExistOS.sys 1984` to flash the System.
   - Your calculatr will reboot automatically.
 1. Enjoy ExistOS!
   - If you are in trouble with the installation or anything else, open an issue or join our Discord server to seek for help.
