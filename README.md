@@ -96,10 +96,11 @@
 - sb_loader：用于将 OSLoader 载入计算器 RAM，若您的 HP39gii 上没有安装 ExistOS 则需要使用。
   - Windows 用户请从[此处](../../raw/main/tools/sbtools_win/sb_loader.exe)下载二进制文件；
   - Linux 用户请从[此处](../../archive/refs/heads/main.zip)下载压缩包并解压，进入 `tools/sbtools/` 目录，用 `make` 编译（无需安装）。
+    - 可能需要安装crypto++依赖库才能编译成功，参考[此处](#准备环境)
     - 您会得到 `sb_loader` 可执行文件。
 - EDB（Exist Debug Bridge）：用于刷写固件。
   - Windows 用户请从[此处](../../raw/main/tools/edb.exe)下载二进制文件；
-  - Linux 用户请从[此处](https://github.com/ExistOS-Team/edb-unix/archive/refs/heads/main.zip)下载压缩包并解压，使用如下命令编译：
+  - Linux 用户请从[此处](https://github.com/ExistOS-Team/edb-unix/archive/refs/heads/master.zip)下载压缩包并解压，使用如下命令编译：
     - `mkdir build`
     - `cmake -B build`
     - `cmake --build build`
@@ -110,15 +111,15 @@
 若您的 HP39gii 上没有安装 ExistOS，请先：
 1. 卸下计算器的所有电池
 2. 按住 `ON/C` 并连接 USB 到电脑
-3. 运行 `sbloader -f OSLoader.sb`
+3. 运行 `sbloader OSLoader.sb`
   - 计算器将会启动 ExistOS 引导程序，然后将提示找不到系统（如下图），请不要断开计算器电源（USB），继续下面的步骤。
   - ![OSL Boot](Image/1.png)
 
 当计算器上已有安装 ExistOS 时：
 1. 连接 USB 到电脑
-2. 运行 `edb -r -s -f OSLoader.sb 1408 b`
+2. 运行 `edb -r -f OSLoader.sb 1408 b`
   - 计算器将重新启动，此步骤会刷入 `OSLoader` 引导程序
-3. 运行 `edb -r -s -f ExistOS.sys 1984`
+3. 运行 `edb -r -f ExistOS.sys 1984`
   - 计算器将重新启动，此步骤会刷入 `ExistOS` 主系统
 4. 享受 ExistOS 吧
   - 如果遇到问题，或者有意参与本项目，您可以加入 QQ 群（942419621）。
