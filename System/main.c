@@ -128,7 +128,7 @@ void khicasTask(void *_) {
 }
 
 void StartKhiCAS() {
-    xTaskCreate(khicasTask, "KhiCAS", KhiCAS_STACK_SIZE / 4, NULL, configMAX_PRIORITIES - 3, (NULL));
+    xTaskCreate(khicasTask, "KhiCAS", KhiCAS_STACK_SIZE, NULL, configMAX_PRIORITIES - 3, (NULL));
 }
 
 void main_thread() {
