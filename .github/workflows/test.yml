@@ -46,8 +46,18 @@ jobs:
     - name: CMake configure
       run: |
         export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
-        cmake .
+        cmake -S . -B build
     - name : CMake build
       run: |
         export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
-        cmake --build .
+        cmake --build build
+    - name: Upload OSLoader.sb
+      uses: actions/upload-artifact@v2.2.2
+      with:
+        name: OSLoader.sb
+        path: ./build/OSLoader/OSLoader.sb
+    - name: Upload ExistOS.sys
+      uses: actions/upload-artifact@v2.2.2
+      with:
+        name: ExistOS.sys
+        path: ./build/System/ExistOS.sys
