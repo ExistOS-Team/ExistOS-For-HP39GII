@@ -48,11 +48,12 @@ jobs:
         export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
         echo "#pragma once" >  System/UI_build_stamp.h
         echo "#define BUILD_STAMP \"Release build ${{ github.run_number }}\"" >> System/UI_build_stamp.h
-        cmake .
+        mkdir build
+        cmake -S . -B build
     - name : CMake build
       run: |
         export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
-        cmake --build .
+        cmake --build build
     - name: Create GitHub release
       uses: marvinpinto/action-automatic-releases@latest
       with:
@@ -61,6 +62,6 @@ jobs:
         title: build ${{ github.run_number }}
         prerelease: false
         files: |
-          ./System/ExistOS.sys
-          ./System/sys_symtab.txt
-          ./OSLoader/OSLoader.sb
+          ./build/System/ExistOS.sys
+          ./build/System/sys_symtab.txt
+          ./build/OSLoader/OSLoader.sb
