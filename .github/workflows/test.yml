@@ -4,6 +4,8 @@ on:
   push:
     branches-ignore:
       - main
+      - gh-pages
+      - docs
 
 env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
@@ -14,6 +16,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Initialize submodules
+      run: |
+        git submodules update --init
     - name: Install gcc-arm-none-eabi-10.3
       run: |
         wget -q "https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2"
