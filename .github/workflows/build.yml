@@ -89,7 +89,7 @@ jobs:
         export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
         cmake --build build
     - name: Create GitHub release
-      if: github.ref_name == "main"
+      if: github.ref_name == 'main'
       uses: marvinpinto/action-automatic-releases@latest
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -101,7 +101,7 @@ jobs:
           build/OSLoader/OSLoader.sb
           build/System/sys_symtab.txt
     - name: Upload Build outputs
-      if: github.ref_name != "main"
+      if: github.ref_name != 'main'
       uses: actions/upload-artifact@v3
       with:
         name: Build outputs
