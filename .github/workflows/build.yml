@@ -20,8 +20,8 @@ jobs:
     - name: Install gcc-arm-none-eabi-10.3
       run: |
         wget -q "https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2"
-        sudo tar -xf gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2 -C /usr/
-        export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
+        sudo tar -xf gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2 -C /opt
+        echo 'PATH=/opt/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH' >> ~/.bashenv
     - name: Install packages build sbtools required
       run: |
         sudo apt-get update
@@ -34,7 +34,6 @@ jobs:
     - name: Build sbtools
       if: steps.sbtools-cache.outputs.cache-hit != 'true'
       run: |
-        export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
         cd tools/sbtools
         make
         cd ../..
@@ -72,21 +71,18 @@ jobs:
     - name: Build KhiCAS
       if: steps.khicas-cache.outputs.cache-hit != 'true'
       run: |
-        export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
         cd Libs/src/khicas/
         make clean
         make
         cd ../../..
     - name: CMake configure
       run: |
-        export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
         echo "#pragma once" >  System/UI_build_stamp.h
         echo "#define BUILD_STAMP \"Release build ${{ github.run_number }}\"" >> System/UI_build_stamp.h
         mkdir build
         cmake -S . -B build
     - name : CMake build
       run: |
-        export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
         cmake --build build
     - name: Create GitHub release
       if: github.ref_name == 'main'
