@@ -114,7 +114,7 @@ add_custom_target(
   DEPENDS rom.bin
   )
 add_custom_target(
-  sb_flash 
+  flash 
   COMMAND ${CMAKE_SOURCE_DIR}/tools/sbtools_win/sb_loader -f ${CMAKE_CURRENT_BINARY_DIR}/OSLoader.sb 
   DEPENDS OSLoader.sb
   )
