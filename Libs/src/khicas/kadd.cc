@@ -96,37 +96,46 @@ int ext_main(){
 
 void handle_flash(GIAC_CONTEXT);
 
+#ifdef HP39
+const int C20=14;
+extern "C" int khicas_1bpp;
+unsigned short mmind_col[]={212,170,127,85,42,0};
+#else
+const int C20=20;
 unsigned short mmind_col[]={COLOR_BLUE,COLOR_RED,COLOR_MAGENTA,COLOR_GREEN,COLOR_CYAN,COLOR_YELLOW};
+#endif
 
 void mastermind_disp(const vector<int> & solution,const vector< vector<int> > & essais,const vector<int> & essai,bool fulldisp,GIAC_CONTEXT){
-  int x0=30,y0=30;
+  int x0=C20*3/2,y0=C20/2;
   if (fulldisp)
     drawRectangle(0,0,LCD_WIDTH_PX,LCD_HEIGHT_PX,_WHITE);
   else
-    drawRectangle(0,y0+6*20,LCD_WIDTH_PX,LCD_HEIGHT_PX-(y0+4*20),_WHITE);
+    drawRectangle(0,y0+6*C20,LCD_WIDTH_PX,LCD_HEIGHT_PX-(y0+4*C20),_WHITE);
   if (fulldisp){
     // grille
-    for (int i=y0;i<=y0+4*20;i+=20)
-      draw_line(x0,i,x0+12*20,i,_BLACK);
-    for (int j=x0;j<=x0+12*20;j+=20)
-      draw_line(j,y0,j,y0+4*20,_BLACK);
+    for (int i=y0;i<=y0+4*C20;i+=C20)
+      draw_line(x0,i,x0+12*C20,i,_BLACK);
+    for (int j=x0;j<=x0+12*C20;j+=C20)
+      draw_line(j,y0,j,y0+4*C20,_BLACK);
     // affichage des coups precedents et resultats
     for (int c=0;c<essais.size();++c){
       const vector<int> & essai=essais[c];
       for (int i=0;i<4;++i){
-	draw_filled_circle(x0+20*c+10,y0+20*i+10,10,mmind_col[essai[i]],true,true,contextptr);
+        draw_filled_circle(x0+C20*c+C20/2,y0+C20*i+C20/2,C20/2,mmind_col[essai[i]],true,true,contextptr);
+        if (essai[i] % 2)
+          draw_line(x0+C20*c,y0+C20*i+C20/2,x0+C20*c+C20,y0+C20*i+C20/2,essai[i]>2?COLOR_WHITE:COLOR_BLACK);
       }
       // resultats
       vector<int> S(solution),E(essai);
       // bien places
       int bien=0;
       for (int i=0;i<S.size();++i){
-	if (S[i]==E[i]){
-	  ++bien;
-	  S.erase(S.begin()+i);
-	  E.erase(E.begin()+i);
-	  --i;
-	}
+        if (S[i]==E[i]){
+          ++bien;
+          S.erase(S.begin()+i);
+          E.erase(E.begin()+i);
+          --i;
+        }
       }
       // mal places
       int mal=0;
@@ -134,48 +143,55 @@ void mastermind_disp(const vector<int> & solution,const vector< vector<int> > & 
       sort(E.begin(),E.end());
       int s=0,e=0;
       for (;;){
-	if (s>=S.size() || e>=E.size())
-	  break;
-	if (S[s]==E[e]){
-	  ++mal;
-	  ++s; ++e;
-	  continue;
-	}
-	if (S[s]<E[e])
-	  ++s;
-	else
-	  ++e;
+        if (s>=S.size() || e>=E.size())
+          break;
+        if (S[s]==E[e]){
+          ++mal;
+          ++s; ++e;
+          continue;
+        }
+        if (S[s]<E[e])
+          ++s;
+        else
+          ++e;
       }
       char buf[2]={0,0};
       buf[0]='0'+bien;
-      os_draw_string(x0+20*c+3,y0+20*4+2,COLOR_GREEN,_WHITE,buf);
+      os_draw_string(x0+C20*c+3,y0+C20*4+2,COLOR_GREEN,_WHITE,buf);
       buf[0]='0'+mal;
-      os_draw_string(x0+20*c+3,y0+20*5+2,COLOR_MAGENTA,_WHITE,buf);
+      os_draw_string(x0+C20*c+3,y0+C20*5+2,COLOR_MAGENTA,_WHITE,buf);
       //CERR << solution << " " << essai << " " << bien << " " << mal << endl;
     }
   }
-  os_draw_string(10,y0+20*4+2,COLOR_GREEN,_WHITE,"=");
-  os_draw_string(10,y0+20*5+2,COLOR_MAGENTA,_WHITE,"~");
-  int y=170;
+  os_draw_string(C20/2,y0+C20*4+2,COLOR_GREEN,_WHITE,"=");
+  os_draw_string(C20/2,y0+C20*5+2,COLOR_MAGENTA,_WHITE,"~");
+  int y=C20*13/2;
   int x=os_draw_string_small_(x0,y,"0");
-  draw_filled_circle(x+10,y+10,10,COLOR_BLUE);
+  draw_filled_circle(x+C20/2,y+C20/2,C20/2,mmind_col[0]);
   x=os_draw_string_small_(x+30,y,"1");
-  draw_filled_circle(x+10,y+10,10,COLOR_RED);
+  draw_filled_circle(x+C20/2,y+C20/2,C20/2,mmind_col[1]);
+  draw_line(x,y+C20/2,x+C20,y+C20/2,COLOR_BLACK);
   x=os_draw_string_small_(x+30,y,"2");
-  draw_filled_circle(x+10,y+10,10,COLOR_MAGENTA);
+  draw_filled_circle(x+C20/2,y+C20/2,C20/2,mmind_col[2]);
   x=os_draw_string_small_(x+30,y,"3");
-  draw_filled_circle(x+10,y+10,10,COLOR_GREEN);
+  draw_filled_circle(x+C20/2,y+C20/2,C20/2,mmind_col[3]);
+  draw_line(x,y+C20/2,x+C20,y+C20/2,COLOR_WHITE);
   x=os_draw_string_small_(x+30,y,"4");
-  draw_filled_circle(x+10,y+10,10,COLOR_CYAN);
+  draw_filled_circle(x+C20/2,y+C20/2,C20/2,mmind_col[4]);
   x=os_draw_string_small_(x+30,y,"5");
-  draw_filled_circle(x+10,y+10,10,COLOR_YELLOW);
-  y += 20;
+  draw_filled_circle(x+C20/2,y+C20/2,C20/2,mmind_col[5]);
+  draw_line(x,y+C20/2,x+C20,y+C20/2,COLOR_WHITE);
+  y += C20;
   // affichage du coup actuel
-  for (int i=0;i<essai.size();++i)
-    draw_filled_circle(x0+20*i+10,y+10,10,mmind_col[essai[i]],true,true,contextptr);
+  for (int i=0;i<essai.size();++i){
+    draw_filled_circle(C20/2,i*C20+y0+C20/2,C20/2,mmind_col[essai[i]],true,true,contextptr);
+    if (essai[i] % 2)
+      draw_line(0,i*C20+y0+C20/2,C20,i*C20+y0+C20/2,essai[i]>2?COLOR_WHITE:COLOR_BLACK);
+  }
+  // draw_filled_circle(x0+C20*i+C20/2,y+C20/2,C20/2,mmind_col[essai[i]],true,true,contextptr);
 }    
   
-int mastermind(GIAC_CONTEXT){
+int do_mastermind(GIAC_CONTEXT){
   // Mastermind
   vector<int> solution(4),essai;
   vector< vector<int> > essais;
@@ -200,36 +216,51 @@ int mastermind(GIAC_CONTEXT){
     }
     if (key>='0' && key<='5'){
       if (essai.size()==4)
-	continue;
+        continue;
       essai.push_back(key-'0');
     }
     if (key==KEY_CTRL_EXE || key==KEY_CTRL_OK){
       if (essai.size()==4){
-	if (essai==solution){
-	  char buf[16]; sprint_int(buf,essais.size());
-	  confirm("Vous avez trouve. Essais:",buf);
-	  return i;
-	}
-	fulldisp=true;
-	essais.push_back(essai);
-	essai.clear();
-	if (essais.size()==nbessais){
-	  mastermind_disp(solution,essais,essai,true,contextptr);
-	  for (int i=0;i<solution.size();++i)
-	    draw_filled_circle(30+20*i+10,190+20,10,mmind_col[solution[i]],true,true,contextptr);
-	  confirm("Vous avez perdu.","La solution etait",false,140);
-	  return -1;
-	}
+        if (essai==solution){
+          char buf[16]; sprint_int(buf,essais.size());
+          confirm(lang==1?"Solution found! Tries:":"Vous avez trouve. Essais:",buf);
+          return i;
+        }
+        fulldisp=true;
+        essais.push_back(essai);
+        essai.clear();
+        if (essais.size()==nbessais){
+          mastermind_disp(solution,essais,essai,true,contextptr);
+          for (int i=0;i<solution.size();++i)
+            draw_filled_circle(30+C20*i+C20/2,190+C20,C20/2,mmind_col[solution[i]],true,true,contextptr);
+          confirm(lang==1?"Game over!":"Vous avez perdu.",lang==1?"Solution was":"La solution etait",false,140);
+          return -1;
+        }
       }
     }
     if (key==KEY_CTRL_DEL){
       if (!essai.empty())
-	essai.pop_back();
+        essai.pop_back();
       continue;
     }
   }
   return 0;
 }
+
+#ifdef HP39
+int mastermind(GIAC_CONTEXT){
+  int k=khicas_1bpp;
+  khicas_1bpp=0;
+  os_fill_rect(0,0,LCD_WIDTH_PX,LCD_HEIGHT_PX,SDK_WHITE);
+  int r=do_mastermind(contextptr);
+  khicas_1bpp=k;
+  return r;
+}
+#else
+int mastermind(GIAC_CONTEXT){
+  return do_mastermind(contextptr);
+}
+#endif
 
 // Newton iteration for polynomial
 // with simult Horner evaluation of p and p' at x
@@ -474,7 +505,6 @@ int do_fractale(GIAC_CONTEXT){
   return 0;
 }
 #ifdef HP39
-extern "C" int khicas_1bpp;
 int fractale(GIAC_CONTEXT){
   int k=khicas_1bpp;
   khicas_1bpp=0;
@@ -508,7 +538,7 @@ int finance(int mode,GIAC_CONTEXT){ // mode==-1 pret, 1 placement
   smallmenu.height=MENUHEIGHT-1;
   smallmenu.scrollbar=1;
   smallmenu.scrollout=1;
-  smallmenu.title = (char *) lang==1?(mode==-1?"Pret bancaire":"Epargne"):(mode==-1?"Mortgage":"Savings");
+  smallmenu.title = (char *) (lang==1?(mode==-1?"Pret bancaire":"Epargne"):(mode==-1?"Mortgage":"Savings"));
   smallmenu.type = MENUTYPE_NO_NUMBER;
   while(1) {
     drawRectangle(0,0,LCD_WIDTH_PX,LCD_HEIGHT_PX,_WHITE);

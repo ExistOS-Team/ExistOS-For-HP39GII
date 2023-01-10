@@ -207,6 +207,8 @@ int fileBrowserSub(char* browserbasepath, char* filename, char* filter, char* ti
   menu.scrollout=1;
   menu.nodatamsg = (char*)"No Data";
   menu.title = title;
+  menu.height=std::min(menu.numitems+1,MENUHEIGHT); // menu.numitems
+  menu.width=30;
   while(1) {
     Bdisp_AllClr_VRAM();
     //itoa(smemfree, (char*)titleBuffer, 10);
