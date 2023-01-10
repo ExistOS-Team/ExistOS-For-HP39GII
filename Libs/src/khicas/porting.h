@@ -61,6 +61,13 @@ enum {
 */
 
 
+#define COLOR_CYAN   90
+#define COLOR_RED    68
+#define COLOR_GREEN  68
+#define COLOR_WHITE  255
+#define COLOR_BLACK  0
+
+
 
 #define _OPENMODE_READ          0
 #define _OPENMODE_READWRITE     1
@@ -75,8 +82,8 @@ typedef struct
   unsigned long address;
 } FILE_INFO;
 
-int PrintMini(int &x, int &y, const unsigned char* s, int rev);
-int PrintXY(int &x, int &y, const unsigned char* s, int rev);
+int PrintMini(int x, int y, const unsigned char* s, int rev);
+int PrintXY(int x, int y, const unsigned char* s, int rev);
 void locate(int x, int y);
 void PrintRev(unsigned char *s);
 void Print(unsigned char *s);
@@ -117,6 +124,6 @@ bool chkEsc(void);
 int SetTimer(int TimerID, int period, void (*callback)(void));
 void KillTimer(int TimerID);
 
-extern "C" void SetQuitHandler(void (*callback)(void)) ;
+// extern "C" void SetQuitHandler(void (*callback)(void)) ;
 
 #endif
