@@ -21,7 +21,7 @@ jobs:
       run: |
         wget -q "https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2"
         sudo tar -xf gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2 -C /opt
-        echo 'PATH=/opt/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH' >> ~/.bashenv
+        echo '/opt/gcc-arm-none-eabi-10.3-2021.10/bin' >> $GITHUB_PATH
     - name: Install packages build sbtools required
       run: |
         sudo apt-get update
