@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Initialize submodules
       run: |
         git submodules update --init
@@ -26,20 +26,51 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install libcrypto++-dev libusb-1.0-0-dev -y
+    - uses: actions/cache@v3
+      id: sbtools-cache
+      with:
+        path: tools/sbtools
+        key: ${{ runner.os }}-${{ hashFiles('tools/sbtools/*') }}
     - name: Build sbtools
+      if: steps.sbtools-cache.outputs.cache-hit != 'true'
       run: |
         export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
         cd tools/sbtools
         make
-        cd ../sys_signer
+        cd ../..
+    - uses: actions/cache@v3
+      id: sys_signer-cache
+      with:
+        path: tools/sys_signer
+        key: ${{ runner.os }}-${{ hashFiles('tools/sys_signer/**/*') }}
+    - name: Build sys signer
+      if: steps.sys_signer-cache.outputs.cache-hit != 'true'
+      run: |
+        cd tools/sys_signer
         cmake .
         cmake --build .
         cp sysigner ../
         cd ../..
+    - uses: actions/cache@v3
+      id: mpy-cache
+      with:
+        path: Libs/src/micropython-master/ports/eoslib
+        key: ${{ runner.os }}-${{ hashFiles('Libs/src/micropython-master/ports/eoslib/**/*') }}
+    - name: Build micropython
+      if: steps.mpy-cache.outputs.cache-hit != 'true'
+      run: |
         cd Libs/src/micropython-master/ports/eoslib
         make
         cd ../../../../..
+    - uses: actions/cache@v3
+      id: khicas-cache
+      with:
+        path: |
+          Libs/libcas.libcpp
+          Libs/libcasgui.libcpp
+        key: ${{ runner.os }}-${{ hashFiles('Libs/src/khicas/*') }}
     - name: Build KhiCAS
+      if: steps.khicas-cache.outputs.cache-hit != 'true'
       run: |
         export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
         cd Libs/src/khicas/
@@ -58,6 +89,7 @@ jobs:
         export PATH=/usr/gcc-arm-none-eabi-10.3-2021.10/bin:$PATH
         cmake --build build
     - name: Create GitHub release
+      if: github.ref_name == "main"
       uses: marvinpinto/action-automatic-releases@latest
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -65,6 +97,15 @@ jobs:
         title: build ${{ github.run_number }}
         prerelease: false
         files: |
-          ./build/System/ExistOS.sys
-          ./build/System/sys_symtab.txt
-          ./build/OSLoader/OSLoader.sb
+          build/System/ExistOS.sys
+          build/OSLoader/OSLoader.sb
+          build/System/sys_symtab.txt
+    - name: Upload Build outputs
+      if: github.ref_name != "main"
+      uses: actions/upload-artifact@v3
+      with:
+        name: Build outputs
+        path: |
+          build/System/ExistOS.sys
+          build/OSLoader/OSLoader.sb
+          build/System/sys_symtab.txt
