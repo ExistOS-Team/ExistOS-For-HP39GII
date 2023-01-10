@@ -873,9 +873,9 @@ int getkey(int allow_suspend){
 // void msleep(unsigned ms)
 // cfg_register_fileext(const char *ext, const char *prgm): (since v3.1 r797) associate for Ndless the file extension ext (without leading '.') to the program name prgm. Does nothing if the extension is already registered.
 
-// void GetKey(int * key){
-//   *key=getkey(true);
-// }
+void GetKey(int * key){
+  *key=getkey(true);
+}
 
 bool alphawasactive(int * key){
   if (*key==KEY_DOWN_CTRL){

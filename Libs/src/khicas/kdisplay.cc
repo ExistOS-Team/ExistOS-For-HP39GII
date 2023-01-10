@@ -36,6 +36,7 @@
 int osok=1;
 extern "C" int shell_x,shell_y,shell_fontw,shell_fonth;
 #ifdef HP39
+extern "C" int khicas_1bpp;
 extern "C" char Setup_GetEntry(unsigned int index);
 #define MINI_OVER 0
 #define MINI_REV 1
@@ -47,7 +48,7 @@ int fileBrowser(char* filename, char* filter, char* title);
 #else
 int shell_x=0,shell_y=0,shell_fontw=12,shell_fonth=18;
 #define _green _GREEN
-#define _red _red
+#define _red _RED
 #define dbgprintf(...) 
 #endif 
 // pour le mode examen cx2, il y a 2 endroits ou is_cx2 est utilise dans smallmenu.selection==1
@@ -532,7 +533,7 @@ namespace giac {
               int fillerRequired = menu->width - MB_ElementCount(menu->items[curitem].text) - (menu->type == MENUTYPE_MULTISELECT ? 2 : 3);
               for(int i = 0; i < fillerRequired; i++)
                 strcat(menuitem, " ");
-              //dbgprintf("menu %i %i\n",curitem,C10*menu->width);
+              dbgprintf("menu %i %i\n",curitem,C10*menu->width);
               drawRectangle(C10*menu->startX,C18*(curitem+itemsStartY-menu->scroll),C10*menu->width,C24,(menu->selection == curitem+1 ? color_gris : _WHITE));
               PrintXY(C10*menu->startX,C18*(curitem+itemsStartY-menu->scroll),menuitem, (menu->selection == curitem+1 ? TEXT_MODE_INVERT : TEXT_MODE_NORMAL));
             } else {
@@ -10818,6 +10819,20 @@ namespace xcas {
   }
 
   int Graph2d::ui(){
+#ifdef HP39
+    if (is3d){
+      int k=khicas_1bpp;
+      khicas_1bpp=0;
+      os_fill_rect(0,0,LCD_WIDTH_PX,LCD_HEIGHT_PX,SDK_WHITE);
+      int r=in_ui();
+      khicas_1bpp=k;
+      return r;
+    }
+#endif
+    return in_ui();
+  }
+
+  int Graph2d::in_ui(){
     Graph2d & gr=*this;
     // UI
     int saveprecision=gr.precision;
