@@ -47,9 +47,8 @@ void key_task_capt()
             if(ck == KEY_ON && cp)
             {
                 state = 1;
-            }else{
-                g_latest_key_status = kval;
             }
+            g_latest_key_status = kval;
             break;
         
         case 1:
@@ -57,7 +56,7 @@ void key_task_capt()
             {
                 state = 0;
                 capt_ck = 0;
-                g_latest_key_status = (1 << 16) | KEY_ON;
+                g_latest_key_status = (0 << 16) | KEY_ON;
             }else if(ck != KEY_ON && cp){
                 state = 2;
                 capt_ck = ck;
