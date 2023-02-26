@@ -35,7 +35,7 @@
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "gcc -v",
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "codespace",
+	"remoteUser": "vscode",
 	// For sharing shell history out of the container.
 	"mounts": [
 		"source=ExistOS-For-HP39GII-commandhistory,target=/commandhistory,type=volume"

@@ -1,7 +1,7 @@
 ARG VARIANT="ubuntu-22.04"
 FROM mcr.microsoft.com/vscode/devcontainers/cpp:0-${VARIANT}
 
-ARG USERNAME=codespace
+ARG USERNAME=vscode
 
 #
 # Update apt package list and install packages
@@ -15,7 +15,7 @@ RUN apt-get update \
         git \
         gcc-arm-none-eabi \
         clangd \
-        libcrypto++6 \
+        libcrypto++8 \
         libcrypto++-dev \
         libusb-1.0.0-dev 
 
