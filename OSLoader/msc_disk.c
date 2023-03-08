@@ -173,13 +173,13 @@ uint8_t MscCmdBuf[32];
 void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) {
     (void)lun;
 
-    const char vid[] = "ExistOS USB";
+    const char vid[] = "ExistOS";
     const char pid[] = "Mass Storage";
     const char rev[] = "1.0";
 
-    memcpy(vendor_id, vid, strlen(vid));
-    memcpy(product_id, pid, strlen(pid));
-    memcpy(product_rev, rev, strlen(rev));
+    memcpy(vendor_id, vid, strlen(vid) + 1); // +1, include the \0 suffix
+    memcpy(product_id, pid, strlen(pid) + 1);
+    memcpy(product_rev, rev, strlen(rev) + 1);
 }
 
 // Invoked when received Test Unit Ready command.

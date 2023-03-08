@@ -2,6 +2,7 @@
 #define __INTERRUPT_UP_H__
 
 #include <stdbool.h>
+#include <stdint.h>
 
 
 #define MAX_IRQ_NUM     63
