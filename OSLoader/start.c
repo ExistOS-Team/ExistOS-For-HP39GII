@@ -126,15 +126,11 @@ void printTaskList() {
 
 void vTask1(void *pvParameters) {
     // printf("Start vTask1\n");
-    int c = 0;
     for (;;) {
         HCLK_Freq = check_frequency();
         g_core_cur_freq_mhz = (HCLK_Freq / 1000000) * (*((uint32_t *)0x80040030) & 0x1F);
-        c++;
-        if (c == 30) {
             printTaskList();
-            c = 0;
-        }
+        vTaskDelay(pdMS_TO_TICKS(5000));
     }
 }
 
@@ -183,12 +179,14 @@ void System(void *par) {
     uint32_t k, kp;
     getKey(&k, &kp);
     if ((k == KEY_F2) && kp) {
+        xTaskCreate(vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pStatusPrintTask);
+        xTaskCreate(vTaskTinyUSB, "TinyUSB", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 4, NULL);
         slowDownEnable(false);
         tud_disconnect();
 
         DisplayFillBox(32, 32, 224, 64, 128);
         DisplayPutStr(80, 42, "USB MSC Mode", 255, 128, 16);
-        DisplayPutStr(42, 8, "Press [Views] to exit", 128, 255, 16);
+        DisplayPutStr(42, 8, "Press [Views] to shutdown", 128, 255, 16);
 
         vTaskDelay(pdMS_TO_TICKS(200));
         g_MSC_Configuration = MSC_CONF_SYS_DATA;
@@ -211,6 +209,7 @@ void System(void *par) {
                 g_MSC_Configuration = MSC_CONF_OSLOADER_EDB;
                 vTaskDelay(pdMS_TO_TICKS(10));
                 tud_connect();
+                portBoardPowerOff();
                 break;
             }
         }
@@ -221,6 +220,8 @@ void System(void *par) {
 
     if (((*bootAddr != 0xEF5AE0EF) && (*(bootAddr + 1) != 0xFECDAFDE)) || (isInterrupted = portIsKeyDown(KEY_F3))) {
         slowDownEnable(false);
+        xTaskCreate(vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pStatusPrintTask);
+        xTaskCreate(vTaskTinyUSB, "TinyUSB", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 4, NULL);
         // DisplayClean();
         // DisplayPutStr(0, 16 * 0, "========[Exist OS Loader]======", 0, 255, 16);
         // DisplayPutStr(0, 16 * 1, "Could not find the System!", 0, 255, 16);
@@ -241,6 +242,27 @@ void System(void *par) {
             DisplayFillBox(120, 76 + i, 136, 80 + i, 192);
             DisplayFillBox(115, 80 + i, 141, 112 + i, 0);
             vTaskDelay(pdMS_TO_TICKS(4 * (16 - i)));
+        }
+
+        while (1) {
+            vTaskDelay(pdMS_TO_TICKS(200));
+            getKey(&k, &kp);
+            if ((k == KEY_VIEWS) && kp) {
+                FTL_Sync();
+
+                tud_disconnect();
+
+                DisplayFillBox(42, 8, 210, 24, 255);
+                DisplayFillBox(32, 32, 224, 64, 255);
+                // DisplayFlushArea(103, 32, 152, 56, (uint8_t *)&logo, false);
+                DisplayPutStr(64, 42, "System Shutdown...", 255, 128, 16);
+
+                g_MSC_Configuration = MSC_CONF_OSLOADER_EDB;
+                vTaskDelay(pdMS_TO_TICKS(10));
+                tud_connect();
+                portBoardPowerOff();
+                break;
+            }
         }
 
         g_vm_status = VM_STATUS_SUSPEND;
@@ -664,6 +686,8 @@ void __attribute__((target("thumb"))) vMainThread_thumb_entry(void *pvParameters
 
         if (eraseDataMenu) {
 
+            xTaskCreate(vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pStatusPrintTask);
+            xTaskCreate(vTaskTinyUSB, "TinyUSB", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 4, NULL);
             VMSuspend();
             DisplayClean();
 
@@ -1012,13 +1036,13 @@ volatile void _startup() {
     boardInit();
     printf("booting .....\n");
 
-    xTaskCreate(vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pStatusPrintTask);
+    // xTaskCreate(vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pStatusPrintTask);
     xTaskCreate(vMTDSvc, "MTD Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, NULL);
     xTaskCreate(vFTLSvc, "FTL Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 3, NULL);
     xTaskCreate(vDispSvc, "Display Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pDispTask);
 
     xTaskCreate(TaskUSBLog, "USB Log", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 7, &pUSBLOGTask);
-    xTaskCreate(vTaskTinyUSB, "TinyUSB", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 4, NULL);
+    // xTaskCreate(vTaskTinyUSB, "TinyUSB", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 4, NULL);
 
     xTaskCreate(vVMMgrSvc, "VM Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 4, NULL);
 

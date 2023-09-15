@@ -161,7 +161,7 @@ void main() {
     ll_set_svc_vector(((uint32_t)SWI_ISR) + 4);
     ll_enable_irq(false);
 
-    ll_cpu_slowdown_enable(false);
+    ll_cpu_slowdown_enable(2);
 
     uint32_t memsz, phy_total, phy_free;
     memsz = ll_mem_phy_info(&phy_free, &phy_total);
