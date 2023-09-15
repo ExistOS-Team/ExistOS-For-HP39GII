@@ -35,12 +35,13 @@ extern "C" {
 
 extern const unsigned char gImage_khicas_ico[48 * 48];
 
-static char power_save = ' ';
+static char power_save = 'B';
 
 UI_Display *uidisp;
 UI_Window *mainw;
 UI_Msgbox *msgbox;
 SimpShell *console;
+Explorer *explorer;
 
 bool UIForceRefresh = false;
 
@@ -206,8 +207,13 @@ void pageUpdate() {
     }
 
     if (curPage <= 2) {
-        uidisp->draw_box(180, 0, 255, 11, -1, 0);
-        uidisp->draw_printf(180, 0, 16, 255, -1, "%s", timeStr);
+        if(curPage == 2 && explorer){
+            uidisp->draw_box(255 - 6*8, 0, 255, 11, -1, 0);
+            uidisp->draw_printf(255 - 6 * 8, 0, 12, 255, -1, "%s", timeStr);
+        }else{
+            uidisp->draw_box(180, 0, 255, 11, -1, 0);
+            uidisp->draw_printf(180, 0, 16, 255, -1, "%s", timeStr);
+        }
     }
 
     if (curPage == 3) {
@@ -303,6 +309,7 @@ void drawPage(int page) {
         break;
 
     case 2:
+        if(!explorer){
         uidisp->draw_box(DISPX, DISPY + 16, 255, DISPY + 16, -1, 0);
         uidisp->draw_printf(DISPX, DISPY, 16, 0, 255, "%d item(s) [%s] (%d/%d)", *filesCount, pathNow, (*filesCount == 0 ? 0 : *pageNow), *pageAll);
         for (int i = 1; i <= 5 && ((*pageNow - 1) * 5 + i) <= *filesCount; i++) {
@@ -310,6 +317,9 @@ void drawPage(int page) {
         }
         if (*filesCount == 0) {
             uidisp->draw_printf(DISPX + 64, DISPY + 48, 8, 0, 255, "Nothing here...");
+        }
+        }else{
+            explorer->refreshPage();
         }
         break;
 
@@ -402,6 +412,14 @@ void keyMsg(uint32_t key, int state) {
                 timeChange(0, 0, 1);
             }
             break;
+        
+        case KEY_VIEWS:
+            if(explorer){
+                delete explorer;
+                explorer=nullptr;
+                drawPage(curPage);
+            }
+            break;
 
         case KEY_ON: {
             if (shift == 1) {
@@ -412,6 +430,10 @@ void keyMsg(uint32_t key, int state) {
                 printf("Trig Power Off\n");
 
                 if (curPage == 2) {
+                    if(explorer){
+                        delete explorer;
+                        explorer=nullptr;
+                    }
                     f_closedir(&fileManagerDir);
                 }
 
@@ -420,6 +442,13 @@ void keyMsg(uint32_t key, int state) {
                 ll_power_off();
                 vTaskDelay(pdMS_TO_TICKS(500));
                 ll_power_off();
+            }else{
+                if(explorer){
+                    delete explorer;
+                    explorer=nullptr;
+                    refreshDir();
+                    drawPage(curPage);
+                }
             }
             break;
         }
@@ -431,6 +460,10 @@ void keyMsg(uint32_t key, int state) {
 
     if (state == KEY_TRIG) {
         if (curPage == 2 && (key == KEY_F1 || key == KEY_F2 || key == KEY_F6)) {
+            if(explorer){
+                delete explorer;
+                explorer=nullptr;
+            }
             f_closedir(&fileManagerDir);
 
             for (int i = 0; i < *filesCount; i++) {
@@ -577,6 +610,13 @@ void keyMsg(uint32_t key, int state) {
             break;
 
         case KEY_F4: {
+            if (curPage == 2 && *filesCount > 0 && *pageNow < *pageAll) {
+                (*pageNow)++;
+                if (*selectedItem + (*pageNow - 1) * 5 >= *filesCount) {
+                    *selectedItem = 1;
+                }
+                drawPage(curPage);
+            }
             if (curPage == 3) {
                 if (page3Subpage < CONF_SUBPAGES - 1)
                     page3Subpage++;
@@ -587,6 +627,10 @@ void keyMsg(uint32_t key, int state) {
         }
 
         case KEY_F3: {
+            if (curPage == 2 && *filesCount > 0 && *pageNow > 1) {
+                (*pageNow)--;
+                drawPage(curPage);
+            }
             if (curPage == 3) {
                 if (page3Subpage > 0)
                     page3Subpage--;
@@ -615,6 +659,7 @@ void keyMsg(uint32_t key, int state) {
                     drawPage(curPage);
                 }
             } else if (curPage == 2) {
+                if(!explorer){
                 if (pathList->prev != nullptr) {
                     pathList = pathList->prev; // switch to prev node.
 
@@ -629,6 +674,10 @@ void keyMsg(uint32_t key, int state) {
                     refreshDir();
                     drawPage(curPage);
                 }
+                }else{
+                    explorer->setOffset(explorer->last_offset-1);
+                    explorer->printPage();
+                }
             }
             break;
 
@@ -642,6 +691,12 @@ void keyMsg(uint32_t key, int state) {
                     drawPage(curPage);
                 }
             }
+            if (curPage == 2){
+                if (explorer) {
+                    explorer->setOffset(explorer->last_offset+1);
+                    explorer->printPage();
+                }
+            }
             break;
 
         case KEY_UP:
@@ -649,15 +704,19 @@ void keyMsg(uint32_t key, int state) {
                 goto CONSOLE_KEY_EVENT;
             }
             if (curPage == 2) {
-                if (*selectedItem != 1) {
-                    (*selectedItem)--;
-                    drawPage(curPage);
-                } else {
-                    if (*pageNow > 1) {
-                        (*pageNow)--;
-                        *selectedItem = 5;
+                if(!explorer){
+                    if (*selectedItem != 1) {
+                        (*selectedItem)--;
                         drawPage(curPage);
+                    } else {
+                        if (*pageNow > 1) {
+                            (*pageNow)--;
+                            *selectedItem = 5;
+                            drawPage(curPage);
+                        }
                     }
+                }else{
+                    explorer->pageUp();
                 }
             }
             break;
@@ -667,18 +726,40 @@ void keyMsg(uint32_t key, int state) {
                 goto CONSOLE_KEY_EVENT;
             }
             if (curPage == 2) {
-                if (*selectedItem != 5 && (*pageNow - 1) * 5 + *selectedItem != *filesCount) {
-                    (*selectedItem)++;
-                    drawPage(curPage);
-                } else {
-                    if (*pageNow < *pageAll) {
-                        (*pageNow)++;
-                        *selectedItem = 1;
+                if(!explorer){
+                    if (*selectedItem != 5 && (*pageNow - 1) * 5 + *selectedItem != *filesCount) {
+                        (*selectedItem)++;
                         drawPage(curPage);
+                    } else {
+                        if (*pageNow < *pageAll) {
+                            (*pageNow)++;
+                            *selectedItem = 1;
+                            drawPage(curPage);
+                        }
                     }
+                }else{
+                    explorer->printPage();
                 }
             }
             break;
+        
+        case KEY_LEFTBRACKET:
+            if(explorer){
+                explorer->setOffset(explorer->offset>1000 ? explorer->offset-1000 : 0);
+                explorer->printPage();
+            }
+            break;
+        case KEY_RIGHTBRACKET:
+            if(explorer){
+                explorer->setOffset(explorer->offset+1000);
+                explorer->printPage();
+            }
+            break;
+        case KEY_NUM:
+            if(explorer){
+                explorer->jumpTo();
+                explorer->printPage();
+            }
 
         case KEY_ENTER:
             if (curPage == 0) {
@@ -690,36 +771,83 @@ void keyMsg(uint32_t key, int state) {
             } else if (curPage == 1) {
                 goto CONSOLE_KEY_EVENT;
             } else if (curPage == 2) {
-                if (*filesCount > 0) {
-                    if (dirItemInfos[(*pageNow - 1) * 5 + *selectedItem - 1] == false) {
-                        // open a folder
+                if(!explorer){
+                    if (*filesCount > 0) {
+                        if (dirItemInfos[(*pageNow - 1) * 5 + *selectedItem - 1] == false) {
+                            // open a folder
 
-                        pathList->next = (struct strNode *)malloc(sizeof(struct strNode)); // new node.
-                        (pathList->next)->prev = pathList;                                 // set prev node.
-                        (pathList->next)->next = nullptr;
+                            pathList->next = (struct strNode *)malloc(sizeof(struct strNode)); // new node.
+                            (pathList->next)->prev = pathList;                                 // set prev node.
+                            (pathList->next)->next = nullptr;
 
-                        pathList = pathList->next; // switch to next node.
+                            pathList = pathList->next; // switch to next node.
 
-                        pathList->str = (TCHAR *)calloc(strlen(dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1]) + 1, sizeof(TCHAR)); // new str.
+                            pathList->str = (TCHAR *)calloc(strlen(dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1]) + 1, sizeof(TCHAR)); // new str.
 
-                        strcpy(pathList->str, dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1]);
-                        strcat(pathList->str, "/");
+                            strcpy(pathList->str, dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1]);
+                            strcat(pathList->str, "/");
 
-                        getWholePath(pathNow);
+                            getWholePath(pathNow);
 
-                        refreshDir();
-                        drawPage(curPage);
-                    } else {
-                        // do something with the file here...
-                        // strcat(pathNow, dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1]);
-                        // getSuffix(suffix, pathNow);
+                            refreshDir();
+                            drawPage(curPage);
+                        } else {
+                            // do something with the file here...
+                                const TCHAR *filename = dirItemNames[(*pageNow - 1) * 5 + *selectedItem - 1];
+                                const uint filepathsize=(strlen(pathNow) + strlen(filename) + 3);
+                                TCHAR *filepath = new TCHAR[filepathsize];
+                                memset(filepath, 0, filepathsize);
+                                strcpy(filepath, pathNow);
+                                if(filepath[strlen(filepath)]!='/'){
+                                    strcat(filepath, "/");
+                                }
+                                strcat(filepath, filename);
+                                getSuffix(suffix, filepath);
+                                TCHAR* filetitle = new TCHAR[strlen(filename) + 1];
+                                strcpy(filetitle, filename);
+                                filetitle[strlen(filename)-strlen(suffix)-1]='\0';
 
-                        // if (strcmp(suffix, "jpg")) {
-                        // }
+                                if (strcmp(suffix, "txt")
+                                    || strcmp(suffix, "md")
+                                    || strcmp(suffix, "py")
+                                    || strcmp(suffix, "c")
+                                    || strcmp(suffix, "cpp")
+                                    || strcmp(suffix, "tex")
+                                    || strcmp(suffix, "yaml")
+                                    || strcmp(suffix, "yml")
+                                    || strcmp(suffix, "conf")) {
+                                    // printf("Open file: %s\n", filepath);
+                                    explorer = new Explorer(filepath, filetitle, uidisp, mainw);
+                                    if(!explorer->ifOk()){
+                                        // printf("Not OK: %s\n", filepath);
+                                        delete explorer;
+                                        explorer=nullptr;
+                                        {
+                                            msgbox = new UI_Msgbox(uidisp, 16, 32, 256 - 32, 64, "Open file failed:", filepath);
 
-                        // refreshDir();
-                        // getWholePath(pathNow);
+                                        isMsgBoxShow = true;
+                                        drawPage(curPage);
+
+                                        msgbox->show();
+                                        isMsgBoxShow = false;
+                                        delete msgbox;
+                                        drawPage(curPage);
+                                        }
+                                        getWholePath(filepath);
+                                        refreshDir();
+                                        drawPage(curPage);
+                                    }else{
+                                        explorer->printPage();
+                                    }
+                                }else{
+                                    // printf("Not text file: %s\n", filepath);
+                                    delete filepath;
+                                }
+                            delete filetitle;
+                        }
                     }
+                }else{
+                    explorer->refreshPage();
                 }
             }
             break;
@@ -1085,6 +1213,7 @@ void UI_Task(void *_) {
 
     uidisp = new UI_Display(LCD_PIX_W, LCD_PIX_H, ll_disp_put_area);
     mainw = new UI_Window(NULL, NULL, MAIN_WIN_TITLE, uidisp, 0, 0, LCD_PIX_W, LCD_PIX_H);
+    explorer = nullptr;
 
     UI_SetLang(UI_LANG_EN);
 

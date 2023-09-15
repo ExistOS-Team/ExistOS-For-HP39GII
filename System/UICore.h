@@ -1093,4 +1093,203 @@ struct SimpShell {
 #undef CONSW
 #undef FONTS
 
+#include "Fatfs/ff.h"
+// #include <cstring>
+
+struct Explorer
+{
+    FIL* file;
+    UI_Display* uidisp;
+    UI_Window* mainw;
+    char* buffer;
+    FSIZE_t offset, last_offset;
+    char* title;
+    FIL* bookmark;
+    char* bookmark_path;
+    Explorer(const TCHAR* filepath, const char* _title, UI_Display *_uidisp, UI_Window *_mainw){
+        this->uidisp=_uidisp;
+        this->file = new FIL;
+        this->buffer=new char[4096];
+        this->offset=0;
+        this->last_offset=0;
+        this->title = new char[strlen(_title)+1];
+        strcpy(this->title, _title);
+        this->mainw=_mainw;
+        FRESULT res = f_open(this->file, filepath, FA_READ);
+        if(res != FR_OK){
+            delete this->file;
+            this->file=nullptr;
+            return;
+        }
+        this->bookmark=new FIL;
+        this->bookmark_path = new char[strlen(_title)+4+1];
+        strcpy(this->bookmark_path, _title);
+        strcat(this->bookmark_path, ".bmk");
+        res = f_open(this->bookmark, this->bookmark_path, FA_READ);
+        if(res == FR_OK){
+            uint32_t bookmark_read=0;
+            UINT byteread=0;
+            f_read(this->bookmark, &bookmark_read, 4, &byteread);
+            this->setOffset(bookmark_read);
+            f_close(this->bookmark);
+        }
+        delete this->bookmark;
+    }
+    ~Explorer(){
+        delete this->buffer;
+        delete this->title;
+        this->uidisp->draw_box(0,0,255,127,255,255);
+        this->mainw->refreshFuncKeyBar();
+        this->mainw->refreshTitle();
+        this->mainw->refreshWindow();
+        if(!this->file){
+            return;
+        }
+        f_close(this->file);
+        this->bookmark=new FIL;
+        FRESULT res = f_open(this->bookmark, this->bookmark_path, FA_CREATE_ALWAYS | FA_WRITE);
+        if(res == FR_OK){
+            const uint32_t bookmark_write=this->last_offset;
+            UINT byteread=0;
+            f_write(this->bookmark, &bookmark_write, 4, &byteread);
+            f_close(this->bookmark);
+        }
+        delete this->bookmark;
+    }
+    bool ifOk(){
+        return this->file ? true : false;
+    }
+    uint32_t printBuffer(const uint32_t x0, const uint32_t y0, const uint32_t x1, const uint32_t y1, const UINT buffer_size){
+        uint32_t x=x0, y=y0;
+        const uint8_t fontHeight = 12, fontWidth = fontHeight == 16 ? 8 : 6,
+            fontHeightGBK = 16, fontWidthGBK = 16;
+        UINT buffer_offset = 0;
+        bool GBK_flag = false;
+        while(buffer_offset<buffer_size && y+fontHeight<=y1) {
+            if(x==x0){
+                this->uidisp->draw_box(x0, y, x1, y+fontHeight, 255, 255);
+            }
+            #define common_draw_char_ascii() { \
+                this->uidisp->draw_char_ascii(x, y, this->buffer[buffer_offset], fontHeight, 0, 255); \
+                x+=fontWidth; \
+                buffer_offset++; \
+            }
+            if(buffer[buffer_offset]==0x0A){
+                x=x1;
+                buffer_offset++;
+            }else if(buffer[buffer_offset]<0x80) {
+                common_draw_char_ascii()
+            }else{
+                if(buffer_offset+1>=buffer_size){
+                    common_draw_char_ascii()
+                }else{
+                    if(buffer[buffer_offset]>0xA0 && buffer[buffer_offset]<0xFF
+                        && buffer[buffer_offset+1]>0xA0 && buffer[buffer_offset+1]<0xFF){
+                        if(!GBK_flag){
+                            if(y+fontHeightGBK>y1){
+                                break;
+                            }
+                            this->uidisp->draw_box(x0, y+fontHeight, x1, y+fontHeightGBK, 255, 255);
+                            GBK_flag=true;
+                        }
+                        if(x+fontWidthGBK-1>x1){
+                            x+=fontWidthGBK;
+                        }else{
+                            this->uidisp->draw_char_GBK16(x, y, buffer[buffer_offset+1] | (buffer[buffer_offset]<<8), 0, 255);
+                            x+=fontWidthGBK;
+                            buffer_offset+=2;
+                        }
+                    }else{
+                        common_draw_char_ascii()
+                    }
+                }
+            }
+            if(x+fontWidth>x1){
+                x=x0;
+                y+=GBK_flag?fontHeightGBK:fontHeight;
+                GBK_flag=false;
+            }
+        }
+        if(y<y1){
+            this->uidisp->draw_box(x, y, x1, y1, 255, 255);
+            y+=GBK_flag?fontHeightGBK:fontHeight;
+            if(y<y1){
+                this->uidisp->draw_box(x0, y, x1, y1, 255, 255);
+            }
+        }
+        return buffer_offset;
+    }
+    void printPage(){
+        this->setOffset(this->offset);
+        UINT byteread;
+        f_lseek(this->file, this->offset);
+        f_read(this->file, this->buffer, 2048, &byteread);
+        this->last_offset = this->offset;
+        this->offset += this->printBuffer(0, 12, 255, 127, byteread);
+        this->uidisp->draw_box(0, 0, 255 - 6*8 -1, 11, -1, 0); // Title
+        this->uidisp->draw_printf(0,0,12,255,0, "%d:%d/%d[%.2f%%]%s",
+            this->last_offset,
+            this->offset,
+            f_size(this->file),
+            float(this->offset) * 100 / f_size(this->file),
+            this->title
+        );
+    }
+    void refreshPage(){
+        this->setOffset(this->last_offset);
+        this->printPage();
+    }
+    void pageUp(){
+        if(this->last_offset > 150){
+            this->last_offset-=150;
+        }else{
+            this->last_offset = 0;
+        }
+        printPage();
+    }
+    inline void setOffset(uint32_t setTo){
+        this->offset=(FSIZE_t)setTo;
+        // this->last_offset=this->offset;
+    }
+    inline void jumpTo(){
+        uint32_t jump_to = this->offset;
+        uint32_t key;
+        uint32_t keyVal = 0;
+        uint32_t press = 0;
+        do{
+            this->uidisp->draw_box(32,24,255-32,56, 0, 0);
+            this->uidisp->draw_printf(48, 32, 16, 255, 0, "Jump: %d", jump_to);
+            do {
+                vTaskDelay(pdMS_TO_TICKS(200));
+                key = ll_vm_check_key();
+                press = key >> 16;
+                keyVal = key & 0xFFFF;
+            } while (!press);
+            switch (keyVal)
+            {
+            case KEY_0: jump_to=jump_to*10+0; break;
+            case KEY_1: jump_to=jump_to*10+1; break;
+            case KEY_2: jump_to=jump_to*10+2; break;
+            case KEY_3: jump_to=jump_to*10+3; break;
+            case KEY_4: jump_to=jump_to*10+4; break;
+            case KEY_5: jump_to=jump_to*10+5; break;
+            case KEY_6: jump_to=jump_to*10+6; break;
+            case KEY_7: jump_to=jump_to*10+7; break;
+            case KEY_8: jump_to=jump_to*10+8; break;
+            case KEY_9: jump_to=jump_to*10+9; break;
+            case KEY_BACKSPACE: jump_to=jump_to==0?0:jump_to/10; break;
+            case KEY_VIEWS:
+                jump_to=this->offset;
+                // keyVal=KEY_ENTER;
+                break;
+            case KEY_NUM: jump_to=0; break;
+            default:
+                break;
+            }
+        }while (keyVal!=KEY_ENTER);
+        this->setOffset(jump_to);
+    }
+};
+
+
 #endif
