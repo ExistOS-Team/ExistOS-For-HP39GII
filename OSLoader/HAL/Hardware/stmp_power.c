@@ -68,11 +68,11 @@ void portBoardPowerOff()
 
     //HW_POWER_VDDIOCTRL.B.DISABLE_FET = 0;
     //HW_POWER_5VCTRL.B.ENABLE_DCDC = 0;
-
+    while(true){
     BF_WR(POWER_RESET, UNLOCK, 0x3E77);
     BF_WR(POWER_RESET, PWD_OFF, 1);
     BF_WR(POWER_RESET, PWD, 1);
-
+    }
 
 }
 
