@@ -7,7 +7,7 @@
 #define MAIN_WIN_TITLE_EN            "Exist OS"
 #define MAIN_WIN_FKEY_BAR_EN         "APP|CONS| | |FILE|CONF|"
 #define MAIN_WIN_FKEY_BAR2_EN        "APP|CONS|<|>|FILE|CONF|"
-#define MAIN_WIN_FKEY_BARFILE_EN "APP|CONS|||DEL|CONF|"
+#define MAIN_WIN_FKEY_BARFILE_EN "APP|CONS|<|>|DEL|CONF|"
 
 #define UI_Yes_EN "Yes"
 #define UI_No_EN "No"
