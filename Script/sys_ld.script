@@ -64,7 +64,7 @@ SECTIONS
 		. = ALIGN(4);
 		*(.rodata) 
 		fonts_hzk_start = .;
-		INCLUDE "../../fonts/fonts_hzk16s.ld"
+		INCLUDE "../fonts/fonts_hzk16s.ld"
 		fonts_hzk_end = .;
 	} >vmROM
 
