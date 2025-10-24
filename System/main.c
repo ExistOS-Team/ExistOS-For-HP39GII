@@ -19,14 +19,14 @@
 //#include "ff.h"
 
 #include "debug.h"
-#include "CrashLog.h"
+#include "crush/CrashLog.h"
 
 #include "SystemFs.h"
 #include "SystemUI.h"
 
 #include "VROMLoader.h"
 
-#include "Fatfs/ff.h"
+#include "filesystem/Fatfs/ff.h"
 //#include "mpy_port.h"
 void check_emulator_status();
 

@@ -8,9 +8,9 @@
 #include "SysConf.h"
 
 #if FS_TYPE == FS_FATFS
-    #include "Fatfs/ff.h"
+    #include "filesystem/Fatfs/ff.h"
 #else
-    #include "lfs.h"
+    #include "filesystem/littlefs/lfs.h"
 #endif
 
 

@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
 
 #define L_SWI       0
 #define L_IRQ       1

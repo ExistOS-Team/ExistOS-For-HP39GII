@@ -1,6 +1,6 @@
 #include "SystemConfig.h"
 #include "UI_Config.h"
-#include "Fatfs/ff.h"
+#include "filesystem/Fatfs/ff.h"
 #include "sys_llapi.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,7 +63,7 @@ void config_reset_to_default(void) {
     g_config.charging = false;
     g_config.enable_mem_swap = DEFAULT_ENABLE_MEM_SWAP;
     g_config.mem_swap = false;
-    g_config.rtc_time = 0;  // 将在加载时从RTC获取
+    g_config.rtc_time = ll_rtc_get_sec();
     g_config.dirty = false;
 }
 
@@ -125,12 +125,17 @@ void config_load(void) {
         g_config.enable_mem_swap = (strcmp(value, "true") == 0);
     }
     
-    // 解析RTC时间
+    // 解析RTC时间（注释掉这部分代码，不从配置文件读取RTC时间）
+    /*
     if (find_json_value(buffer, "rtc_time", value, sizeof(value)) == 0) {
         g_config.rtc_time = (uint32_t)strtoul(value, NULL, 10);
         // 设置RTC时间
         ll_rtc_set_sec(g_config.rtc_time);
     }
+    */
+    
+    // 从RTC硬件获取当前时间
+    g_config.rtc_time = ll_rtc_get_sec();
     
     free(buffer);
 }

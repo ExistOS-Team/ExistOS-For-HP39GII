@@ -31,14 +31,8 @@
 #include "regsdigctl.h"
 
 #include "logo.h"
-
-void vTaskTinyUSB(void *pvParameters);
-void vMTDSvc(void *pvParameters);
-void vFTLSvc(void *pvParameters);
-void vKeysSvc(void *pvParameters);
-void vVMMgrSvc(void *pvParameters);
-void vLLAPISvc(void *pvParameters);
-void vDispSvc(void *pvParameters);
+#include "boot/core/boot_manager.h"
+#include "boot/services/services.h"
 
 TaskHandle_t pDispTask = NULL;
 TaskHandle_t pStatusPrintTask = NULL;

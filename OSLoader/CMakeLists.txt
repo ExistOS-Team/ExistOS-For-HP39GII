@@ -12,7 +12,10 @@ include_directories(./Config)
 include_directories(./Fonts)
 include_directories(./Scheduler/include)
 include_directories(./Include)
-include_directories(./HAL/Hardware)
+include_directories(./drivers)
+include_directories(./drivers/display)
+include_directories(./drivers/input)
+include_directories(./drivers/timer)
 include_directories(./HAL)
 include_directories(./HAL/Hardware/registers)
 include_directories(./VmMgr)
@@ -24,12 +27,17 @@ include_directories(./Component3rd/tinyusb/class/hid)
 include_directories(./Component3rd/tinyusb/class/net)
 include_directories(./Component3rd/tinyusb/class/vendor)
 include_directories(./Component3rd/dhara)
+include_directories(./boot/core)
+include_directories(./boot/services)
+include_directories(.)
 #include_directories(./Component3rd/FatFs)
 
 aux_source_directory(.                                  LOADER_SRCS)
 #aux_source_directory(./Scheduler                        LOADER_SRCS)
 #aux_source_directory(./VmMgr                            LOADER_SRCS)
 aux_source_directory(./LowLevelAPI                      LOADER_SRCS)
+aux_source_directory(./boot/core                        LOADER_SRCS)
+aux_source_directory(./boot/services                    LOADER_SRCS)
 #aux_source_directory(./Scheduler/porting                LOADER_SRCS)
 #aux_source_directory(./HAL                              LOADER_SRCS)
 #aux_source_directory(./HAL/Hardware                     LOADER_SRCS)
@@ -55,7 +63,10 @@ add_executable(rom.elf ${LOADER_SRCS})
 
 target_compile_options(kernel PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -marm -Os)
 target_compile_options(hal PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb  -Os )
-target_compile_options(hal_hardware PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
+target_compile_options(drivers PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
+target_compile_options(display PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
+target_compile_options(input PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
+target_compile_options(timer PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
 target_compile_options(tusb PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
 target_compile_options(dhara PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
 target_compile_options(vmmgr PRIVATE -mtune=arm926ej-s -mcpu=arm926ej-s -mlittle-endian -mfloat-abi=soft -mthumb -Os)
@@ -68,7 +79,7 @@ target_link_libraries(
 rom.elf
 kernel
 tusb 
-hal hal_hardware
+hal drivers display input timer
 dhara
 #quicklz
 tlsf

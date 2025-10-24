@@ -24,7 +24,7 @@ extern "C" void enableMemSwap(bool enable);
 
 #include "ExistOSlogo.h"
 
-#include "Fatfs/ff.h"
+#include "filesystem/Fatfs/ff.h"
 #include "SystemFs.h"
 
 #include <malloc.h>
@@ -36,6 +36,8 @@ extern "C" {
 #endif
 
 #define CONF_SUBPAGES (4)
+
+#include "../Applications/User/khicas/khicas_ico.c"
 
 extern const unsigned char gImage_khicas_ico[48 * 48];
 
