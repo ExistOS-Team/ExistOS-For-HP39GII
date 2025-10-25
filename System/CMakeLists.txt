@@ -1,13 +1,16 @@
 
 
 include_directories(./)
-include_directories(./graphics)
+include_directories(./Core)
+include_directories(./Drivers)
+include_directories(./Graphics)
+include_directories(./Utils)
 include_directories(./kernel/scheduler/freertos/core)
 include_directories(./kernel/scheduler/freertos/port)
 include_directories(./third_party/freertos/include)
 
-include_directories(./filesystem)
-include_directories(./filesystem/Fatfs)
+include_directories(./Filesystem)
+include_directories(./Filesystem/Fatfs)
 #include_directories(./filesystem/littlefs) 
 
 
@@ -23,15 +26,17 @@ include_directories(./Applications/User/khicas)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/gmp/include/)
 
 
-aux_source_directory(.                                         SYS_SRCS)
-aux_source_directory(./kernel/scheduler/freertos/core          SYS_SRCS)
-aux_source_directory(./kernel/scheduler/freertos/port          SYS_SRCS)
-aux_source_directory(./kernel/scheduler/freertos/memory        SYS_SRCS)
-aux_source_directory(./filesystem                                      SYS_SRCS)
-aux_source_directory(./filesystem/Fatfs                                SYS_SRCS)
-#aux_source_directory(./filesystem/littlefs                             SYS_SRCS)
-aux_source_directory(./graphics                                        SYS_SRCS)
-aux_source_directory(./crush                                           SYS_SRCS)
+aux_source_directory(./Core                                          SYS_SRCS)
+aux_source_directory(./Drivers                                       SYS_SRCS)
+aux_source_directory(./Graphics                                      SYS_SRCS)
+aux_source_directory(./Utils                                         SYS_SRCS)
+aux_source_directory(./kernel/scheduler/freertos/core                SYS_SRCS)
+aux_source_directory(./kernel/scheduler/freertos/port                SYS_SRCS)
+aux_source_directory(./kernel/scheduler/freertos/memory              SYS_SRCS)
+aux_source_directory(./Filesystem                                    SYS_SRCS)
+aux_source_directory(./Filesystem/Fatfs                              SYS_SRCS)
+#aux_source_directory(./Filesystem/littlefs                          SYS_SRCS)
+aux_source_directory(./Crush                                         SYS_SRCS)
 
 #add_subdirectory(gb)
 #add_subdirectory(KLib)
