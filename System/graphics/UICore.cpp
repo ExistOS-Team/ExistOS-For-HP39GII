@@ -906,7 +906,7 @@ void keyMsg(uint32_t key, int state) {
                     K(KEY_COS, "f", "F", "F", "f")
                     K(KEY_TAN, "g", "G", "G", "g")
                     K(KEY_LN, "h", "H", "H", "h")
-                    K(KEY_LOG, "l", "L", "I", "i")
+                    K(KEY_LOG, "i", "H", "I", "i")
                     K(KEY_X2, "j", "J", "J", "j")
                     K(KEY_XY, "^", "^", "K", "k")
                     K(KEY_LEFTBRACKET, "(", "<", "L", "l")
