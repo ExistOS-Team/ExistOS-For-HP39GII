@@ -17,10 +17,14 @@
 #include "UI_Config.h"
 #include "UI_Language.h"
 #include "UI_build_stamp.h"
+#include "SystemConfig.h"
+
+// 声明enableMemSwap函数
+extern "C" void enableMemSwap(bool enable);
 
 #include "ExistOSlogo.h"
 
-#include "Fatfs/ff.h"
+#include "filesystem/Fatfs/ff.h"
 #include "SystemFs.h"
 
 #include <malloc.h>
@@ -33,9 +37,13 @@ extern "C" {
 
 #define CONF_SUBPAGES (4)
 
+#include "../Applications/User/khicas/khicas_ico.c"
+
 extern const unsigned char gImage_khicas_ico[48 * 48];
 
-static char power_save = ' ';
+// 移除静态变量，改为使用配置系统
+// static char power_save = ' ';
+// static int language = UI_LANG_EN;
 
 UI_Display *uidisp;
 UI_Window *mainw;
@@ -51,8 +59,6 @@ static int page3Subpage = 0;
 static int appPage_select = 0;
 
 static int alpha = 0, shift = 0;
-
-static int language = UI_LANG_EN;
 
 void memtest(uint32_t testSize);
 
@@ -155,6 +161,9 @@ int exf_getfree(uint8_t *drv, uint32_t *total, uint32_t *free) {
     UI_Enable_Mem_Swap = UI_Enable_Mem_Swap_##lang;
 
 void UI_SetLang(int lang) {
+    // 保存语言设置到配置系统
+    config_set_language(lang);
+    
     switch (lang) {
     case UI_LANG_EN:
         SET_LANG(EN)
@@ -227,8 +236,8 @@ void pageUpdate() {
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s: %d mv, %s: %s  ", UI_BATTERY, ll_get_bat_voltage(), UI_CHARGING, Charging ? UI_Yes : UI_No);
             uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "%s: %s", UI_TIME, timeStr);
 
-            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "[%c]%s (1)", power_save, UI_Power_Save_Mode);
-            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "[%c]%s (2)", Charging ? 'X' : ' ', UI_Enable_Charge);
+            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "[%c]%s (1)", config_get_power_save(), UI_Power_Save_Mode);
+            uidisp->draw_printf(DISPX, DISPY + 16 * line++, 16, 0, 255, "[%c]%s (2)", config_get_enable_charge() ? 'X' : ' ', UI_Enable_Charge);
         } else if (page3Subpage == 1) {
 
             // sprintf(s, "%02d:%02d:%02d", (rtc_time_sec / (60 * 60)) % 24, (rtc_time_sec / 60) % 60, rtc_time_sec % 60);
@@ -266,7 +275,7 @@ void pageUpdate() {
 
             line = 3;
             uidisp->draw_printf(DISPX + (DISPW - (8 * 29)) / 2, DISPY - 8 + 16 * line++, 16, 64, 255, "Open Source Firmware Project");
-            uidisp->draw_printf(DISPX + (DISPW - (16 * 9 + 8 * 7)) / 2, DISPY - 8 + 16 * line++, 16, 64, 255, "HP39GII��������Դ�̼���Ŀ");
+            uidisp->draw_printf(DISPX + (DISPW - (16 * 9 + 8 * 7)) / 2, DISPY - 8 + 16 * line++, 16, 64, 255, "HP39GII��������Դ�̼���Ŀ");
             uidisp->draw_printf(DISPX + 16, DISPY - 4 + 16 * line, 8, 64, 255, "github.com/ExistOS-Team");
             uidisp->draw_printf(DISPX + DISPW - 16 - 6 * 21, DISPY - 4 + 16 * line + 8, 8, 64, 255, "/ExistOS-For-HP39GII");
         }
@@ -757,14 +766,14 @@ void keyMsg(uint32_t key, int state) {
             if (curPage == 3) {
                 switch (page3Subpage) {
                 case 0:
-                    if (power_save == 'A') {
-                        power_save = 'B';
+                    if (config_get_power_save() == 'A') {
+                        config_set_power_save('B');
                         ll_cpu_slowdown_enable(2);
-                    } else if (power_save == 'B') {
-                        power_save = ' ';
+                    } else if (config_get_power_save() == 'B') {
+                        config_set_power_save(' ');
                         ll_cpu_slowdown_enable(0);
-                    } else if (power_save == ' ') {
-                        power_save = 'A';
+                    } else if (config_get_power_save() == ' ') {
+                        config_set_power_save('A');
                         ll_cpu_slowdown_enable(1);
                     }
                     break;
@@ -773,7 +782,6 @@ void keyMsg(uint32_t key, int state) {
                     UI_SetLang(UI_LANG_EN);
                     mainw->setFuncKeys(MAIN_WIN_FKEY_BAR2);
                     mainw->refreshWindow();
-
                     pageUpdate();
                 } break;
 
@@ -782,8 +790,10 @@ void keyMsg(uint32_t key, int state) {
                     void enableMemSwap(bool enable);
                     if (ll_mem_swap_size()) {
                         enableMemSwap(false);
+                        config_set_enable_mem_swap(false);
                     } else {
                         enableMemSwap(true);
+                        config_set_enable_mem_swap(true);
                     }
                 } break;
 
@@ -800,14 +810,15 @@ void keyMsg(uint32_t key, int state) {
             if (curPage == 3) {
                 switch (page3Subpage) {
                 case 0:
-                    if (ll_get_charge_status()) {
-
+                    if (config_get_enable_charge()) {
+                        config_set_enable_charge(false);
                         ll_charge_enable(false);
                     } else {
-                        if (power_save != 'B') {
-                            power_save = 'B';
+                        if (config_get_power_save() != 'B') {
+                            config_set_power_save('B');
                             ll_cpu_slowdown_enable(2);
                         }
+                        config_set_enable_charge(true);
                         ll_charge_enable(true);
                     }
                     break;
@@ -815,8 +826,7 @@ void keyMsg(uint32_t key, int state) {
                     UI_SetLang(UI_LANG_CN);
                     mainw->setFuncKeys(MAIN_WIN_FKEY_BAR2);
                     mainw->refreshWindow();
-                    drawPage(curPage);
-
+                    pageUpdate();
                 } break;
 
                 default:
@@ -896,7 +906,7 @@ void keyMsg(uint32_t key, int state) {
                     K(KEY_COS, "f", "F", "F", "f")
                     K(KEY_TAN, "g", "G", "G", "g")
                     K(KEY_LN, "h", "H", "H", "h")
-                    K(KEY_LOG, "l", "L", "L", "l")
+                    K(KEY_LOG, "i", "H", "I", "i")
                     K(KEY_X2, "j", "J", "J", "j")
                     K(KEY_XY, "^", "^", "K", "k")
                     K(KEY_LEFTBRACKET, "(", "<", "L", "l")
@@ -956,7 +966,7 @@ inline void initConsole() {
     console = new SimpShell(uidisp);
     console->puts("\n"
         "ExistOS Console v0.0.0\n"
-        "2022 (C) ExistOS Team\n"
+        "2025 (C) ExistOS Team\n"
         "ExistOS is licensed under GPL-3.0, for more information please visit <https://github.com/ExistOS-Team/ExistOS-For-HP39GII>\n"
         "Try `help` for commands\n");
     console->refresh();
@@ -1081,14 +1091,44 @@ void getSuffix(TCHAR *ret, TCHAR *filename) {
     }
 }
 
-void UI_Task(void *_) {
+void UI_Task(void *) {
+
+    // 初始化配置系统
+    config_init();
 
     uidisp = new UI_Display(LCD_PIX_W, LCD_PIX_H, ll_disp_put_area);
     mainw = new UI_Window(NULL, NULL, MAIN_WIN_TITLE, uidisp, 0, 0, LCD_PIX_W, LCD_PIX_H);
 
-    UI_SetLang(UI_LANG_EN);
-
+    // 先初始化文件系统
     checkFS();
+    
+    // 然后加载配置文件
+    config_load();
+
+    // 使用配置系统中的语言设置
+    UI_SetLang(config_get_language());
+    
+    // 应用电源模式配置
+    char power_save_mode = config_get_power_save();
+    if (power_save_mode == 'A') {
+        ll_cpu_slowdown_enable(1);
+    } else if (power_save_mode == 'B') {
+        ll_cpu_slowdown_enable(2);
+    } else {
+        ll_cpu_slowdown_enable(0);
+    }
+    
+    // 应用充电状态配置
+    if (config_get_enable_charge()) {
+        ll_charge_enable(true);
+    } else {
+        ll_charge_enable(false);
+    }
+    
+    // 应用内存交换配置
+    if (config_get_enable_mem_swap()) {
+        enableMemSwap(true);
+    }
 
     mainw->setFuncKeys(MAIN_WIN_FKEY_BAR);
     mainw->enableFuncKey(true);
@@ -1189,6 +1229,9 @@ void UI_keyScanner(void *_) {
                 mainw->refreshWindow();
                 drawPage(curPage);
                 UIForceRefresh = false;
+                
+                // 在界面刷新时保存配置
+                config_save();
             }
         }
     }

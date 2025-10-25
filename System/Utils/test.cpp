@@ -2,15 +2,15 @@
 #include <stdlib.h>
 #include <iostream>
 
-#include "Fatfs/ff.h"
-#include "kcasporing_gl.h"
+#include "Filesystem/Fatfs/ff.h"
+#include "Applications/User/khicas/kcasporing_gl.h"
 
 
 #define GIAC_HISTORY_SIZE 2
 #define GIAC_HISTORY_MAX_TAILLE 32
 
 // //#include "keyboard.h"
-#include "iostream_sub.h"
+#include "../Libs/src/khicas/iostream_sub.h"
 #include "giac.h"
 #include "gen.h"
 
@@ -280,7 +280,7 @@ int kcas_main(int isAppli, unsigned short OptionNum);
 extern "C"{
 extern bool khicasRunning;
 #include "SystemFs.h"
-//#include "lfs.h"
+//#include "filesystem/littlefs/lfs.h"
 #include "SysConf.h"
  
     void testcpp() 

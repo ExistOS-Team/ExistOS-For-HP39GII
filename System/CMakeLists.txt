@@ -2,14 +2,18 @@
 
 include_directories(./)
 include_directories(./Core)
-include_directories(./Core/include)
-include_directories(./Core/porting)
+include_directories(./Drivers)
+include_directories(./Graphics)
+include_directories(./Utils)
+include_directories(./kernel/scheduler/freertos/core)
+include_directories(./kernel/scheduler/freertos/port)
+include_directories(./third_party/freertos/include)
 
-include_directories(./Fs)
-include_directories(./Fs/Fatfs)
-#include_directories(./Fs/littlefs) 
+include_directories(./Filesystem)
+include_directories(./Filesystem/Fatfs)
+#include_directories(./filesystem/littlefs) 
 
-include_directories(./Config)
+
 
 #include_directories(./KLib/lvgl)
 
@@ -18,20 +22,27 @@ include_directories(./Config)
 #include_directories(${CMAKE_SOURCE_DIR}/Libs/src/micropython-master/ports/eoslib/build)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/libtommath-0.39/)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/khicas/)
+include_directories(./Applications/User/khicas)
 include_directories(${CMAKE_SOURCE_DIR}/Libs/src/gmp/include/)
 
 
-aux_source_directory(.                                         SYS_SRCS)
-aux_source_directory(./Core                                    SYS_SRCS)
-aux_source_directory(./Core/porting                            SYS_SRCS)
-aux_source_directory(./Fs                                      SYS_SRCS)
-aux_source_directory(./Fs/Fatfs                                SYS_SRCS)
-#aux_source_directory(./Fs/littlefs                             SYS_SRCS)
+aux_source_directory(./Core                                          SYS_SRCS)
+aux_source_directory(./Drivers                                       SYS_SRCS)
+aux_source_directory(./Graphics                                      SYS_SRCS)
+aux_source_directory(./Utils                                         SYS_SRCS)
+aux_source_directory(./kernel/scheduler/freertos/core                SYS_SRCS)
+aux_source_directory(./kernel/scheduler/freertos/port                SYS_SRCS)
+aux_source_directory(./kernel/scheduler/freertos/memory              SYS_SRCS)
+aux_source_directory(./Filesystem                                    SYS_SRCS)
+aux_source_directory(./Filesystem/Fatfs                              SYS_SRCS)
+#aux_source_directory(./Filesystem/littlefs                          SYS_SRCS)
+aux_source_directory(./Crush                                         SYS_SRCS)
 
 #add_subdirectory(gb)
 #add_subdirectory(KLib)
 add_subdirectory(KLib/tjpgdec)
 #add_subdirectory(emu48)
+add_subdirectory(Applications/User/khicas)
 
 add_executable(sys.elf ${SYS_SRCS})
 
@@ -74,6 +85,7 @@ ${CMAKE_SOURCE_DIR}/Libs/libcas.libcpp
 #${CMAKE_SOURCE_DIR}/Libs/libgiac1.2.0.libcpp
 ${CMAKE_SOURCE_DIR}/Libs/libtommath.libcpp
 ${CMAKE_SOURCE_DIR}/Libs/libgmp.libcpp   
+khicas_lib
 )
 
 # build time in UTC ISO 8601

@@ -9,7 +9,7 @@
 #if FS_TYPE == FS_FATFS
     #include "ff.h"
 #else
-    #include "lfs.h"
+    #include "filesystem/littlefs/lfs.h"
 #endif
 
 

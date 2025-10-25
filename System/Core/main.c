@@ -19,13 +19,14 @@
 //#include "ff.h"
 
 #include "debug.h"
+#include "crush/CrashLog.h"
 
 #include "SystemFs.h"
 #include "SystemUI.h"
 
 #include "VROMLoader.h"
 
-#include "Fatfs/ff.h"
+#include "filesystem/Fatfs/ff.h"
 //#include "mpy_port.h"
 void check_emulator_status();
 
@@ -138,6 +139,9 @@ void main_thread() {
     void SystemUIInit();
     SystemUIInit();
     SystemFSInit();
+    
+    // 初始化崩溃日志系统
+    crash_log_init();
 
     // StartKhiCAS();
 
@@ -195,11 +199,11 @@ void main() {
 }
 
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
-    PANIC("SYS StackOverflowHook:%s\n", pcTaskName);
+    STACK_OVERFLOW("SYS StackOverflowHook:%s\n", pcTaskName);
 }
 
 void vAssertCalled(char *file, int line) {
-    PANIC("SYS ASSERTION FAILED AT %s:%d\n", file, line);
+    ASSERT_FAIL("SYS ASSERTION FAILED AT %s:%d\n", file, line);
 }
 
 void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
@@ -214,7 +218,7 @@ void vApplicationMallocFailedHook() {
 
     void UI_OOM();
     UI_OOM();
-    PANIC("SYS ASSERT: Out of Memory.\n");
+    OUT_OF_MEMORY("SYS ASSERT: Out of Memory.\n");
 }
 
 void check_emulator_status() {

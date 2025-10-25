@@ -1,6 +1,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
-
+#include <stdbool.h>
 
 #include "SystemUI.h"
 
