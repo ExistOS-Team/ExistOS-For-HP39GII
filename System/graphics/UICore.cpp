@@ -24,7 +24,7 @@ extern "C" void enableMemSwap(bool enable);
 
 #include "ExistOSlogo.h"
 
-#include "filesystem/Fatfs/ff.h"
+#include "filesystem/fatfs/ff.h"
 #include "SystemFs.h"
 
 #include <malloc.h>
