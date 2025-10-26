@@ -16,7 +16,7 @@
 #include "UICore.h"
 #include "UI_Config.h"
 #include "UI_Language.h"
-#include "UI_build_stamp.h"
+#include "../UI_build_stamp.h"
 #include "SystemConfig.h"
 
 // 声明enableMemSwap函数
@@ -24,7 +24,7 @@ extern "C" void enableMemSwap(bool enable);
 
 #include "ExistOSlogo.h"
 
-#include "filesystem/Fatfs/ff.h"
+#include "filesystem/fatfs/ff.h"
 #include "SystemFs.h"
 
 #include <malloc.h>
@@ -37,7 +37,7 @@ extern "C" {
 
 #define CONF_SUBPAGES (4)
 
-#include "../Applications/User/khicas/khicas_ico.c"
+#include "../applications/user/khicas/khicas_ico.c"
 
 extern const unsigned char gImage_khicas_ico[48 * 48];
 

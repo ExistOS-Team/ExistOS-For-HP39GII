@@ -143,9 +143,9 @@ add_custom_target(
   COMMAND ${CMAKE_SOURCE_DIR}/tools/sbtools/sbloader ${CMAKE_CURRENT_BINARY_DIR}/OSLoader.sb -d
   DEPENDS OSLoader.sb
   )
-else(EXISTS ${CMAKE_SOURCE_DIR}/tools/sbtools/elftosb)
+else()
 message(FATAL_ERROR "Please build tools/sbtools first")
-endif(EXISTS ${CMAKE_SOURCE_DIR}/tools/sbtools/elftosb)
+endif()
 endif()
 
 add_custom_target(

@@ -1,7 +1,7 @@
 #pragma once 
 
 #include <stdint.h>
-#include "filesystem/Fatfs/ff.h"
+#include "filesystem/fatfs/ff.h"
 
 #define MEM_PAGE_SIZE   (1024)
 
