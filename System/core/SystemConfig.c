@@ -63,7 +63,6 @@ void config_reset_to_default(void) {
     g_config.charging = false;
     g_config.enable_mem_swap = DEFAULT_ENABLE_MEM_SWAP;
     g_config.mem_swap = false;
-    g_config.rtc_time = ll_rtc_get_sec();
     g_config.dirty = false;
 }
 
@@ -110,7 +109,7 @@ void config_load(void) {
     // 解析电源节省模式
     if (find_json_value(buffer, "power_save", value, sizeof(value)) == 0) {
         g_config.power_save = value[0];
-        if (g_config.power_save != ' ' && g_config.power_save != 'A' && g_config.power_save != 'B') {
+        if (g_config.power_save != ' ' && g_config.power_save != 'S' && g_config.power_save != 'L') {
             g_config.power_save = DEFAULT_POWER_SAVE;
         }
     }
@@ -125,17 +124,9 @@ void config_load(void) {
         g_config.enable_mem_swap = (strcmp(value, "true") == 0);
     }
     
-    // 解析RTC时间（注释掉这部分代码，不从配置文件读取RTC时间）
-    /*
-    if (find_json_value(buffer, "rtc_time", value, sizeof(value)) == 0) {
-        g_config.rtc_time = (uint32_t)strtoul(value, NULL, 10);
-        // 设置RTC时间
-        ll_rtc_set_sec(g_config.rtc_time);
-    }
-    */
+
     
-    // 从RTC硬件获取当前时间
-    g_config.rtc_time = ll_rtc_get_sec();
+
     
     free(buffer);
 }
@@ -145,9 +136,6 @@ void config_save(void) {
     FIL file;
     FRESULT res;
     
-    // 获取当前RTC时间
-    g_config.rtc_time = ll_rtc_get_sec();
-    
     // 创建JSON字符串
     char json_buffer[512];
     sprintf(json_buffer, 
@@ -155,14 +143,12 @@ void config_save(void) {
         "  \"language\": %d,\n"
         "  \"power_save\": \"%c\",\n"
         "  \"enable_charge\": %s,\n"
-        "  \"enable_mem_swap\": %s,\n"
-        "  \"rtc_time\": %u\n"
+        "  \"enable_mem_swap\": %s\n"
         "}",
         g_config.language,
         g_config.power_save,
         g_config.enable_charge ? "true" : "false",
-        g_config.enable_mem_swap ? "true" : "false",
-        (unsigned int)g_config.rtc_time
+        g_config.enable_mem_swap ? "true" : "false"
     );
     
     // 打开文件进行写入
@@ -204,7 +190,7 @@ char config_get_power_save(void) {
 }
 
 void config_set_power_save(char mode) {
-    if (mode == ' ' || mode == 'A' || mode == 'B') {
+    if (mode == ' ' || mode == 'S' || mode == 'L') {
         g_config.power_save = mode;
         config_save();
     }

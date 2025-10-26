@@ -766,14 +766,14 @@ void keyMsg(uint32_t key, int state) {
             if (curPage == 3) {
                 switch (page3Subpage) {
                 case 0:
-                    if (config_get_power_save() == 'A') {
-                        config_set_power_save('B');
+                    if (config_get_power_save() == 'S') {
+                        config_set_power_save('L');
                         ll_cpu_slowdown_enable(2);
-                    } else if (config_get_power_save() == 'B') {
+                    } else if (config_get_power_save() == 'L') {
                         config_set_power_save(' ');
                         ll_cpu_slowdown_enable(0);
                     } else if (config_get_power_save() == ' ') {
-                        config_set_power_save('A');
+                        config_set_power_save('S');
                         ll_cpu_slowdown_enable(1);
                     }
                     break;
@@ -814,8 +814,8 @@ void keyMsg(uint32_t key, int state) {
                         config_set_enable_charge(false);
                         ll_charge_enable(false);
                     } else {
-                        if (config_get_power_save() != 'B') {
-                            config_set_power_save('B');
+                        if (config_get_power_save() != 'L') {
+                            config_set_power_save('L');
                             ll_cpu_slowdown_enable(2);
                         }
                         config_set_enable_charge(true);
@@ -1110,9 +1110,9 @@ void UI_Task(void *) {
     
     // 应用电源模式配置
     char power_save_mode = config_get_power_save();
-    if (power_save_mode == 'A') {
+    if (power_save_mode == 'S') {
         ll_cpu_slowdown_enable(1);
-    } else if (power_save_mode == 'B') {
+    } else if (power_save_mode == 'L') {
         ll_cpu_slowdown_enable(2);
     } else {
         ll_cpu_slowdown_enable(0);
