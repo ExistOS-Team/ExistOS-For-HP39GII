@@ -26,7 +26,7 @@
 
 #include "VROMLoader.h"
 
-#include "filesystem/Fatfs/ff.h"
+#include "filesystem/fatfs/ff.h"
 //#include "mpy_port.h"
 void check_emulator_status();
 

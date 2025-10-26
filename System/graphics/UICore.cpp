@@ -16,7 +16,7 @@
 #include "UICore.h"
 #include "UI_Config.h"
 #include "UI_Language.h"
-#include "UI_build_stamp.h"
+#include "../UI_build_stamp.h"
 #include "SystemConfig.h"
 
 // 声明enableMemSwap函数

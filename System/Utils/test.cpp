@@ -2,8 +2,8 @@
 #include <stdlib.h>
 // #include <iostream>  // Commented out to avoid conflict with iostream_sub.h
 
-#include "Filesystem/Fatfs/ff.h"
-#include "Applications/User/khicas/kcasporing_gl.h"
+#include "filesystem/fatfs/ff.h"
+#include "applications/user/khicas/kcasporing_gl.h"
 
 
 #define GIAC_HISTORY_SIZE 2
