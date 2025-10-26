@@ -37,7 +37,7 @@ extern "C" {
 
 #define CONF_SUBPAGES (4)
 
-#include "../Applications/User/khicas/khicas_ico.c"
+#include "../applications/user/khicas/khicas_ico.c"
 
 extern const unsigned char gImage_khicas_ico[48 * 48];
 
