@@ -38,6 +38,9 @@ aux_source_directory(./Filesystem/Fatfs                              SYS_SRCS)
 #aux_source_directory(./Filesystem/littlefs                          SYS_SRCS)
 aux_source_directory(./Crush                                         SYS_SRCS)
 
+# 添加getentropy.c文件到编译源文件
+list(APPEND SYS_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/Core/getentropy.c)
+
 #add_subdirectory(gb)
 #add_subdirectory(KLib)
 add_subdirectory(KLib/tjpgdec)
