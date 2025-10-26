@@ -1,6 +1,6 @@
 
 #include <stdlib.h>
-#include <iostream>
+// #include <iostream>  // Commented out to avoid conflict with iostream_sub.h
 
 #include "Filesystem/Fatfs/ff.h"
 #include "Applications/User/khicas/kcasporing_gl.h"
@@ -17,7 +17,7 @@
 #include "sys_llapi.h"
 
 using namespace giac;
-using namespace std;
+// using namespace std;  // Commented out to avoid conflict
 
 extern giac::context * contextptr;
 extern bool esc_flag;
@@ -56,7 +56,7 @@ void do_run(const char * s,gen & g,gen & ge){
     }
   }
   g=gen(buf,contextptr);
-  std::cout << (g.print(contextptr).c_str()) << endl; //return ;
+  cout << (g.print(contextptr).c_str()) << endl; //return ;
   giac::freeze=false;
   execution_in_progress = 1;
   giac::set_abort();
@@ -82,7 +82,7 @@ void do_run(const char * s,gen & g,gen & ge){
 */
     }
   }
-  std::cout << "Done" << endl;
+  cout << "Done" << endl;
   //Console_Output("Done"); return ;
   esc_flag=0;
   ctrl_c=false;
@@ -138,7 +138,7 @@ void run(const char * s,int do_logo_graph_eqw){
   if (s_.size()>512)
     s_=s_.substr(0,509)+"...";
 
-  std::cout << s_ << endl;
+  cout << s_ << endl;
   
   //char* edit_line = (char*)Console_GetEditLine();
   //Console_Output((const unsigned char*)s_.c_str());
@@ -170,7 +170,7 @@ void tstdo_run(const char *s, gen &g, gen &ge)
 		}
 	}
 	g = gen(buf, contextptr);
-	std::cout << (g.print(contextptr).c_str()) << endl; // return ;
+	cout << (g.print(contextptr).c_str()) << endl; // return ;
 	giac::freeze = false;
 	execution_in_progress = 1;
 
@@ -202,7 +202,7 @@ void tstdo_run(const char *s, gen &g, gen &ge)
 		}
 	}
 
-	std::cout << "Done" << endl;
+	cout << "Done" << endl;
 	// Console_Output("Done"); return ;
 
 	esc_flag = 0;
@@ -308,7 +308,7 @@ extern bool khicasRunning;
         if(fr != FR_OK)
 		{
 			if(fr != FR_EXIST){
-				std::cout << "Failed to create dir /xcas, " << fr <<endl;
+				std::cout << "Failed to create dir /xcas, " << fr << std::endl;
 			}
 		}
 	#else
@@ -317,7 +317,7 @@ extern bool khicasRunning;
 		fr = lfs_mkdir(fs, "/xcas");
 		if(fr){
 			if(fr != LFS_ERR_EXIST)
-				std::cout << "Failed to create dir /xcas, " << fr <<endl;
+				std::cout << "Failed to create dir /xcas, " << fr << std::endl;
 		}
 		 
 	#endif

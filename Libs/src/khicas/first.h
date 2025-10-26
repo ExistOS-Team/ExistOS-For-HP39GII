@@ -193,7 +193,7 @@ int my_sprintf(char * s, const char * format, ...);
 #define CLOCK_T int
 #endif
 
-#if !defined HAVE_ALLOCA_H && !defined GIAC_HAS_STO_38 && !defined KHICAS
+#if !defined HAVE_ALLOCA_H && !defined GIAC_HAS_STO_38 && !defined KHICAS && !defined(alloca)
 #define alloca _alloca
 #endif
 
