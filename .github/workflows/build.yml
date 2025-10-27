@@ -40,7 +40,9 @@ jobs:
     - uses: actions/cache@v3
       id: sys_signer-cache
       with:
-        path: tools/sys_signer
+        path: |
+          tools/sys_signer
+          tools/sysigner
         key: ${{ runner.os }}-${{ hashFiles('tools/sys_signer/**/*') }}
     - name: Build sys signer
       if: steps.sys_signer-cache.outputs.cache-hit != 'true'
