@@ -19,8 +19,6 @@
 #include "mtd_up.h"
 #include "rtc_up.h"
 #include "vmMgr.h"
-#include "CrashLog.h"
-#include "CrashSender.h"
 
 #include "../debug.h"
 
@@ -329,17 +327,6 @@ void VM_Unconscious(TaskHandle_t task, char *res, uint32_t address) {
 
         uint32_t *pRegFram = (uint32_t *)(((uint32_t *)pSysTask)[1]);
         pRegFram -= 16;
-
-        // 记录崩溃日志
-        crash_log_record(CRASH_TYPE_UNKNOWN, res, __FILE__, __LINE__);
-        
-        // 获取寄存器信息并记录到崩溃日志中
-        char reg_info[256];
-        sprintf(reg_info, "R0:%08lx R1:%08lx R2:%08lx R3:%08lx R12:%08lx R13:%08lx R14:%08lx R15:%08lx CPSR:%08lx FAR:%08lx", 
-                pRegFram[0], pRegFram[1], pRegFram[2], pRegFram[3], 
-                pRegFram[12], pRegFram[13], pRegFram[14], pRegFram[15], 
-                pRegFram[-1], address);
-        crash_log_append_stack_trace(reg_info);
 
         DisplayClean();
         DisplayFillBox(4, 4, 252, 20, 0);
@@ -1018,12 +1005,6 @@ volatile void _startup() {
 
     boardInit();
     printf("booting .....\n");
-    
-    // 初始化崩溃日志系统
-    crash_log_init();
-    
-    // 初始化崩溃发送器
-    crash_sender_init();
 
     xTaskCreate(vTask1, "Status Print", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &pStatusPrintTask);
     xTaskCreate(vMTDSvc, "MTD Svc", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, NULL);
