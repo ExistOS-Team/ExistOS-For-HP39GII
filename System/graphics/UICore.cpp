@@ -1,4 +1,6 @@
 
+// -*- coding: GBK -*-
+
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -19,7 +21,7 @@
 #include "UI_build_stamp.h"
 #include "SystemConfig.h"
 
-// å£°æ˜enableMemSwapå‡½æ•°
+// ÉùÃ÷enableMemSwapº¯Êı
 extern "C" void enableMemSwap(bool enable);
 
 #include "ExistOSlogo.h"
@@ -41,7 +43,7 @@ extern "C" {
 
 extern const unsigned char gImage_khicas_ico[48 * 48];
 
-// ç§»é™¤é™æ€å˜é‡ï¼Œæ”¹ä¸ºä½¿ç”¨é…ç½®ç³»ç»Ÿ
+// ÒÆ³ı¾²Ì¬±äÁ¿£¬¸ÄÎªÊ¹ÓÃÅäÖÃÏµÍ³
 // static char power_save = ' ';
 // static int language = UI_LANG_EN;
 
@@ -161,7 +163,7 @@ int exf_getfree(uint8_t *drv, uint32_t *total, uint32_t *free) {
     UI_Enable_Mem_Swap = UI_Enable_Mem_Swap_##lang;
 
 void UI_SetLang(int lang) {
-    // ä¿å­˜è¯­è¨€è®¾ç½®åˆ°é…ç½®ç³»ç»Ÿ
+    // ±£´æÓïÑÔÉèÖÃµ½ÅäÖÃÏµÍ³
     config_set_language(lang);
     
     switch (lang) {
@@ -275,7 +277,7 @@ void pageUpdate() {
 
             line = 3;
             uidisp->draw_printf(DISPX + (DISPW - (8 * 29)) / 2, DISPY - 8 + 16 * line++, 16, 64, 255, "Open Source Firmware Project");
-            uidisp->draw_printf(DISPX + (DISPW - (16 * 9 + 8 * 7)) / 2, DISPY - 8 + 16 * line++, 16, 64, 255, "HP39GIIï¿½ï¿½Ô´ï¿½Ì¼ï¿½ï¿½ï¿½Ä¿");
+            uidisp->draw_printf(DISPX + (DISPW - (16 * 9 + 8 * 7)) / 2, DISPY - 8 + 16 * line++, 16, 64, 255, "HP39GII¿ªÔ´¹Ì¼şÏîÄ¿");
             uidisp->draw_printf(DISPX + 16, DISPY - 4 + 16 * line, 8, 64, 255, "github.com/ExistOS-Team");
             uidisp->draw_printf(DISPX + DISPW - 16 - 6 * 21, DISPY - 4 + 16 * line + 8, 8, 64, 255, "/ExistOS-For-HP39GII");
         }
@@ -1093,22 +1095,22 @@ void getSuffix(TCHAR *ret, TCHAR *filename) {
 
 void UI_Task(void *) {
 
-    // åˆå§‹åŒ–é…ç½®ç³»ç»Ÿ
+    // ³õÊ¼»¯ÅäÖÃÏµÍ³
     config_init();
 
     uidisp = new UI_Display(LCD_PIX_W, LCD_PIX_H, ll_disp_put_area);
     mainw = new UI_Window(NULL, NULL, MAIN_WIN_TITLE, uidisp, 0, 0, LCD_PIX_W, LCD_PIX_H);
 
-    // å…ˆåˆå§‹åŒ–æ–‡ä»¶ç³»ç»Ÿ
+    // ÏÈ³õÊ¼»¯ÎÄ¼şÏµÍ³
     checkFS();
     
-    // ç„¶ååŠ è½½é…ç½®æ–‡ä»¶
+    // È»ºó¼ÓÔØÅäÖÃÎÄ¼ş
     config_load();
 
-    // ä½¿ç”¨é…ç½®ç³»ç»Ÿä¸­çš„è¯­è¨€è®¾ç½®
+    // Ê¹ÓÃÅäÖÃÏµÍ³ÖĞµÄÓïÑÔÉèÖÃ
     UI_SetLang(config_get_language());
     
-    // åº”ç”¨ç”µæºæ¨¡å¼é…ç½®
+    // Ó¦ÓÃµçÔ´Ä£Ê½ÅäÖÃ
     char power_save_mode = config_get_power_save();
     if (power_save_mode == 'S') {
         ll_cpu_slowdown_enable(1);
@@ -1118,14 +1120,14 @@ void UI_Task(void *) {
         ll_cpu_slowdown_enable(0);
     }
     
-    // åº”ç”¨å……ç”µçŠ¶æ€é…ç½®
+    // Ó¦ÓÃ³äµç×´Ì¬ÅäÖÃ
     if (config_get_enable_charge()) {
         ll_charge_enable(true);
     } else {
         ll_charge_enable(false);
     }
     
-    // åº”ç”¨å†…å­˜äº¤æ¢é…ç½®
+    // Ó¦ÓÃÄÚ´æ½»»»ÅäÖÃ
     if (config_get_enable_mem_swap()) {
         enableMemSwap(true);
     }
@@ -1230,7 +1232,7 @@ void UI_keyScanner(void *_) {
                 drawPage(curPage);
                 UIForceRefresh = false;
                 
-                // åœ¨ç•Œé¢åˆ·æ–°æ—¶ä¿å­˜é…ç½®
+                // ÔÚ½çÃæË¢ĞÂÊ±±£´æÅäÖÃ
                 config_save();
             }
         }
