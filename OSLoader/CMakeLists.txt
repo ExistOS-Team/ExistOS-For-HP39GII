@@ -29,7 +29,6 @@ include_directories(./Component3rd/tinyusb/class/vendor)
 include_directories(./Component3rd/dhara)
 include_directories(./boot/core)
 include_directories(./boot/services)
-include_directories(./CrashLog)
 include_directories(.)
 #include_directories(./Component3rd/FatFs)
 
@@ -39,7 +38,6 @@ aux_source_directory(.                                  LOADER_SRCS)
 aux_source_directory(./LowLevelAPI                      LOADER_SRCS)
 aux_source_directory(./boot/core                        LOADER_SRCS)
 aux_source_directory(./boot/services                    LOADER_SRCS)
-aux_source_directory(./CrashLog                         LOADER_SRCS)
 #aux_source_directory(./Scheduler/porting                LOADER_SRCS)
 #aux_source_directory(./HAL                              LOADER_SRCS)
 #aux_source_directory(./HAL/Hardware                     LOADER_SRCS)
@@ -143,9 +141,9 @@ add_custom_target(
   COMMAND ${CMAKE_SOURCE_DIR}/tools/sbtools/sbloader ${CMAKE_CURRENT_BINARY_DIR}/OSLoader.sb -d
   DEPENDS OSLoader.sb
   )
-else()
+else(EXISTS ${CMAKE_SOURCE_DIR}/tools/sbtools/elftosb)
 message(FATAL_ERROR "Please build tools/sbtools first")
-endif()
+endif(EXISTS ${CMAKE_SOURCE_DIR}/tools/sbtools/elftosb)
 endif()
 
 add_custom_target(

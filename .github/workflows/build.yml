@@ -40,7 +40,9 @@ jobs:
     - uses: actions/cache@v3
       id: sys_signer-cache
       with:
-        path: tools/sys_signer
+        path: |
+          tools/sys_signer
+          tools/sysigner
         key: ${{ runner.os }}-${{ hashFiles('tools/sys_signer/**/*') }}
     - name: Build sys signer
       if: steps.sys_signer-cache.outputs.cache-hit != 'true'
@@ -77,8 +79,8 @@ jobs:
         cd ../../..
     - name: CMake configure
       run: |
-        echo "#pragma once" >  System/UI_build_stamp.h
-        echo "#define BUILD_STAMP \"Release build ${{ github.run_number }}\"" >> System/UI_build_stamp.h
+        echo "#pragma once" >  System/graphics/UI_build_stamp.h
+        echo "#define BUILD_STAMP \"Release build ${{ github.run_number }}\"" >> System/graphics/UI_build_stamp.h
         mkdir build
         cmake -S . -B build
     - name : CMake build

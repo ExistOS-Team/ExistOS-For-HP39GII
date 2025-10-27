@@ -12,19 +12,18 @@ extern "C" {
 
 // 配置项默认值
 #define DEFAULT_LANGUAGE UI_LANG_EN
-#define DEFAULT_POWER_SAVE ' '  // ' ' = 关闭, 'A' = 低功耗, 'B' = 超低功耗
+#define DEFAULT_POWER_SAVE ' '  // ' ' = 关闭, 'S' = 低功耗, 'L' = 超低功耗
 #define DEFAULT_ENABLE_CHARGE false
 #define DEFAULT_ENABLE_MEM_SWAP false
 
 // 系统配置结构体
 typedef struct {
     int language;           // 语言设置 (0=英文, 1=中文)
-    char power_save;        // 电源节省模式 (' ' = 关闭, 'A' = 低功耗, 'B' = 超低功耗)
+    char power_save;        // 电源节省模式 (' ' = 关闭, 'S' = 低功耗, 'L' = 超低功耗)
     bool enable_charge;     // 是否启用充电
     bool charging;          // 充电状态
     bool enable_mem_swap;   // 是否启用内存交换
     bool mem_swap;          // 内存交换状态
-    uint32_t rtc_time;      // RTC时间戳
     bool dirty;             // 配置是否已修改但未保存
 } SystemConfig;
 
